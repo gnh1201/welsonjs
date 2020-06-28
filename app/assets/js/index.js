@@ -2,7 +2,7 @@ var FILE = require("lib/file");
 var serverUrl = "http://96.30.198.29/";
 
 $(document).ready(function() {
-    $(".logoutbox").css("display", "none");
+    $(".show-logged").css("display", "none");
 
     $("#loginform").ajaxForm({
         success: function(res) {
@@ -19,8 +19,8 @@ $(document).ready(function() {
                     $("#logged_username").text(res.data.username);
 
                     // 화면 전환
-                    $(".loginbox").css("display", "none");
-                    $(".logoutbox").css("display", "");
+                    $(".show-no-logged").css("display", "none");
+                    $(".show-logged").css("display", "");
                 } else {
                     alert("저장공간이 충분한지 확인하여 주세요");
                 }
@@ -44,8 +44,8 @@ $(document).ready(function() {
             $("#logged_username").text(res.data.username);
 
             // 화면 전환
-            $(".loginbox").css("display", "none");
-            $(".logoutbox").css("display", "");
+            $(".show-no-logged").css("display", "none");
+            $(".show-logged").css("display", "");
         });
     }
     
