@@ -50,6 +50,7 @@ html, body {
 }
 
 input.text {
+    font-size: 1em;
     font-family: "맑은 고딕",, "Malgun Gothic",  "Segoe UI", Calibri, Arial, Sans-Serif;
 }
 
@@ -65,6 +66,7 @@ input.text {
     width: 30%;
     height: 100%;
     background-color: #333333;
+    font-size: 0.8em;
 }
 
 #aside .searchbox {
@@ -82,7 +84,101 @@ input.text {
     color: #505050;
 }
 
+#aside .serverbox ul li {
+    border-top: 1px solid #2a2c2b;
+    border-bottom: 1px solid #343635;
+    background-color: #27282a;
+    color: #fff;
+}
+
+#aside .serverbox ul li a {
+    display: block;
+    text-decoration: none;
+    color: #fff;
+}
+
+#aside .serverbox ul li span {
+    display: block;
+    padding: 10px;
+    text-align: center;
+}
+
+#aside .serverbox ul li span img {
+    vertical-align: middle;
+}
+
+#aside .serverbox ul.sub li {
+    background-color: #3b3c3e;
+}
+
+#aside .serverbox ul.sub li span {
+    padding-left: 30px;
+    text-align: left;
+}
+
 #content {
     float: right;
     width: 70%;
+    height: 100%;
+    background: url(../img/World-Map-PNG-Picture.png) no-repeat center 50px;
+}
+
+#content .logobox {
+    margin: 50px 0;
+    text-align: center;
+}
+
+#content .loginbox {
+    text-align: center;
+}
+
+#content .loginbox label {
+    display: none;
+}
+
+#content .loginbox ul li {
+    margin: 8px 0;
+}
+
+#content .loginbox ul li input.text {
+    width: 200px;
+    border: 1px solid #888;
+    border-radius: 8px;
+    padding: 5px 10px;
+}
+
+#content .loginbox button.submit {
+    border: 0;
+    background: none;
+    background-color: #43a747;
+    color: #fff;
+    font-weight: bold;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 1em;
+    cursor: pointer;
+}
+
+#content .loginbox .box2 {
+    margin-top: 30px;
+}
+
+#content .statusbox {
+    width: 360px;
+    margin: 60px auto;
+}
+
+#content .statusbox ul li {
+    float: left;
+    width: 180px;
+    margin: 10px 0;
+}
+
+#content .statusbox ul li dl dt {
+    color: #616686;
+    display: inline;
+}
+
+#content .statusbox ul li dl dd {
+    display: inline;
 }

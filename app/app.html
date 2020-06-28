@@ -5,11 +5,86 @@
 
     <div class="serverbox">
         <ul>
-            
+            <li>
+                <span>모든 위치</span>
+                <ul class="sub">
+                    <li><span>로그인하세요</span></li>
+                    <li><a href="#us1"><span><img src="app/assets/img/flags/shiny/16/United-States.png" alt="United States" /> US 1</span></a></li>
+                    <li><a href="#us2"><span><img src="app/assets/img/flags/shiny/16/United-States.png" alt="United States" /> US 2</span></a></li>
+                    <li><a href="#us3"><span><img src="app/assets/img/flags/shiny/16/United-States.png" alt="United States" /> US 3</span></a></li>
+                    </li>
+                </ul>
+            </li>
         </ul>
     </div>
 </div>
 
 <div id="content">
+    <div class="logobox">
+        <img src="app/assets/img/logo.png" alt="로고" />
+    </div>
+
+    <div class="loginbox">
+        <form method="post" action="">
+            <div class="box1">
+                <ul>
+                    <li>
+                        <label for="username">사용자 이름</label>
+                        <input id="username" class="text" type="text" placeholder="사용자 이름" />
+                    </li>
+                    <li>
+                        <label for="password">패스워드</label>
+                        <input id="password" class="text" type="password" placeholder="패스워드" />
+                    </li>
+                </ul>
+            </div>
+
+            <div class="box2">
+                <button id="btn_login" class="submit" type="submit">로그인</button>
+            </div>
+        </form>
+    </div>
     
+    <div class="statusbox">
+        <ul>
+            <li>
+                <dl>
+                    <dt>서버:</dt>
+                    <dd>-</dd>
+                </dl>
+            </li>
+            <li>
+                <dl>
+                    <dt>상태:</dt>
+                    <dd><span style="font-weight: bold;">연결 안됨</span></dd>
+                </dl>
+            </li>
+            <li>
+                <dl>
+                    <dt>IP:</dt>
+                    <dd>-</dd>
+                </dl>
+            </li>
+            <li>
+                <dl>
+                    <dt>업타임:</dt>
+                    <dd>-</dd>
+                </dl>
+            </li>
+            <li>
+                <dl>
+                    <dt>보냄:</dt>
+                    <dd>-</dd>
+                </dl>
+            </li>
+            <li>
+                <dl>
+                    <dt>받음: <a id="test" href="#test">test</a></dt>
+                    <dd>-</dd>
+                </dl>
+            </li>
+        </ul>
+    </div>
 </div>
+
+
