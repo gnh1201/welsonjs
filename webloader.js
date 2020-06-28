@@ -11,7 +11,7 @@ return {
         el.type = "text/javascript";
         el.charset = "utf-8";
         document.head.appendChild(el);
-        if(typeof(callback) == "function") {
+        if(typeof(callback) === "function") {
             el.onload = callback(el);
         }
         return el;
@@ -22,16 +22,17 @@ return {
         el.rel = "stylesheet";
         el.type = "text/css";
         document.head.appendChild(el);
-        if(typeof(callback) == "function") {
+        if(typeof(callback) === "function") {
             el.onload = callback(el);
         }
         return el;
     },
-	main: function() {
+    main: function() {
         var contents = FILE.readFile("app\\app.html", "utf-8");
         document.getElementById("app").innerHTML = contents;
         this.addScript("app/assets/js/jquery-3.5.1.min.js");
+        this.addScript("app/assets/js/jquery.form.min.js");
         this.addScript("app/assets/js/index.js");
-		return 0;
-	}
+        return 0;
+    }
 }

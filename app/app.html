@@ -25,16 +25,20 @@
     </div>
 
     <div class="loginbox">
-        <form method="post" action="">
+        <form id="loginform" method="post" action="http://96.30.198.29/">
+            <div class="hidden">
+                <input type="hidden" name="route" value="api.authenticate" />
+                <input type="hidden" name="action" value="getToken" />
+            </div>
             <div class="box1">
                 <ul>
                     <li>
                         <label for="username">사용자 이름</label>
-                        <input id="username" class="text" type="text" placeholder="사용자 이름" />
+                        <input id="username" name="username" class="text" type="text" placeholder="사용자 이름" />
                     </li>
                     <li>
                         <label for="password">패스워드</label>
-                        <input id="password" class="text" type="password" placeholder="패스워드" />
+                        <input id="password" name="password" class="text" type="password" placeholder="패스워드" />
                     </li>
                 </ul>
             </div>
@@ -43,6 +47,15 @@
                 <button id="btn_login" class="submit" type="submit">로그인</button>
             </div>
         </form>
+    </div>
+
+    <div class="logoutbox">
+        <div class="box1">
+            <p>환영합니다. <span id="logged_username" class="username"></span></p>
+        </div>
+        <div class="box2">
+            <button id="btn_logout" class="logout" type="button">로그아웃</button>
+        </div>
     </div>
     
     <div class="statusbox">
@@ -79,7 +92,7 @@
             </li>
             <li>
                 <dl>
-                    <dt>받음: <a id="test" href="#test">test</a></dt>
+                    <dt>받음: -</dt>
                     <dd>-</dd>
                 </dl>
             </li>

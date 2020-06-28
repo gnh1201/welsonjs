@@ -85,8 +85,7 @@ input.text {
 }
 
 #aside .serverbox ul li {
-    border-top: 1px solid #2a2c2b;
-    border-bottom: 1px solid #343635;
+    border-top: 1px solid #333;
     background-color: #27282a;
     color: #fff;
 }
@@ -147,7 +146,11 @@ input.text {
     padding: 5px 10px;
 }
 
-#content .loginbox button.submit {
+#content .loginbox .box2 {
+    margin-top: 30px;
+}
+
+#content .loginbox .box2 button.submit {
     border: 0;
     background: none;
     background-color: #43a747;
@@ -159,8 +162,34 @@ input.text {
     cursor: pointer;
 }
 
-#content .loginbox .box2 {
-    margin-top: 30px;
+#content .logoutbox {
+    text-align: center;
+}
+
+#content .logoutbox .box1 {
+    margin: 30px 0;
+}
+
+#content .logoutbox .box1 p {
+    color: #fff;
+    font-size: 2em;
+    font-weight: bold;
+}
+
+#content .logoutbox .box2 {
+    margin: 30px 0;
+}
+
+#content .logoutbox .box2 button.logout {
+    border: 0;
+    background: none;
+    background-color: #db0000;
+    color: #fff;
+    font-weight: bold;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 1em;
+    cursor: pointer;
 }
 
 #content .statusbox {
