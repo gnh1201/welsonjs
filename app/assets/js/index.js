@@ -26,8 +26,9 @@ $(document).ready(function() {
                 }
             }
         },
-        error: function() {
-            console.log("잠시 후 다시 시도하여 주세요");
+        error: function(xhr, status, error) {
+			 var errorMessage = xhr.status + ': ' + xhr.statusText;
+			 alert('Error - ' + errorMessage);
         }
     });
 
@@ -48,7 +49,12 @@ $(document).ready(function() {
             $(".show-logged").css("display", "");
         });
     }
-    
+
+    // 닫기
+    $("a[href='#exit']").click(function() {
+        exit();
+    });
+
     // 로그아웃
     $("#btn_logout").click(function() {
         // 토큰 파일 삭제
