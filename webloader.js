@@ -123,42 +123,57 @@ return {
     getIEVersion: function() {
         return IEVersion;
     },
-    addScript: function(url, callback) {
-        var el = document.createElement("script");
+    addScript: function(url, callback, test) {
+		var _callback = function(el) {
+			setTimeout(function() {
+				var result = test(el);
+				if(typeof(result) !== "undefined") {
+					callback(el);
+				} else {
+					_callback(el);
+				}
+			}, 50);
+		};
+
+		var el = document.createElement("script");
         el.src = url;
         el.type = "text/javascript";
         el.charset = "utf-8";
         document.head.appendChild(el);
-        if(typeof(callback) === "function") {
+
+		if(typeof(test) === "function") {
+			_callback();
+		} else if(typeof(callback) === "function") {
             el.onload = callback(el);
         }
 
         return el;
     },
-    addStylesheet: function(url, callback) {
+    addStylesheet: function(url, callback, test) {
+		var _callback = function(el) {
+			setTimeout(function() {
+				var result = test(el);
+				if(typeof(result) !== "undefined") {
+					callback(el);
+				} else {
+					_callback(el);
+				}
+			}, 50);
+		};
+		
         var el = document.createElement("link");
         el.href = url;
         el.rel = "stylesheet";
         el.type = "text/css";
         document.head.appendChild(el);
-        if(typeof(callback) === "function") {
+
+		if(typeof(test) === "function") {
+			_callback();
+		} else if(typeof(callback) === "function") {
             el.onload = callback(el);
         }
 
         return el;
-    },
-    showMessages: function() {
-        setTimeout(function() {
-            if(typeof(window.jQuery) !== "undefined") {
-                if(messages.length > 0) {
-                    for(var i in messages) {
-                        console.log(messages[i]);
-                    }
-                }
-            } else {
-                this.showMessages();
-            }
-        }, 50);
     },
     main: function() {
         // load contents
@@ -178,17 +193,26 @@ return {
             this.addScript("app/assets/js/html5shiv-printshiv.min.js");
             this.addScript("app/assets/js/jquery-1.11.3.min.js");
         } else {
-            this.addScript("app/assets/js/jquery-3.5.1.min.js");
+            this.addScript("app/assets/js/jquery-3.5.1.min.js", function(el) {
+				jQuery.support.cors = true;
+            }, function(el) {
+				return window.jQuery;
+			});
         }
         if(this.getIEVersion() < 10) {
             this.addScript("app/assets/js/jquery.html5-placeholder-shim.js");
         }
         this.addScript("app/assets/js/jquery.form.min.js");
-        this.addScript("app/assets/js/jquery.toast.min.js");
+        this.addScript("app/assets/js/jquery.toast.min.js", function(el) {
+			if(messages.length > 0) {
+				for(var i in messages) {
+					console.log(messages[i]);
+				}
+			}
+		}, function(el) {
+			return window.jQuery.toast;
+		});
         this.addScript("app/assets/js/index.js");
-
-        // show console messages
-        this.showMessages();
 
         // set window draggable
         this.setWindowDraggable();
