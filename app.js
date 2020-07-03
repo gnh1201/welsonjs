@@ -38,7 +38,7 @@ var messages = [];
 var console = {
    log: function(msg, status) {
        if(typeof(window) !== 'undefined') {
-           if(typeof(window.jQuery) !== 'undefined') {
+           if(typeof(window.jQuery.toast) !== 'undefined') {
                 window.jQuery.toast({
                     heading: "Information",
                     text: msg,
