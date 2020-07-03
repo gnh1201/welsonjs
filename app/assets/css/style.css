@@ -122,6 +122,13 @@ input.text {
     background: url(../img/World-Map-PNG-Picture.png) no-repeat center 50px;
 }
 
+#content .closebox { 
+	position: absolute;
+    padding: 10px;
+	right: 0;
+	top: 0;
+}
+
 #content .logobox {
     margin: 50px 0;
     text-align: center;
