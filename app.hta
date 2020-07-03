@@ -1,6 +1,6 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ko" lang="ko">
     <head>
         <!--
             @tag hta:application
@@ -9,6 +9,7 @@
             
             @attribute Border			[Thick]|Thin|None
             @attribute BorderStyle		[Normal]|Raised|Sunken|Complex|Static
+			@attribute InnerBorder		[Yes]|No
             @attribute Caption			[Yes]|No
             @attribute ContextMenu		[Yes]|No
             @attribute Icon				Path/To/Icon.ico
@@ -16,6 +17,7 @@
             @attribute MinimizeButton	[Yes]|No
             @attribute Navigable		[Yes]|No
             @attribute Scroll			[Auto]|Yes|No
+			@attribute ScrollFlat		[Auto]|Yes|No
             @attribute Selection		[Yes]|No
             @attribute ShowInTaskbar	[Yes]|No
             @attribute SingleInstance	[Yes]|No
@@ -23,32 +25,44 @@
             @attribute WindowsState		[Normal]|Minimize|Maximize
             -->
         <hta:application
+			ID="WELSONJS"
+			Version="1.0"
             ApplicationName="NextVPN"
-            Border="Thin"
+            Border="None"
             BorderStyle="Static"
-            Caption="Yes"
+			InnerBorder="No"
+            Caption="No"
+			Icon="favicon.ico"
             ContextMenu="No"
             MaximizeButton="No"
             MinimizeButton="No"
             Navigable="No"
             Scroll="No"
+			ScrollFlat="Yes"
             Selection="No"
             ShowInTaskbar="Yes"
             SingleInstance="Yes"
             SysMenu="Yes"
             WindowState="Normal"
+			Selection="No"
             />
         <title>NextVPN</title>
-        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
+        <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
+        <meta name="description" content="Welsonjs: Build a windows desktop apps fastly without installing packages" />
+        <meta name="keywords" content="webapp" />
+        <meta name="author" content="gnh1201" />
+        <meta name="generator" content="welsonjs" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link type="image/x-icon" rel="icon" href="favicon.ico" />
+        <link type="image/png" rel="shortcut icon" href="app/assets/img/paper-plane-icon.png">
         <link type="text/css" rel="stylesheet" href="app/assets/css/style.css" />
     </head>
     <body>
         <div id="app"></div>
-        <script type="text/javascript" src="app.js"></script>
-        <script type="text/javascript">
-            window.resizeTo(800, 600);
-            init_window("webloader");
-        </script>
+        <script src="app.js" type="text/javascript" charset="utf-8"></script>
+        <script type="text/javascript">//<!--<![CDATA[
+            init_window("webloader", [], 800, 600);
+        //]]>--></script>
     </body>
 </html>

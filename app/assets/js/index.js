@@ -7,7 +7,7 @@ $(document).ready(function() {
     $("#loginform").ajaxForm({
         success: function(res) {
             if(res.success === false) {
-                alert("로그인에 실패하였습니다. 다시 시도하여 주세요");
+                console.log("로그인에 실패하였습니다. 다시 시도하여 주세요");
             } else {
                 // 로그인 사용자의 토큰을 저장
                 FILE.writeFile("token.txt", res.data.token, "utf-8");
@@ -22,12 +22,12 @@ $(document).ready(function() {
                     $(".show-no-logged").css("display", "none");
                     $(".show-logged").css("display", "");
                 } else {
-                    alert("저장공간이 충분한지 확인하여 주세요");
+                    console.log("저장공간이 충분한지 확인하여 주세요");
                 }
             }
         },
         error: function() {
-            alert("잠시 후 다시 시도하여 주세요");
+            console.log("잠시 후 다시 시도하여 주세요");
         }
     });
 
@@ -60,6 +60,6 @@ $(document).ready(function() {
         $(".loginbox").css("display", "");
         $(".logoutbox").css("display", "none");
 
-        alert("로그아웃 되었습니다.");
+        console.log("로그아웃 되었습니다.");
     });
 });

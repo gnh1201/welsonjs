@@ -7,7 +7,7 @@
 //    cscript.js app.js <appname> <app arguments> ...
 //
 /////////////////////////////////////////////////////////////////////////////////
-// "use strict";
+//"use strict";
 
 /////////////////////////////////////////////////////////////////////////////////
 // Bootstrap code, basic module loading functionality
@@ -33,10 +33,20 @@
 //    must define main = function(args) {}, which is called once the module is
 //    loaded.
 
+var messages = [];
+
 var console = {
    log: function(msg, status) {
        if(typeof(window) !== 'undefined') {
-           alert(msg);
+		   if(typeof(window.jQuery) !== 'undefined') {
+				window.jQuery.toast({
+					heading: "Information",
+					text: msg,
+					icon: "info"
+				});
+		   } else {
+			   messages.push(msg);
+		   }
        } else if(typeof(WScript) !== 'undefined') {
            WScript.echo(msg);
            WScript.quit(status);
@@ -80,10 +90,10 @@ function require(FN) {
 /////////////////////////////////////////////////////////////////////////////////
 
 function init_console() {
-    var arguments = WScript.arguments;
-    if (arguments.length > 0) {
+    var n = WScript.arguments.length;
+    if (n > 0) {
         var args = [];
-        for (var i = 0; i < arguments.length; i++) {
+        for (var i = 0; i < n; i++) {
             args.push(WScript.arguments(i));
         }
         var name = args.shift();
@@ -103,8 +113,15 @@ function init_console() {
     }
 }
 
-function init_window(name, args) {
+function init_window(name, args, w, h) {
     var app = require(name);
+
+    // set default size of window
+    if(typeof(w) !== "undefined" && typeof(h) !== "undefined") {
+        window.resizeTo(w, h);
+    }
+
+    // load app
     if (app) {
         if (app.main) {
             app.main.call(app, args);
