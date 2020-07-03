@@ -38,15 +38,15 @@ var messages = [];
 var console = {
    log: function(msg, status) {
        if(typeof(window) !== 'undefined') {
-           if(typeof(window.jQuery) !== 'undefined') {
-                window.jQuery.toast({
-                    heading: "Information",
-                    text: msg,
-                    icon: "info"
-                });
-           } else {
-               messages.push(msg);
-           }
+		   if(typeof(window.jQuery) !== 'undefined') {
+				window.jQuery.toast({
+					heading: "Information",
+					text: msg,
+					icon: "info"
+				});
+		   } else {
+			   messages.push(msg);
+		   }
        } else if(typeof(WScript) !== 'undefined') {
            WScript.echo(msg);
            WScript.quit(status);
