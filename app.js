@@ -32,25 +32,24 @@
 //    The appname argument causes <appname>.js to be loaded. The interface returned
 //    must define main = function(args) {}, which is called once the module is
 //    loaded.
-
 var messages = [];
 
 var console = {
-   log: function(msg, status) {
-       if(typeof(window) !== 'undefined') {
-		   if(typeof(window.jQuery) !== 'undefined') {
-				window.jQuery.toast({
-					heading: "Information",
-					text: msg,
-					icon: "info"
-				});
-		   } else {
-			   messages.push(msg);
-		   }
-       } else if(typeof(WScript) !== 'undefined') {
-           WScript.echo(msg);
-           WScript.quit(status);
-       }
+    log: function(msg, status) {
+        if (typeof(window) !== 'undefined') {
+            if (typeof(window.jQuery) !== 'undefined') {
+                window.jQuery.toast({
+                    heading: "Information",
+                    text: msg,
+                    icon: "info"
+                });
+            } else {
+                messages.push(msg);
+            }
+        } else if (typeof(WScript) !== 'undefined') {
+            WScript.echo(msg);
+            WScript.quit(status);
+        }
     }
 };
 
@@ -117,7 +116,7 @@ function init_window(name, args, w, h) {
     var app = require(name);
 
     // set default size of window
-    if(typeof(w) !== "undefined" && typeof(h) !== "undefined") {
+    if (typeof(w) !== "undefined" && typeof(h) !== "undefined") {
         window.resizeTo(w, h);
     }
 
@@ -135,7 +134,7 @@ function init_window(name, args, w, h) {
 }
 
 function main() {
-    if(typeof(window) == 'undefined') {
+    if (typeof(window) == 'undefined') {
         init_console();
     } else {
         console.log("welcome");
