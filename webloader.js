@@ -173,6 +173,21 @@ return {
         self.addStylesheet("app/assets/css/jquery-ui.min.css");
         self.addStylesheet("app/assets/css/jquery.toast.min.css");
 
+        // "when loaded jquery (strictly)";
+        var jqLoaded = function(el) {
+            jQuery.support.cors = true;
+
+            self.addScript("app/assets/js/jquery.toast.min.js", function(el) {
+                if (messages.length > 0) {
+                    for (var i in messages) {
+                        console.log(messages[i]);
+                    }
+                }
+            }, function(el) {
+                return window.jQuery.toast;
+            });
+        };
+
         // "load javascripts dynamically";
         self.addScript("app/assets/js/es5-shim.min.js");
         self.addScript("app/assets/js/es5-sham.min.js");
@@ -181,15 +196,11 @@ return {
         self.addScript("app/assets/js/es6-sham.min.js");
         if (self.getIEVersion() < 9) {
             self.addScript("app/assets/js/html5shiv-printshiv.min.js");
-            self.addScript("app/assets/js/jquery-1.11.3.min.js", function(el) {
-                jQuery.support.cors = true;
-            }, function(el) {
+            self.addScript("app/assets/js/jquery-1.11.3.min.js", jqLoaded, function(el) {
                 return window.jQuery;
             });
         } else {
-            self.addScript("app/assets/js/jquery-3.5.1.min.js", function(el) {
-                jQuery.support.cors = true;
-            }, function(el) {
+            self.addScript("app/assets/js/jquery-3.5.1.min.js", jqLoaded, function(el) {
                 return window.jQuery;
             });
         }
@@ -202,15 +213,6 @@ return {
             self.addScript("app/assets/js/jquery.html5-placeholder-shim.js");
         }
         self.addScript("app/assets/js/jquery.form.min.js");
-        self.addScript("app/assets/js/jquery.toast.min.js", function(el) {
-            if (messages.length > 0) {
-                for (var i in messages) {
-                    console.log(messages[i]);
-                }
-            }
-        }, function(el) {
-            return window.jQuery.toast;
-        });
 
         // "prevent text drag and drop"; {
         document.body.ondragstart = function() {
