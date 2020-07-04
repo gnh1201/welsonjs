@@ -176,6 +176,11 @@ return {
         var jqLoaded = function(el) {
             jQuery.support.cors = true;
 
+            // "load jQuery UI (1.12.1)";
+            self.addStylesheet("app/assets/css/jquery-ui.min.css");
+            self.addScript("app/assets/js/jquery-ui.min.js");
+
+            // "load jQuery plugins";
             if (self.getIEVersion() < 10) {
                 self.addScript("app/assets/js/jquery.html5-placeholder-shim.js");
             }
