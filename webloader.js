@@ -4,6 +4,7 @@
 var FILE = require('lib/file');
 
 // "less than IE 9";
+window.enableEventListener = function(obj) {};
 if (!window.addEventListener) {
     Element = function() {};
 
@@ -44,6 +45,9 @@ if (!window.addEventListener) {
             obj.addEventListener = function(type, listener) {
                 var target = this;
 
+                if (typeof(registry) === "undefined")
+                    registry = [];
+
                 registry.unshift([target, type, listener, function(event) {
                     event.currentTarget = target;
                     event.preventDefault = function() {
@@ -73,6 +77,11 @@ if (!window.addEventListener) {
             };
         };
 
+        WindowPrototype.enableEventListener = function(obj) {
+            if (!obj.addEventListener) {
+                enableEventListener(obj);
+            }
+        };
         enableEventListener(WindowPrototype, registry);
         enableEventListener(DocumentPrototype, registry);
         enableEventListener(ElementPrototype, registry);
@@ -140,6 +149,7 @@ return {
                 window.removeEventListener('mouseup', mouseUp);
             };
 
+        enableEventListener(grip);
         grip.addEventListener('mousedown', mouseDown);
         grip.addEventListener('mousemove', gripMouseMove);
     },
@@ -183,6 +193,7 @@ return {
         el.href = url;
         el.rel = "stylesheet";
         el.type = "text/css";
+        el.media = "screen, projection";
         document.head.appendChild(el);
         if (typeof(callback) === "function") {
             el.onload = callback(el);
@@ -198,14 +209,15 @@ return {
         document.getElementById("app").innerHTML = contents;
 
         // "load stylesheets dynamically";
-        self.addStylesheet("app/assets/css/jquery-ui.min.css");
-        self.addStylesheet("app/assets/css/jquery.toast.min.css");
+        self.addStylesheet("app/assets/css/jquery-ui-1.21.1.min.css");
+        self.addStylesheet("app/assets/css/jquery.toast-1.3.2.min.css");
+        self.addStylesheet("app/assets/css/style.css");
 
         // "when loaded jquery (strictly)";
         var jqLoaded = function(el) {
             jQuery.support.cors = true;
 
-            self.addScript("app/assets/js/jquery.toast.min.js", function(el) {
+            self.addScript("app/assets/js/jquery.toast-1.3.2.min.js", function(el) {
                 if (messages.length > 0) {
                     for (var i in messages) {
                         console.log(messages[i]);
@@ -223,7 +235,7 @@ return {
         self.addScript("app/assets/js/es6-shim.min.js");
         self.addScript("app/assets/js/es6-sham.min.js");
         if (self.getIEVersion() < 9) {
-            self.addScript("app/assets/js/html5shiv-printshiv.min.js");
+            self.addScript("app/assets/js/html5shiv-printshiv-3.7.3.min.js");
             self.addScript("app/assets/js/jquery-1.11.3.min.js", jqLoaded, function(el) {
                 return window.jQuery;
             });
@@ -232,9 +244,10 @@ return {
                 return window.jQuery;
             });
         }
+        self.addScript("app/assets/js/modernizr-2.8.3.min.js");
 
         // "load jQuery UI (1.12.1)";
-        self.addScript("app/assets/js/jquery-ui.min.js");
+        self.addScript("app/assets/js/jquery-ui-1.21.1.min.js");
 
         // "load jQuery plugins";
         if (self.getIEVersion() < 10) {
@@ -252,9 +265,7 @@ return {
         // };
 
         // "set movable window";
-        if (self.getIEVersion() > 8) {
-            self.enableMovableWindow();
-        }
+        self.enableMovableWindow();
 
         // "go to entrypoint";
         self.addScript("app/assets/js/index.js");
