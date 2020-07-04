@@ -89,7 +89,7 @@ var IEVersion = (function() {
 })();
 
 return {
-    setWindowsMovable: function() {
+    setMovableWindow: function() {
         var grip = document.getElementById('app'),
             oX, oY,
             mouseDown = function(e) {
@@ -162,43 +162,52 @@ return {
         return el;
     },
     main: function() {
+        // "set variable 'self'";
+        var self = this;
+
         // "load contents";
         var contents = FILE.readFile("app\\app.html", "utf-8");
         document.getElementById("app").innerHTML = contents;
 
         // "load stylesheets dynamically";
-        this.addStylesheet("app/assets/css/jquery.toast.min.css");
+        self.addStylesheet("app/assets/css/jquery.toast.min.css");
+
+        // "when loaded jquery";
+        var jqLoaded = function(el) {
+            jQuery.support.cors = true;
+
+            if (self.getIEVersion() < 10) {
+                self.addScript("app/assets/js/jquery.html5-placeholder-shim.js");
+            }
+            self.addScript("app/assets/js/jquery.form.min.js");
+            self.addScript("app/assets/js/jquery.toast.min.js", function(el) {
+                if (messages.length > 0) {
+                    for (var i in messages) {
+                        console.log(messages[i]);
+                    }
+                }
+            }, function(el) {
+                return window.jQuery.toast;
+            });
+        };
 
         // "load javascripts dynamically";
-        this.addScript("app/assets/js/es5-shim.min.js");
-        this.addScript("app/assets/js/es5-sham.min.js");
-        this.addScript("app/assets/js/json3.min.js");
-        this.addScript("app/assets/js/es6-shim.min.js");
-        this.addScript("app/assets/js/es6-sham.min.js");
-        if (this.getIEVersion() < 9) {
-            this.addScript("app/assets/js/html5shiv-printshiv.min.js");
-            this.addScript("app/assets/js/jquery-1.11.3.min.js");
+        self.addScript("app/assets/js/es5-shim.min.js");
+        self.addScript("app/assets/js/es5-sham.min.js");
+        self.addScript("app/assets/js/json3.min.js");
+        self.addScript("app/assets/js/es6-shim.min.js");
+        self.addScript("app/assets/js/es6-sham.min.js");
+        if (self.getIEVersion() < 9) {
+            self.addScript("app/assets/js/html5shiv-printshiv.min.js");
+            self.addScript("app/assets/js/jquery-1.11.3.min.js", jqLoaded, function(el) {
+                return window.jQuery;
+            });
         } else {
-            this.addScript("app/assets/js/jquery-3.5.1.min.js", function(el) {
-                jQuery.support.cors = true;
-            }, function(el) {
+            self.addScript("app/assets/js/jquery-3.5.1.min.js", jqLoaded, function(el) {
                 return window.jQuery;
             });
         }
-        if (this.getIEVersion() < 10) {
-            this.addScript("app/assets/js/jquery.html5-placeholder-shim.js");
-        }
-        this.addScript("app/assets/js/jquery.form.min.js");
-        this.addScript("app/assets/js/jquery.toast.min.js", function(el) {
-            if (messages.length > 0) {
-                for (var i in messages) {
-                    console.log(messages[i]);
-                }
-            }
-        }, function(el) {
-            return window.jQuery.toast;
-        });
-        this.addScript("app/assets/js/index.js");
+        self.addScript("app/assets/js/index.js");
 
         // "prevent text drag and drop"; {
         document.body.ondragstart = function() {
@@ -209,8 +218,8 @@ return {
         };
         // };
 
-        // "set window movable";
-        this.setWindowsMovable();
+        // "set movable window";
+        self.setMovableWindow();
 
         return 0;
     }
