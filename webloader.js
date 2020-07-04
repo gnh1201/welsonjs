@@ -120,18 +120,18 @@ return {
     },
     addScript: function(url, callback, test, ttl) {
         var _callback = function(el, ttl) {
-            setTimeout(function() {
-                var result = test(el);
-                if (typeof(result) !== "undefined") {
-                    callback(el);
-                } else {
+            var result = test(el);
+            if (typeof(result) !== "undefined") {
+                callback(el);
+            } else {
+                setTimeout(function() {
                     if (ttl > 0) {
-                        _callback(el, ttl - 50);
+                        _callback(el, ttl - 1);
                     } else {
                         console.log("failed load " + url);
                     }
-                }
-            }, 50);
+                }, 1);
+            }
         };
 
         var el = document.createElement("script");
@@ -143,7 +143,7 @@ return {
         if (typeof(test) === "function") {
             // "Time-To-Live: default value is 30 seconds";
             ttl = (typeof(ttl) == "number" ? ttl : 30000);
-            _callback(el, ttl);
+            el.onload = _callback(el, ttl);
         } else if (typeof(callback) === "function") {
             el.onload = callback(el);
         }
@@ -224,7 +224,9 @@ return {
         // };
 
         // "set movable window";
-        self.setMovableWindow();
+        if (self.getIEVersion() > 8) {
+            self.setMovableWindow();
+        }
 
         return 0;
     }
