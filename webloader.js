@@ -89,7 +89,7 @@ var IEVersion = (function() {
 })();
 
 return {
-    setWindowDraggable: function() {
+    setWindowsMovable: function() {
         var grip = document.getElementById('app'),
             oX, oY,
             mouseDown = function(e) {
@@ -200,8 +200,17 @@ return {
         });
         this.addScript("app/assets/js/index.js");
 
-        // set window draggable
-        this.setWindowDraggable();
+		// "prevent text drag and drop"; {
+		document.body.ondragstart = function() {
+		    return false;
+		};
+		document.body.ondrop = function() {
+		    return false;
+		};
+		// };
+
+        // set window movable
+        this.setWindowsMovable();
 
         return 0;
     }
