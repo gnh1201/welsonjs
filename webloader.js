@@ -8,11 +8,39 @@ if (!window.addEventListener) {
     Element = function() {};
 
     (function(WindowPrototype, DocumentPrototype, ElementPrototype, registry) {
-        DocumentPrototype.head = (function() {
-            return DocumentPrototype.getElementsByTagName("head")[0];
-        })();
+        if (!DocumentPrototype.head) {
+            DocumentPrototype.head = (function() {
+                return DocumentPrototype.getElementsByTagName("head")[0];
+            })();
+        }
 
-        var inject = function(obj, registry) {
+        if (!DocumentPrototype.getElementsByClassName) {
+            DocumentPrototype.getElementsByClassName = function(search) {
+                var d = document,
+                    elements, pattern, i, results = [];
+                if (d.querySelectorAll) { // IE8
+                    return d.querySelectorAll("." + search);
+                }
+                if (d.evaluate) { // IE6, IE7
+                    pattern = ".//*[contains(concat(' ', @class, ' '), ' " + search + " ')]";
+                    elements = d.evaluate(pattern, d, null, 0, null);
+                    while ((i = elements.iterateNext())) {
+                        results.push(i);
+                    }
+                } else {
+                    elements = d.getElementsByTagName("*");
+                    pattern = new RegExp("(^|\\s)" + search + "(\\s|$)");
+                    for (i = 0; i < elements.length; i++) {
+                        if (pattern.test(elements[i].className)) {
+                            results.push(elements[i]);
+                        }
+                    }
+                }
+                return results;
+            }
+        }
+
+        var enableEventListener = function(obj, registry) {
             obj.addEventListener = function(type, listener) {
                 var target = this;
 
@@ -45,9 +73,9 @@ if (!window.addEventListener) {
             };
         };
 
-        inject(WindowPrototype, registry);
-        inject(DocumentPrototype, registry);
-        inject(ElementPrototype, registry);
+        enableEventListener(WindowPrototype, registry);
+        enableEventListener(DocumentPrototype, registry);
+        enableEventListener(ElementPrototype, registry);
 
         var __createElement = DocumentPrototype.createElement;
         DocumentPrototype.createElement = function(tagName) {
@@ -89,7 +117,7 @@ var IEVersion = (function() {
 })();
 
 return {
-    setMovableWindow: function() {
+    enableMovableWindow: function() {
         var grip = document.getElementById('app'),
             oX, oY,
             mouseDown = function(e) {
@@ -225,7 +253,7 @@ return {
 
         // "set movable window";
         if (self.getIEVersion() > 8) {
-            self.setMovableWindow();
+            self.enableMovableWindow();
         }
 
         // "go to entrypoint";
