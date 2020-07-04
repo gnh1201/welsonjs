@@ -140,7 +140,7 @@ return {
         el.charset = "utf-8";
         document.head.appendChild(el);
 
-        if (typeof(test) === "function") {
+        if (typeof(test) === "function" && typeof(callback) === "function") {
             // "Time-To-Live: default value is 30 seconds";
             ttl = (typeof(ttl) == "number" ? ttl : 30000);
             el.onload = _callback(el, ttl);
