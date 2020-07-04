@@ -141,7 +141,7 @@ return {
         document.head.appendChild(el);
 
         if (typeof(test) === "function") {
-            // Time-To-Live: default value is 30 seconds
+            // "Time-To-Live: default value is 30 seconds";
             ttl = (typeof(ttl) == "number" ? ttl : 30000);
             _callback(el, ttl);
         } else if (typeof(callback) === "function") {
@@ -162,14 +162,14 @@ return {
         return el;
     },
     main: function() {
-        // load contents
+        // "load contents";
         var contents = FILE.readFile("app\\app.html", "utf-8");
         document.getElementById("app").innerHTML = contents;
 
-        // load stylesheets dynamically
+        // "load stylesheets dynamically";
         this.addStylesheet("app/assets/css/jquery.toast.min.css");
 
-        // load javascripts dynamically
+        // "load javascripts dynamically";
         this.addScript("app/assets/js/es5-shim.min.js");
         this.addScript("app/assets/js/es5-sham.min.js");
         this.addScript("app/assets/js/json3.min.js");
@@ -200,16 +200,16 @@ return {
         });
         this.addScript("app/assets/js/index.js");
 
-		// "prevent text drag and drop"; {
-		document.body.ondragstart = function() {
-		    return false;
-		};
-		document.body.ondrop = function() {
-		    return false;
-		};
-		// };
+        // "prevent text drag and drop"; {
+        document.body.ondragstart = function() {
+            return false;
+        };
+        document.body.ondrop = function() {
+            return false;
+        };
+        // };
 
-        // set window movable
+        // "set window movable";
         this.setWindowsMovable();
 
         return 0;
