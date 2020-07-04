@@ -3,33 +3,10 @@
  */
 var FILE = require('lib/file');
 
-if (!window.Element) {
+// "less than IE 9";
+if (!window.addEventListener) {
     Element = function() {};
 
-    var __createElement = document.createElement;
-    document.createElement = function(tagName) {
-        var element = __createElement(tagName);
-        if (element == null) {
-            return null;
-        }
-        for (var key in Element.prototype)
-            element[key] = Element.prototype[key];
-        return element;
-    }
-
-    var __getElementById = document.getElementById;
-    document.getElementById = function(id) {
-        var element = __getElementById(id);
-        if (element == null) {
-            return null;
-        }
-        for (var key in Element.prototype)
-            element[key] = Element.prototype[key];
-        return element;
-    }
-}
-
-if (!window.addEventListener) {
     (function(WindowPrototype, DocumentPrototype, ElementPrototype, registry) {
         DocumentPrototype.head = (function() {
             return DocumentPrototype.getElementsByTagName("head")[0];
@@ -71,9 +48,32 @@ if (!window.addEventListener) {
         inject(WindowPrototype, registry);
         inject(DocumentPrototype, registry);
         inject(ElementPrototype, registry);
+
+        var __createElement = DocumentPrototype.createElement;
+        DocumentPrototype.createElement = function(tagName) {
+            var element = __createElement(tagName);
+            if (element == null) {
+                return null;
+            }
+            for (var key in ElementPrototype)
+                element[key] = ElementPrototype[key];
+            return element;
+        }
+
+        var __getElementById = DocumentPrototype.getElementById;
+        DocumentPrototype.getElementById = function(id) {
+            var element = __getElementById(id);
+            if (element == null) {
+                return null;
+            }
+            for (var key in ElementPrototype)
+                element[key] = ElementPrototype[key];
+            return element;
+        }
     })(window, document, Element.prototype, []);
 }
 
+// "get IE version";
 var IEVersion = (function() {
     var undef,
         v = 3,
