@@ -240,8 +240,9 @@ return {
         self.addScript("app/assets/js/es6-sham-0.35.5.min.js");
         self.addScript("app/assets/js/html5shiv-printshiv-3.7.3.min.js");
         if (self.getIEVersion() < 9) {
-			self.addScript("app/assets/js/welsonjs-respond-1.4.2-modified.js");
-			self.addScript("app/assets/js/welsonjs-selectivizr-1.0.2-modified.js");
+            self.addScript("app/assets/js/welsonjs-respond-1.4.2-modified.js");
+            self.addScript("app/assets/js/welsonjs-selectivizr-1.0.2-modified.js");
+            self.addScript("app/assets/js/excanvas-565afad.js");
             self.addScript("app/assets/js/jquery-1.11.3.min.js", jqLoaded, function(el) {
                 return window.jQuery;
             });
@@ -258,9 +259,9 @@ return {
         // "load jQuery plugins";
         if (self.getIEVersion() < 10) {
             self.addScript("app/assets/js/PIE-1.0.0.js");
-            self.addScript("app/assets/js/jquery.html5-placeholder-shim.js");
+            self.addScript("app/assets/js/jquery.html5-placeholder-shim-5a87f05.js");
         }
-        self.addScript("app/assets/js/jquery.form.min.js");
+        self.addScript("app/assets/js/jquery.form-4.3.0.min.js");
 
         // "prevent text drag and drop"; {
         document.body.ondragstart = function() {
