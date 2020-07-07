@@ -35,7 +35,7 @@
 var messages = [];
 
 var console = {
-    log: function(msg, status) {
+    log: function(msg) {
         if (typeof(window) !== 'undefined') {
             if (typeof(window.jQuery) !== 'undefined') {
                 window.jQuery.toast({
@@ -48,9 +48,20 @@ var console = {
             }
         } else if (typeof(WScript) !== 'undefined') {
             WScript.echo(msg);
-            WScript.quit(status);
         }
-    }
+    },
+    error: function(msg, status) {
+	    this.log(msg);
+	    if(typeof(WScript) !== 'undefined') {
+			WScript.quit(status);
+		}
+	},
+	info: function(msg) {
+	    this.log(msg);
+	},
+	warn: function(msg) {
+	    this.log(msg);
+	}
 };
 
 function CreateObject(n) {
@@ -70,7 +81,7 @@ function require(FN) {
         TS.Close();
         TS = null;
     } catch (e) {
-        console.log("LOAD ERROR! " + e.number + ", " + e.description + ", FN=" + FN, 1);
+        console.error("LOAD ERROR! " + e.number + ", " + e.description + ", FN=" + FN, 1);
         return;
     }
     FSO = null;
@@ -78,7 +89,7 @@ function require(FN) {
     try {
         cache[FN] = eval(T);
     } catch (e) {
-        console.log("PARSE ERROR! " + e.number + ", " + e.description + ", FN=" + FN, 1);
+        console.error("PARSE ERROR! " + e.number + ", " + e.description + ", FN=" + FN, 1);
     }
     if ("VERSIONINFO" in cache[FN]) console.log(cache[FN].VERSIONINFO);
     return cache[FN];
@@ -104,10 +115,10 @@ function init_console() {
                     WScript.quit(exitstatus);
                 }
             } else {
-                console.log("Error, missing main entry point in " + name + ".js", 1);
+                console.error("Error, missing main entry point in " + name + ".js", 1);
             }
         } else {
-            console.log("Error, cannot find " + name + ".js", 1);
+            console.error("Error, cannot find " + name + ".js", 1);
         }
     }
 }
@@ -125,13 +136,13 @@ function init_window(name, args, w, h) {
         if (app.main) {
             var exitstatus = app.main.call(app, args);
             if (exitstatus > 0) {
-                console.log("exit code: " + exitstatus);
+                console.error("error", exitstatus);
             }
         } else {
-            console.log("Error, missing main entry point in " + name + ".js", 1);
+            console.error("Error, missing main entry point in " + name + ".js", 1);
         }
     } else {
-        console.log("Error, cannot find " + name + ".js", 1);
+        console.error("Error, cannot find " + name + ".js", 1);
     }
 }
 
