@@ -1,86 +1,119 @@
 /*
  * webloader.js
  */
-
 var FILE = require('lib/file');
 
-// https://stackoverflow.com/questions/597268/element-prototype-in-ie7
-if (!window.Element) {
+// "less than IE 9";
+window.enableEventListener = function(obj) {};
+if (!window.addEventListener) {
     Element = function() {};
 
-    var __createElement = document.createElement;
-    document.createElement = function(tagName) {
-        var element = __createElement(tagName);
-        for (var key in Element.prototype) {
-            element[key] = Element.prototype[key];
-		}
-        return element;
-    }
+    (function(WindowPrototype, DocumentPrototype, ElementPrototype, registry) {
+        if (!DocumentPrototype.head) {
+            DocumentPrototype.head = (function() {
+                return DocumentPrototype.getElementsByTagName("head")[0];
+            })();
+        }
 
-    var __getElementById = document.getElementById;
-    document.getElementById = function(id) {
-        var element = __getElementById(id);
-        for (var key in Element.prototype) {
-            element[key] = Element.prototype[key];
-		}
-        return element;
-    }
-}
-
-// https://gist.github.com/jonathantneal/3748027
-if (!window.addEventListener) {
-	(function(WindowPrototype, DocumentPrototype, ElementPrototype, registry) {
-		DocumentPrototype.head = (function() {
-			return DocumentPrototype.getElementsByTagName("head")[0];
-		})();
-
-		var addEventListener = function(type, listener) {
-            var target = this;
-
-            registry.unshift([target, type, listener, function(event) {
-                event.currentTarget = target;
-                event.preventDefault = function() {
-                    event.returnValue = false
-                };
-                event.stopPropagation = function() {
-                    event.cancelBubble = true
-                };
-                event.target = event.srcElement || target;
-
-                listener.call(target, event);
-            }]);
-
-            this.attachEvent("on" + type, registry[0][3]);
-        };
-        WindowPrototype.addEventListener = addEventListener;
-        DocumentPrototype.addEventListener = addEventListener;
-        ElementPrototype.ElementPrototype = addEventListener;
-
-        var removeEventListener = function(type, listener) {
-            for (var index = 0, register; register = registry[index]; ++index) {
-                if (register[0] == this && register[1] == type && register[2] == listener) {
-                    return this.detachEvent("on" + type, registry.splice(index, 1)[0][3]);
+        if (!DocumentPrototype.getElementsByClassName) {
+            DocumentPrototype.getElementsByClassName = function(search) {
+                var d = document,
+                    elements, pattern, i, results = [];
+                if (d.querySelectorAll) { // IE8
+                    return d.querySelectorAll("." + search);
                 }
+                if (d.evaluate) { // IE6, IE7
+                    pattern = ".//*[contains(concat(' ', @class, ' '), ' " + search + " ')]";
+                    elements = d.evaluate(pattern, d, null, 0, null);
+                    while ((i = elements.iterateNext())) {
+                        results.push(i);
+                    }
+                } else {
+                    elements = d.getElementsByTagName("*");
+                    pattern = new RegExp("(^|\\s)" + search + "(\\s|$)");
+                    for (i = 0; i < elements.length; i++) {
+                        if (pattern.test(elements[i].className)) {
+                            results.push(elements[i]);
+                        }
+                    }
+                }
+                return results;
+            }
+        }
+
+        var enableEventListener = function(obj, registry) {
+            obj.addEventListener = function(type, listener) {
+                var target = this;
+
+                if (typeof(registry) === "undefined")
+                    registry = [];
+
+                registry.unshift([target, type, listener, function(event) {
+                    event.currentTarget = target;
+                    event.preventDefault = function() {
+                        event.returnValue = false
+                    };
+                    event.stopPropagation = function() {
+                        event.cancelBubble = true
+                    };
+                    event.target = event.srcElement || target;
+
+                    listener.call(target, event);
+                }]);
+
+                this.attachEvent("on" + type, registry[0][3]);
+            };
+
+            obj.removeEventListener = function(type, listener) {
+                for (var index = 0, register; register = registry[index]; ++index) {
+                    if (register[0] == this && register[1] == type && register[2] == listener) {
+                        return this.detachEvent("on" + type, registry.splice(index, 1)[0][3]);
+                    }
+                }
+            };
+
+            obj.dispatchEvent = function(eventObject) {
+                return this.fireEvent("on" + eventObject.type, eventObject);
+            };
+        };
+
+        WindowPrototype.enableEventListener = function(obj) {
+            if (!obj.addEventListener) {
+                enableEventListener(obj);
             }
         };
-        WindowPrototype.removeEventListener = removeEventListener;
-        DocumentPrototype.removeEventListener = removeEventListener;
-        ElementPrototype.removeEventListener = removeEventListener;
+        enableEventListener(WindowPrototype, registry);
+        enableEventListener(DocumentPrototype, registry);
+        enableEventListener(ElementPrototype, registry);
 
-        var dispatchEvent = function(eventObject) {
-            return this.fireEvent("on" + eventObject.type, eventObject);
-        };
-        WindowPrototype.dispatchEvent = dispatchEvent;
-        DocumentPrototype.dispatchEvent = dispatchEvent;
-        ElementPrototype.dispatchEvent = dispatchEvent;
+        var __createElement = DocumentPrototype.createElement;
+        DocumentPrototype.createElement = function(tagName) {
+            var element = __createElement(tagName);
+            if (element == null) {
+                return null;
+            }
+            for (var key in ElementPrototype)
+                element[key] = ElementPrototype[key];
+            return element;
+        }
+
+        var __getElementById = DocumentPrototype.getElementById;
+        DocumentPrototype.getElementById = function(id) {
+            var element = __getElementById(id);
+            if (element == null) {
+                return null;
+            }
+            for (var key in ElementPrototype)
+                element[key] = ElementPrototype[key];
+            return element;
+        }
     })(window, document, Element.prototype, []);
 }
 
-// https://stackoverflow.com/questions/10964966/detect-ie-version-prior-to-v9-in-javascript
-// https://stackoverflow.com/a/18249612
+// "get IE version";
 var IEVersion = (function() {
-	var undef,
-		v = 3,
+    var undef,
+        v = 3,
         div = document.createElement('div'),
         all = div.getElementsByTagName('i');
 
@@ -93,129 +126,149 @@ var IEVersion = (function() {
 })();
 
 return {
-    setWindowDraggable: function() {
-        // https://stackoverflow.com/questions/21493777/how-to-make-a-tab-to-move-the-window-of-an-hta-application-in-vbscript
-        // https://stackoverflow.com/a/21497175
+    enableMovableWindow: function() {
         var grip = document.getElementById('app'),
             oX, oY,
-            mouseDown = function (e) {
+            mouseDown = function(e) {
                 if (e.offsetY + e.offsetX < 0) return;
                 oX = e.screenX;
                 oY = e.screenY;
                 window.addEventListener('mousemove', mouseMove);
                 window.addEventListener('mouseup', mouseUp);
             },
-            mouseMove = function (e) {
+            mouseMove = function(e) {
                 window.moveTo(screenX + e.screenX - oX, screenY + e.screenY - oY);
                 oX = e.screenX;
                 oY = e.screenY;
             },
-            gripMouseMove = function (e) {
+            gripMouseMove = function(e) {
                 this.style.cursor = (e.offsetY + e.offsetX > -1) ? 'move' : 'default';
             },
-            mouseUp = function (e) {
+            mouseUp = function(e) {
                 window.removeEventListener('mousemove', mouseMove);
                 window.removeEventListener('mouseup', mouseUp);
             };
+
+        enableEventListener(grip);
         grip.addEventListener('mousedown', mouseDown);
         grip.addEventListener('mousemove', gripMouseMove);
     },
     getIEVersion: function() {
         return IEVersion;
     },
-    addScript: function(url, callback, test) {
-		var _callback = function(el) {
-			setTimeout(function() {
-				var result = test(el);
-				if(typeof(result) !== "undefined") {
-					callback(el);
-				} else {
-					_callback(el);
-				}
-			}, 50);
-		};
+    addScript: function(url, callback, test, ttl) {
+        var _callback = function(el, ttl) {
+            var result = test(el);
+            if (typeof(result) !== "undefined") {
+                callback(el);
+            } else {
+                setTimeout(function() {
+                    if (ttl > 0) {
+                        _callback(el, ttl - 1);
+                    } else {
+                        console.log("failed load " + url);
+                    }
+                }, 1);
+            }
+        };
 
-		var el = document.createElement("script");
+        var el = document.createElement("script");
         el.src = url;
         el.type = "text/javascript";
         el.charset = "utf-8";
         document.head.appendChild(el);
 
-		if(typeof(test) === "function") {
-			_callback();
-		} else if(typeof(callback) === "function") {
+        if (typeof(test) === "function" && typeof(callback) === "function") {
+            // "Time-To-Live: default value is 30 seconds";
+            ttl = (typeof(ttl) == "number" ? ttl : 30000);
+            el.onload = _callback(el, ttl);
+        } else if (typeof(callback) === "function") {
             el.onload = callback(el);
         }
 
         return el;
     },
-    addStylesheet: function(url, callback, test) {
-		var _callback = function(el) {
-			setTimeout(function() {
-				var result = test(el);
-				if(typeof(result) !== "undefined") {
-					callback(el);
-				} else {
-					_callback(el);
-				}
-			}, 50);
-		};
-		
+    addStylesheet: function(url, callback) {
         var el = document.createElement("link");
         el.href = url;
         el.rel = "stylesheet";
         el.type = "text/css";
+        el.media = "screen, projection";
         document.head.appendChild(el);
-
-		if(typeof(test) === "function") {
-			_callback();
-		} else if(typeof(callback) === "function") {
+        if (typeof(callback) === "function") {
             el.onload = callback(el);
         }
-
         return el;
     },
     main: function() {
-        // load contents
+        // "set variable 'self'";
+        var self = this;
+
+        // "load contents";
         var contents = FILE.readFile("app\\app.html", "utf-8");
         document.getElementById("app").innerHTML = contents;
 
-        // load stylesheets dynamically
-        this.addStylesheet("app/assets/css/jquery.toast.min.css");
+        // "load stylesheets dynamically";
+        self.addStylesheet("app/assets/css/jquery-ui-1.21.1.min.css");
+        self.addStylesheet("app/assets/css/jquery.toast-1.3.2.min.css");
+        self.addStylesheet("app/assets/css/style.css");
 
-        // load javascripts dynamically
-        this.addScript("app/assets/js/es5-shim.min.js");
-        this.addScript("app/assets/js/es5-sham.min.js");
-        this.addScript("app/assets/js/json3.min.js");
-        this.addScript("app/assets/js/es6-shim.min.js");
-        this.addScript("app/assets/js/es6-sham.min.js");
-        if(this.getIEVersion() < 9) {
-            this.addScript("app/assets/js/html5shiv-printshiv.min.js");
-            this.addScript("app/assets/js/jquery-1.11.3.min.js");
-        } else {
-            this.addScript("app/assets/js/jquery-3.5.1.min.js", function(el) {
-				jQuery.support.cors = true;
+        // "when loaded jquery (strictly)";
+        var jqLoaded = function(el) {
+            jQuery.support.cors = true;
+
+            self.addScript("app/assets/js/jquery.toast-1.3.2.min.js", function(el) {
+                if (messages.length > 0) {
+                    for (var i in messages) {
+                        console.log(messages[i]);
+                    }
+                }
             }, function(el) {
-				return window.jQuery;
-			});
-        }
-        if(this.getIEVersion() < 10) {
-            this.addScript("app/assets/js/jquery.html5-placeholder-shim.js");
-        }
-        this.addScript("app/assets/js/jquery.form.min.js");
-        this.addScript("app/assets/js/jquery.toast.min.js", function(el) {
-			if(messages.length > 0) {
-				for(var i in messages) {
-					console.log(messages[i]);
-				}
-			}
-		}, function(el) {
-			return window.jQuery.toast;
-		});
-        this.addScript("app/assets/js/index.js");
+                return window.jQuery.toast;
+            });
+        };
 
-        // set window draggable
-        this.setWindowDraggable();
+        // "load javascripts dynamically";
+        self.addScript("app/assets/js/es5-shim.min.js");
+        self.addScript("app/assets/js/es5-sham.min.js");
+        self.addScript("app/assets/js/json3.min.js");
+        self.addScript("app/assets/js/es6-shim.min.js");
+        self.addScript("app/assets/js/es6-sham.min.js");
+        if (self.getIEVersion() < 9) {
+            self.addScript("app/assets/js/html5shiv-printshiv-3.7.3.min.js");
+            self.addScript("app/assets/js/jquery-1.11.3.min.js", jqLoaded, function(el) {
+                return window.jQuery;
+            });
+        } else {
+            self.addScript("app/assets/js/jquery-3.5.1.min.js", jqLoaded, function(el) {
+                return window.jQuery;
+            });
+        }
+        self.addScript("app/assets/js/modernizr-2.8.3.min.js");
+
+        // "load jQuery UI (1.12.1)";
+        self.addScript("app/assets/js/jquery-ui-1.21.1.min.js");
+
+        // "load jQuery plugins";
+        if (self.getIEVersion() < 10) {
+            self.addScript("app/assets/js/jquery.html5-placeholder-shim.js");
+        }
+        self.addScript("app/assets/js/jquery.form.min.js");
+
+        // "prevent text drag and drop"; {
+        document.body.ondragstart = function() {
+            return false;
+        };
+        document.body.ondrop = function() {
+            return false;
+        };
+        // };
+
+        // "set movable window";
+        self.enableMovableWindow();
+
+        // "go to entrypoint";
+        self.addScript("app/assets/js/index.js");
 
         return 0;
     }

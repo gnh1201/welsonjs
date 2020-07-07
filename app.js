@@ -115,26 +115,28 @@ function init_console() {
 function init_window(name, args, w, h) {
     var app = require(name);
 
-    // set default size of window
+    // "set default size of window";
     if (typeof(w) !== "undefined" && typeof(h) !== "undefined") {
         window.resizeTo(w, h);
     }
 
-    // load app
+    // "load app";
     if (app) {
         if (app.main) {
-            app.main.call(app, args);
-            return true;
+            var exitstatus = app.main.call(app, args);
+            if (exitstatus > 0) {
+                console.log("exit code: " + exitstatus);
+            }
         } else {
-            return false;
+            console.log("Error, missing main entry point in " + name + ".js", 1);
         }
     } else {
-        return false;
+        console.log("Error, cannot find " + name + ".js", 1);
     }
 }
 
 function main() {
-    if (typeof(window) == 'undefined') {
+    if (typeof(window) === "undefined") {
         init_console();
     } else {
         console.log("welcome");
