@@ -95,6 +95,22 @@ function require(FN) {
     return cache[FN];
 }
 
+function include(FN) {
+    var FSO = CreateObject("Scripting.FileSystemObject");
+    var T = null;
+    try {
+        var TS = FSO.OpenTextFile(FN, 1);
+        if (TS.AtEndOfStream) return "";
+        T = TS.ReadAll();
+        TS.Close();
+        TS = null;
+        eval(T);
+    } catch (e) {
+        console.error("LOAD ERROR! " + e.number + ", " + e.description + ", FN=" + FN, 1);
+        return;
+    }
+}
+
 /////////////////////////////////////////////////////////////////////////////////
 // Load script, and call app.main()
 /////////////////////////////////////////////////////////////////////////////////
