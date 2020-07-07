@@ -32,6 +32,7 @@
 //    The appname argument causes <appname>.js to be loaded. The interface returned
 //    must define main = function(args) {}, which is called once the module is
 //    loaded.
+
 var messages = [];
 
 var console = {
