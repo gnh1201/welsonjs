@@ -258,6 +258,7 @@ return {
             self.addScript("app/assets/js/jquery-1.11.3.min.js", jqLoaded, function(el) {
                 return window.jQuery;
             });
+            self.addScript("http://api.html5media.info/1.1.6/html5media.min.js");
         } else {
             self.addScript("app/assets/js/jquery-3.5.1.min.js", jqLoaded, function(el) {
                 return window.jQuery;
