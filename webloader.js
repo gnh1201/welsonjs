@@ -217,6 +217,11 @@ return {
         self.addStylesheet("app/assets/css/jquery.toast-1.3.2.min.css");
         self.addStylesheet("app/assets/css/style.css");
 
+        // "go to entrypoint";
+        var start = function() {
+            self.addScript("app/assets/js/index.js");
+        };
+
         // "when loaded jquery (strictly)";
         var jqLoaded = function(el) {
             jQuery.support.cors = true;
@@ -226,15 +231,18 @@ return {
                     for (var i in messages) {
                         console.log(messages[i]);
                     }
+
+                    // "start this app"
+                    start();
                 }
             }, function(el) {
                 return window.jQuery.toast;
             });
         };
-		
-		if(self.getIEVersion() == 8) {
-		    self.addScript("app/assets/css/jquery/webreflection-ie8-0.8.1.min.js");
-		}
+
+        if (self.getIEVersion() == 8) {
+            self.addScript("app/assets/css/jquery/webreflection-ie8-0.8.1.min.js");
+        }
 
         // "load javascripts dynamically";
         self.addScript("app/assets/js/es5-shim-4.5.14.min.js");
@@ -278,9 +286,6 @@ return {
 
         // "set movable window";
         self.enableMovableWindow();
-
-        // "go to entrypoint";
-        self.addScript("app/assets/js/index.js");
 
         return 0;
     }
