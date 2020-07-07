@@ -51,21 +51,21 @@ var console = {
         }
     },
     error: function(msg, status) {
-	    this.log(msg);
-	    if(typeof(WScript) !== 'undefined') {
-			WScript.quit(status);
-		}
-	},
-	info: function(msg) {
-	    this.log(msg);
-	},
-	warn: function(msg) {
-	    this.log(msg);
-	}
+        this.log(msg);
+        if (typeof(WScript) !== 'undefined') {
+            WScript.quit(status);
+        }
+    },
+    info: function(msg) {
+        this.log(msg);
+    },
+    warn: function(msg) {
+        this.log(msg);
+    }
 };
 
-function CreateObject(n) {
-    return new ActiveXObject(n);
+function CreateObject(name) {
+    return new ActiveXObject(name);
 }
 
 function require(FN) {
