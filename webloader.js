@@ -1,5 +1,9 @@
 /*
  * webloader.js
+ * Go Namhyeon (gnh1201@gmail.com)
+ * 2020-07-07
+ * https://github.com/gnh1201/welsonjs
+ *
  */
 var FILE = require('lib/file');
 
@@ -127,14 +131,14 @@ var IEVersion = (function() {
 
 return {
     enableMovableWindow: function() {
-        var grip = document.getElementById('app'),
+        var grip = document.getElementById("app"),
             oX, oY,
             mouseDown = function(e) {
                 if (e.offsetY + e.offsetX < 0) return;
                 oX = e.screenX;
                 oY = e.screenY;
-                window.addEventListener('mousemove', mouseMove);
-                window.addEventListener('mouseup', mouseUp);
+                window.addEventListener("mousemove", mouseMove);
+                window.addEventListener("mouseup", mouseUp);
             },
             mouseMove = function(e) {
                 window.moveTo(screenX + e.screenX - oX, screenY + e.screenY - oY);
@@ -142,16 +146,16 @@ return {
                 oY = e.screenY;
             },
             gripMouseMove = function(e) {
-                this.style.cursor = (e.offsetY + e.offsetX > -1) ? 'move' : 'default';
+                this.style.cursor = (e.offsetY + e.offsetX > -1) ? "move" : "default";
             },
             mouseUp = function(e) {
-                window.removeEventListener('mousemove', mouseMove);
-                window.removeEventListener('mouseup', mouseUp);
+                window.removeEventListener("mousemove", mouseMove);
+                window.removeEventListener("mouseup", mouseUp);
             };
 
         enableEventListener(grip);
-        grip.addEventListener('mousedown', mouseDown);
-        grip.addEventListener('mousemove', gripMouseMove);
+        grip.addEventListener("mousedown", mouseDown);
+        grip.addEventListener("mousemove", gripMouseMove);
     },
     getIEVersion: function() {
         return IEVersion;
@@ -205,7 +209,7 @@ return {
         var self = this;
 
         // "load contents";
-        var contents = FILE.readFile("app\\app.html", "utf-8");
+        var contents = FILE.readFile("app\\index.html", "utf-8");
         document.getElementById("app").innerHTML = contents;
 
         // "load stylesheets dynamically";
@@ -229,13 +233,15 @@ return {
         };
 
         // "load javascripts dynamically";
-        self.addScript("app/assets/js/es5-shim.min.js");
-        self.addScript("app/assets/js/es5-sham.min.js");
-        self.addScript("app/assets/js/json3.min.js");
-        self.addScript("app/assets/js/es6-shim.min.js");
-        self.addScript("app/assets/js/es6-sham.min.js");
+        self.addScript("app/assets/js/es5-shim-4.5.14.min.js");
+        self.addScript("app/assets/js/es5-sham-4.5.14.min.js");
+        self.addScript("app/assets/js/json3-3.3.2.min.js");
+        self.addScript("app/assets/js/es6-shim-0.35.5.min.js");
+        self.addScript("app/assets/js/es6-sham-0.35.5.min.js");
+        self.addScript("app/assets/js/html5shiv-printshiv-3.7.3.min.js");
         if (self.getIEVersion() < 9) {
-            self.addScript("app/assets/js/html5shiv-printshiv-3.7.3.min.js");
+			self.addScript("app/assets/js/welsonjs-respond-1.4.2-modified.js");
+			self.addScript("app/assets/js/welsonjs-selectivizr-1.0.2-modified.js");
             self.addScript("app/assets/js/jquery-1.11.3.min.js", jqLoaded, function(el) {
                 return window.jQuery;
             });
@@ -251,6 +257,7 @@ return {
 
         // "load jQuery plugins";
         if (self.getIEVersion() < 10) {
+            self.addScript("app/assets/js/PIE-1.0.0.js");
             self.addScript("app/assets/js/jquery.html5-placeholder-shim.js");
         }
         self.addScript("app/assets/js/jquery.form.min.js");
