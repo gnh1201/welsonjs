@@ -231,6 +231,10 @@ return {
                 return window.jQuery.toast;
             });
         };
+		
+		if(self.getIEVersion() == 8) {
+		    self.addScript("app/assets/css/jquery/webreflection-ie8-0.8.1.min.js");
+		}
 
         // "load javascripts dynamically";
         self.addScript("app/assets/js/es5-shim-4.5.14.min.js");

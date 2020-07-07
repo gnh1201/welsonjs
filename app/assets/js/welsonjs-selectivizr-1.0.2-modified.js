@@ -391,13 +391,13 @@ var FILE = require('lib/file');
     function loadStyleSheet(url) {
 		var pos = url.indexOf('://');
 		var scheme = (pos < 0) ? "" : url.substring(0, pos);
-        if (scheme != 'file' && !FILE.fileExists(url)) {
+
+        if (scheme == 'http' || scheme == 'https') {
             xhr.open("GET", url, false);
             xhr.send();
             return (xhr.status == 200) ? xhr.responseText : EMPTY_STRING;
         } else {
-            var filepath = url.substring(pos + 4);
-            var responseText = FILE.readFile(filepath, "utf-8");
+            var responseText = FILE.readFile(url, "utf-8");
             return responseText;
         }
     };

@@ -45,11 +45,14 @@ var FILE = require('lib/file');
             };
         }(),
         ajax = function(url, callback) {
-            var req = xmlHttp();
-            if (!req) {
-                return;
-            }
-            if (!FILE.fileExists(url)) {
+			var pos = url.indexOf('://');
+			var scheme = (pos < 0) ? "" : url.substring(0, pos);
+
+			if (scheme == 'http' || scheme == 'https') {
+				var req = xmlHttp();
+				if (!req) {
+					return;
+				}
                 req.open("GET", url, true);
                 req.onreadystatechange = function() {
                     if (req.readyState !== 4 || req.status !== 200 && req.status !== 304) {
