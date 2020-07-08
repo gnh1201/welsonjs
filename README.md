@@ -1,5 +1,5 @@
 # welsonjs
-Welsonjs - Build a windows desktop apps ultra-fastly with WSH.js and HTA
+Welsonjs - Build a windows desktop apps ultra-fastly with WSH.js(Javascript on Windows Scripting Host) and HTA
 
 ## Structure
 ![Structure of WelsonJS](app/assets/img/structure.png)
