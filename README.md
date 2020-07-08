@@ -18,5 +18,8 @@ Welsonjs - Build a windows desktop apps ultra-fastly with WSH.js and HTA
 - lib/system
 - lib/timer
 
+## Related projects
+- [gnh1201/wsh-js-gtk](https://github.com/gnh1201/wsh-js-gtk) - GTK GUI ported to Windows Scripting Host - Javascript (Microsoft JScript) (wsh-js)
+
 ## Contact me
 - gnh1201@gmail.com
