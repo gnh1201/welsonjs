@@ -219,7 +219,7 @@ return {
 
         // "go to entrypoint";
         var start = function() {
-            self.addScript("app/assets/js/index.js");
+            self.addScript("app/index.js");
         };
 
         // "when loaded jquery (strictly)";

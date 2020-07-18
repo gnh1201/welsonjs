@@ -6,7 +6,7 @@
     <div class="serverbox">
         <ul>
             <li>
-                <span>모든 위치</span>
+                <span>모든 네트워크</span>
                 <ul class="sub">
                     <li class="show-no-logged"><span><img src="app/assets/img/iconfinder_Caution_53013.png" alt="Caution" /> 로그인하세요</span></li>
                     <li class="show-logged"><a href="#us1"><span><img src="app/assets/img/flags/shiny/16/United-States.png" alt="United States" /> US 1</span></a></li>
@@ -29,9 +29,9 @@
     </div>
 
     <div class="loginbox show-no-logged">
-        <form id="loginform" method="post" action="http://96.30.198.29/">
+        <form id="loginform" method="post" action="#">
             <div class="hidden">
-                <input type="hidden" name="route" value="api.authenticate" />
+                <input type="hidden" name="route" value="api.auth.json" />
                 <input type="hidden" name="action" value="getToken" />
             </div>
             <div class="box1">
