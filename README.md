@@ -5,19 +5,19 @@ WelsonJS - Build a windows desktop apps ultra-fastly with WSH.js and HTA (Javasc
 ![Structure of WelsonJS](app/assets/img/structure.png)
 
 ## Included libraries
-- lib/base64
-- lib/db
-- lib/file
-- lib/http
-- lib/json
-- lib/registry
-- lib/security
-- lib/sendmail
-- lib/shell
-- lib/std
-- lib/system
-- lib/timer
-- lib/powershell
+- lib/std (Standard library)
+- lib/system (System library)
+- lib/base64 (BASE64 Encode and Decode)
+- lib/db (Database interface)
+- lib/file (File I/O interface)
+- lib/http (HTTP interface)
+- lib/json (JSON Encode and Decode)
+- lib/registry (Windows Registry interface)
+- lib/security (Security Policy interface)
+- lib/sendmail (example of sendmail)
+- lib/shell (Command Prompt interface)
+- lib/timer (`setTimeout` implementation for not supported environment)
+- lib/powershell (Windows Powershell interface)
 
 ## Related projects
 - [gnh1201/wsh-js-gtk](https://github.com/gnh1201/wsh-js-gtk) - GTK GUI ported to Windows Scripting Host - Javascript (Microsoft JScript) (wsh-js)
