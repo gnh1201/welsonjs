@@ -36,6 +36,7 @@
   "homepage": "https://github.com/gnh1201/welsonjs#readme",
   "dependencies": {
     "es5-shim": "^4.5.14",
-    "es6-shim": "^0.35.5"
+    "es6-shim": "^0.35.5",
+    "json3": "^3.3.3"
   }
 }
