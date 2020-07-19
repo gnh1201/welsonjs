@@ -1,0 +1,41 @@
+{
+  "name": "welsonjs",
+  "version": "0.1.0",
+  "description": "Build a windows desktop apps ultra-fastly with WSH.js and HTA",
+  "main": "app.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "scripts": {
+    "test": "cscript app.js helloworld"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gnh1201/welsonjs.git"
+  },
+  "keywords": [
+    "wsh",
+    "javascript",
+    "windows",
+    "desktop",
+    "alternative",
+    "hta",
+    "uri",
+    "jscript",
+    "electronjs",
+    "js",
+    "ie",
+    "mshta",
+    "mshtml"
+  ],
+  "author": "Go Namhyeon",
+  "license": "LGPL-2.1",
+  "bugs": {
+    "url": "https://github.com/gnh1201/welsonjs/issues"
+  },
+  "homepage": "https://github.com/gnh1201/welsonjs#readme",
+  "dependencies": {
+    "es5-shim": "^4.5.14",
+    "es6-shim": "^0.35.5"
+  }
+}
