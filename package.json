@@ -37,6 +37,13 @@
   "dependencies": {
     "es5-shim": "^4.5.14",
     "es6-shim": "^0.35.5",
-    "json3": "^3.3.3"
+    "excanvas": "^2.0.0",
+    "html5shiv": "^3.7.3",
+    "jquery": "^3.5.1",
+    "jquery-form": "^4.3.0",
+    "jquery-toast-plugin": "^1.3.2",
+    "jquery-ui": "^1.12.1",
+    "json3": "^3.3.3",
+    "modernizr": "^3.11.3"
   }
 }
