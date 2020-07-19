@@ -73,6 +73,8 @@ function require(FN) {
     var cache = require.__cache = require.__cache || {};
     if (FN.substr(FN.length - 3) !== '.js') FN += ".js";
     if (cache[FN]) return cache[FN];
+
+    // load script file
     var FSO = CreateObject("Scripting.FileSystemObject");
     var T = null;
     try {
@@ -85,6 +87,8 @@ function require(FN) {
         console.error("LOAD ERROR! " + e.number + ", " + e.description + ", FN=" + FN, 1);
         return;
     }
+
+    // make global function
     FSO = null;
     T = "(function(global){\n" + '"use strict";' + "\n" + T + "})(this);\n\n////@ sourceURL=" + FN;
     try {
@@ -92,24 +96,13 @@ function require(FN) {
     } catch (e) {
         console.error("PARSE ERROR! " + e.number + ", " + e.description + ", FN=" + FN, 1);
     }
-    if ("VERSIONINFO" in cache[FN]) console.log(cache[FN].VERSIONINFO);
-    return cache[FN];
-}
 
-function include(FN) {
-    var FSO = CreateObject("Scripting.FileSystemObject");
-    var T = null;
-    try {
-        var TS = FSO.OpenTextFile(FN, 1);
-        if (TS.AtEndOfStream) return "";
-        T = TS.ReadAll();
-        TS.Close();
-        TS = null;
-        eval(T);
-    } catch (e) {
-        console.error("LOAD ERROR! " + e.number + ", " + e.description + ", FN=" + FN, 1);
-        return;
+    // check type of callback return
+    if(typeof(cache[FN]) === "object") {
+        if ("VERSIONINFO" in cache[FN]) console.log(cache[FN].VERSIONINFO);
     }
+
+    return cache[FN];
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -117,6 +110,10 @@ function include(FN) {
 /////////////////////////////////////////////////////////////////////////////////
 
 function init_console() {
+    if(typeof(WScript) === "undefined") {
+        console.error("Error, WScript is not defined", 1);
+    }
+
     var n = WScript.arguments.length;
     if (n > 0) {
         var args = [];
@@ -141,6 +138,10 @@ function init_console() {
 }
 
 function init_window(name, args, w, h) {
+    if(typeof(window) === "undefined") {
+        console.error("Error, window is not defined", 1);
+    }
+
     var app = require(name);
 
     // "set default size of window";
