@@ -90,7 +90,7 @@ function require(FN) {
 
     // make global function
     FSO = null;
-    T = "(function(global){\n" + '"use strict";' + "\n" + T + "})(this);\n\n////@ sourceURL=" + FN;
+    T = "(function(global){\n" + '"use strict";' + "var module={exports:{}};var exports={};\n" + T + "\nmodule.exports=exports;return module.exports;})(this);\n\n////@ sourceURL=" + FN;
     try {
         cache[FN] = eval(T);
     } catch (e) {
