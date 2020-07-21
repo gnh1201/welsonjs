@@ -1,7 +1,7 @@
 {
   "name": "welsonjs",
   "version": "0.1.1",
-  "description": "Build a windows desktop apps ultra-fastly with WSH.js and HTA",
+  "description": "Build a Windows desktop apps with JavaScript, HTML, and CSS based on WSH/HTA",
   "main": "app.js",
   "directories": {
     "lib": "lib"
@@ -26,7 +26,11 @@
     "js",
     "ie",
     "mshta",
-    "mshtml"
+    "mshtml",
+    "es5",
+    "es6",
+    "html5",
+    "microsoft"
   ],
   "author": "Go Namhyeon",
   "license": "LGPL-2.1",
