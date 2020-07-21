@@ -22,6 +22,9 @@ return {
         // register URI scheme
         //REG.write(hKey, path, key, value, REG.STRING, computer);
 
+		// open HTA file
+		SHELL.run("app.hta");
+
         console.log("done");
     }
 };
