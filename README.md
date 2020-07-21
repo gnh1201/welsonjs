@@ -24,6 +24,31 @@ WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on 
 - lib/timer (`setTimeout` implementation for not supported environment)
 - lib/powershell (Windows Powershell interface)
 
+## `sayhello` example
+
+### File `lib/sayhello-lib.js`
+```
+exports.VERSIONINFO = "Example library (example-lib.js) version 0.1
+exports.global = global;
+exports.require = global.require;
+
+exports.say = function() {
+    console.log("hello");
+}
+```
+
+### File `sayhello.js`
+```
+var sayhello = require("lib/sayhello");
+sayhello.say();
+```
+
+### Execute file on the command prompt
+```
+C:\Users\John> cscript app.js sayhello
+hello
+```
+
 ## Related projects
 - [gnh1201/wsh-js-gtk](https://github.com/gnh1201/wsh-js-gtk) - GTK GUI ported to Windows Scripting Host - Javascript (Microsoft JScript) (wsh-js)
 - [gnh1201/wsh-json](https://github.com/gnh1201/wsh-json) - JSON stringify/parse (encode/decode) for Windows Scripting Host
