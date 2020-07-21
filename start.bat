@@ -1,6 +1,6 @@
 @echo off
 
-cscript app.js unlockfile
+cscript app.js bootstrap
 
 start app.hta &
 
