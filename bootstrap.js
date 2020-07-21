@@ -9,6 +9,9 @@ var REG = require("lib/registry");
 var SYS = require("lib/system");
 var SHELL = require("lib/shell");
 
+// set application name
+var APPLICATION_NAME = "welsonjs";
+
 return {
     main: function() {
         // unlock file
@@ -22,9 +25,9 @@ return {
 
         // register URI scheme
         console.log("Registering URI scheme...");
-        REG.write(REG.HKCR, "welsonjs", "", "URL:welsonjs", REG.STRING);
-        REG.write(REG.HKCR, "welsonjs", "URL Protocol", "", REG.STRING);
-        REG.write(REG.HKCR, "welsonjs\\shell\\open\\command", "", "cscript " + SYS.getCurrentScriptDirectory() + "\\app.js uriloader \"%1\"", REG.STRING);
+        REG.write(REG.HKCR, APPLICATION_NAME, "", "URL:welsonjs", REG.STRING);
+        REG.write(REG.HKCR, APPLICATION_NAME, "URL Protocol", "", REG.STRING);
+        REG.write(REG.HKCR, APPLICATION_NAME + "\\shell\\open\\command", "", "cscript " + SYS.getCurrentScriptDirectory() + "\\app.js uriloader \"%1\"", REG.STRING);
 
         // open HTA file
         console.log("Trying open GUI...");
