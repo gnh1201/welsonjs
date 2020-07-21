@@ -20,7 +20,7 @@ WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on 
 - lib/json (JSON Encode and Decode)
 - lib/registry (Windows Registry interface)
 - lib/security (Security Policy interface)
-- lib/sendmail (example of sendmail)
+- lib/sendmail (Sendmail interface with 3rdparty)
 - lib/shell (Command Prompt interface)
 - lib/timer (`setTimeout` implementation for not supported environment)
 - lib/powershell (Windows Powershell interface)
