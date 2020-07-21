@@ -5,7 +5,7 @@ WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on 
 ![Structure of WelsonJS](app/assets/img/structure.png)
 
 ## Specifications
-- ES5(ECMAScript 5), ES6(ECMAScript 6) compatibility with [es5-shim](https://github.com/es-shims/es5-shim) and [es6-shim](https://github.com/es-shims/es5-shim)
+- ES5(ECMAScript 5), ES6(ECMAScript 6) compatibility with [es5-shim](https://github.com/es-shims/es5-shim), [es6-shim](https://github.com/es-shims/es5-shim), and [json3](https://bestiejs.github.io/json3/)
 - HTML5 compatibility with [html5shiv](https://github.com/aFarkas/html5shiv) and [jquery-html5-placeholder-shim](https://github.com/jcampbell1/jquery-html5-placeholder-shim)
 - [module.exports](https://nodejs.org/en/knowledge/getting-started/what-is-require/)(NodeJS) styled module implementation
 
