@@ -29,6 +29,9 @@ return {
             var filename;
 
             switch(application) {
+                case "app":
+                    filename = "app.hta";
+                    break;
                 case "mscalc":
                     filename = "calc";
                     break;
