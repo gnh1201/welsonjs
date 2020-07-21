@@ -28,7 +28,7 @@ WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on 
 
 ### 1. Write a file `lib/sayhello-lib.js`
 ```
-exports.VERSIONINFO = "Example library (example-lib.js) version 0.1
+exports.VERSIONINFO = "sayhello library (sayhello-lib.js) version 0.1
 exports.global = global;
 exports.require = global.require;
 
