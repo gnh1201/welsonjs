@@ -22,40 +22,47 @@ return {
         if(pos < 0) {
             console.log("Not vaild URI");
         } else {
-            var queryString = uri.substring(pos + 4);
-            var query = this.parseQuery(queryString);
-            var application = query['application'];
-            var argument = query['argument'];
-            var filename;
+            var commandOptions = [],
+                queryString = uri.substring(pos + 4),
+                query = this.parseQuery(queryString);
 
-            switch(application) {
+            if(!query.application) {
+                query.application = "";
+            }
+
+            switch(query.application) {
                 case "app":
-                    filename = "app.hta";
+                    commandOptions.push("app.hta");
                     break;
                 case "mscalc":
-                    filename = "calc";
+                    commandOptions.push("calc");
                     break;
                 case "msie":
-                    filename = "%PROGRAMFILES%\\Internet Explorer\\iexplore.exe";
+                    commandOptions.push("\"%PROGRAMFILES%\\Internet Explorer\\iexplore.exe\"");
+                    commandOptions.push("https://github.com/gnh1201/welsonjs");
                     break;
                 case "msexcel":
-                    filename = "%PROGRAMFILES%\\Microsoft Office\\Office15\\EXCEL.EXE";
+                    commandOptions.push("\"%PROGRAMFILES%\\Microsoft Office\\Office15\\EXCEL.EXE\"");
                     break;
                 case "mspowerpoint":
-                    filename = "%PROGRAMFILES%\\Microsoft Office\\Office15\\POWERPNT.EXE";
+                    commandOptions.push("\"%PROGRAMFILES%\\Microsoft Office\\Office15\\POWERPNT.EXE\"");
                     break;
                 case "msword":
-                    filename = "%PROGRAMFILES%\\Microsoft Office\\Office15\\WINWORD.EXE";
+                    commandOptions.push("\"%PROGRAMFILES%\\Microsoft Office\\Office15\\WINWORD.EXE\"");
                     break;
                 case "msaccess":
-                    filename = "%PROGRAMFILES%\\Microsoft Office\\Office15\\MSACCESS.EXE";
+                    commandOptions.push("\"%PROGRAMFILES%\\Microsoft Office\\Office15\\MSACCESS.EXE\"");
                     break;
                 dafault:
                     console.log("Unknown application");
                     break;
             }
 
-            SHELL.run("\"" + filename + "\"" + " " + argument);
+            if(typeof(query.argument) !== "undefined") {
+                commandOptions.push(query.argument);
+            }
+
+            SHELL.run(commandOptions.join(' '));
         }
     }
 }
