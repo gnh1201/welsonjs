@@ -1,5 +1,5 @@
 ; @breif WelsonJS
-; @author Go Namhyeon (catswords@protonmail.com)
+; @author Go Namhyeon (gnh1201@gmail.com)
 ; @created_on 2020-06-26
 ; @updated_on 2020-07-21
 
