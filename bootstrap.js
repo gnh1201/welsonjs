@@ -20,10 +20,12 @@ return {
         //REG.importFromFile("app/assets/reg/Add_URI_Scheme.reg");
 
         // register URI scheme
-        //REG.write(hKey, path, key, value, REG.STRING, computer);
+        REG.write(REG.HKCR, "welsonjs", "", "URL:welsonjs", REG.STRING);
+        REG.write(REG.HKCR, "welsonjs", "URL Protocol", "", REG.STRING);
+        REG.write(REG.HKCR, "welsonjs\\shell\\open\\command", "", "cscript " + SYS.getCurrentScriptDirectory() + "\\app.js uriloader \"%1\"", REG.STRING);
 
-		// open HTA file
-		SHELL.run("app.hta");
+        // open HTA file
+        SHELL.run("app.hta");
 
         console.log("done");
     }
