@@ -41,7 +41,11 @@ exports.say = function() {
 ### 2. Write a file `sayhello.js`
 ```
 var sayhello = require("lib/sayhello-lib");
-sayhello.say();
+return {
+    main: function() {
+        sayhello.say();
+    }
+};
 ```
 
 ### 3. Execute file on the command prompt
