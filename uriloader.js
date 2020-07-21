@@ -32,6 +32,9 @@ return {
                 case "mscalc":
                     filename = "calc";
                     break;
+                case "msie":
+                    filename = "%PROGRAMFILES%\\Internet Explorer\\iexplore.exe";
+                    break;
                 case "msexcel":
                     filename = "%PROGRAMFILES%\\Microsoft Office\\Office15\\EXCEL.EXE";
                     break;
