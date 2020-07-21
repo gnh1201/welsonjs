@@ -1,6 +1,6 @@
 {
   "name": "welsonjs",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Build a Windows desktop apps with JavaScript, HTML, and CSS based on WSH/HTA",
   "main": "app.js",
   "directories": {
