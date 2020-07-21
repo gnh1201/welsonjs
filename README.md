@@ -39,7 +39,7 @@ exports.say = function() {
 
 ### File `sayhello.js`
 ```
-var sayhello = require("lib/sayhello");
+var sayhello = require("lib/sayhello-lib");
 sayhello.say();
 ```
 
