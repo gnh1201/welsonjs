@@ -74,11 +74,22 @@ function require(FN) {
     if (FN.substr(FN.length - 3) !== '.js') FN += ".js";
     if (cache[FN]) return cache[FN];
 
+    // get current script directory
+    var getCurrentScriptDirectory = function() {
+        if(typeof(WScript) !== "undefined") {
+            var path = WScript.ScriptFullName;
+            var pos = path.lastIndexOf("\\");
+            return path.substring(0, pos);
+        } else {
+            return ".";
+        }
+    };
+
     // load script file
     var FSO = CreateObject("Scripting.FileSystemObject");
     var T = null;
     try {
-        var TS = FSO.OpenTextFile(FN, 1);
+        TS = FSO.OpenTextFile(getCurrentScriptDirectory() + "\\" + FN, 1);
         if (TS.AtEndOfStream) return "";
         T = TS.ReadAll();
         TS.Close();
