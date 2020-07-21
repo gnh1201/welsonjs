@@ -1,5 +1,5 @@
 # welsonjs
-WelsonJS - Build a windows desktop apps based on WSH/HTA with ES6/HTML5 compatibility javascript polyfills, and NPM package manager, and requirejs-style implementation.
+WelsonJS - Build a windows desktop apps based on WSH/HTA with ES6/HTML5 compatibility and NPM.
 
 ## Structure
 ![Structure of WelsonJS](app/assets/img/structure.png)
