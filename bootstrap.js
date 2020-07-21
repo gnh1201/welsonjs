@@ -27,6 +27,7 @@ return {
         console.log("Registering URI scheme...");
         REG.write(REG.HKCR, APPLICATION_NAME, "", "URL:" + APPLICATION_NAME, REG.STRING);
         REG.write(REG.HKCR, APPLICATION_NAME, "URL Protocol", "", REG.STRING);
+        REG.write(REG.HKCR, APPLICATION_NAME + "\\DefaultIcon", "", SYS.getCurrentScriptDirectory() + "\\app\\favicon.ico,1", REG.STRING);
         REG.write(REG.HKCR, APPLICATION_NAME + "\\shell\\open\\command", "", "cscript " + SYS.getCurrentScriptDirectory() + "\\app.js uriloader \"%1\"", REG.STRING);
 
         // open HTA file
