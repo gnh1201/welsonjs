@@ -101,7 +101,7 @@ function require(FN) {
 
     // make global function
     FSO = null;
-    T = "(function(global,module){return (function(exports){\n" + T + "\nreturn exports;})(module.exports);})(this,{exports:{}});\n\n////@ sourceURL=" + FN;
+    T = "(function(global,module){return (function(exports){\n" + '"use strict";' + T + "\nreturn exports;})(module.exports);})(this,{exports:{}});\n\n////@ sourceURL=" + FN;
     try {
         cache[FN] = eval(T);
     } catch (e) {
