@@ -5,7 +5,7 @@
  * https://github.com/gnh1201/welsonjs
  *
  */
-var FILE = require('lib/file');
+var FILE = require("lib/file");
 
 // "override console.__echo()";
 global.console.__echo = function(msg) {
@@ -219,7 +219,7 @@ return {
         }
         return el;
     },
-    main: function() {
+    main: function(args) {
         // "set variable 'self'";
         var self = this;
 
@@ -303,6 +303,10 @@ return {
 
         // "set movable window";
         self.enableMovableWindow();
+
+        // "parsing HTA application arguments";
+        var appArguments = args[0].split(' ');
+        // TODO
 
         return 0;
     }

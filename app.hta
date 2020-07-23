@@ -25,7 +25,7 @@
             @attribute WindowsState      [Normal]|Minimize|Maximize
             -->
         <hta:application
-            ID="WELSONJS"
+            ID="WELSONJS_WINDOW"
             Version="0.1.2"
             ApplicationName="WelsonJS"
             Border="None"
@@ -46,7 +46,7 @@
             WindowState="Normal"
             Selection="No"
             />
-        <title>NextVPN</title>
+        <title>Welcome to WelsonJS application</title>
         <meta http-equiv="X-UA-Compatible" content="IE=9" />
         <meta http-equiv="Content-Type" content="application/xhtml+xml; charset=utf-8" />
         <meta name="description" content="Welsonjs - Build a Windows desktop apps with JavaScript, HTML, and CSS based on WSH/HTA" />
@@ -62,7 +62,7 @@
         <div id="app"></div>
         <script src="app.js" type="text/javascript" charset="utf-8"></script>
         <script type="text/javascript">//<!--<![CDATA[
-            init_window("webloader", [], 800, 600);
+            init_window("webloader", [WELSONJS_WINDOW.commandLine], 800, 600);
         //]]>--></script>
     </body>
 </html>
