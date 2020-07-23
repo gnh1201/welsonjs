@@ -37,6 +37,7 @@ var exit = function(status) {
     if (typeof(WScript) !== "undefined") {
         WScript.quit(status);
     }
+    console.warn("Exit caused by: " + status);
 };
 
 var console = {
