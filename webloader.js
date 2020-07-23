@@ -255,7 +255,7 @@ return {
                         console.log(messages[i]);
                     }
 
-                    // "start this app"
+                    // "start this app";
                     start();
                 }
             }, function(el) {
@@ -311,8 +311,8 @@ return {
         // "set movable window";
         self.enableMovableWindow();
 
-        // "parsing HTA application arguments";
-        var appArguments = args[0].split(' ');
+        // "get HTA application arguments";
+        //var appArguments = args[0].split(' ');
         // TODO
 
         return 0;
