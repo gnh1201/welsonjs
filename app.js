@@ -32,7 +32,6 @@
 //    The appname argument causes <appname>.js to be loaded. The interface returned
 //    must define main = function(args) {}, which is called once the module is
 //    loaded.
-
 var exit = function(status) {
     if (typeof(WScript) !== "undefined") {
         WScript.quit(status);
@@ -69,16 +68,16 @@ var console = {
     }
 };
 
-if(typeof(CreateObject) !== "function") {
+if (typeof(CreateObject) !== "function") {
     var CreateObject = function(className) {
         return new ActiveXObject(className);
-    }
+    };
 }
 
-if(typeof(GetObject) !== "function") {
+if (typeof(GetObject) !== "function") {
     var GetObject = function(pathName, className) {
         var paths = pathName.split("\\");
-        if(paths[0].indexOf("winmgmts:") > -1) {
+        if (paths[0].indexOf("winmgmts:") > -1) {
             var objLocator = CreateObject("WbemScripting.SWbemLocator");
             var strComputer = paths[2];
             var strNamespace = paths.slice(3).join("\\");
@@ -86,7 +85,7 @@ if(typeof(GetObject) !== "function") {
         } else {
             console.log("Not supported: " + pathName);
         }
-    }
+    };
 }
 
 function require(FN) {
@@ -102,7 +101,7 @@ function require(FN) {
 
     // get current script directory
     var getCurrentScriptDirectory = function() {
-        if(typeof(WScript) !== "undefined") {
+        if (typeof(WScript) !== "undefined") {
             var path = WScript.ScriptFullName;
             return getDirName(path);
         } else {
@@ -138,7 +137,7 @@ function require(FN) {
     }
 
     // check type of callback return
-    if(typeof(cache[FN]) === "object") {
+    if (typeof(cache[FN]) === "object") {
         if ("VERSIONINFO" in cache[FN]) console.log(cache[FN].VERSIONINFO);
     }
 
@@ -156,7 +155,7 @@ var __config = require("config");
 /////////////////////////////////////////////////////////////////////////////////
 
 function init_console() {
-    if(typeof(WScript) === "undefined") {
+    if (typeof(WScript) === "undefined") {
         console.error("Error, WScript is not defined", 1);
     }
 
@@ -184,7 +183,7 @@ function init_console() {
 }
 
 function init_window(name, args, w, h) {
-    if(typeof(window) === "undefined") {
+    if (typeof(window) === "undefined") {
         console.error("Error, window is not defined", 1);
     }
 
