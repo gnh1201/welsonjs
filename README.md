@@ -24,6 +24,7 @@ WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on 
 - lib/shell (Command Prompt interface)
 - lib/timer (`setTimeout` implementation for not supported environment)
 - lib/powershell (Windows Powershell interface)
+- lib/service (Windows Service interface)
 
 ## Make your own `sayhello` example
 
