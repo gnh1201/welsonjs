@@ -74,22 +74,31 @@ function require(FN) {
     if (FN.substr(FN.length - 3) !== '.js') FN += ".js";
     if (cache[FN]) return cache[FN];
 
+    // get directory name
+    var getDirName = function(path) {
+        var pos = path.lastIndexOf("\\");
+        return path.substring(0, pos);
+    };
+
     // get current script directory
     var getCurrentScriptDirectory = function() {
         if(typeof(WScript) !== "undefined") {
             var path = WScript.ScriptFullName;
-            var pos = path.lastIndexOf("\\");
-            return path.substring(0, pos);
+            return getDirName(path);
         } else {
             return ".";
         }
     };
 
+    // get file and directory name
+    var __filename = getCurrentScriptDirectory() + "\\" + FN;
+    var __dirname = getDirName(__filename);
+
     // load script file
     var FSO = CreateObject("Scripting.FileSystemObject");
     var T = null;
     try {
-        TS = FSO.OpenTextFile(getCurrentScriptDirectory() + "\\" + FN, 1);
+        TS = FSO.OpenTextFile(__filename, 1);
         if (TS.AtEndOfStream) return "";
         T = TS.ReadAll();
         TS.Close();
@@ -101,7 +110,7 @@ function require(FN) {
 
     // make global function
     FSO = null;
-    T = "(function(global,module){return (function(exports){\n" + '"use strict";' + T + "\nreturn exports;})(module.exports);})(this,{exports:{}});\n\n////@ sourceURL=" + FN;
+    T = "(function(global){var module={exports:{}};return(function(exports,require,module,__filename,__dirname){" + '"use strict";' + T + "\nreturn exports})(module.exports,global.require,module,__filename,__dirname)})(this);\n\n////@ sourceURL=" + FN;
     try {
         cache[FN] = eval(T);
     } catch (e) {
