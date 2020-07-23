@@ -62,6 +62,10 @@ var console = {
     warn: function(msg) {
         var msg = "[WARN] " + msg;
         this.__echo(msg);
+    },
+    debug: function(msg) {
+        var msg = "[DEBUG] " + msg;
+        this.__echo(msg);
     }
 };
 
