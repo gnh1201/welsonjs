@@ -7,6 +7,21 @@
  */
 var FILE = require('lib/file');
 
+// "override console.__echo()";
+global.console.__echo = function(msg) {
+    if (typeof(window.jQuery) !== "undefined") {
+        window.jQuery.toast({
+            heading: "Information",
+            text: msg,
+            icon: "info"
+        });
+    } else {
+        alert(msg);
+    }
+
+    global.console.__messages.push(msg);
+};
+
 // "less than IE 9";
 window.enableEventListener = function(obj) {};
 if (!window.addEventListener) {
@@ -227,6 +242,7 @@ return {
             jQuery.support.cors = true;
 
             self.addScript("app/assets/js/jquery.toast-1.3.2.min.js", function(el) {
+                var messages = global.console.__messages;
                 if (messages.length > 0) {
                     for (var i in messages) {
                         console.log(messages[i]);

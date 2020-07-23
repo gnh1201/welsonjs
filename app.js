@@ -33,35 +33,34 @@
 //    must define main = function(args) {}, which is called once the module is
 //    loaded.
 
-var messages = [];
+var exit = function(status) {
+    if (typeof(WScript) !== "undefined") {
+        WScript.quit(status);
+    }
+};
 
 var console = {
-    log: function(msg) {
-        if (typeof(window) !== 'undefined') {
-            if (typeof(window.jQuery) !== 'undefined') {
-                window.jQuery.toast({
-                    heading: "Information",
-                    text: msg,
-                    icon: "info"
-                });
-            } else {
-                messages.push(msg);
-            }
-        } else if (typeof(WScript) !== 'undefined') {
+    __messages: [],
+    __echo: function(msg) {
+        if (typeof(WScript) !== "undefined") {
             WScript.echo(msg);
         }
+        this.__messages.push(msg);
     },
-    error: function(msg, status) {
-        this.log(msg);
-        if (typeof(WScript) !== 'undefined') {
-            WScript.quit(status);
-        }
+    log: function(msg) {
+        this.__echo(msg);
+    },
+    error: function(msg) {
+        var msg = "[ERROR] " + msg;
+        this.__echo(msg);
     },
     info: function(msg) {
-        this.log(msg);
+        var msg = "[INFO] " + msg;
+        this.__echo(msg);
     },
     warn: function(msg) {
-        this.log(msg);
+        var msg = "[WARN] " + msg;
+        this.__echo(msg);
     }
 };
 
@@ -174,13 +173,16 @@ function init_window(name, args, w, h) {
         if (app.main) {
             var exitstatus = app.main.call(app, args);
             if (exitstatus > 0) {
-                console.error("error", exitstatus);
+                console.error("error");
+                exit(exitstatus);
             }
         } else {
-            console.error("Error, missing main entry point in " + name + ".js", 1);
+            console.error("Error, missing main entry point in " + name + ".js");
+            exit(1);
         }
     } else {
-        console.error("Error, cannot find " + name + ".js", 1);
+        console.error("Error, cannot find " + name + ".js");
+        exit(1);
     }
 }
 
