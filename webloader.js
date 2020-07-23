@@ -6,6 +6,7 @@
  *
  */
 var FILE = require("lib/file");
+var URILoader = require("uriloader");
 
 // "override console.__echo()";
 global.console.__echo = function(msg) {
@@ -310,6 +311,20 @@ return {
 
         // "set movable window";
         self.enableMovableWindow();
+
+        // "assign click event if it is matched URI scheme";
+        var elems = document.getElementsByTagName("a");
+        for(var i in elems) {
+            var uri = elems[i].href || "";
+            var pos = uri.indexOf("://");
+            if(uri.substring(0, pos) == __config.appName) {
+                elems[i].onclick = function(e) {
+                    var uri = this.href || "";
+                    URILoader.main([uri]);
+                    e.preventDefault();
+                };
+            }
+        }
 
         // "get HTA application arguments";
         //var appArguments = args[0].split(' ');

@@ -69,8 +69,16 @@ var console = {
     }
 };
 
-function CreateObject(name) {
-    return new ActiveXObject(name);
+if(typeof(GetObject) !== "function") {
+    function GetObject(pathName, className) {
+        console.warn("Not supported function GetObject() in GUI mode");
+    };
+}
+
+if(typeof(CreateObject) !== "function") {
+    function CreateObject(className) {
+        return new ActiveXObject(className);
+    };
 }
 
 function require(FN) {
@@ -128,6 +136,12 @@ function require(FN) {
 
     return cache[FN];
 }
+
+/////////////////////////////////////////////////////////////////////////////////
+// get configuration variables
+/////////////////////////////////////////////////////////////////////////////////
+
+var __config = require("config");
 
 /////////////////////////////////////////////////////////////////////////////////
 // Load script, and call app.main()
