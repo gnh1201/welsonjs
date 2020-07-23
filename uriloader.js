@@ -63,6 +63,8 @@ return {
             }
 
             SHELL.run(commandOptions.join(' '));
+
+            return 0;
         }
     }
 }

@@ -69,16 +69,24 @@ var console = {
     }
 };
 
-if(typeof(GetObject) !== "function") {
-    function GetObject(pathName, className) {
-        console.warn("Not supported function GetObject() in GUI mode");
-    };
+if(typeof(CreateObject) !== "function") {
+    var CreateObject = function(className) {
+        return new ActiveXObject(className);
+    }
 }
 
-if(typeof(CreateObject) !== "function") {
-    function CreateObject(className) {
-        return new ActiveXObject(className);
-    };
+if(typeof(GetObject) !== "function") {
+    var GetObject = function(pathName, className) {
+        var paths = pathName.split("\\");
+        if(paths[0].indexOf("winmgmts:") > -1) {
+            var objLocator = CreateObject("WbemScripting.SWbemLocator");
+            var strComputer = paths[2];
+            var strNamespace = paths.slice(3).join("\\");
+            return objLocator.ConnectServer(strComputer, strNamespace);
+        } else {
+            console.log("Not supported: " + pathName);
+        }
+    }
 }
 
 function require(FN) {
