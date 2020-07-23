@@ -22,6 +22,13 @@ global.console.__echo = function(msg) {
     global.console.__messages.push(msg);
 };
 
+// "override exit";
+global.exit = function() {
+    if (typeof(window) !== "undefined") {
+        window.close();
+    }
+};
+
 // "less than IE 9";
 window.enableEventListener = function(obj) {};
 if (!window.addEventListener) {
