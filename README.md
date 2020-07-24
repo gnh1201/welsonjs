@@ -5,9 +5,9 @@ WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on 
 ![Structure of WelsonJS](app/assets/img/structure.png)
 
 ## Specifications
-- ES5(ECMAScript 5), ES6(ECMAScript 6) compatibility with [es5-shim](https://github.com/es-shims/es5-shim), [es6-shim](https://github.com/es-shims/es5-shim), and [json3](https://bestiejs.github.io/json3/)
-- HTML5/CSS3 compatibility with [html5shiv](https://github.com/aFarkas/html5shiv), [jquery-html5-placeholder-shim](https://github.com/jcampbell1/jquery-html5-placeholder-shim), [respond](https://github.com/scottjehl/Respond), [selectivizr](https://github.com/keithclark/selectivizr), [excanvas](https://github.com/arv/ExplorerCanvas), [html5media](https://html5media.info/), and [modernizr](https://github.com/Modernizr/Modernizr)
-- [module.exports](https://nodejs.org/en/knowledge/getting-started/what-is-require/)(Node) styled module implementation, and managing packages with [NPM(Node Package Manager)](https://www.npmjs.com/)
+- ES5(ECMAScript 5), ES6(ECMAScript 6) compatibility with [es5-shim](https://catswords.re.kr/go/es5shim), [es6-shim](https://catswords.re.kr/go/es6shim), and [json3](https://catswords.re.kr/go/json3)
+- HTML5/CSS3 compatibility with [html5shiv](https://catswords.re.kr/go/html5shiv), [jquery-html5-placeholder-shim](https://catswords.re.kr/go/placeholdershim), [respond](https://catswords.re.kr/go/respondjs), [selectivizr](https://catswords.re.kr/go/selectivizrjs), [excanvas](https://catswords.re.kr/go/excanvasjs), [html5media](https://catswords.re.kr/go/html5media), and [modernizr](https://catswords.re.kr/go/modernizrjs)
+- [module.exports](https://catswords.re.kr/go/whatisrequire)(Node) styled module implementation, and managing packages with [NPM(Node Package Manager)](https://catswords.re.kr/go/npmjs)
 - Ready to use on Windows machine immediately. No require additional softwares installation.
 
 ## Included libraries
@@ -25,6 +25,8 @@ WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on 
 - lib/timer (`setTimeout` implementation for not supported environment)
 - lib/powershell (Windows Powershell interface)
 - lib/service (Windows Service interface)
+- lib/autohotkey ([AutoHotKey](https://catswords.re.kr/go/autohotkey) interface)
+- lib/autoit3 ([AutoIt3](https://catswords.re.kr/go/autoit3) interface)
 
 ## Make your own `sayhello` example
 
@@ -56,12 +58,12 @@ hello
 ```
 
 ## Related projects
-- [gnh1201/wsh-js-gtk](https://github.com/gnh1201/wsh-js-gtk) - GTK GUI ported to Windows Scripting Host - Javascript (Microsoft JScript) (wsh-js)
-- [gnh1201/wsh-json](https://github.com/gnh1201/wsh-json) - JSON stringify/parse (encode/decode) for Windows Scripting Host
-- [redskyit/wsh-appjs](https://github.com/redskyit/wsh-appjs) - require-js and app framework for Windows Scripting Host JavaScript
-- [JohnLaTwC's gist](https://gist.github.com/JohnLaTwC/4315bbbd89da0996f5c08c032b391799) - JavaScript RAT
-- [JSMan-/JS-Framework](https://github.com/JSman-/JS-Framework) - No description
-- [iconjack/setTimeout-for-windows-script-host](https://github.com/iconjack/setTimeout-for-windows-script-host) - Replacement for the missing setTimeout and clearTimeout function in Windows Script Host
+- [gnh1201/wsh-js-gtk](https://catswords.re.kr/go/wshjsgtk) - GTK GUI ported to Windows Scripting Host - Javascript (Microsoft JScript) (wsh-js)
+- [gnh1201/wsh-json](https://github.com/gnh1201/wshjson) - JSON stringify/parse (encode/decode) for Windows Scripting Host
+- [redskyit/wsh-appjs](https://catswords.re.kr/go/wshappjs) - require-js and app framework for Windows Scripting Host JavaScript
+- [JohnLaTwC's gist](https://catswords.re.kr/go/johnlatwcgist) - JavaScript RAT
+- [JSMan-/JS-Framework](https://catswords.re.kr/go/jsmanfw) - No description
+- [iconjack/setTimeout-for-windows-script-host](https://catswords.re.kr/go/wshtimer) - Replacement for the missing setTimeout and clearTimeout function in Windows Script Host
 
 ## Contact me
 - gnh1201@gmail.com
