@@ -27,6 +27,8 @@ WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on 
 - lib/service (Windows Service interface)
 - lib/autohotkey ([AutoHotKey](https://catswords.re.kr/go/autohotkey) interface)
 - lib/autoit3 ([AutoIt3](https://catswords.re.kr/go/autoit3) interface)
+- lib/cloudflare ([Cloudflare Argo Tunnel](https://catswords.re.kr/go/argotunnel) interface)
+- lib/shadowsocks ([Shadowsocks](https://catswords.re.kr/go/shadowsocks) interface)
 
 ## Make your own `sayhello` example
 
