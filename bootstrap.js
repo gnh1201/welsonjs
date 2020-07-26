@@ -10,7 +10,7 @@ var SYS = require("lib/system");
 var SHELL = require("lib/shell");
 
 return {
-    main: function() {
+    main: function(args) {
         // unlock file
         console.log("Starting unlock files...");
         PS.execCommand("dir | Unblock-File");
@@ -29,8 +29,13 @@ return {
 
         // open HTA file
         console.log("Trying open GUI...");
-        SHELL.run("app.hta");
+        if (typeof(args) !== "undefined") {
+            SHELL.run(["app.hta"].concat(args));
+        } else {
+            SHELL.run("app.hta");
+        }
 
-        console.log("done");
+        // echo welcome
+        console.log("welcome");
     }
 };
