@@ -1,10 +1,9 @@
 var FILE = require("lib/file");
-var serverUrl = "http://158.247.196.146/";
 
 $(document).ready(function() {
     $(".show-logged").css("display", "none");
 
-    $("#loginform").attr("action", serverUrl);
+    $("#loginform").attr("action", __config.webapp.baseURL);
     $("#loginform").ajaxForm({
         beforeSubmit: function() {
             console.log("로그인을 시도합니다. 잠시만 기다려 주세요.");
