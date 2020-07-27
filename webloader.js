@@ -70,11 +70,8 @@ exports.enableMovableWindow = function() {
 // exports.main()
 ////////////////////////////////////////////////////////////////////////
 exports.main = function(args) {
-    // load contents
-    var contents = FILE.readFile("app\\index.html", "utf-8");
-    document.getElementById("app").innerHTML = contents;
-
-    // load components dynamically
+    // make will display contents
+    OldBrowser.setContent(FILE.readFile("app\\index.html", "utf-8"));
     OldBrowser.addStylesheet("app/assets/css/jquery-ui-1.21.1.min.css");
     OldBrowser.addStylesheet("app/assets/css/jquery.toast-1.3.2.min.css");
     OldBrowser.addStylesheet("app/assets/css/style.css");
