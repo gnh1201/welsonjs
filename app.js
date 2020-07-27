@@ -170,7 +170,7 @@ function init_console() {
         var app = require(name);
         if (app) {
             if (app.main) {
-                var exitstatus = app.main(args);
+                var exitstatus = app.main.call(this, args);
                 if (typeof(exitstatus) !== "undefined") {
                     exit(exitstatus);
                 }

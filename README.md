@@ -27,6 +27,7 @@ WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on 
 - lib/service (Windows Service interface)
 - lib/oldbrowser (HTML/JS/CSS interface)
 - lib/uri (URI scheme interface)
+- lib/winlibs (Windows DLL(Dynamic-link library) interface)
 - lib/autohotkey ([AutoHotKey](https://catswords.re.kr/go/autohotkey) interface)
 - lib/autoit3 ([AutoIt3](https://catswords.re.kr/go/autoit3) interface)
 - lib/cloudflare ([Cloudflare Argo Tunnel](https://catswords.re.kr/go/argotunnel) interface)
@@ -66,6 +67,8 @@ hello
 - [JohnLaTwC's gist](https://catswords.re.kr/go/johnlatwcgist) - JavaScript RAT
 - [JSMan-/JS-Framework](https://catswords.re.kr/go/jsmanfw) - No description
 - [iconjack/setTimeout-for-windows-script-host](https://catswords.re.kr/go/wshtimer) - Replacement for the missing setTimeout and clearTimeout function in Windows Script Host
+- [johnjohnsp1/RegistrationFreeCOM](https://catswords.re.kr/go/actctx) - Inject DLL Prototype using Microsoft.Windows.ACTCTX COM Object
+- [kuntashov/jsunit](https://catswords.re.kr/go/wshjsunit) - JSUnit port for Windows Scripting Host
 
 ## Contact me
 - gnh1201@gmail.com
