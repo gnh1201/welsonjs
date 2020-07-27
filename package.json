@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "start.bat",
-    "test": "cscript app.js helloworld"
+    "test": "cscript app.js testloader"
   },
   "repository": {
     "type": "git",
