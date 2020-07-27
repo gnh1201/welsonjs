@@ -1,8 +1,8 @@
-(function() { 
-	return {
-		setUp: function() {
-			inform('Starting...');
-		},
+(function() {
+    return {
+        setUp: function() {
+            inform('Starting...');
+        },
 
         tearDown: function() {
             inform('Finishing...')
