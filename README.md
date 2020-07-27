@@ -62,7 +62,7 @@ hello
 
 ## Related projects
 - [gnh1201/wsh-js-gtk](https://catswords.re.kr/go/wshjsgtk) - GTK GUI ported to Windows Scripting Host - Javascript (Microsoft JScript) (wsh-js)
-- [gnh1201/wsh-json](https://github.com/gnh1201/wshjson) - JSON stringify/parse (encode/decode) for Windows Scripting Host
+- [gnh1201/wsh-json](https://catswords.re.kr/go//wshjson) - JSON stringify/parse (encode/decode) for Windows Scripting Host
 - [redskyit/wsh-appjs](https://catswords.re.kr/go/wshappjs) - require-js and app framework for Windows Scripting Host JavaScript
 - [JohnLaTwC's gist](https://catswords.re.kr/go/johnlatwcgist) - JavaScript RAT
 - [JSMan-/JS-Framework](https://catswords.re.kr/go/jsmanfw) - No description
