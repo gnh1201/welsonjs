@@ -12,8 +12,8 @@
 			assert("this is true", true);
 		},
 
-		testRedTest: function () {
-			assert("this is false", false);
-		}
-	};
+        testRedTest: function () {
+            assert("this is false", false);
+        }
+    };
 })();
