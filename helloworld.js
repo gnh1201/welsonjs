@@ -1,5 +1,3 @@
-return {
-    main: function() {
-        console.log("Hello world");
-    }
+exports.main: function() {
+    console.log("Hello world");
 };

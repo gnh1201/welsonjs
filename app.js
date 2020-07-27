@@ -156,22 +156,23 @@ var __config = require("config").config;
 
 function init_console() {
     if (typeof(WScript) === "undefined") {
-        console.error("Error, WScript is not defined", 1);
+        console.error("Error, WScript is not defined");
+        exit(1);
     }
 
-    var n = WScript.arguments.length;
-    if (n > 0) {
+    var argl = WScript.arguments.length;
+    if (argl > 0) {
         var args = [];
-        for (var i = 0; i < n; i++) {
+        for (var i = 0; i < argl; i++) {
             args.push(WScript.arguments(i));
         }
         var name = args.shift();
         var app = require(name);
         if (app) {
             if (app.main) {
-                var exitstatus = app.main.call(app, args);
-                if (typeof exitstatus != undefined) {
-                    WScript.quit(exitstatus);
+                var exitstatus = app.main(args);
+                if (typeof(exitstatus) !== "undefined") {
+                    exit(exitstatus);
                 }
             } else {
                 console.error("Error, missing main entry point in " + name + ".js", 1);
@@ -184,7 +185,8 @@ function init_console() {
 
 function init_window(name, args, w, h) {
     if (typeof(window) === "undefined") {
-        console.error("Error, window is not defined", 1);
+        console.error("Error, window is not defined");
+        exit(1);
     }
 
     var app = require(name);
