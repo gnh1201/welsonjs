@@ -68,7 +68,7 @@ hello
 - [JohnLaTwC's gist](https://catswords.re.kr/go/johnlatwcgist) - JavaScript RAT
 - [JSMan-/JS-Framework](https://catswords.re.kr/go/jsmanfw) - No description
 - [iconjack/setTimeout-for-windows-script-host](https://catswords.re.kr/go/wshtimer) - Replacement for the missing setTimeout and clearTimeout function in Windows Script Host
-- [johnjohnsp1/RegistrationFreeCOM](https://catswords.re.kr/go/actctx) - Inject DLL Prototype using Microsoft.Windows.ACTCTX COM Object
+- [johnjohnsp1/WindowsScriptHostExtension](https://catswords.re.kr/go/actctx) - Inject DLL Prototype using Microsoft.Windows.ACTCTX COM Object
 - [kuntashov/jsunit](https://catswords.re.kr/go/wshjsunit) - JSUnit port for Windows Scripting Host
 
 ## Contact me
