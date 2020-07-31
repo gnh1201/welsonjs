@@ -1,5 +1,13 @@
 var FILE = require("lib/file");
 
+Vue.component("welsonjs-view", {
+    template: "<p>hello world</p>"
+});
+
+new Vue({el: "#app"});
+
+/*
+
 $(document).ready(function() {
     $(".show-logged").css("display", "none");
 
@@ -73,3 +81,4 @@ $(document).ready(function() {
         console.log("로그아웃 되었습니다.");
     });
 });
+*/

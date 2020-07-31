@@ -71,7 +71,7 @@ exports.enableMovableWindow = function() {
 ////////////////////////////////////////////////////////////////////////
 exports.main = function(args) {
     // make will display contents
-    OldBrowser.setContent(FILE.readFile("app\\index.html", "utf-8"));
+    //OldBrowser.setContent(FILE.readFile("app\\index.html", "utf-8"));
     OldBrowser.addStylesheet("app/assets/css/jquery-ui-1.21.1.min.css");
     OldBrowser.addStylesheet("app/assets/css/jquery.toast-1.3.2.min.css");
     OldBrowser.addStylesheet("app/assets/css/style.css");
