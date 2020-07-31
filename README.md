@@ -33,6 +33,10 @@ WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on 
 - lib/cloudflare ([Cloudflare Argo Tunnel](https://catswords.re.kr/go/argotunnel) interface)
 - lib/shadowsocks ([Shadowsocks](https://catswords.re.kr/go/shadowsocks) interface)
 - lib/excel (Microsoft Excel interface)
+- lib/vbscript (VBScript interface)
+- lib/wintap (Windows-TAP interface)
+- lib/tun2socks (TUN2SOCKS interface)
+- lib/hosts (Hosts file interface)
 
 ## Make your own `sayhello` example
 

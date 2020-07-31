@@ -9,8 +9,8 @@ var HOSTS = require("lib/hosts");
 
 exports.main = function() {
     console.log("Connecting to shadowsocks...");
-    var proxyport = SS.connect();
-    console.log(proxyport);
+    var listenPort = SS.connect();
+    console.log("Local listening port: " + listenPort);
 
     console.log("Gethering network interfaces...");
     var inets = SYS.getNetworkInterfaces();
