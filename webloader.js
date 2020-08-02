@@ -32,16 +32,10 @@ global.exit = function() {
 };
 
 ////////////////////////////////////////////////////////////////////////
-// exports.IEVersion
+// this window makes movable
 ////////////////////////////////////////////////////////////////////////
-exports.IEVersion = OldBrowser.getIEVersion();
-
-////////////////////////////////////////////////////////////////////////
-// exports.enableMovableWindow()
-////////////////////////////////////////////////////////////////////////
-exports.enableMovableWindow = function() {
-    var grip = document.getElementById("app"),
-        oX, oY,
+(function(grip) {
+    var oX, oY,
         mouseDown = function(e) {
             if (e.offsetY + e.offsetX < 0) return;
             oX = e.screenX;
@@ -64,14 +58,19 @@ exports.enableMovableWindow = function() {
 
     grip.addEventListener("mousedown", mouseDown);
     grip.addEventListener("mousemove", gripMouseMove);
-};
+})(document.getElementsByTagName("body")[0]);
+
+////////////////////////////////////////////////////////////////////////
+// exports.IEVersion
+////////////////////////////////////////////////////////////////////////
+exports.IEVersion = OldBrowser.getIEVersion();
 
 ////////////////////////////////////////////////////////////////////////
 // exports.main()
 ////////////////////////////////////////////////////////////////////////
 exports.main = function(args) {
     // make will display contents
-    //OldBrowser.setContent(FILE.readFile("app\\index.html", "utf-8"));
+    OldBrowser.setContent(FILE.readFile("app\\index.html", "utf-8"));
     OldBrowser.addStylesheet("app/assets/css/jquery-ui-1.21.1.min.css");
     OldBrowser.addStylesheet("app/assets/css/jquery.toast-1.3.2.min.css");
     OldBrowser.addStylesheet("app/assets/css/style.css");
@@ -102,9 +101,6 @@ exports.main = function(args) {
     document.body.ondrop = function() {
         return false;
     };
-
-    // set movable window
-    exports.enableMovableWindow();
 
     // assign click event
     var elems = document.getElementsByTagName("a");

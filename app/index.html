@@ -9,10 +9,7 @@
                 <span>모든 네트워크</span>
                 <ul class="sub">
                     <li class="show-no-logged"><span><img src="app/assets/img/iconfinder_Caution_53013.png" alt="Caution" /> 로그인하세요</span></li>
-                    <li class="show-logged"><a href="#us1"><span><img src="app/assets/img/flags/shiny/16/United-States.png" alt="United States" /> US 1</span></a></li>
-                    <li class="show-logged"><a href="#us2"><span><img src="app/assets/img/flags/shiny/16/United-States.png" alt="United States" /> US 2</span></a></li>
-                    <li class="show-logged"><a href="#us3"><span><img src="app/assets/img/flags/shiny/16/United-States.png" alt="United States" /> US 3</span></a></li>
-                    </li>
+                    <server-item v-for="item in servers" v-bind:item="item" v-bind:key="item.id"></server-item>
                 </ul>
             </li>
         </ul>

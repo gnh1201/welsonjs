@@ -1,12 +1,32 @@
 var FILE = require("lib/file");
 
-Vue.component("welsonjs-view", {
-    template: "<p>hello world</p>"
+Vue.component("server-item", {
+    props: ['item'],
+    template: '<li class="show-logged"><a href="#"><span><img :src="item.icon"> {{item.title}}</span></a></li>'
 });
 
-new Vue({el: "#app"});
-
-/*
+var app = new Vue({
+    el: "#app",
+    data: {
+        servers: [
+            {
+                icon: "app/assets/img/flags/shiny/16/United-States.png",
+                country: "United States",
+                title: "US 1"
+            },
+            {
+                icon: "app/assets/img/flags/shiny/16/United-States.png",
+                country: "United States",
+                title: "US 2"
+            },
+            {
+                icon: "app/assets/img/flags/shiny/16/United-States.png",
+                country: "United States",
+                title: "US 3"
+            }
+        ]
+    }
+});
 
 $(document).ready(function() {
     $(".show-logged").css("display", "none");
@@ -81,4 +101,3 @@ $(document).ready(function() {
         console.log("로그아웃 되었습니다.");
     });
 });
-*/
