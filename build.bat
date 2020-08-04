@@ -13,13 +13,17 @@ echo %PATH%
 REM check a GOPATH variable
 echo %GOPATH%
 
-REM build a WinDivert handler
-go get -v -ldflags="-s -w" -trimpath -tags=wintun github.com/gnh1201/shadow/executive/shadow
-
 REM set destination folder
 set BINPATH=%CD%\bin
 rmdir %BINPATH% /s /q
 mkdir %BINPATH%
+
+REM complie shadow-may.19.2020-modified
+pushd %CD%\packages\shadow-may.19.2020-modified
+windres -o main.syso main.rc
+go build
+copy %CD%\shadow.exe %BINPATH%\shadow.exe
+popd
 
 REM copy required files
 copy %CD%\packages\shadowsocks-libev-mingw-x86_64\ss-local.exe %BINPATH%\ss-local.exe
@@ -28,6 +32,5 @@ copy %CD%\packages\WinDivert-2.2.0-A\x64\WinDivert.dll %BINPATH%\WinDivert.dll
 copy %CD%\packages\WinDivert-2.2.0-A\x64\WinDivert64.sys %BINPATH%\WinDivert64.sys
 copy %CD%\packages\tun2socks-windows-4.0-amd64.exe %BINPATH%\tun2socks.exe
 copy %CD%\packages\tap-windows-9.24.2-I601-Win10.exe %BINPATH%\tap-windows-9.24.2-I601-Win10.exe
-copy %GOPATH%\bin\shadow.exe %BINPATH%\shadow.exe
 
 echo done

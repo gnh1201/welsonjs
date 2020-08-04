@@ -3,8 +3,8 @@ var global = {};
 var FILE = require("lib/file");
 var SSLoader = require("ssloader");
 
-global.processNames = [];
-global.serverNames = [];
+__global.processNames = [];
+__global.serverNames = [];
 
 var loginSuccess = function(res) {
     // 성공하면 아이디 표시
@@ -22,7 +22,7 @@ var loginSuccess = function(res) {
         for (var i in res.processes) {
             var row = res.processes[i];
             $userProcesses.append('<li class="show-logged remove-when-logout"><span><img src="app/assets/img/gear-2-16.png" alt="Process" /> ' + row.processname + '</span></li>');
-            global.processNames.push(row.processname);
+            __global.processNames.push(row.processname);
         }
 
         // 사용자 서버 조회
@@ -30,7 +30,7 @@ var loginSuccess = function(res) {
         for (var i in res.serverusers) {
             var row = res.serverusers[i];
             $userServers.append('<li class="show-logged remove-when-logout"><span><img src="app/assets/img/server-16.png" alt="Server" /> ' + row.servername + '</span></li>');
-            global.serverNames.push(row.servername);
+            __global.serverNames.push(row.servername);
         }
     });
 
