@@ -110,6 +110,7 @@ $(document).ready(function() {
         var isTokenExists = FILE.fileExists("token.txt");
         if(isTokenExists) {
             SSLoader.main();
+            $("#textbox_status").text("연결 중...");
         } else {
             console.info("로그인을 먼저 진행하여 주세요.");
         }
