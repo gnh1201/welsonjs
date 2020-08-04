@@ -1,15 +1,20 @@
 <div id="aside">
     <div class="searchbox">
-        <input id="keyword" class="text" type="text" placeholder="위치 찾아보기..."/>
+        <input id="keyword" class="text" type="text" placeholder="찾아보기..."/>
     </div>
 
     <div class="serverbox">
         <ul>
             <li>
-                <span>모든 네트워크</span>
-                <ul class="sub">
+                <span>할당된 서버</span>
+                <ul id="userServers" class="sub">
                     <li class="show-no-logged"><span><img src="app/assets/img/iconfinder_Caution_53013.png" alt="Caution" /> 로그인하세요</span></li>
-                    <server-item v-for="item in servers" v-bind:item="item" v-bind:key="item.id"></server-item>
+                </ul>
+            </li>
+            <li>
+                <span>할당된 프로세스</span>
+                <ul id="userProcesses" class="sub">
+                    <li class="show-no-logged"><span><img src="app/assets/img/iconfinder_Caution_53013.png" alt="Caution" /> 로그인하세요</span></li>
                 </ul>
             </li>
         </ul>
@@ -58,46 +63,24 @@
             <button id="btn_logout" class="logout" type="button">로그아웃</button>
         </div>
     </div>
-    
+
     <div class="statusbox">
-        <ul>
-            <li>
-                <dl>
-                    <dt>서버:</dt>
-                    <dd>-</dd>
-                </dl>
-            </li>
-            <li>
-                <dl>
-                    <dt>상태:</dt>
-                    <dd><span style="font-weight: bold;">연결 안됨</span></dd>
-                </dl>
-            </li>
-            <li>
-                <dl>
-                    <dt>IP:</dt>
-                    <dd>-</dd>
-                </dl>
-            </li>
-            <li>
-                <dl>
-                    <dt>업타임:</dt>
-                    <dd>-</dd>
-                </dl>
-            </li>
-            <li>
-                <dl>
-                    <dt>보냄:</dt>
-                    <dd>-</dd>
-                </dl>
-            </li>
-            <li>
-                <dl>
-                    <dt>받음: <a onclick="javascript:console.log('test');">test</a></dt>
-                    <dd>-</dd>
-                </dl>
-            </li>
-        </ul>
+        <div class="box1">
+            <ul>
+                <li>
+                    <dl>
+                        <dt>상태:</dt>
+                        <dd>
+                            <span id="textbox_status">연결 안됨</span>
+                        </dd>
+                    </dl>
+                </li>
+                <li>
+                    <button id="btn_connect" class="connect" type="button">연결</button>
+                    <button id="btn_disconnect" class="disconnect" type="button">종료</button>
+                </li>
+            </ul>
+        </div>
     </div>
 </div>
 

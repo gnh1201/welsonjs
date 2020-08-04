@@ -114,14 +114,15 @@ function require(FN) {
     var __dirname = getDirName(__filename);
 
     // load script file
-    var FSO = CreateObject("Scripting.FileSystemObject");
+    // use ADODB.Stream instead of Scripting.FileSystemObject, because of UTF-8 (unicode)
+    var objStream = CreateObject("ADODB.Stream");
     var T = null;
     try {
-        TS = FSO.OpenTextFile(__filename, 1);
-        if (TS.AtEndOfStream) return "";
-        T = TS.ReadAll();
-        TS.Close();
-        TS = null;
+        objStream.charSet = "utf-8";
+        objStream.open();
+        objStream.loadFromFile(__filename);
+        T = objStream.readText();
+        objStream.close();
     } catch (e) {
         console.error("LOAD ERROR! " + e.number + ", " + e.description + ", FN=" + FN, 1);
         return;

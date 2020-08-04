@@ -157,20 +157,44 @@ input.text {
 
 #content .statusbox {
     width: 360px;
-    margin: 60px auto;
+    margin: 100px auto;
 }
 
-#content .statusbox ul li {
+#content .statusbox .box1 ul li {
     float: left;
     width: 180px;
     margin: 10px 0;
 }
 
-#content .statusbox ul li dl dt {
+#content .statusbox .box1 ul li dl dt {
     color: #616686;
     display: inline;
 }
 
-#content .statusbox ul li dl dd {
+#content .statusbox .box1 ul li dl dd {
     display: inline;
+}
+
+#content .statusbox .box1 button.connect {
+    border: 0;
+    background: none;
+    background-color: #43a747;
+    color: #fff;
+    font-weight: bold;
+    padding: 3px 15px;
+    border-radius: 8px;
+    font-size: 1em;
+    cursor: pointer;
+}
+
+#content .statusbox .box1 button.disconnect {
+    border: 0;
+    background: none;
+    background-color: #db0000;
+    color: #fff;
+    font-weight: bold;
+    padding: 3px 15px;
+    border-radius: 8px;
+    font-size: 1em;
+    cursor: pointer;
 }

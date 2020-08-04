@@ -1,0 +1,40 @@
+﻿{
+    "Server": [
+        "socks://localhost:61654"
+    ],
+    "NameServer": "https://1.1.1.1/dns-query",
+    "FilterString": "outbound and (ip ? ip.DstAddr != 1.1.1.1 : true)",
+    "TunName": "TAP-Windows Adapter V9",
+    "TunAddr": [
+        "192.168.0.11/24"
+    ],
+    "IPCIDRRules": {
+        "Proxy": [
+            "198.18.0.0/16",
+            "8.8.8.8/32"
+        ]
+    },
+    "AppRules": {
+        "Proxy": []
+    },
+    "DomainRules": {
+        "Proxy": [
+            "**.google.com",
+            "**.google.*",
+            "**.google.*.*",
+            "**.youtube.com",
+            "*.twitter.com",
+            "www.facebook.com",
+            "bing.com",
+            "**.amazon.*"
+        ],
+        "Direct": [
+            "**.baidu.*",
+            "**.youku.*",
+            "**.*"
+        ],
+        "Blocked": [
+            "ad.blocked.com"
+        ]
+    }
+}
