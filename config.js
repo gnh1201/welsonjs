@@ -1,6 +1,7 @@
 exports.config = {
     appName: "welsonjs",
     development: false,
+    library: [],
     shadowsocks: {
         host: "158.247.196.146",
         port: 8388,

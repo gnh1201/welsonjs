@@ -99,8 +99,6 @@ exports.main = function(args) {
         }, function(el) {
             return window.jQuery.toast;
         });
-
-        OldBrowser.addScript("app/assets/js/jquery.form-4.3.0.min.js");
     });
 
     // hook drag and drop
