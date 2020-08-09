@@ -24,7 +24,7 @@ exports.main = function(args) {
     REG.write(REG.HKCR, __config.appName, "", "URL:" + __config.appName, REG.STRING);
     REG.write(REG.HKCR, __config.appName, "URL Protocol", "", REG.STRING);
     REG.write(REG.HKCR, __config.appName + "\\DefaultIcon", "", SYS.getCurrentScriptDirectory() + "\\app\\favicon.ico,0", REG.STRING);
-    REG.write(REG.HKCR, __config.appName + "\\shell\\open\\command", "", "cscript " + SYS.getCurrentScriptDirectory() + "\\app.js uriloader \"%1\"", REG.STRING);
+    REG.write(REG.HKCR, __config.appName + "\\shell\\open\\command", "", "cmd.exe /c cscript " + SYS.getCurrentScriptDirectory() + "\\app.js uriloader \"%1\"", REG.STRING);
 
     // open HTA file
     console.log("Trying open GUI...");

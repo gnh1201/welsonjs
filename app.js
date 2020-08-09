@@ -95,15 +95,17 @@ function require(FN) {
 
     // get directory name
     var getDirName = function(path) {
-        var pos = path.lastIndexOf("\\");
-        return path.substring(0, pos);
+        var delimiter = "\\";
+        var pos = path.lastIndexOf(delimiter);
+        return (pos > -1 ? path.substring(0, pos) : "");
     };
 
     // get current script directory
     var getCurrentScriptDirectory = function() {
         if (typeof(WScript) !== "undefined") {
-            var path = WScript.ScriptFullName;
-            return getDirName(path);
+            return getDirName(WScript.ScriptFullName);
+        } else if (typeof(document) !== "undefined") {
+            return getDirName(document.location.pathname);
         } else {
             return ".";
         }
