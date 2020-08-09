@@ -55,6 +55,9 @@ exports.main = function() {
         "-c",
         SYS.getCurrentScriptDirectory() + "/config.json"
     ]);
+
+    // 안내
+    console.info("해당 프로세스를 실행하여 확인하시기 바랍니다.");
 };
 
 exports.ssConfig = ssConfig;

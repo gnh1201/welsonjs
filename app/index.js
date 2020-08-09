@@ -5,6 +5,7 @@ var SSLoader = require("ssloader");
 
 __global.processNames = [];
 __global.serverNames = [];
+__global.disconnected = true;
 
 var loginSuccess = function(res) {
     // 성공하면 아이디 표시
@@ -109,21 +110,27 @@ $(document).ready(function() {
 
     // 연결
     $("#btn_connect").click(function() {
-        var isTokenExists = FILE.fileExists("token.txt");
-        if(isTokenExists) {
-            SSLoader.main();
-            $("#textbox_status").text("연결 중...");
-            setTimeout(function() {
-                $("#textbox_status").text("연결 됨");
-            }, 10000);
+        if (!__global.disconnected) {
+            console.info("중복실행을 차단합니다. 프로세스가 실행 중입니다.");
         } else {
-            console.info("로그인을 먼저 진행하여 주세요.");
+            var isTokenExists = FILE.fileExists("token.txt");
+            if(isTokenExists) {
+                SSLoader.main();
+                $("#textbox_status").text("연결 중...");
+                setTimeout(function() {
+                    $("#textbox_status").text("연결 됨");
+                    __global.disconnected = false; // 연결 상태임을 표시
+                }, 10000);
+            } else {
+                console.info("로그인을 먼저 진행하여 주세요.");
+            }
         }
     });
 
     // 종료
     $("#btn_disconnect").click(function() {
         console.info("연결을 종료합니다.");
+        __global.disconnected = true // 연결종료 상태임을 표시
         // todo
     });
 });

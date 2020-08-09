@@ -1,18 +1,16 @@
-; @breif WelsonJS
-; @author Go Namhyeon (gnh1201@gmail.com)
 ; @created_on 2020-06-26
-; @updated_on 2020-07-21
+; @updated_on 2020-08-09
 
 [Setup]
-AppName=WelsonJS
-AppVersion=0.1.2
+AppName=NextVPN
+AppVersion=0.1.3
 WizardStyle=modern
-DefaultDirName={pf}\WelsonJS
-DefaultGroupName=WelsonJS
+DefaultDirName={pf}\NextVPN
+DefaultGroupName=NextVPN
 UninstallDisplayIcon={app}\UnInst.exe
 Compression=lzma2
 SolidCompression=yes
-OutputDir=.
+OutputDir=packages\installer
 PrivilegesRequired=admin
 ArchitecturesInstallIn64BitMode=x64
 
@@ -25,20 +23,26 @@ ArchitecturesInstallIn64BitMode=x64
 [Files]
 Source: "app.js"; DestDir: "{app}";
 Source: "app.hta"; DestDir: "{app}";
+Source: "start.bat"; DestDir: "{app}";
+Source: "config.js"; DestDir: "{app}";
 Source: "uriloader.js"; DestDir: "{app}";
 Source: "webloader.js"; DestDir: "{app}";
 Source: "bootstrap.js"; DestDir: "{app}";
+Source: "ssloader.js"; DestDir: "{app}";
 Source: "app\*"; DestDir: "{app}/app"; Flags: ignoreversion recursesubdirs;
-Source: "node_modules\*"; DestDir: "{app}/node_modules"; Flags: ignoreversion recursesubdirs;
+Source: "lib\*"; DestDir: "{app}/lib"; Flags: ignoreversion recursesubdirs;
+Source: "bin\*"; DestDir: "{app}/bin"; Flags: ignoreversion recursesubdirs;
+; Source: "node_modules\*"; DestDir: "{app}/node_modules"; Flags: ignoreversion recursesubdirs;
 
 [Icons]
+Name: "{group}\Start {cm:AppName}"; Filename: "{app}\start.bat"; AfterInstall: SetElevationBit('{group}\Start {cm:AppName}.lnk');
 Name: "{group}\Uninstall {cm:AppName}"; Filename: "{uninstallexe}"; AfterInstall: SetElevationBit('{group}\Uninstall {cm:AppName}.lnk');
 
-; [Run]
-; Filename: {app}\app.hta;
+[Run]
+Filename: {app}\start.bat;
 
 [CustomMessages]
-AppName=WelsonJS
+AppName=NextVPN
 
 [Code]
 procedure SetElevationBit(Filename: string);
