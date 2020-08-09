@@ -18,6 +18,7 @@ var loginSuccess = function(res) {
         token: token
     }, function(res) {
         // 사용자 프로세스 조회
+        __global.processNames = [];
         var $userProcesses = $("#userProcesses");
         for (var i in res.processes) {
             var row = res.processes[i];
@@ -26,6 +27,7 @@ var loginSuccess = function(res) {
         }
 
         // 사용자 서버 조회
+        __global.serverNames = [];
         var $userServers = $("#userServers");
         for (var i in res.serverusers) {
             var row = res.serverusers[i];

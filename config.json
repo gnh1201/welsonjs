@@ -1,36 +1,24 @@
 {
-    "Server": "socks://localhost:1080",
+    "Server": [
+        "socks://localhost:1080"
+    ],
     "NameServer": "https://1.1.1.1/dns-query",
-    "FilterString": "outbound and (ip ? ip.DstAddr != 1.1.1.1 : true)",
-    "IPRules": {
-        "Mode": false,
-        "IPCIDR": []
+    "FilterString": "outbound and (ip ? ip.DstAddr != 1.2.3.4 and ip.DstAddr != 1.1.1.1 : true)",
+    "IPCIDRRules": {
+        "Proxy": [
+            "198.18.0.0/16",
+            "8.8.8.8/32"
+        ]
     },
     "AppRules": {
-        "Mode": true,
-        "Programs": [
+        "Proxy": [
             "chrome.exe",
             "nx.exe"
         ]
     },
     "DomainRules": {
-        "Proxy": [
-            "**.google.com",
-            "**.google.*",
-            "**.google.*.*",
-            "**.youtube.com",
-            "*.twitter.com",
-            "www.facebook.com",
-            "bing.com",
-            "**.amazon.*"
-        ],
-        "Direct": [
-            "**.baidu.*",
-            "**.youku.*",
-            "**.*"
-        ],
-        "Blocked": [
-            "ad.blocked.com"
-        ]
+        "Proxy": [],
+        "Direct": [],
+        "Blocked": []
     }
 }

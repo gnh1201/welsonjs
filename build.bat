@@ -19,18 +19,21 @@ rmdir %BINPATH% /s /q
 mkdir %BINPATH%
 
 REM complie shadow-may.19.2020-modified
-pushd %CD%\packages\shadow-may.19.2020-modified
-windres -o main.syso main.rc
-go build
-copy %CD%\shadow.exe %BINPATH%\shadow.exe
-popd
+REM pushd %CD%\packages\shadow-may.19.2020-modified
+REM windres -o main.syso main.rc
+REM go build
+REM copy %CD%\shadow.exe %BINPATH%\shadow.exe
+REM popd
+
+go get -v -ldflags="-s -w" -trimpath github.com/imgk/shadow/executive/shadow
 
 REM copy required files
 copy %CD%\packages\shadowsocks-libev-mingw-x86_64\ss-local.exe %BINPATH%\ss-local.exe
 copy %CD%\packages\shadowsocks-libev-mingw-x86_64\*.dll %BINPATH%\
 copy %CD%\packages\WinDivert-2.2.0-A\x64\WinDivert.dll %BINPATH%\WinDivert.dll
 copy %CD%\packages\WinDivert-2.2.0-A\x64\WinDivert64.sys %BINPATH%\WinDivert64.sys
-copy %CD%\packages\tun2socks-windows-4.0-amd64.exe %BINPATH%\tun2socks.exe
-copy %CD%\packages\tap-windows-9.24.2-I601-Win10.exe %BINPATH%\tap-windows-9.24.2-I601-Win10.exe
+REM copy %CD%\packages\tun2socks-windows-4.0-amd64.exe %BINPATH%\tun2socks.exe
+REM copy %CD%\packages\tap-windows-9.24.2-I601-Win10.exe %BINPATH%\tap-windows-9.24.2-I601-Win10.exe
+copy %CD%\packages\build\go\bin\shadow.exe %BINPATH%\shadow.exe
 
 echo done
