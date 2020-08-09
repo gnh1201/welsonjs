@@ -51,7 +51,10 @@ exports.main = function() {
 
     // 앱 프록시 실행
     console.info("앱 프록시는 관리자 권한을 필요로 합니다. 권한 요청 시 확인을 눌러주세요.");
-    SHELL.elevatedRun("assignProxy.bat");
+    SHELL.elevatedRun(SYS.getCurrentScriptDirectory() + "/bin/shadow.exe", [
+        "-c",
+        SYS.getCurrentScriptDirectory() + "/config.json"
+    ]);
 };
 
 exports.ssConfig = ssConfig;

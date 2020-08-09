@@ -113,6 +113,9 @@ $(document).ready(function() {
         if(isTokenExists) {
             SSLoader.main();
             $("#textbox_status").text("연결 중...");
+            setTimeout(function() {
+                $("#textbox_status").text("연결 됨");
+            }, 10000);
         } else {
             console.info("로그인을 먼저 진행하여 주세요.");
         }
@@ -120,6 +123,7 @@ $(document).ready(function() {
 
     // 종료
     $("#btn_disconnect").click(function() {
+        console.info("연결을 종료합니다.");
         // todo
     });
 });
