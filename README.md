@@ -65,6 +65,11 @@ C:\Users\John\Documents\GitHub\welsonjs> cscript app.js sayhello
 hello
 ```
 
+## Showcases
+![showcase-cogym.png](showcase/showcase-cogym.png)
+![showcase-nextvpn-1.png](showcase/showcase-nextvpn-1.png)
+![showcase-nextvpn-2.png](showcase/showcase-nextvpn-2.png)
+
 ## Related projects
 - [gnh1201/wsh-js-gtk](https://catswords.re.kr/go/wshjsgtk) - GTK GUI ported to Windows Scripting Host - Javascript (Microsoft JScript) (wsh-js)
 - [gnh1201/wsh-json](https://catswords.re.kr/go//wshjson) - JSON stringify/parse (encode/decode) for Windows Scripting Host
