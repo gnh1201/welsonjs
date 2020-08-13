@@ -6,6 +6,7 @@
 
 var SHELL = require("lib/shell");
 var URI = require("lib/uri");
+var WINLIBS = require("lib/winlibs");
 
 exports.main = function(args) {
     var uri = args[0];
@@ -29,8 +30,11 @@ exports.main = function(args) {
                 cmd.push("calc.exe");
                 break;
             case "msie":
-                cmd.push("%PROGRAMFILES%\\Internet Explorer\\iexplore.exe");
-                cmd.push("https://github.com/gnh1201/welsonjs");
+                //cmd.push("%PROGRAMFILES%\\Internet Explorer\\iexplore.exe");
+                //cmd.push("https://github.com/gnh1201/welsonjs");
+                WINLIBS.loadLibrary("url").call("FileProtocolHandler", [
+                    "https://github.com/gnh1201/welsonjs"
+                ]);
                 break;
             case "msexcel":
                 cmd.push("%PROGRAMFILES%\\Microsoft Office\\Office15\\EXCEL.EXE");
