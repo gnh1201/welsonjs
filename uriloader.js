@@ -4,6 +4,7 @@
 //
 /////////////////////////////////////////////////////////////////////////////////
 
+var SYS = require("lib/system");
 var SHELL = require("lib/shell");
 var URI = require("lib/uri");
 var WINLIBS = require("lib/winlibs");
@@ -24,7 +25,11 @@ exports.main = function(args) {
 
         switch(query.application) {
             case "app":
+                cmd.push("start");
+                cmd.push("/d");
+                cmd.push(SYS.getCurrentScriptDirectory());
                 cmd.push("app.hta");
+                cmd.push(uri); // passing URI to application
                 break;
             case "mscalc":
                 cmd.push("calc.exe");
