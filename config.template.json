@@ -1,0 +1,16 @@
+{
+    "server": "",
+    "name_server": "https://1.1.1.1/dns-query",
+    "windivert_filter_string": "outbound and (ip ? ip.DstAddr != 1.2.3.4 and ip.DstAddr != 1.1.1.1 : true)",
+    "ip_cidr_rules": {
+        "proxy": []
+    },
+    "app_rules": {
+        "proxy": []
+    },
+    "domain_rules": {
+        "proxy": [],
+        "direct": [],
+        "blocked": []
+    }
+}
