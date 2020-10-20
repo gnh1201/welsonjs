@@ -69,8 +69,27 @@ var console = {
 };
 
 if (typeof(CreateObject) !== "function") {
-    var CreateObject = function(className) {
-        return new ActiveXObject(className);
+    var CreateObject = function(progId, serverName) {
+        var progIds = [];
+        var _CreateObject = function(p, s) {
+            if (typeof(WScript) !== "undefined") {
+                return WScript.CreateObject(p, s);
+            } else {
+                return new ActiveXObject(p, s);
+            }
+        };
+
+        if (typeof(progId) == "object") {
+            progIds = progId;
+        } else {
+            progIds.push(progId);
+        }
+
+        for (var i = 0; i < progIds.length; i++) {
+            try {
+                return _CreateObject(progIds[i], serverName);
+            } catch (e) {};
+        }
     };
 }
 
