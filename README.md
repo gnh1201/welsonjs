@@ -79,6 +79,7 @@ hello
 - [iconjack/setTimeout-for-windows-script-host](https://catswords.re.kr/go/wshtimer) - Replacement for the missing setTimeout and clearTimeout function in Windows Script Host
 - [johnjohnsp1/WindowsScriptHostExtension](https://catswords.re.kr/go/actctx) - Inject DLL Prototype using Microsoft.Windows.ACTCTX COM Object
 - [kuntashov/jsunit](https://catswords.re.kr/go/wshjsunit) - JSUnit port for Windows Scripting Host
+- [nickdoth/WSHHttpServer](https://catswords.re.kr/go/wshhttpserver) - HTTP server based on Windows Script Host
 
 ## Contact me
 - gnh1201@gmail.com
