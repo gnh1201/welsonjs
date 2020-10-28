@@ -6,7 +6,7 @@ function main() {
         
         // create new window
         win = new GTK.Window({
-            title: "Hello world",
+            title: "WelsonJS GTK GUI Demo Application",
             width: 450,
             height: 400
         });
@@ -30,7 +30,10 @@ function main() {
         // create new entry
         entry = new GTK.Entry();
         table.attach(entry, 1, 40, 45, 49);
-        
+        entry.addEventListener("enter", function(event) {
+            console.info(event.target.getText());
+        });
+
         // create new textbox
         text = new GTK.TextBox();
         table.attach(text, 1, 49, 8, 44);
@@ -54,7 +57,7 @@ function main() {
 
         // showing window
         win.show();
-        
+
         // focusing entry
         entry.focus();
     });
