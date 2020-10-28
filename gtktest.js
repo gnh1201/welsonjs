@@ -22,7 +22,7 @@ function main() {
         button = new GTK.Button({
             text: "Exit"
         });
-        button.addEventListener('click', function() {
+        button.addEventListener("click", function() {
             GTK.exit();
         });
         table.attach(button, 41, 49, 45, 49);
@@ -33,7 +33,7 @@ function main() {
         
         // create new textbox
         text = new GTK.TextBox();
-        table.attach(entry, 1, 49, 8, 44);
+        table.attach(text, 1, 49, 8, 44);
         
         // create new radiogroup
         radiogroup = new GTK.RadioGroup();
