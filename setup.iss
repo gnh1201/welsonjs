@@ -24,11 +24,10 @@ ArchitecturesInstallIn64BitMode=x64
 Source: "app.js"; DestDir: "{app}";
 Source: "app.hta"; DestDir: "{app}";
 Source: "start.bat"; DestDir: "{app}";
-Source: "config.js"; DestDir: "{app}";
 Source: "uriloader.js"; DestDir: "{app}";
 Source: "webloader.js"; DestDir: "{app}";
 Source: "bootstrap.js"; DestDir: "{app}";
-Source: "ssloader.js"; DestDir: "{app}";
+Source: "shadow.js"; DestDir: "{app}";
 Source: "app\*"; DestDir: "{app}/app"; Flags: ignoreversion recursesubdirs;
 Source: "lib\*"; DestDir: "{app}/lib"; Flags: ignoreversion recursesubdirs;
 Source: "bin\*"; DestDir: "{app}/bin"; Flags: ignoreversion recursesubdirs;
