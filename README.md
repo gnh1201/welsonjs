@@ -25,7 +25,7 @@ WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on 
 - lib/timer (`setTimeout` implementation for not supported environment)
 - lib/powershell (Windows Powershell interface)
 - lib/service (Windows Service interface)
-- lib/oldbrowser (HTML/JS/CSS interface)
+- lib/oldbrowser (ES5/ES6, HTML/JS/CSS compatibility)
 - lib/uri (URI scheme interface)
 - lib/winlibs (Windows DLL(Dynamic-link library) interface)
 - lib/autohotkey ([AutoHotKey](https://catswords.re.kr/go/autohotkey) interface)
@@ -37,6 +37,7 @@ WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on 
 - lib/wintap (Windows-TAP interface)
 - lib/tun2socks (TUN2SOCKS interface)
 - lib/hosts (Hosts file interface)
+- lib/gtk (GTK-server GUI interface)
 
 ## Make your own `sayhello` example
 
