@@ -30,9 +30,11 @@ exports.main = function(args) {
                 cmd.push("app.hta");
                 cmd.push(uri); // passing URI to application
                 break;
+
             case "mscalc":
                 cmd.push("calc.exe");
                 break;
+
             case "msie":
                 //cmd.push("%PROGRAMFILES%\\Internet Explorer\\iexplore.exe");
                 //cmd.push("https://github.com/gnh1201/welsonjs");
@@ -40,26 +42,33 @@ exports.main = function(args) {
                     "https://github.com/gnh1201/welsonjs"
                 ]);
                 break;
+
             case "msexcel":
                 cmd.push("%PROGRAMFILES%\\Microsoft Office\\Office15\\EXCEL.EXE");
                 break;
+
             case "mspowerpoint":
                 cmd.push("%PROGRAMFILES%\\Microsoft Office\\Office15\\POWERPNT.EXE");
                 break;
+
             case "msword":
                 cmd.push("%PROGRAMFILES%\\Microsoft Office\\Office15\\WINWORD.EXE");
                 break;
+
             case "msaccess":
                 cmd.push("%PROGRAMFILES%\\Microsoft Office\\Office15\\MSACCESS.EXE");
                 break;
+
             case "ldmultiplayer":
                 cmd.push("%SYSTEMDRIVE%\\LDPlayer\LDPlayer3.0\\dnmultiplayer.exe");
                 break;
+
             case "noxmultiplayer":
                 cmd.push("%PROGRAMFILES(X86)%\\Nox\\bin\\MultiPlayerManager.exe");
                 break;
-                dafault:
-                    console.log("Unknown application");
+
+            dafault:
+                console.log("Unknown application");
         }
 
         if (typeof(query.args) !== "undefined") {
