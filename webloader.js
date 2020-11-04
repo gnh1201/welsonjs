@@ -3,7 +3,6 @@
 ////////////////////////////////////////////////////////////////////////
 var FILE = require("lib/file");
 var OldBrowser = require("lib/oldbrowser");
-var URILoader = require("uriloader");
 
 ////////////////////////////////////////////////////////////////////////
 // Override global.console.__echo()
@@ -20,15 +19,6 @@ global.console.__echo = function(msg) {
     }
 
     global.console.__messages.push(msg);
-};
-
-////////////////////////////////////////////////////////////////////////
-// Override global.console.log()
-////////////////////////////////////////////////////////////////////////
-global.console.log = function(msg) {
-    if (__config.development === true) {
-        global.console.__echo(msg);
-    }
 };
 
 ////////////////////////////////////////////////////////////////////////
@@ -82,6 +72,7 @@ exports.main = function(args) {
     OldBrowser.setContent(FILE.readFile("app\\index.html", "utf-8"));
     OldBrowser.addStylesheet("app/assets/css/jquery-ui-1.21.1.min.css");
     OldBrowser.addStylesheet("app/assets/css/jquery.toast-1.3.2.min.css");
+    OldBrowser.addStylesheet("app/assets/css/cascade/production/build-full.min.css");
     OldBrowser.addStylesheet("app/assets/css/style.css");
     OldBrowser.start(function(el) {
         jQuery.support.cors = true;
@@ -108,20 +99,6 @@ exports.main = function(args) {
     document.body.ondrop = function() {
         return false;
     };
-
-    // assign click event
-    var elems = document.getElementsByTagName("a");
-    for(var i in elems) {
-        var uri = elems[i].href || "";
-        var pos = uri.indexOf("://");
-        if(uri.substring(0, pos) == __config.appName) {
-            elems[i].onclick = function(e) {
-                var uri = this.href || "";
-                URILoader.main([uri]);
-                e.preventDefault();
-            };
-        }
-    }
 
     return 0;
 };

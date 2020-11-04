@@ -9,6 +9,8 @@ var REG = require("lib/registry");
 var SYS = require("lib/system");
 var SHELL = require("lib/shell");
 
+var appName = "welsonjs";
+
 exports.main = function(args) {
     // unlock file
     console.log("Starting unlock files...");
@@ -21,10 +23,10 @@ exports.main = function(args) {
 
     // register URI scheme
     console.log("Registering URI scheme...");
-    REG.write(REG.HKCR, __config.appName, "", "URL:" + __config.appName, REG.STRING);
-    REG.write(REG.HKCR, __config.appName, "URL Protocol", "", REG.STRING);
-    REG.write(REG.HKCR, __config.appName + "\\DefaultIcon", "", SYS.getCurrentScriptDirectory() + "\\app\\favicon.ico,0", REG.STRING);
-    REG.write(REG.HKCR, __config.appName + "\\shell\\open\\command", "", "cmd.exe /c cscript " + SYS.getCurrentScriptDirectory() + "\\app.js uriloader \"%1\"", REG.STRING);
+    REG.write(REG.HKCR, appName, "", "URL:" + appName, REG.STRING);
+    REG.write(REG.HKCR, appName, "URL Protocol", "", REG.STRING);
+    REG.write(REG.HKCR, appName + "\\DefaultIcon", "", SYS.getCurrentScriptDirectory() + "\\app\\favicon.ico,0", REG.STRING);
+    REG.write(REG.HKCR, appName + "\\shell\\open\\command", "", "cmd.exe /c cscript " + SYS.getCurrentScriptDirectory() + "\\app.js uriloader \"%1\"", REG.STRING);
 
     // open HTA file
     console.log("Trying open GUI...");

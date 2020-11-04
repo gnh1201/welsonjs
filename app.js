@@ -44,7 +44,10 @@ var console = {
     __echo: function(msg) {
         if (typeof(WScript) !== "undefined") {
             WScript.echo(msg);
+        } else if (typeof(window) !== "undefined") {
+            window.alert(msg);
         }
+
         this.__messages.push(msg);
     },
     log: function(msg) {
@@ -75,7 +78,7 @@ if (typeof(CreateObject) !== "function") {
             if (typeof(WScript) !== "undefined") {
                 return WScript.CreateObject(p, s);
             } else {
-                return new ActiveXObject(p, s);
+                return new ActiveXObject(p);
             }
         };
 
@@ -88,7 +91,9 @@ if (typeof(CreateObject) !== "function") {
         for (var i = 0; i < progIds.length; i++) {
             try {
                 return _CreateObject(progIds[i], serverName);
-            } catch (e) {};
+            } catch (e) {
+                console.error(e.message);
+            };
         }
     };
 }
@@ -102,7 +107,7 @@ if (typeof(GetObject) !== "function") {
             var strNamespace = paths.slice(3).join("\\");
             return objLocator.ConnectServer(strComputer, strNamespace);
         } else {
-            console.log("Not supported: " + pathName);
+            console.log("Not supported " + pathName);
         }
     };
 }
@@ -167,13 +172,6 @@ function require(FN) {
 }
 
 /////////////////////////////////////////////////////////////////////////////////
-// get global variables
-/////////////////////////////////////////////////////////////////////////////////
-
-var __global = {};
-var __config = require("config").config;
-
-/////////////////////////////////////////////////////////////////////////////////
 // Load script, and call app.main()
 /////////////////////////////////////////////////////////////////////////////////
 
@@ -211,7 +209,6 @@ function init_window(name, args, w, h) {
         console.error("Error, window is not defined");
         exit(1);
     }
-
     var app = require(name);
 
     // "set default size of window";
