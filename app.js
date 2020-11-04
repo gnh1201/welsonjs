@@ -45,7 +45,7 @@ var console = {
         if (typeof(WScript) !== "undefined") {
             WScript.echo(msg);
         } else if (typeof(window) !== "undefined") {
-            window.alert(msg);
+            //window.alert(msg);
         }
 
         this._messages.push(msg);
