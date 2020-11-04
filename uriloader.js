@@ -67,6 +67,23 @@ exports.main = function(args) {
                 cmd.push("%PROGRAMFILES(X86)%\\Nox\\bin\\MultiPlayerManager.exe");
                 break;
 
+            case "codingschool":
+                cmd.push("%PROGRAMFILES(X86)\\CodingSchool3\\CodingSchool3.exe");
+                //cmd.push(SYS.getCurrentScriptDirectory() + "\\bin\\CodingSchool\\CodingSchool.exe");
+                break;
+
+            case "arduino":
+                cmd.push("%PROGRAMFILES(X86)%\\Arduino\\arduino.exe");
+                break;
+
+            case "opentyping":
+                cmd.push(SYS.getCurrentScriptDirectory() + "\\bin\\OpenTyping\\OpenTyping.exe");
+                break;
+
+            case "hnctt80":
+                cmd.push("%PROGRAMFILES(X86)%\\HNC\\HncTT80\\HncTT.exe");
+                break;
+
             dafault:
                 console.log("Unknown application");
         }
