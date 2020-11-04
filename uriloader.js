@@ -3,7 +3,6 @@
 //    uriloader.js
 //
 /////////////////////////////////////////////////////////////////////////////////
-
 var SYS = require("lib/system");
 var SHELL = require("lib/shell");
 var URI = require("lib/uri");
@@ -12,18 +11,18 @@ var WINLIBS = require("lib/winlibs");
 exports.main = function(args) {
     var uri = args[0];
     var pos = uri.indexOf(":///");
-    if(pos < 0) {
+    if (pos < 0) {
         console.log("Not vaild URI scheme");
     } else {
         var cmd = [],
             queryString = uri.substring(pos + 4),
             query = URI.parseQueryString(queryString);
 
-        if(!query.application) {
+        if (!query.application) {
             query.application = "";
         }
 
-        switch(query.application) {
+        switch (query.application) {
             case "app":
                 cmd.push("start");
                 cmd.push("/d");
@@ -53,11 +52,17 @@ exports.main = function(args) {
             case "msaccess":
                 cmd.push("%PROGRAMFILES%\\Microsoft Office\\Office15\\MSACCESS.EXE");
                 break;
-            dafault:
-                console.log("Unknown application");
+            case "ldmultiplayer":
+                cmd.push("%SYSTEMDRIVE%\\LDPlayer\LDPlayer3.0\\dnmultiplayer.exe");
+                break;
+            case "noxmultiplayer":
+                cmd.push("%PROGRAMFILES(X86)%\\Nox\\bin\\MultiPlayerManager.exe");
+                break;
+                dafault:
+                    console.log("Unknown application");
         }
 
-        if(typeof(query.args) !== "undefined") {
+        if (typeof(query.args) !== "undefined") {
             cmd.push(query.args);
         }
 
