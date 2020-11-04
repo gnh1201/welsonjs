@@ -5,9 +5,9 @@ var FILE = require("lib/file");
 var OldBrowser = require("lib/oldbrowser");
 
 ////////////////////////////////////////////////////////////////////////
-// Override global.console.__echo()
+// Override global.console._echo()
 ////////////////////////////////////////////////////////////////////////
-global.console.__echo = function(msg) {
+global.console._echo = function(msg) {
     if (typeof(window.jQuery) !== "undefined") {
         window.jQuery.toast({
             heading: "Information",
@@ -15,10 +15,10 @@ global.console.__echo = function(msg) {
             icon: "info"
         });
     } else {
-        alert(msg);
+        window.alert(msg);
     }
 
-    global.console.__messages.push(msg);
+    global.console._messages.push(msg);
 };
 
 ////////////////////////////////////////////////////////////////////////
@@ -78,8 +78,9 @@ exports.main = function(args) {
         jQuery.support.cors = true;
 
         OldBrowser.addScript("app/assets/js/jquery.toast-1.3.2.min.js", function(el) {
-            var messages = global.console.__messages;
+            var messages = global.console._messages;
             if (messages.length > 0) {
+                // print messages
                 for (var i in messages) {
                     console.log(messages[i]);
                 }
@@ -95,10 +96,12 @@ exports.main = function(args) {
         });
     });
 
-    // hook drag and drop
+    // hook drag event
     document.body.ondragstart = function() {
         return false;
     };
+    
+    // hook drop event
     document.body.ondrop = function() {
         return false;
     };

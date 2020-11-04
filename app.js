@@ -40,34 +40,34 @@ var exit = function(status) {
 };
 
 var console = {
-    __messages: [],
-    __echo: function(msg) {
+    _messages: [],
+    _echo: function(msg) {
         if (typeof(WScript) !== "undefined") {
             WScript.echo(msg);
         } else if (typeof(window) !== "undefined") {
             window.alert(msg);
         }
 
-        this.__messages.push(msg);
+        this._messages.push(msg);
     },
     log: function(msg) {
-        this.__echo(msg);
+        this._echo(msg);
     },
     error: function(msg) {
         var msg = "[ERROR] " + msg;
-        this.__echo(msg);
+        this._echo(msg);
     },
     info: function(msg) {
         var msg = "[INFO] " + msg;
-        this.__echo(msg);
+        this._echo(msg);
     },
     warn: function(msg) {
         var msg = "[WARN] " + msg;
-        this.__echo(msg);
+        this._echo(msg);
     },
     debug: function(msg) {
         var msg = "[DEBUG] " + msg;
-        this.__echo(msg);
+        this._echo(msg);
     }
 };
 
