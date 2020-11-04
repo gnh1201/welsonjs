@@ -2,7 +2,7 @@
 WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on WSH/HTA
 
 ## Structure
-![Structure of WelsonJS](app/assets/img/structure.png)
+![Structure](app/assets/img/structure.png)
 
 ## Specifications
 - ES5(ECMAScript 5), ES6(ECMAScript 6) compatibility with [es5-shim](https://catswords.re.kr/go/es5shim), [es6-shim](https://catswords.re.kr/go/es6shim), and [json3](https://catswords.re.kr/go/json3)
@@ -68,6 +68,9 @@ hello
 
 ## Make own setup file
 - compile `setup.iss` file with [Inno Setup](https://jrsoftware.org/isinfo.php)
+
+## Screenshot
+![Screenshot](app/assets/img/screenshot.png)
 
 ## Related projects
 - [gnh1201/wsh-js-gtk](https://github.com/gnh1201/wsh-js-gtk) - GTK GUI ported to Windows Scripting Host - Javascript (Microsoft JScript) (wsh-js)
