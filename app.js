@@ -36,38 +36,32 @@ var exit = function(status) {
     if (typeof(WScript) !== "undefined") {
         WScript.quit(status);
     }
-    console.warn("Exit caused by: " + status);
+    console.warn("Exit caused: " + status);
 };
 
 var console = {
     _messages: [],
-    _echo: function(msg) {
+    _echo: function(msg, type) {
+        msg = (typeof(type) !== "undefined" ? type + ": " : "") + msg;
         if (typeof(WScript) !== "undefined") {
             WScript.echo(msg);
-        } else if (typeof(window) !== "undefined") {
-            //window.alert(msg);
         }
-
         this._messages.push(msg);
     },
     log: function(msg) {
         this._echo(msg);
     },
     error: function(msg) {
-        var msg = "[ERROR] " + msg;
-        this._echo(msg);
+        this._echo(msg, "error");
     },
     info: function(msg) {
-        var msg = "[INFO] " + msg;
-        this._echo(msg);
+        this._echo(msg, "info");
     },
     warn: function(msg) {
-        var msg = "[WARN] " + msg;
-        this._echo(msg);
+        this._echo(msg, "warn");
     },
     debug: function(msg) {
-        var msg = "[DEBUG] " + msg;
-        this._echo(msg);
+        this._echo(msg, "debug");
     }
 };
 

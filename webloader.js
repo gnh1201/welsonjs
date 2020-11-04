@@ -7,12 +7,34 @@ var OldBrowser = require("lib/oldbrowser");
 ////////////////////////////////////////////////////////////////////////
 // Override global.console._echo()
 ////////////////////////////////////////////////////////////////////////
-global.console._echo = function(msg) {
+global.console._echo = function(msg, type) {
+    var heading, icon;
+
+    switch(type) {
+        case "error":
+            heading = "Error";
+            icon = "error";
+            break;
+
+        case "warning":
+            heading = "Warning";
+            icon = "warning";
+            break;
+
+        case "info":
+            heading = "Information";
+            icon = "info";
+
+        default:
+            heading = "Message";
+            icon = "success";
+    }
+
     if (typeof(window.jQuery) !== "undefined") {
         window.jQuery.toast({
-            heading: "Information",
+            heading: heading,
             text: msg,
-            icon: "info"
+            icon: icon
         });
     } else {
         window.alert(msg);
