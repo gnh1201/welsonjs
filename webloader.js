@@ -57,7 +57,7 @@ global.exit = function() {
 
     grip.addEventListener("mousedown", mouseDown);
     grip.addEventListener("mousemove", gripMouseMove);
-})(document.getElementsByTagName("body")[0]);
+})(document.getElementById("app"));
 
 ////////////////////////////////////////////////////////////////////////
 // exports.IEVersion
