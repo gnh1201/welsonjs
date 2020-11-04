@@ -86,6 +86,9 @@ exports.main = function(args) {
 
                 // start this app
                 OldBrowser.addScript("app/index.js");
+
+                // hide loading image
+                document.getElementById("loading").style.display = "none";
             }
         }, function(el) {
             return window.jQuery.toast;
