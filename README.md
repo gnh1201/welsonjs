@@ -65,16 +65,19 @@ C:\Users\John\Documents\GitHub\welsonjs> cscript app.js sayhello
 hello
 ```
 
+## Make own setup file
+- compile `setup.iss` file with [Inno Setup](https://jrsoftware.org/isinfo.php)
+
 ## Related projects
-- [gnh1201/wsh-js-gtk](https://catswords.re.kr/go/wshjsgtk) - GTK GUI ported to Windows Scripting Host - Javascript (Microsoft JScript) (wsh-js)
-- [gnh1201/wsh-json](https://catswords.re.kr/go//wshjson) - JSON stringify/parse (encode/decode) for Windows Scripting Host
-- [redskyit/wsh-appjs](https://catswords.re.kr/go/wshappjs) - require-js and app framework for Windows Scripting Host JavaScript
-- [JohnLaTwC's gist](https://catswords.re.kr/go/johnlatwcgist) - JavaScript RAT
-- [JSMan-/JS-Framework](https://catswords.re.kr/go/jsmanfw) - No description
-- [iconjack/setTimeout-for-windows-script-host](https://catswords.re.kr/go/wshtimer) - Replacement for the missing setTimeout and clearTimeout function in Windows Script Host
-- [johnjohnsp1/WindowsScriptHostExtension](https://catswords.re.kr/go/actctx) - Inject DLL Prototype using Microsoft.Windows.ACTCTX COM Object
-- [kuntashov/jsunit](https://catswords.re.kr/go/wshjsunit) - JSUnit port for Windows Scripting Host
-- [nickdoth/WSHHttpServer](https://catswords.re.kr/go/wshhttpserver) - HTTP server based on Windows Script Host
+- [gnh1201/wsh-js-gtk](https://github.com/gnh1201/wsh-js-gtk) - GTK GUI ported to Windows Scripting Host - Javascript (Microsoft JScript) (wsh-js)
+- [gnh1201/wsh-json](https://github.com/gnh1201/wsh-json) - JSON stringify/parse (encode/decode) for Windows Scripting Host
+- [redskyit/wsh-appjs](https://github.com/redskyit/wsh-appjs) - require-js and app framework for Windows Scripting Host JavaScript
+- [JohnLaTwC's gist](https://gist.github.com/JohnLaTwC/4315bbbd89da0996f5c08c032b391799) - JavaScript RAT
+- [JSMan-/JS-Framework](https://github.com/JSMan-/JS-Framework) - No description
+- [iconjack/setTimeout-for-windows-script-host](https://github.com/iconjack/setTimeout-for-windows-script-host) - Replacement for the missing setTimeout and clearTimeout function in Windows Script Host
+- [johnjohnsp1/WindowsScriptHostExtension](https://github.com/johnjohnsp1/WindowsScriptHostExtension) - Inject DLL Prototype using Microsoft.Windows.ACTCTX COM Object
+- [kuntashov/jsunit](https://github.com/kuntashov/jsunit) - JSUnit port for Windows Scripting Host
+- [nickdoth/WSHHttpServer](https://github.com/nickdoth/WSHHttpServer) - HTTP server based on Windows Script Host
 
 ## Contact me
 - gnh1201@gmail.com
