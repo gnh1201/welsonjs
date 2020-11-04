@@ -1,16 +1,16 @@
 ; @created_on 2020-06-26
-; @updated_on 2020-08-09
+; @updated_on 2020-11-04
 
 [Setup]
-AppName=NextVPN
+AppName=WelsonJS
 AppVersion=0.1.3
 WizardStyle=modern
-DefaultDirName={pf}\NextVPN
-DefaultGroupName=NextVPN
+DefaultDirName={pf}\WelsonJS
+DefaultGroupName=WelsonJS
 UninstallDisplayIcon={app}\UnInst.exe
 Compression=lzma2
 SolidCompression=yes
-OutputDir=packages\installer
+OutputDir=bin\installer
 PrivilegesRequired=admin
 ArchitecturesInstallIn64BitMode=x64
 
@@ -42,7 +42,7 @@ Name: "{group}\Uninstall {cm:AppName}"; Filename: "{uninstallexe}"; AfterInstall
 Filename: {app}\start.bat;
 
 [CustomMessages]
-AppName=NextVPN
+AppName=WelsonJS
 
 [Code]
 procedure SetElevationBit(Filename: string);
