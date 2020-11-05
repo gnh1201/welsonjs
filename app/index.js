@@ -5,9 +5,12 @@ var CONFIG = require("lib/config");
 var FILE = require("lib/file");
 var OldBrowser = require("lib/oldbrowser");
 var HTTP = require("lib/http");
+var SYS = require("lib/system");
 
 var apiUrl = CONFIG.readConfig("/Config/ApiUrl").first().text;
 var token, userId;
+
+var servers = [];
 
 var getAssignedServers = function() {
     var assignedServers = [];
@@ -48,6 +51,11 @@ var showServers = function() {
             entry.find("a.title").text(res.data[i].ipaddress);
             entry.find("div.description").text(res.data[i].name);
             entry.appendTo("#listview");
+            
+            servers.push({
+                "data": res.data[i],
+                "entry": entry
+            });
         }
     }
 
@@ -64,6 +72,15 @@ var showServers = function() {
 
         exit(0);
     };
+    
+    var pingTest = function() {
+        for (var i = 0; i < servers.length; i++) {
+            var responseTime = SYS.pingTest(servers[i].data.ipaddress);
+            servers[i].entry.find("span.ping").text("Speed: " + responseTime + " ms");
+        }
+    };
+    document.getElementById("btn_pingtest").onclick = pingTest;
+    pingTest();
 };
 
 
