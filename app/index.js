@@ -6,11 +6,16 @@ var FILE = require("lib/file");
 var OldBrowser = require("lib/oldbrowser");
 var HTTP = require("lib/http");
 var SYS = require("lib/system");
+var SHELL = require("lib/shell");
 
 var apiUrl = CONFIG.readConfig("/Config/ApiUrl").first().text;
 var token, userId;
 
 var servers = [];
+
+var assignStaticIP = function() {
+    SHELL.runWindow("cscript app.js shadow");
+};
 
 var getApplications = function() {
     var applications = [], xmlStrings = [];
@@ -157,3 +162,9 @@ if (typeof(token) !== "undefined") {
         }
     };
 }
+
+
+document.getElementById("btn_assign").onclick = function() {
+    assignStaticIP();
+};
+

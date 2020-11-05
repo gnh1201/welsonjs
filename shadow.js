@@ -4,6 +4,7 @@
 
 var SS = require("lib/shadowsocks");
 var SHELL = require("lib/shell");
+var SYS = require("lib/system");
 var LDPlayer = require("lib/ldplayer");
 var NoxPlayer = require("lib/noxplayer");
 var XML = require("lib/xml");
@@ -34,10 +35,10 @@ for (var i = 0; i < items.length; i++) {
 
 exports.main = function() {
     console.info("Waiting new launched");
-    sleep(10000);
+    sleep(3000);
 
     while (true) {
-        sleep(10000);
+        sleep(3000);
 
         ////////////////////////////////////////////////////////////////
         // LDPlayer
@@ -82,7 +83,7 @@ exports.main = function() {
                 _NumBridges = NumBridges;
 
                 console.info("Waiting new launched");
-                sleep(10000);
+                sleep(3000);
             }
         }
 
@@ -129,7 +130,7 @@ exports.main = function() {
                 _NumBridges = NumBridges;
 
                 console.info("Waiting new launched");
-                sleep(10000);
+                sleep(3000);
             }
         }
     }
