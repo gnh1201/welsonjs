@@ -15,19 +15,21 @@ var _NumSessions = 0;
 var NumBridges = 0;
 var _NumBridges = 0;
 
-var _config = {
-    StaticIP: {
-        LDPlayer: {},
-        NoxPlayer: {}
-    }
+var StaticIP = {
+    LDPlayer: {},
+    NoxPlayer: {}
 };
 
 var items = XML.loadXMLFile("staticip.xml").select("/StaticIP/Item").all();
 for (var i = 0; i < items.length; i++) {
-    var Name = items[i].selectSingleNode("Name").text;
-    var UniqueID = items[i].selectSingleNode("UniqueID").text;
-    var IPAddress = items[i].selectSingleNode("IPAddress").text;
-    _config.StaticIP[Name] = IPAddress;
+    try {
+        var Name = items[i].selectSingleNode("Name").text;
+        var UniqueID = items[i].selectSingleNode("UniqueID").text;
+        var IPAddress = items[i].selectSingleNode("IPAddress").text;
+        StaticIP[Name][UniqueID] = IPAddress;
+    } catch(e) {
+        console.error(e.message);
+    }
 }
 
 exports.main = function() {
@@ -51,11 +53,11 @@ exports.main = function() {
                 PIDList.push(pid);
 
                 var listenPort;
-                if (!(title in _config.StaticIP.LDPlayer)) {
+                if (!(title in StaticIP.LDPlayer)) {
                     console.error("Not assigned static IP: " + title);
                     continue;
                 } else {
-                    listenPort = SS.connect(_config.StaticIP.LDPlayer[title]);
+                    listenPort = SS.connect(StaticIP.LDPlayer[title]);
                 }
 
                 SHELL.run([
@@ -98,11 +100,11 @@ exports.main = function() {
                 PIDList.push(pid);
 
                 var listenPort;
-                if (!(hostname in _config.StaticIP.NoxPlayer)) {
+                if (!(hostname in StaticIP.NoxPlayer)) {
                     console.error("Not assigned static IP: " + hostname);
                     continue;
                 } else {
-                    listenPort = SS.connect(_config.StaticIP.NoxPlayer[hostname]);
+                    listenPort = SS.connect(StaticIP.NoxPlayer[hostname]);
                 }
 
                 SHELL.run([
