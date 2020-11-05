@@ -1,6 +1,7 @@
 ////////////////////////////////////////////////////////////////////////
 // Webloader
 ////////////////////////////////////////////////////////////////////////
+var CONFIG = require("lib/config");
 var FILE = require("lib/file");
 var OldBrowser = require("lib/oldbrowser");
 
@@ -117,6 +118,9 @@ exports.main = function(args) {
             return window.jQuery.toast;
         });
     });
+
+    // config test
+    console.info(CONFIG.readConfig("/Config/ApiUrl").first().text);
 
     // hook drag event
     document.body.ondragstart = function() {
