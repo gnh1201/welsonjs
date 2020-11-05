@@ -113,14 +113,14 @@ exports.main = function(args) {
 
                 // hide loading image
                 document.getElementById("loading").style.display = "none";
+                
+                // show API server URL
+                console.info(CONFIG.readConfig("/Config/ApiUrl").first().text);
             }
         }, function(el) {
             return window.jQuery.toast;
         });
     });
-
-    // config test
-    console.info(CONFIG.readConfig("/Config/ApiUrl").first().text);
 
     // hook drag event
     document.body.ondragstart = function() {
