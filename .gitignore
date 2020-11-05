@@ -106,3 +106,4 @@ dist
 # Custom directories and files
 bin/
 packages/
+config.xml
