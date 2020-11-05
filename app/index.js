@@ -12,6 +12,36 @@ var token, userId;
 
 var servers = [];
 
+var getApplications = function() {
+    var applications = [], xmlStrings = [];
+
+    var req = HTTP.get(apiUrl + "/netsolid/items/applications", "", {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Authorization": "bearer " + token,
+        //"Pragma": "no-cache",
+        //"Cache-Control": "no-cache",
+        "If-Modified-Since": "Sat, 1 Jan 2000 00:00:00 GMT"
+    });
+    var res = JSON.parse(req.responseText);
+
+    xmlStrings.push('<?xml version="1.0" encoding="UTF-8"?>');
+    xmlStrings.push("<StaticIP>");
+    for (var i = 0; i < res.data.length; i++) {
+        xmlStrings.push("<Item>");
+        xmlStrings.push("<Name>" + res.data[i].name + "</Name>");
+        xmlStrings.push("<UniqueID>" + res.data[i].unique_id + "</UniqueID>");
+        for (var k = 0; k < servers.length; k++) {
+            if (servers[k].data.id == res.data[i].server) {
+                xmlStrings.push("<IPAddress>" + servers[k].data.ipaddress + "</IPAddress>");
+            }
+        }
+        xmlStrings.push("</Item>");
+    }
+    xmlStrings.push("</StaticIP>");
+
+    FILE.writeFile("staticip.xml", xmlStrings.join("\r\n"), "utf-8");
+};
+
 var getAssignedServers = function() {
     var assignedServers = [];
 
@@ -76,12 +106,14 @@ var showServers = function() {
     var pingTest = function() {
         for (var i = 0; i < servers.length; i++) {
             var responseTime = SYS.pingTest(servers[i].data.ipaddress);
-            servers[i].entry.find("span.ping").text("Speed: " + responseTime + " ms");
+            servers[i].entry.find("span.ping").text(responseTime + " ms");
         }
     };
     document.getElementById("btn_pingtest").onclick = pingTest;
     setInterval(pingTest, 5000);
     pingTest();
+
+    getApplications();
 };
 
 

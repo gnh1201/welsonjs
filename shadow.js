@@ -3,12 +3,10 @@
 ////////////////////////////////////////////////////////////////////////
 
 var SS = require("lib/shadowsocks");
-var SYS = require("lib/system");
-var FILE = require("lib/file");
 var SHELL = require("lib/shell");
 var LDPlayer = require("lib/ldplayer");
 var NoxPlayer = require("lib/noxplayer");
-var JSON = require("lib/json");
+var XML = require("lib/xml");
 
 var PIDList = [];
 
@@ -16,6 +14,21 @@ var NumSessions = 0;
 var _NumSessions = 0;
 var NumBridges = 0;
 var _NumBridges = 0;
+
+var _config = {
+    StaticIP: {
+        LDPlayer: {},
+        NoxPlayer: {}
+    }
+};
+
+var items = XML.loadXMLFile("staticip.xml").select("/StaticIP/Item").all();
+for (var i = 0; i < items.length; i++) {
+    var Name = items[i].selectSingleNode("Name").text;
+    var UniqueID = items[i].selectSingleNode("UniqueID").text;
+    var IPAddress = items[i].selectSingleNode("IPAddress").text;
+    _config.StaticIP[Name] = IPAddress;
+}
 
 exports.main = function() {
     console.info("Waiting new launched");
@@ -38,11 +51,11 @@ exports.main = function() {
                 PIDList.push(pid);
 
                 var listenPort;
-                if (!(title in __config.StaticIP.LDPlayer)) {
+                if (!(title in _config.StaticIP.LDPlayer)) {
                     console.error("Not assigned static IP: " + title);
                     continue;
                 } else {
-                    listenPort = SS.connect(__config.StaticIP.LDPlayer[title]);
+                    listenPort = SS.connect(_config.StaticIP.LDPlayer[title]);
                 }
 
                 SHELL.run([
@@ -85,11 +98,11 @@ exports.main = function() {
                 PIDList.push(pid);
 
                 var listenPort;
-                if (!(hostname in __config.StaticIP.NoxPlayer)) {
+                if (!(hostname in _config.StaticIP.NoxPlayer)) {
                     console.error("Not assigned static IP: " + hostname);
                     continue;
                 } else {
-                    listenPort = SS.connect(__config.StaticIP.NoxPlayer[hostname]);
+                    listenPort = SS.connect(_config.StaticIP.NoxPlayer[hostname]);
                 }
 
                 SHELL.run([

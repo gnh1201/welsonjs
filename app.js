@@ -44,8 +44,9 @@ var console = {
     _echo: function(msg, type) {
         msg = (typeof(type) !== "undefined" ? type + ": " : "") + msg;
         if (typeof(WScript) !== "undefined") {
-            WScript.echo(msg);
+            WScript.echo("  * " + msg);
         }
+        
         this._messages.push(msg);
     },
     log: function(msg) {
