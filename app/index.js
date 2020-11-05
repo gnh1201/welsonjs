@@ -80,6 +80,7 @@ var showServers = function() {
         }
     };
     document.getElementById("btn_pingtest").onclick = pingTest;
+    setInterval(pingTest, 5000);
     pingTest();
 };
 
