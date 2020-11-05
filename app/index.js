@@ -9,23 +9,61 @@ var HTTP = require("lib/http");
 var apiUrl = CONFIG.readConfig("/Config/ApiUrl").first().text;
 var token, userId;
 
+var getAssignedServers = function() {
+    var assignedServers = [];
+
+    var req = HTTP.get(apiUrl + "/netsolid/items/assignedservers", "", {
+        "Content-Type": "application/x-www-form-urlencoded",
+        "Authorization": "bearer " + token,
+        //"Pragma": "no-cache",
+        //"Cache-Control": "no-cache",
+        "If-Modified-Since": "Sat, 1 Jan 2000 00:00:00 GMT"
+    });
+    
+    var res = JSON.parse(req.responseText);
+
+    for (var i = 0; i < res.data.length; i++) {
+        if (res.data[i].assigned_to == userId) {
+            assignedServers.push(res.data[i].server);
+        }
+    }
+
+    return assignedServers;
+};
+
 var showServers = function() {
     OldBrowser.setContent(FILE.readFile("app\\servers.html", "utf-8"));
-    
-    var req = HTTP.get(apiUrl + "/netsolid/items/assignedservers", "filter[assigned_to][eq]=" + userId, {
+
+    var assignedServers = getAssignedServers();
+    var req = HTTP.get(apiUrl + "/netsolid/items/servers", "", {
         "Content-Type": "application/x-www-form-urlencoded",
         "Authorization": "bearer " + token
     });
-    
-    alert(req.responseText);
-
-    /*
     var res = JSON.parse(req.responseText);
+    var template = $("#listview .template");
 
-    for(var i = 0; i < res.data.length; i++) {
-        alert(res.data[i].assigned_to);
+    for (var i = 0; i < res.data.length; i++) {
+        if (assignedServers.indexOf(res.data[i].id) > -1) {
+            var entry = template.clone();
+            entry.find("a.title").text(res.data[i].ipaddress);
+            entry.find("div.description").text(res.data[i].name);
+            entry.appendTo("#listview");
+        }
     }
-    */
+
+    template.css("display", "none");
+
+    document.getElementById("btn_logout").onclick = function() {
+        if (FILE.fileExists("token.txt")) {
+            token = FILE.deleteFile("token.txt")
+        }
+        
+        if (FILE.fileExists("userid.txt")) {
+            userId = FILE.deleteFile("userid.txt");
+        }
+
+        exit(0);
+    };
 };
 
 
@@ -64,7 +102,8 @@ if (typeof(token) !== "undefined") {
             console.log("ok");
             FILE.writeFile("token.txt", res.data.token, "utf-8");
             FILE.writeFile("userid.txt", res.data.user.id, "utf-8");
-            showServers();
+
+            window.location.reload();
         }
     };
 }
