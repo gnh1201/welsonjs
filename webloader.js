@@ -93,10 +93,14 @@ exports.IEVersion = OldBrowser.getIEVersion();
 exports.main = function(args) {
     // make will display contents
     OldBrowser.setContent(FILE.readFile("app\\index.html", "utf-8"));
+
+    // add stylesheets
     OldBrowser.addStylesheet("app/assets/css/jquery-ui-1.21.1.min.css");
     OldBrowser.addStylesheet("app/assets/css/jquery.toast-1.3.2.min.css");
     OldBrowser.addStylesheet("app/assets/css/cascade/production/build-full.min.css");
     OldBrowser.addStylesheet("app/assets/css/style.css");
+
+    // start
     OldBrowser.start(function(el) {
         jQuery.support.cors = true;
 
@@ -109,13 +113,11 @@ exports.main = function(args) {
                 }
 
                 // start this app
+                OldBrowser.addScript("app/assets/js/jquery.form-4.3.0.min.js");
                 OldBrowser.addScript("app/index.js");
 
                 // hide loading image
                 document.getElementById("loading").style.display = "none";
-                
-                // show API server URL
-                console.info(CONFIG.readConfig("/Config/ApiUrl").first().text);
             }
         }, function(el) {
             return window.jQuery.toast;
