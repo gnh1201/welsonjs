@@ -7,18 +7,115 @@ var OldBrowser = require("lib/oldbrowser");
 var HTTP = require("lib/http");
 var SYS = require("lib/system");
 var SHELL = require("lib/shell");
+var LDPlayer = require("lib/ldplayer");
+var NoxPlayer = require("lib/noxplayer");
 
 var apiUrl = CONFIG.readConfig("/Config/ApiUrl").first().text;
 var token, userId;
 
 var servers = [];
+var applications = [];
 
 var assignStaticIP = function() {
     SHELL.runWindow("cscript app.js shadow");
 };
 
-var getApplications = function() {
-    var applications = [], xmlStrings = [];
+var showLocalApplications = function() {
+    var localApplications = [];
+
+    // LDPlayer
+    var LDPList = LDPlayer.getList();
+    for (var i = 0; i < LDPList.length; i++) {
+        localApplications.push({
+            name: "LDPlayer",
+            uniqueId: LDPList[i].title
+        });
+    }
+
+    // NoxPlayer
+    var NoxPList = NoxPlayer.getList();
+    for (var i = 0; i < NoxPList.length; i++) {
+        localApplications.push({
+            name: "NoxPlayer",
+            uniqueId: NoxPList[i].hostname
+        });
+    }
+    
+    // Chrome (or General applications)
+    
+    // todo
+
+    var template = $("#listview_applications .template");
+    for (var i = 0; i < servers.length; i++) {
+        template.find("select").append($("<option/>").attr({
+            value: servers[i].data.id
+        }).text(servers[i].data.ipaddress));
+    }
+
+    for (var i = 0; i < localApplications.length; i++) {
+        var serverId = "";
+        
+        var entry = template.clone();
+        entry.find("a.title").text(localApplications[i].uniqueId + " (" + localApplications[i].name + ")");
+        entry.find("select").data("application-name", localApplications[i].name);
+        entry.find("select").data("application-unique-id", localApplications[i].uniqueId);
+
+        for (var k = 0; k < applications.length; k++) {
+            if (applications[k].name == localApplications[i].name
+                && applications[k].uniqueId == localApplications[i].uniqueId
+                && applications[k].createdBy == userId)
+            {
+                entry.find("select").data("application-id", applications[i].id);
+                serverId = applications[k].server;
+                break;
+            }
+        }
+
+        entry.find("select").change(function() {
+            if ($(this).val() != "") {
+                var data = {
+                    "status": "published",
+                    "name": $(this).data("application-name"),
+                    "unique_id": $(this).data("application-unique-id"),
+                    "created_by": userId,
+                    "server": $(this).val()
+                };
+                var applicationId = $(this).data("application-id");
+
+                var req, res;
+                var onSuccess = function(res) {
+                    if ("error" in res) {
+                        console.error(res.error.message);
+                    } else {
+                        console.log("반영되었습니다.");
+                    }
+                };
+                
+                if (applicationId) {
+                    req = $.ajax({
+                        type: "PATCH",
+                        url: apiUrl + "/netsolid/items/applications/" + applicationId,
+                        data: JSON.stringify(data),
+                        contentType: 'application/json-patch+json',
+                        success: onSuccess
+                    });
+                } else {
+                    req = HTTP.post(apiUrl + "/netsolid/items/applications", JSON.stringify(data), {
+                        "Content-Type": "application/json"
+                    });
+                    res = JSON.parse(req.responseText);
+                    onSuccess(res);
+                }
+            }
+        }).val(serverId);
+        entry.appendTo("#listview_applications");
+    }
+
+    template.css("display", "none");
+};
+
+var showApplications = function() {
+    var xmlStrings = [];
 
     var req = HTTP.get(apiUrl + "/netsolid/items/applications", "", {
         "Content-Type": "application/x-www-form-urlencoded",
@@ -38,6 +135,14 @@ var getApplications = function() {
         for (var k = 0; k < servers.length; k++) {
             if (servers[k].data.id == res.data[i].server) {
                 xmlStrings.push("<IPAddress>" + servers[k].data.ipaddress + "</IPAddress>");
+                applications.push({
+                    id: res.data[i].id,
+                    name: res.data[i].name,
+                    uniqueId: res.data[i].unique_id,
+                    server: res.data[i].server,
+                    ipAddress: servers[k].data.ipaddress,
+                    createdBy: userId
+                });
             }
         }
         xmlStrings.push("</Item>");
@@ -78,14 +183,14 @@ var showServers = function() {
         "Authorization": "bearer " + token
     });
     var res = JSON.parse(req.responseText);
-    var template = $("#listview .template");
+    var template = $("#listview_servers .template");
 
     for (var i = 0; i < res.data.length; i++) {
         if (assignedServers.indexOf(res.data[i].id) > -1) {
             var entry = template.clone();
             entry.find("a.title").text(res.data[i].ipaddress);
             entry.find("div.description").text(res.data[i].name);
-            entry.appendTo("#listview");
+            entry.appendTo("#listview_servers");
             
             servers.push({
                 "data": res.data[i],
@@ -118,9 +223,13 @@ var showServers = function() {
     setInterval(pingTest, 5000);
     pingTest();
 
-    getApplications();
-};
+    showApplications();
 
+    document.getElementById("btn_assign").onclick = function() {
+        showApplications();
+        assignStaticIP();
+    };
+};
 
 if (FILE.fileExists("token.txt")) {
     token = FILE.readFile("token.txt", "utf-8");
@@ -132,6 +241,7 @@ if (FILE.fileExists("userid.txt")) {
 
 if (typeof(token) !== "undefined") {
     showServers();
+    showLocalApplications();
 } else {
     OldBrowser.setContent(FILE.readFile("app\\login.html", "utf-8"));
 
@@ -140,12 +250,12 @@ if (typeof(token) !== "undefined") {
     };
 
     document.getElementById("btn_submit").onclick = function() {
-        var credential = JSON.stringify({
+        var credential = {
             "email": document.getElementById("txt_email").value,
             "password": document.getElementById("txt_password").value
-        });
+        };
 
-        var req = HTTP.post(apiUrl + "/netsolid/auth/authenticate", credential, {
+        var req = HTTP.post(apiUrl + "/netsolid/auth/authenticate", JSON.stringify(credential), {
             "Content-Type": "application/json"
         });
 
@@ -162,9 +272,3 @@ if (typeof(token) !== "undefined") {
         }
     };
 }
-
-
-document.getElementById("btn_assign").onclick = function() {
-    assignStaticIP();
-};
-

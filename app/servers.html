@@ -1,21 +1,53 @@
-<div id="listview" class="panel cell">
-    <div class="header">서버 목록</div>
-    <div class="template body">
-        <div class="cell">
-            <div class="col">
-                <div class="col width-fit mobile-width-fit"><span class="icon icon-bookmark color-blue"></span></div>
-                <div class="col width-fill mobile-width-fill">
-                    <span class="float-right">
-                        <span class="ping text">
-                            N/A
-                        </span>
-                        <span class="icon icon-bolt color-yellow"></span>
-                    </span>
-                    <div class="col width-fill mobile-width-fill">
-                        <a class="title fatty" href="#">Repo 1</a>
+<div class="cell">
+    <div class="col width-1of2">
+        <div id="listview_servers" class="cell panel">
+            <div class="header">서버 목록</div>
+            <div class="template body">
+                <div class="cell">
+                    <div class="col">
+                        <div class="col width-fit mobile-width-fit"><span class="icon icon-bookmark color-blue"></span></div>
+                        <div class="col width-fill mobile-width-fill">
+                            <span class="float-right">
+                                <span class="ping text">
+                                    N/A
+                                </span>
+                                <span class="icon icon-bolt color-yellow"></span>
+                            </span>
+                            <div class="col width-fill mobile-width-fill">
+                                <a class="title fatty" href="#">Repo 1</a>
+                            </div>
+                            <div class="description col">
+                                <span class="text">This is one of my coolest repos.</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="description col">
-                        <span class="text">This is one of my coolest repos.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col width-fill">
+        <div id="listview_applications" class="cell panel">
+            <div class="header">활성 어플리케이션 목록</div>
+            <div class="template body">
+                <div class="cell">
+                    <div class="col">
+                        <div class="col width-fit mobile-width-fit"><span class="icon icon-bookmark color-blue"></span></div>
+                        <div class="col width-fill mobile-width-fill">
+                            <span class="float-right">
+                                <span class="ping text">
+                                    N/A
+                                </span>
+                                <span class="icon icon-bolt color-yellow"></span>
+                            </span>
+                            <div class="col width-fill mobile-width-fill">
+                                <a class="title fatty" href="#">Repo 1</a>
+                            </div>
+                            <div class="description col">
+                                <select class="ipaddr">
+                                    <option value="">아이피 선택...</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
