@@ -70,7 +70,12 @@ hello
 - compile `setup.iss` file with [Inno Setup](https://jrsoftware.org/isinfo.php)
 
 ## Screenshot
-![Screenshot](app/assets/img/screenshot.png)
+![Screenshot 1](app/assets/img/screenshot.png)
+
+## Thanks!
+![Thanks 1](app/assets/img/thanks.png)
+
+https://www.facebook.com/javascript4u/posts/1484014618472735
 
 ## Related projects
 - [gnh1201/wsh-js-gtk](https://github.com/gnh1201/wsh-js-gtk) - GTK GUI ported to Windows Scripting Host - Javascript (Microsoft JScript) (wsh-js)
