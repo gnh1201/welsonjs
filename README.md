@@ -75,7 +75,8 @@ hello
 ## Thanks!
 ![Thanks 1](app/assets/img/thanks.png)
 
-https://www.facebook.com/javascript4u/posts/1484014618472735
+- https://www.facebook.com/javascript4u/posts/1484014618472735
+- https://python5.com/q/xtbsqjxb
 
 ## Related projects
 - [gnh1201/wsh-js-gtk](https://github.com/gnh1201/wsh-js-gtk) - GTK GUI ported to Windows Scripting Host - Javascript (Microsoft JScript) (wsh-js)
