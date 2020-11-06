@@ -41,9 +41,19 @@ var showLocalApplications = function() {
         });
     }
     
-    // Chrome (or General applications)
-    
-    // todo
+    // Chrome (demo)
+    localApplications.push({
+        name: "Program",
+        uniqueId: "chrome-10001.exe"
+    });
+    localApplications.push({
+        name: "Program",
+        uniqueId: "chrome-10002.exe"
+    });
+    localApplications.push({
+        name: "Program",
+        uniqueId: "chrome-10003.exe"
+    });
 
     var template = $("#listview_applications .template");
     for (var i = 0; i < servers.length; i++) {
