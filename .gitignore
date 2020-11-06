@@ -107,3 +107,4 @@ dist
 bin/
 packages/
 config.xml
+staticip.xml
