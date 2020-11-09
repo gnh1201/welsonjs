@@ -116,6 +116,8 @@ var showLocalApplications = function() {
                     res = JSON.parse(req.responseText);
                     onSuccess(res);
                 }
+
+                showApplications();
             }
         }).val(serverId);
         entry.appendTo("#listview_applications");
