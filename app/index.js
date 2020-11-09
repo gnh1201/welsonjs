@@ -10,7 +10,7 @@ var SHELL = require("lib/shell");
 var LDPlayer = require("lib/ldplayer");
 var NoxPlayer = require("lib/noxplayer");
 
-var apiUrl = CONFIG.readConfig("/Config/ApiUrl").first().text;
+var apiUrl = CONFIG.readConfig("/ApiUrl").first().getText();
 var token, userId;
 
 var servers = [];
