@@ -76,13 +76,13 @@ var check_NoxPlayer = function() {
 	for (var i = 0; i < items.length; i++) {
 		var pid = parseInt(items[i].PID);
 		var hostname = items[i].hostname;
-		
+
 		if (pid > 0 && AppsMutex.indexOf(pid) < 0) {
 			console.info("New launched NoxPlayer: " + title);
 			AppsMutex.push(pid);
 
-			if (title in Apps.NoxPlayer) {
-				listenPort = SS.connect(Apps.NoxPlayer[title]);
+			if (hostname in Apps.NoxPlayer) {
+				listenPort = SS.connect(Apps.NoxPlayer[hostname]);
 			} else {
 				console.error("Not assigned static IP: " + hostname);
 				continue;
