@@ -72,11 +72,10 @@ hello
 ## [NEW] Advanced XML Parser
 ```
 var XML = require("lib/xml");
-var nodes = XML.load("example.xml").select("/example/category1").filter(function(node) {
-    return (node.getText() == "available");
-}).forEach(function(node) {
-    console.log(node.getAttribute("key1"));
-}).toArray();
+var nodes = XML.load("config.xml").select("/Config/ApiUrl").toArray();
+var node = XML.load("config.xml").select("/Config/ApiUrl").first();
+var nodeText = XML.load("config.xml").select("/Config/ApiUrl").first().getText();
+var nodeAttribute = XML.load("config.xml").select("/Config/ApiUrl").first().getAttribute("name");
 ```
 
 ## Screenshot

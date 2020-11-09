@@ -17,7 +17,7 @@ var Apps = {
 	ProcessName: {}
 };
 var AppsMutex = [];
- 
+
 var items = XML.load("staticip.xml").select("/StaticIP/Item").toArray();
 for (var i = 0; i < items.length; i++) {
 	try {
