@@ -66,6 +66,9 @@ C:\Users\John\Documents\GitHub\welsonjs> cscript app.js sayhello
 hello
 ```
 
+## Make own setup file
+- compile `setup.iss` file with [Inno Setup](https://jrsoftware.org/isinfo.php)
+
 ## [NEW] Advanced XML Parser
 ```
 var XML = require("lib/xml");
@@ -75,9 +78,6 @@ var nodes = XML.load("example.xml").select("/example/category1").filter(function
     console.log(node.getAttribute("key1"));
 }).toArray();
 ```
-
-## Make own setup file
-- compile `setup.iss` file with [Inno Setup](https://jrsoftware.org/isinfo.php)
 
 ## Screenshot
 ![Screenshot 1](app/assets/img/screenshot.png)
