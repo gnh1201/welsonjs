@@ -41,18 +41,18 @@ var showLocalApplications = function() {
         });
     }
     
-    // Chrome (demo)
+    // Chrome
     localApplications.push({
-        name: "Program",
-        uniqueId: "chrome-10001.exe"
+        name: "Chrome",
+        uniqueId: "John"
     });
     localApplications.push({
-        name: "Program",
-        uniqueId: "chrome-10002.exe"
+        name: "Chrome",
+        uniqueId: "James"
     });
     localApplications.push({
-        name: "Program",
-        uniqueId: "chrome-10003.exe"
+        name: "Chrome",
+        uniqueId: "Jasmine"
     });
 
     var template = $("#listview_applications .template");
