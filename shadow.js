@@ -5,133 +5,132 @@
 var SS = require("lib/shadowsocks");
 var SHELL = require("lib/shell");
 var SYS = require("lib/system");
+var XML = require("lib/xml");
 var LDPlayer = require("lib/ldplayer");
 var NoxPlayer = require("lib/noxplayer");
-var XML = require("lib/xml");
+var Chrome = require("lib/chrome");
 
-var PIDList = [];
-
-var NumSessions = 0;
-var _NumSessions = 0;
-var NumBridges = 0;
-var _NumBridges = 0;
-
-var StaticIP = {
-    LDPlayer: {},
-    NoxPlayer: {}
+var Apps = {
+	LDPlayer: {},
+	NoxPlayer: {},
+	Chrome: {},
+	ProcessName: {}
 };
-
-var items = XML.loadXMLFile("staticip.xml").select("/StaticIP/Item").all();
+var AppsMutex = [];
+ 
+var items = XML.load("staticip.xml").select("/StaticIP/Item").toArray();
 for (var i = 0; i < items.length; i++) {
-    try {
-        var Name = items[i].selectSingleNode("Name").text;
-        var UniqueID = items[i].selectSingleNode("UniqueID").text;
-        var IPAddress = items[i].selectSingleNode("IPAddress").text;
-        StaticIP[Name][UniqueID] = IPAddress;
-    } catch(e) {
-        console.error(e.message);
-    }
+	try {
+		var name = items[i].select("Name").first().getText();
+		var uniqueId = items[i].select("UniqueID").first().getText();
+		var ipAddress = items[i].select("IPAddress").first().getText();
+
+		if (name in Apps) {
+			Apps[name][uniqueId] = ipAddress;
+		}
+	} catch(e) {
+		console.error(e.message);
+	}
 }
 
-exports.main = function() {
-    console.info("Waiting new launched");
-    sleep(3000);
+// App 1. LDPlayer
+var check_LDPlayer = function() {
+	var listenPort;
+	var items = LDPlayer.getList();
 
-    while (true) {
-        sleep(3000);
+	for (var i = 0; i < items.length; i++) {
+		var pid = parseInt(items[i].PIDVBox);
+		var title = items[i].title;
+		if (pid > 0 && AppsMutex.indexOf(pid) < 0) {
+			console.info("New launched LDPlayer: " + title);
+			AppsMutex.push(pid);
+			
+			if (title in Apps.LDPlayer) {
+				listenPort = SS.connect(Apps.LDPlayer[title]);
+			} else {
+				console.error("Not assigned static IP: " + title);
+				continue;
+			}
 
-        ////////////////////////////////////////////////////////////////
-        // LDPlayer
-        ////////////////////////////////////////////////////////////////
+			SHELL.run([
+				SYS.getCurrentScriptDirectory() + "/bin/shadow.exe",
+				"-c",
+				SYS.getCurrentScriptDirectory() + "/config.template.json",
+				"-s",
+				"socks://localhost:" + listenPort,
+				"-p",
+				pid
+			]);
 
-        var LDPList = LDPlayer.getList();
-        for (var i = 0; i < LDPList.length; i++) {
-            var pid = parseInt(LDPList[i].PIDVBox);
-            var title = LDPList[i].title;
-            if (pid > 0 && PIDList.indexOf(pid) == -1) {
-                console.info("New launched LDPlayer: " + title);
-
-                PIDList.push(pid);
-
-                var listenPort;
-                if (!(title in StaticIP.LDPlayer)) {
-                    console.error("Not assigned static IP: " + title);
-                    continue;
-                } else {
-                    listenPort = SS.connect(StaticIP.LDPlayer[title]);
-                }
-
-                SHELL.run([
-                    SYS.getCurrentScriptDirectory() + "/bin/shadow.exe",
-                    "-c",
-                    SYS.getCurrentScriptDirectory() + "/config.template.json",
-                    "-s",
-                    "socks://localhost:" + listenPort,
-                    "-p",
-                    pid
-                ]);
-
-                NumSessions = SS.getCountOfSessions();
-                NumBridges = SS.getCountOfBridges();
-
-                if (!(NumSessions > _NumSessions && NumBridges > _NumBridges)) {
-                    console.error("Retrying...");
-                    PIDList.pop();
-                }
-
-                _NumSessions = NumSessions;
-                _NumBridges = NumBridges;
-
-                console.info("Waiting new launched");
-                sleep(3000);
-            }
-        }
-
-        ////////////////////////////////////////////////////////////////
-        // NoxPlayer
-        ////////////////////////////////////////////////////////////////
-
-        var NoxPList = NoxPlayer.getList();
-        for (var i = 0; i < NoxPList.length; i++) {
-            var pid = parseInt(NoxPList[i].PID);
-            var hostname = NoxPList[i].hostname;
-            if (pid > 0 && PIDList.indexOf(pid) == -1) {
-                console.info("New launched NoxPlayer: " + hostname);
-
-                PIDList.push(pid);
-
-                var listenPort;
-                if (!(hostname in StaticIP.NoxPlayer)) {
-                    console.error("Not assigned static IP: " + hostname);
-                    continue;
-                } else {
-                    listenPort = SS.connect(StaticIP.NoxPlayer[hostname]);
-                }
-
-                SHELL.run([
-                    SYS.getCurrentScriptDirectory() + "/bin/shadow.exe",
-                    "-c",
-                    SYS.getCurrentScriptDirectory() + "/config.template.json",
-                    "-s",
-                    "socks://localhost:" + listenPort,
-                    "-p",
-                    pid
-                ]);
-
-                NumSessions = SS.getCountOfSessions();
-                NumBridges = SS.getCountOfBridges();
-
-                if (!(NumSessions > _NumSessions && NumBridges > _NumBridges)) {
-                    console.error("Retrying...");
-                    PIDList.pop();
-                }
-
-                _NumSessions = NumSessions;
-                _NumBridges = NumBridges;
-
-                console.info("Waiting new launched");
-                sleep(3000);
-            }
-        }
-    }
+			console.info("Waiting new launched");
+			sleep(3000);
+		}
+	}
 };
+
+// App 2. NoxPlayer
+var check_NoxPlayer = function() {
+	var listenPort;
+	var items = NoxPlayer.getList();
+
+	for (var i = 0; i < items.length; i++) {
+		var pid = parseInt(items[i].PID);
+		var hostname = items[i].hostname;
+		
+		if (pid > 0 && AppsMutex.indexOf(pid) < 0) {
+			console.info("New launched NoxPlayer: " + title);
+			AppsMutex.push(pid);
+
+			if (title in Apps.NoxPlayer) {
+				listenPort = SS.connect(Apps.NoxPlayer[title]);
+			} else {
+				console.error("Not assigned static IP: " + hostname);
+				continue;
+			}
+
+			SHELL.run([
+				SYS.getCurrentScriptDirectory() + "/bin/shadow.exe",
+				"-c",
+				SYS.getCurrentScriptDirectory() + "/config.template.json",
+				"-s",
+				"socks://localhost:" + listenPort,
+				"-p",
+				pid
+			]);
+			
+			console.info("Waiting new launched");
+			sleep(3000);
+		}
+	}
+};
+
+// App 3. Chrome
+var check_Chrome = function() {
+	var listenPort, pid;
+	for (var uniqueId in Apps.Chrome) {
+		if (AppsMutex.indexOf("chrome_" + uniqueId) < 0) {
+			console.info("Starting Google Chrome: " + uniqueId);
+
+			listenPort = SS.connect(Apps.Chrome[uniqueId]);
+			Chrome.start("https://naver.com", listenPort, uniqueId);
+			AppsMutex.push("chrome_" + uniqueId);
+		}
+	}
+};
+
+var main = function() {
+	console.info("Waiting new launched");
+
+	while (true) {
+		sleep(3000);
+		check_LDPlayer();
+
+		sleep(3000);
+		check_NoxPlayer();
+
+		sleep(3000);
+		check_Chrome();
+	}
+};
+
+exports.main = main;
