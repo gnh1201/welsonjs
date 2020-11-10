@@ -67,7 +67,7 @@ var console = {
 };
 
 if (typeof(CreateObject) !== "function") {
-    var CreateObject = function(progId, serverName) {
+    var CreateObject = function(progId, serverName, callback) {
         var progIds = [];
         var _CreateObject = function(p, s) {
             if (typeof(WScript) !== "undefined") {
@@ -85,7 +85,11 @@ if (typeof(CreateObject) !== "function") {
 
         for (var i = 0; i < progIds.length; i++) {
             try {
-                return _CreateObject(progIds[i], serverName);
+                var obj = _CreateObject(progIds[i], serverName);
+                if (typeof(callback) === "function") {
+                    callback(obj, progIds[i]);
+                }
+                return obj;
             } catch (e) {
                 console.error(e.message);
             };
