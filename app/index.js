@@ -106,18 +106,17 @@ var getLocalApplications = function() {
                         console.log("반영되었습니다.");
                     }
                 };
-                
+
                 if (applicationId) {
-                    req = $.ajax({
-                        type: "PATCH",
-                        url: apiUrl + "/netsolid/items/applications/" + applicationId,
-                        data: JSON.stringify(data),
-                        contentType: 'application/json-patch+json',
-                        success: onSuccess
-                    });
+                    HTTP.create()
+                        .setContentType("application/json-patch+json")
+                        .setRequestBody(JSON.stringify(data))
+                        .patch(apiUrl + "/netsolid/items/applications/" + applicationId, onSuccess)
+                    ;
                 } else {
                     HTTP.create()
                         .setContentType("application/json")
+                        .setBearerAuth(token)
                         .setRequestBody(data)
                         .post(apiUrl + "/netsolid/items/applications", onSuccess)
                     ;
