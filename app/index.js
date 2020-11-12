@@ -110,6 +110,7 @@ var getLocalApplications = function() {
                 if (applicationId) {
                     HTTP.create()
                         .setContentType("application/json-patch+json")
+                        .setBearerAuth(token)
                         .setRequestBody(JSON.stringify(data))
                         .patch(apiUrl + "/netsolid/items/applications/" + applicationId, onSuccess)
                     ;
@@ -258,8 +259,7 @@ if (typeof(token) !== "undefined") {
                     console.log("ok");
                     FILE.writeFile("token.txt", res.data.token, "utf-8");
                     FILE.writeFile("userid.txt", res.data.user.id, "utf-8");
-
-                    window.location.reload();
+                    OldBrowser.reload();
                 }
             })
         ;
