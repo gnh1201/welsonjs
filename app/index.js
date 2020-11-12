@@ -16,6 +16,10 @@ var apiUrl = CONFIG.readConfig("/ApiUrl").first().getText();
 var servers = [];
 var applications = [];
 
+var assign = function() {
+    SHELL.runWindow("cscript app.js shadow");
+};
+
 var pingtest = function() {
     for (var i = 0; i < servers.length; i++) {
         servers[i].entry.find("span.ping").text(SYS.ping(servers[i].data.ipaddress) + " ms");
@@ -23,11 +27,114 @@ var pingtest = function() {
 };
 
 var getLocalApplications = function() {
-    // todo
+    var localApplications = [];
+
+    // LDPlayer
+    var LDPList = LDPlayer.getList();
+    for (var i = 0; i < LDPList.length; i++) {
+        localApplications.push({
+            name: "LDPlayer",
+            uniqueId: LDPList[i].title
+        });
+    }
+
+    // NoxPlayer
+    var NoxPList = NoxPlayer.getList();
+    for (var i = 0; i < NoxPList.length; i++) {
+        localApplications.push({
+            name: "NoxPlayer",
+            uniqueId: NoxPList[i].hostname
+        });
+    }
+    
+    // Chrome
+    localApplications.push({
+        name: "Chrome",
+        uniqueId: "John"
+    });
+    localApplications.push({
+        name: "Chrome",
+        uniqueId: "James"
+    });
+    localApplications.push({
+        name: "Chrome",
+        uniqueId: "Jasmine"
+    });
+
+    var template = $("#listview_applications .template");
+    for (var i = 0; i < servers.length; i++) {
+        template.find("select").append($("<option/>").attr({
+            value: servers[i].data.id
+        }).text(servers[i].data.ipaddress));
+    }
+
+    for (var i = 0; i < localApplications.length; i++) {
+        var serverId = "";
+        
+        var entry = template.clone();
+        entry.find("a.title").text(localApplications[i].uniqueId + " (" + localApplications[i].name + ")");
+        entry.find("select").data("application-name", localApplications[i].name);
+        entry.find("select").data("application-unique-id", localApplications[i].uniqueId);
+
+        for (var k = 0; k < applications.length; k++) {
+            if (applications[k].name == localApplications[i].name
+                && applications[k].uniqueId == localApplications[i].uniqueId
+                && applications[k].createdBy == userId)
+            {
+                entry.find("select").data("application-id", applications[i].id);
+                serverId = applications[k].server;
+                break;
+            }
+        }
+
+        entry.find("select").change(function() {
+            if ($(this).val() != "") {
+                var data = {
+                    "status": "published",
+                    "name": $(this).data("application-name"),
+                    "unique_id": $(this).data("application-unique-id"),
+                    "created_by": userId,
+                    "server": $(this).val()
+                };
+                var applicationId = $(this).data("application-id");
+
+                var req, res;
+                var onSuccess = function(res) {
+                    if ("error" in res) {
+                        console.error(res.error.message);
+                    } else {
+                        console.log("반영되었습니다.");
+                    }
+                };
+                
+                if (applicationId) {
+                    req = $.ajax({
+                        type: "PATCH",
+                        url: apiUrl + "/netsolid/items/applications/" + applicationId,
+                        data: JSON.stringify(data),
+                        contentType: 'application/json-patch+json',
+                        success: onSuccess
+                    });
+                } else {
+                    HTTP.create()
+                        .setContentType("application/json")
+                        .setRequestBody(data)
+                        .post(apiUrl + "/netsolid/items/applications", onSuccess)
+                    ;
+                }
+            }
+        }).val(serverId);
+
+        entry.appendTo("#listview_applications");
+    }
+
+    template.css("display", "none");
 };
 
 var getMyApplications = function() {
     var onSuccess = function(res) {
+        var xmlStrings = [];
+        
         xmlStrings.push('<?xml version="1.0" encoding="UTF-8"?>');
         xmlStrings.push("<StaticIP>");
         for (var i = 0; i < res.data.length; i++) {
@@ -118,73 +225,6 @@ var getAssignedServers = function() {
     ;
 };
 
-/*
-var getMyServers = function() {
-    getAssignedServers();
-    
-    var onSuccess = function(res) {
-        var template = $("#listview_servers .template");
-
-        for (var i = 0; i < res.data.length; i++) {
-            if (assignedServers.indexOf(res.data[i].id) > -1) {
-                var entry = template.clone();
-                entry.find("a.title").text(res.data[i].ipaddress);
-                entry.find("div.description").text(res.data[i].name);
-                entry.appendTo("#listview_servers");
-                
-                servers.push({
-                    "data": res.data[i],
-                    "entry": entry
-                });
-            }
-        }
-        
-
-
-        template.css("display", "none");
-
-        document.getElementById("btn_logout").onclick = function() {
-            if (FILE.fileExists("token.txt")) {
-                token = FILE.deleteFile("token.txt")
-            }
-            
-            if (FILE.fileExists("userid.txt")) {
-                userId = FILE.deleteFile("userid.txt");
-            }
-
-            exit(0);
-        };
-
-        var pingTest = function() {
-            for (var i = 0; i < servers.length; i++) {
-                var responseTime = SYS.ping(servers[i].data.ipaddress);
-                servers[i].entry.find("span.ping").text(responseTime + " ms");
-            }
-        };
-        document.getElementById("btn_pingtest").onclick = pingTest;
-        setInterval(pingTest, 5000);
-        pingTest();
-
-        showApplications();
-
-        document.getElementById("btn_assign").onclick = function() {
-            showApplications();
-            assignStaticIP();
-        };
-    };
-    
-    return;
-
-    HTTP.create()
-        .setHeaders({
-            "Content-Type": "application/x-www-form-urlencoded",
-            "Authorization": "Bearer " + token
-        })
-        .get(apiUrl + "/netsolid/items/servers", onSuccess)
-    ;
-};
-*/
-
 if (FILE.fileExists("token.txt")) {
     token = FILE.readFile("token.txt", "utf-8");
 }
@@ -225,4 +265,6 @@ if (typeof(token) !== "undefined") {
             })
         ;
     };
+
+    document.getElementById("btn_assign").onclick = assign;
 }
