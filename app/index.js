@@ -236,6 +236,20 @@ if (FILE.fileExists("userid.txt")) {
 if (typeof(token) !== "undefined") {
     OldBrowser.setContent(FILE.readFile("app\\servers.html", "utf-8"));
     getAssignedServers();
+
+    document.getElementById("btn_logout").onclick = function() {
+        if (FILE.fileExists("token.txt")) {
+            token = FILE.deleteFile("token.txt")
+        }
+        
+        if (FILE.fileExists("userid.txt")) {
+            userId = FILE.deleteFile("userid.txt");
+        }
+
+        exit(0);
+    };
+
+    document.getElementById("btn_assign").onclick = assign;
 } else {
     OldBrowser.setContent(FILE.readFile("app\\login.html", "utf-8"));
 
@@ -264,6 +278,4 @@ if (typeof(token) !== "undefined") {
             })
         ;
     };
-
-    document.getElementById("btn_assign").onclick = assign;
 }
