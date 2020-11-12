@@ -201,7 +201,7 @@ var getMyServers = function(assignedServers) {
 
     pingtest();
     setInterval(pingtest, 5000);
-    document.getElementById("btn_pingtest").onclick = pingtest;
+    //document.getElementById("btn_pingtest").onclick = pingtest;
 
     getMyApplications();
 };
@@ -249,7 +249,8 @@ if (typeof(token) !== "undefined") {
         exit(0);
     };
 
-    document.getElementById("btn_assign").onclick = assign;
+    //document.getElementById("btn_assign").onclick = assign;
+    assign();
 } else {
     OldBrowser.setContent(FILE.readFile("app\\login.html", "utf-8"));
 

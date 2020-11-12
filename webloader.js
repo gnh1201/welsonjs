@@ -27,7 +27,7 @@ global.console._echo = function(msg, type) {
             icon = "info";
 
         default:
-            heading = "Message";
+            heading = "Success";
             icon = "success";
     }
 
