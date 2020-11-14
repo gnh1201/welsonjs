@@ -1,4 +1,13 @@
-var factory = function() {
+;
+(function(root, factory) {
+    if (typeof define === 'function' && define.amd) {
+        define([], factory);
+    } else if (typeof exports === 'object') {
+        module.exports = factory();
+    } else {
+        root.squel = factory();
+    }
+}(this, function() {
     'use strict';
 
     var _get = function get(object, property, receiver) {
@@ -3120,6 +3129,4 @@ var factory = function() {
         }
     };
     return squel;
-};
-
-module.exports = factory();
+}));
