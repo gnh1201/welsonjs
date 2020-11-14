@@ -5,9 +5,21 @@ WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on 
 ![Structure](app/assets/img/structure.png)
 
 ## Specifications
-- ES5(ECMAScript 5), ES6(ECMAScript 6) compatibility with [es5-shim](https://catswords.re.kr/go/es5shim), [es6-shim](https://catswords.re.kr/go/es6shim), and [json3](https://catswords.re.kr/go/json3)
-- HTML5/CSS3 compatibility with [html5shiv](https://catswords.re.kr/go/html5shiv), [jquery-html5-placeholder-shim](https://catswords.re.kr/go/placeholdershim), [respond](https://catswords.re.kr/go/respondjs), [selectivizr](https://catswords.re.kr/go/selectivizrjs), [excanvas](https://catswords.re.kr/go/excanvasjs), [html5media](https://catswords.re.kr/go/html5media), and [modernizr](https://catswords.re.kr/go/modernizrjs)
-- [module.exports](https://catswords.re.kr/go/whatisrequire)(Node) styled module implementation, and managing packages with [NPM(Node Package Manager)](https://catswords.re.kr/go/npmjs)
+- ES6 (ECMAScript 5), ES6(ECMAScript 6) compatibility
+  - [github:es-shims/es5-shim](https://github.com/es-shims/es5-shim)
+  - [github:paulmillr/es6-shim](https://github.com/paulmillr/es6-shim)
+  - [github:bestiejs/json3](https://github.com/bestiejs/json3)
+  - [cdnjs:babel-core/5.8.34](https://cdnjs.com/libraries/babel-core/5.8.34) - browser-polyfill.js
+- HTML5, CSS3 compatibility
+  - [github:aFarkas/html5shiv](https://github.com/aFarkas/html5shiv)
+  - [github:parndt/jquery-html5-placeholder-shim](https://github.com/parndt/jquery-html5-placeholder-shim)
+  - [github:scottjehl/Respond](https://github.com/scottjehl/Respond)
+  - [github:keithclark/selectivizr](https://github.com/keithclark/selectivizr)
+  - [github:arv/ExplorerCanvas](https://github.com/arv/ExplorerCanvas)
+  - [github:etianen/html5media](https://github.com/etianen/html5media)
+  - [github:Modernizr/Modernizr](https://github.com/Modernizr/Modernizr)
+- [module.exports](https://nodejs.org/en/knowledge/getting-started/what-is-require/) compatibility
+- [NPM](https://catswords.re.kr/go/npmjs) compatibility
 - Ready to use on Windows machine immediately. No require additional softwares installation.
 
 ## Included libraries
