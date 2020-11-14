@@ -3041,8 +3041,8 @@
         }(cls.QueryBuilder);
 
         var _squel = {
-            VERSION: '5.12.2',
-            flavour: flavour,
+            'VERSION': '5.12.2',
+            'flavour': flavour,
             'expr': function expr(options) {
                 return new cls.Expression(options);
             },
@@ -3073,7 +3073,7 @@
                 inst['function'].apply(inst, arguments);
                 return inst;
             },
-            registerValueHandler: cls.registerValueHandler
+            'registerValueHandler': cls.registerValueHandler
         };
 
         // aliases
