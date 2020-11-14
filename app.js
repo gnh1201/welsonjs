@@ -99,15 +99,7 @@ if (typeof(CreateObject) !== "function") {
 
 if (typeof(GetObject) !== "function") {
     var GetObject = function(pathName, className) {
-        var paths = pathName.split("\\");
-        if (paths[0].indexOf("winmgmts:") > -1) {
-            var objLocator = CreateObject("WbemScripting.SWbemLocator");
-            var strComputer = paths[2];
-            var strNamespace = paths.slice(3).join("\\");
-            return objLocator.ConnectServer(strComputer, strNamespace);
-        } else {
-            console.log("Not supported " + pathName);
-        }
+        console.error("Not supported on this environment.");
     };
 }
 
