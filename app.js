@@ -233,6 +233,24 @@ function init_window(name, args, w, h) {
     }
 }
 
+// ECMAScript 5 compatibility shims for legacy (and modern) JavaScript engines
+require("app/assets/js/es5-shim-4.5.14.min");
+require("app/assets/js/es5-sham-4.5.14.min");
+
+// JSON 3 was a JSON polyfill for older JavaScript platforms
+var JSON = require("app/assets/js/json3-3.3.2.min");
+
+// ECMAScript 6 compatibility shims for legacy JS engines
+require("app/assets/js/es6-shim-0.35.5.min");
+require("app/assets/js/es6-sham-0.35.5.min");
+
+// Babel-core browser-polyfill
+require("app/assets/js/babel-core-browser-polyfill-5.8.38.min");
+
+// Squel.js SQL query builder
+var squel = require("app/assets/js/welsonjs-squel-basic-5.13.0");
+
+// dive into entry
 function main() {
     if (typeof(window) === "undefined") {
         init_console();
