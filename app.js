@@ -97,12 +97,6 @@ if (typeof(CreateObject) !== "function") {
     };
 }
 
-if (typeof(GetObject) !== "function") {
-    var GetObject = function(pathName, className) {
-        console.error("Not supported on this environment.");
-    };
-}
-
 function require(FN) {
     var cache = require.__cache = require.__cache || {};
     if (FN.substr(FN.length - 3) !== '.js') FN += ".js";
@@ -243,7 +237,7 @@ require("app/assets/js/es6-sham-0.35.5.min");
 // Babel-core browser-polyfill
 require("app/assets/js/babel-core-browser-polyfill-5.8.38.min");
 
-// dive into entrypoint
+// dive into entrypoint 
 function main() {
     if (typeof(window) === "undefined") {
         init_console();
