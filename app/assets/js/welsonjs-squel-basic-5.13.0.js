@@ -1,13 +1,4 @@
-;
-(function(root, factory) {
-    if (typeof define === 'function' && define.amd) {
-        define([], factory);
-    } else if (typeof exports === 'object') {
-        module.exports = factory();
-    } else {
-        root.squel = factory();
-    }
-}(this, function() {
+var factory = function() {
     'use strict';
 
     var _get = function get(object, property, receiver) {
@@ -3093,9 +3084,7 @@
     # ---------------------------------------------------------------------------------------------------------
     */
 
-    //var squel = _buildSquel();
-
-	var squel = {a: 1};
+    var squel = _buildSquel();
 
     /**
     # ---------------------------------------------------------------------------------------------------------
@@ -3131,4 +3120,6 @@
         }
     };
     return squel;
-}));
+};
+
+module.exports = factory();
