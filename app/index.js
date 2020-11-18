@@ -18,7 +18,7 @@ var applications = [];
 var localApplications = [];
 
 var assign = function() {
-    SHELL.runWindow("cscript app.js shadow");
+    SHELL.runVisibleWindow("cscript app.js shadow");
 };
 
 var pingtest = function() {
