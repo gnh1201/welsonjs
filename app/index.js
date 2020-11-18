@@ -249,6 +249,10 @@ if (typeof(token) !== "undefined") {
         exit(0);
     };
 
+    document.getElementById("btn_refresh").onclick = function() {
+        OldBrowser.reload();
+    };
+
     //document.getElementById("btn_assign").onclick = assign;
     assign();
 } else {
