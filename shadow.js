@@ -41,9 +41,7 @@ for (var i = 0; i < items.length; i++) {
 		if (name in Apps) {
 			Apps[name][uniqueId] = ipAddress;
 		}
-	} catch(e) {
-		console.error(e.message);
-	}
+	} catch (e) {}
 }
 
 // App 1. LDPlayer
@@ -59,7 +57,7 @@ var check_LDPlayer = function() {
 			AppsMutex.push(pid);
 
 			if (title in Apps.LDPlayer) {
-                var ss = SS.create.connect(Apps.LDPlayer[title]);
+                var ss = SS.connect(Apps.LDPlayer[title]);
                 ssPort = ss.listenPort;
                 ssPID = ss.processID;
 			} else {
@@ -104,7 +102,7 @@ var check_NoxPlayer = function() {
 			AppsMutex.push(pid);
 
 			if (hostname in Apps.NoxPlayer) {
-                var ss = SS.create.connect(Apps.NoxPlayer[hostname]);
+                var ss = SS.connect(Apps.NoxPlayer[hostname]);
                 ssPort = ss.listenPort;
                 ssPID = ss.processID;
 			} else {
@@ -141,38 +139,37 @@ var check_Chrome = function() {
 	for (var uniqueId in Apps.Chrome) {
 		if (AppsMutex.indexOf("chrome_" + uniqueId) < 0) {
 			console.info("Starting Google Chrome: " + uniqueId);
-            
+
             var ss = SS.connect(Apps.Chrome[uniqueId]);
             ssPort = ss.listenPort;
             ssPID = ss.processID;
 
-            var chromePID = Chrome.start("https://www.showmyip.com/", ssPort, uniqueId);
-            //AppsPID.push([ssPID, chromePID]);
-            AppsPID.push([ssPID]);
+            console.info("Wait 10 seconds...")
+            sleep(10000);
 
-			AppsMutex.push("chrome_" + uniqueId);
+            Chrome.start("https://whatismyipaddress.com/", ssPort, uniqueId);
+
+            AppsPID.push([ssPID]);
+            AppsMutex.push("chrome_" + uniqueId);
 		}
 	}
 };
 
 // Check dead processes
 var check_Exits = function() {
-    var availablePIDs = [];
-    var processes = SYS.getProcesses();
-
-    for (var i = 0; i < processes.length; i++) {
-        availablePIDs.push(processes[i].ProcessID);
-    }
+    var alivePIDList = SYS.getProcessList().reduce(function(acc, process) {
+        acc.push(process.ProcessID);
+    }, []);
 
     AppsPID.forEach(function(v1) {
         v1.forEach(function(v2) {
-            if (availablePIDs.indexOf(v2) < 0) {
-                //console.warn("Detected dead process: " + v2);
-                //console.warn("Will be kill related processes.");
+            if (alivePIDList.indexOf(v2) < 0) {
+                console.warn("Detected dead process: " + v2);
+                console.warn("Will be kill related processes.");
 
-                //v1.forEach(function(v2) {
-                //    SYS.killProcess(v2);
-                //});
+                v1.forEach(function(v2) {
+                    SYS.killProcess(v2);
+                });
 
                 return;
             }
@@ -191,10 +188,7 @@ var main = function() {
 		check_NoxPlayer();
 
 		sleep(3000);
-		check_Chrome();
-
-        sleep(3000);
-        check_Exits();
+        check_Chrome();
 	}
 };
 
