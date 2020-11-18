@@ -15,6 +15,7 @@ var apiUrl = CONFIG.readConfig("/ApiUrl").first().getText();
 
 var servers = [];
 var applications = [];
+var localApplications = [];
 
 var assign = function() {
     SHELL.runWindow("cscript app.js shadow");
@@ -27,8 +28,6 @@ var pingtest = function() {
 };
 
 var getLocalApplications = function() {
-    var localApplications = [];
-
     // LDPlayer
     var LDPList = LDPlayer.getList();
     for (var i = 0; i < LDPList.length; i++) {
@@ -48,6 +47,7 @@ var getLocalApplications = function() {
     }
     
     // Chrome
+    /*
     localApplications.push({
         name: "Chrome",
         uniqueId: "John"
@@ -60,6 +60,7 @@ var getLocalApplications = function() {
         name: "Chrome",
         uniqueId: "Jasmine"
     });
+    */
 
     var template = $("#listview_applications .template");
     for (var i = 0; i < servers.length; i++) {
@@ -155,6 +156,14 @@ var getMyApplications = function() {
                 }
             }
             xmlStrings.push("</Item>");
+
+            // for Chrome
+            if (res.data[i].name == "Chrome") {
+                localApplications.push({
+                    name: "Chrome",
+                    uniqueId: res.data[i].unique_id
+                });
+            }
         }
         xmlStrings.push("</StaticIP>");
 
@@ -263,7 +272,7 @@ if (typeof(token) !== "undefined") {
     };
 
     if (FILE.fileExists("credential.json")) {
-        var credential = JSON.parse(FILE.readFile("token.txt", "utf-8"));
+        var credential = JSON.parse(FILE.readFile("credential.json", "utf-8"));
         document.getElementById("txt_email").value = credential.email;
         document.getElementById("txt_password").value = credential.password;
     }
