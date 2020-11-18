@@ -32,6 +32,7 @@
 //    The appname argument causes <appname>.js to be loaded. The interface returned
 //    must define main = function(args) {}, which is called once the module is
 //    loaded.
+
 var exit = function(status) {
     if (typeof(WScript) !== "undefined") {
         WScript.quit(status);
@@ -41,28 +42,27 @@ var exit = function(status) {
 
 var console = {
     _messages: [],
-    _echo: function(msg, type) {
-        msg = (typeof(type) !== "undefined" ? type + ": " : "") + msg;
+    _echo: function(args, type) {
+        msg = (typeof(type) !== "undefined" ? type + ": " : "") + args[0];
         if (typeof(WScript) !== "undefined") {
             WScript.echo("  * " + msg);
         }
-        
         this._messages.push(msg);
     },
-    log: function(msg) {
-        this._echo(msg);
+    log: function() {
+        this._echo(arguments);
     },
-    error: function(msg) {
-        this._echo(msg, "error");
+    error: function() {
+        this._echo(arguments, "error");
     },
-    info: function(msg) {
-        this._echo(msg, "info");
+    info: function() {
+        this._echo(arguments, "info");
     },
-    warn: function(msg) {
-        this._echo(msg, "warn");
+    warn: function() {
+        this._echo(arguments, "warn");
     },
-    debug: function(msg) {
-        this._echo(msg, "debug");
+    debug: function() {
+        this._echo(arguments, "debug");
     }
 };
 

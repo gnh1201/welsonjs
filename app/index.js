@@ -134,7 +134,7 @@ var getLocalApplications = function() {
 var getMyApplications = function() {
     var onSuccess = function(res) {
         var xmlStrings = [];
-        
+
         xmlStrings.push('<?xml version="1.0" encoding="UTF-8"?>');
         xmlStrings.push("<StaticIP>");
         for (var i = 0; i < res.data.length; i++) {
@@ -258,6 +258,12 @@ if (typeof(token) !== "undefined") {
         ev.preventDefault();
     };
 
+    if (FILE.fileExists("credential.json")) {
+        var credential = JSON.parse(FILE.readFile("token.txt", "utf-8"));
+        document.getElementById("txt_email").value = credential.email;
+        document.getElementById("txt_password").value = credential.password;
+    }
+
     document.getElementById("btn_submit").onclick = function() {
         var credential = {
             "email": document.getElementById("txt_email").value,
@@ -272,6 +278,7 @@ if (typeof(token) !== "undefined") {
                     console.error(res.error.message);
                 } else if ("data" in res) {
                     console.log("ok");
+                    FILE.writeFile("credential.json", JSON.stringify(credential), "utf-8");
                     FILE.writeFile("token.txt", res.data.token, "utf-8");
                     FILE.writeFile("userid.txt", res.data.user.id, "utf-8");
                     OldBrowser.reload();

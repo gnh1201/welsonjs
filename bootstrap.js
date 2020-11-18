@@ -28,8 +28,19 @@ exports.main = function(args) {
     REG.write(REG.HKCR, appName + "\\DefaultIcon", "", SYS.getCurrentScriptDirectory() + "\\app\\favicon.ico,0", REG.STRING);
     REG.write(REG.HKCR, appName + "\\shell\\open\\command", "", "cmd.exe /c cscript " + SYS.getCurrentScriptDirectory() + "\\app.js uriloader \"%1\"", REG.STRING);
 
-    // open HTA file
+    // open web application
     console.log("Trying open GUI...");
+
+    // detect old process
+    var processList = SYS.getProcessList();
+    for (var i = 0; i < processList.length; i++) {
+        var process = processList[i];
+        if (process.Caption == "mshta.exe") {
+            SYS.killProcess(process.ProcessID);
+        }
+    }
+
+    // open web application
     if (typeof(args) !== "undefined") {
         SHELL.run(["app.hta"].concat(args));
     } else {
