@@ -1,6 +1,8 @@
 var SS = require("lib/shadowsocks");
 var XML = require("lib/xml");
 var Chrome = require("lib/chrome");
+var SHELL = require("lib/shell");
+var SYS = require("lib/system");
 
 var Apps = {
 	LDPlayer: {},
@@ -24,7 +26,23 @@ for (var i = 0; i < items.length; i++) {
 	} catch (e) {}
 }
 
-var do_Chrome = function(_uniqueId) {
+var do_Chrome = function(args) {
+    var _uniqueId = args[1];
+	var _args = {};
+	var _url = "https://google.com";
+    for (var i = 0; i < args.length; i++) {
+        var pos = args[i].indexOf('=');
+        if (pos > -1) {
+            if (args[i].indexOf("--") == 0) {
+                _args[args[i].substring(2, pos)] = args[i].substring(pos + 1);
+            } else {
+                _args[args[i].substring(0, pos)] = args[i].substring(pos + 1);
+            }
+        } else if (args[i] != "chrome") {
+			_url = args[i];
+		}
+	}
+
 	var ssPort, ssPID;
 	for (var uniqueId in Apps.Chrome) {
 		if (_uniqueId == uniqueId && AppsMutex.indexOf("chrome_" + uniqueId) < 0) {
@@ -34,10 +52,10 @@ var do_Chrome = function(_uniqueId) {
             ssPort = ss.listenPort;
             ssPID = ss.processID;
 
-            console.info("Wait 10 seconds...")
-            sleep(10000);
+            console.info("Wait 3 seconds...")
+            sleep(3000);
 
-            Chrome.start("https://whatismyipaddress.com/", ssPort, uniqueId);
+            Chrome.start(_url, ssPort, _args['profile-directory'], _args['user-data-dir'], _uniqueId);
 
             AppsPID.push([ssPID]);
             AppsMutex.push("chrome_" + uniqueId);
@@ -55,7 +73,7 @@ exports.main = function(args) {
         sleep(1000);
         switch (args[0]) {
             case "chrome":
-                return do_Chrome(args[1]);
+                return do_Chrome(args);
         }
     }
 };

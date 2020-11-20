@@ -135,27 +135,19 @@ var check_NoxPlayer = function() {
 
 // App 3. Chrome
 var check_Chrome = function() {
-	var ssPort, ssPID;
 	for (var uniqueId in Apps.Chrome) {
 		if (AppsMutex.indexOf("chrome_" + uniqueId) < 0) {
-			console.info("Starting Google Chrome: " + uniqueId);
+            console.info("Creating Chrome Shoutcut: " + uniqueId);
 
-            var ss = SS.connect(Apps.Chrome[uniqueId]);
-            ssPort = ss.listenPort;
-            ssPID = ss.processID;
-
-            console.info("Wait 10 seconds...")
-            sleep(10000);
-
-            Chrome.start("https://whatismyipaddress.com/", ssPort, uniqueId);
-
-            AppsPID.push([ssPID]);
+            // 바탕화면에 바로가기만 생성
+            Chrome.create().setProfile(uniqueId, uniqueId).createShoutcut("https://google.com");
             AppsMutex.push("chrome_" + uniqueId);
 		}
 	}
 };
 
 // Check dead processes
+/*
 var check_Exits = function() {
     var alivePIDList = SYS.getProcessList().reduce(function(acc, process) {
         acc.push(process.ProcessID);
@@ -176,6 +168,7 @@ var check_Exits = function() {
         });
     });
 };
+*/
 
 var main = function() {
 	console.info("Waiting new launched");
