@@ -18,6 +18,8 @@ WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on 
   - [github:arv/ExplorerCanvas](https://github.com/arv/ExplorerCanvas)
   - [github:etianen/html5media](https://github.com/etianen/html5media)
   - [github:Modernizr/Modernizr](https://github.com/Modernizr/Modernizr)
+- Default CSS Framework
+  - [github:jslegers/cascadeframework](https://github.com/jslegers/cascadeframework)
 - [module.exports](https://nodejs.org/en/knowledge/getting-started/what-is-require/) compatibility
 - [NPM](https://catswords.re.kr/go/npmjs) compatibility
 - Ready to use on Windows machine immediately. No require additional softwares installation.
