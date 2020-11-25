@@ -290,7 +290,10 @@ if (typeof(token) !== "undefined") {
         OldBrowser.reload();
     };
 
-    //document.getElementById("btn_assign").onclick = assign;
+    document.getElementById("btn_close").onclick = function() {
+        OldBrowser.close();
+    };
+    
     assign();
 } else {
     OldBrowser.setContent(FILE.readFile("app\\login.html", "utf-8"));
