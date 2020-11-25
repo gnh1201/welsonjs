@@ -11,7 +11,7 @@ var LDPlayer = require("lib/ldplayer");
 var NoxPlayer = require("lib/noxplayer");
 
 var token, userId;
-var apiUrl = CONFIG.readConfig("/ApiUrl").first().getText();
+var apiUrl = CONFIG.getValue("ApiUrl");
 
 var servers = [];
 var applications = [];
@@ -293,7 +293,9 @@ if (typeof(token) !== "undefined") {
     document.getElementById("btn_close").onclick = function() {
         OldBrowser.close();
     };
-    
+
+    document.getElementById("version").innerHTML = "현재 버전: " + CONFIG.getValue("Version");
+
     assign();
 } else {
     OldBrowser.setContent(FILE.readFile("app\\login.html", "utf-8"));
