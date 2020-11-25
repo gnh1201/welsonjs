@@ -25,11 +25,11 @@ global.console._echo = function(args, type) {
         case "info":
             heading = "Information";
             icon = "info";
+            break;
 
         default:
             heading = "Success";
             icon = "success";
-            return;
     }
 
     try {

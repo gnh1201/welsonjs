@@ -144,7 +144,7 @@ function require(FN) {
         T = objStream.readText();
         objStream.close();
     } catch (e) {
-        console.error("LOAD ERROR! " + e.number + ", " + e.description + ", FN=" + FN, 1);
+        console.error("LOAD ERROR! ", e.number, ", ", e.description, ", FN=", FN);
         return;
     }
 
@@ -153,7 +153,7 @@ function require(FN) {
     try {
         cache[FN] = eval(T);
     } catch (e) {
-        console.error("PARSE ERROR! " + e.number + ", " + e.description + ", FN=" + FN, 1);
+        console.error("PARSE ERROR! ", e.number, ", ", e.description, ", FN=", FN);
     }
 
     // check type of callback return
@@ -189,10 +189,10 @@ function init_console() {
                     exit(exitstatus);
                 }
             } else {
-                console.error("Error, missing main entry point in " + name + ".js", 1);
+                console.error("Error, missing main entry point in ", name, ".js");
             }
         } else {
-            console.error("Error, cannot find " + name + ".js", 1);
+            console.error("Error, cannot find ", name, ".js");
         }
     }
 }
@@ -212,17 +212,17 @@ function init_window(name, args, w, h) {
     // "load app";
     if (app) {
         if (app.main) {
-            var exitstatus = app.main.call(app, args);
-            if (exitstatus > 0) {
+            var exitStatus = app.main.call(app, args);
+            if (exitStatus > 0) {
                 console.error("error");
-                exit(exitstatus);
+                exit(exitStatus);
             }
         } else {
-            console.error("Error, missing main entry point in " + name + ".js");
+            console.error("Error, missing main entry point in ", name, ".js");
             exit(1);
         }
     } else {
-        console.error("Error, cannot find " + name + ".js");
+        console.error("Error, cannot find ", name, ".js");
         exit(1);
     }
 }
