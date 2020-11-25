@@ -234,6 +234,33 @@ var getAssignedServers = function() {
     ;
 };
 
+var getNotices = function() {
+    var onSuccess = function(res) {
+        var template = $("#listview_notices .template");
+
+        for (var i = 0; i < res.data.length; i++) {
+            var entry = template.clone();
+            entry.find("a.title").text(res.data[i].title);
+            entry.find("div.description").text(res.data[i].content);
+            entry.find("span.ping").text(res.data[i].created_on.substring(0, 10));
+            entry.appendTo("#listview_notices");
+        }
+
+        template.css("display", "none");
+    };
+
+    HTTP.create()
+        .setContentType("application/x-www-form-urlencoded")
+        .setParameters({
+            "sort": "-created_on",
+            "limit": 3
+        })
+        .setBearerAuth(token)
+        .setUseCache(false)
+        .get(apiUrl + "/netsolid/items/notices", onSuccess)
+    ;
+};
+
 if (FILE.fileExists("token.txt")) {
     token = FILE.readFile("token.txt", "utf-8");
 }
@@ -245,6 +272,7 @@ if (FILE.fileExists("userid.txt")) {
 if (typeof(token) !== "undefined") {
     OldBrowser.setContent(FILE.readFile("app\\servers.html", "utf-8"));
     getAssignedServers();
+    getNotices();
 
     document.getElementById("btn_logout").onclick = function() {
         if (FILE.fileExists("token.txt")) {
