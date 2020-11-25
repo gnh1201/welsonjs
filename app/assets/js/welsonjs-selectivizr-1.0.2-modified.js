@@ -389,16 +389,19 @@ var FILE = require('lib/file');
 
     // --[ loadStyleSheet() ]-----------------------------------------------
     function loadStyleSheet(url) {
-		var pos = url.indexOf('://');
-		var scheme = (pos < 0) ? "" : url.substring(0, pos);
+        var pos = url.indexOf('://');
+        var scheme = (pos < 0) ? "" : url.substring(0, pos);
 
-        if (scheme == 'http' || scheme == 'https') {
-            xhr.open("GET", url, false);
-            xhr.send();
-            return (xhr.status == 200) ? xhr.responseText : EMPTY_STRING;
-        } else {
-            var responseText = FILE.readFile(url, "utf-8");
-            return responseText;
+        switch (scheme) {
+            case "http":
+            case "https":
+                xhr.open("GET", url, false);
+                xhr.send();
+                return (xhr.status == 200) ? xhr.responseText : EMPTY_STRING;
+
+            default:
+                var responseText = FILE.readFile(url, "utf-8");
+                return responseText;
         }
     };
 

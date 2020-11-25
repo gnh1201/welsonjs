@@ -45,28 +45,32 @@ var FILE = require('lib/file');
             };
         }(),
         ajax = function(url, callback) {
-			var pos = url.indexOf('://');
-			var scheme = (pos < 0) ? "" : url.substring(0, pos);
+            var pos = url.indexOf('://');
+            var scheme = (pos < 0) ? "" : url.substring(0, pos);
 
-			if (scheme == 'http' || scheme == 'https') {
-				var req = xmlHttp();
-				if (!req) {
-					return;
-				}
-                req.open("GET", url, true);
-                req.onreadystatechange = function() {
-                    if (req.readyState !== 4 || req.status !== 200 && req.status !== 304) {
+            switch (scheme) {
+                case "http":
+                case "https":
+                    var req = xmlHttp();
+                    if (!req) {
                         return;
                     }
-                    callback(req.responseText);
-                };
-                if (req.readyState === 4) {
-                    return;
-                }
-                req.send(null);
-            } else {
-                responseText = FILE.readFile(url, "utf-8");
-                callback(responseText);
+                    req.open("GET", url, true);
+                    req.onreadystatechange = function() {
+                        if (req.readyState !== 4 || req.status !== 200 && req.status !== 304) {
+                            return;
+                        }
+                        callback(req.responseText);
+                    };
+                    if (req.readyState === 4) {
+                        return;
+                    }
+                    req.send(null);
+                    break;
+
+                default:
+                    responseText = FILE.readFile(url, "utf-8");
+                    callback(responseText);
             }
         };
     respond.ajax = ajax;
