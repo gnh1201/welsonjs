@@ -42,8 +42,17 @@ var exit = function(status) {
 
 var console = {
     _messages: [],
+    _join: function(args, sep) {
+        args = args || [];
+        sep = sep || ' ';
+        var res = '';
+        for (var i = args.length - 1; i > -1; i--) {
+            res = (i ? sep : '') + args[i] + res;
+        }
+        return res;
+    },
     _echo: function(args, type) {
-        msg = (typeof(type) !== "undefined" ? type + ": " : "") + args[0];
+        msg = (typeof(type) !== "undefined" ? type + ": " : "") + this._join(args);
         if (typeof(WScript) !== "undefined") {
             WScript.echo("  * " + msg);
         }

@@ -8,8 +8,8 @@ var OldBrowser = require("lib/oldbrowser");
 ////////////////////////////////////////////////////////////////////////
 // Override global.console._echo()
 ////////////////////////////////////////////////////////////////////////
-global.console._echo = function(msg, type) {
-    var heading, icon;
+global.console._echo = function(args, type) {
+    var heading, icon, msg = this._join(args);
 
     switch(type) {
         case "error":
@@ -29,19 +29,24 @@ global.console._echo = function(msg, type) {
         default:
             heading = "Success";
             icon = "success";
+            return;
     }
 
-    if (typeof(window.jQuery) !== "undefined") {
-        window.jQuery.toast({
-            heading: heading,
-            text: msg,
-            icon: icon
-        });
-    } else {
-        window.alert(msg);
+    try {
+        if (typeof(window.jQuery.toast) !== "undefined") {
+            window.jQuery.toast({
+                heading: heading,
+                text: msg,
+                icon: icon
+            });
+        } else {
+            window.alert(msg);
+        }
+    } catch (e) {
+        window.alert(e.message);
     }
 
-    global.console._messages.push(msg);
+    this._messages.push(msg);
 };
 
 ////////////////////////////////////////////////////////////////////////
