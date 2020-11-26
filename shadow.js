@@ -146,6 +146,39 @@ var check_Chrome = function() {
 	}
 };
 
+// App 4. ProcessName
+var check_ProcessName = function() {
+    for (var uniqueId in Apps.ProcessName) {
+        if (AppsMutex.indexOf("processName_" + uniqueId) < 0) {
+            var ssPort, ssPID, shadowPID = 0;
+
+            console.info("Running listener with process name: " + uniqueId);
+
+            // 소켓 연결
+            var ss = SS.connect(Apps.ProcessName[uniqueId]);
+            ssPort = ss.listenPort;
+            ssPID = ss.processID;
+
+            // 프로세스 이름으로 실행
+            var process;
+            while (!(shadowPID > 0)) {
+                process = SHELL.createProcess([
+                    SYS.getCurrentScriptDirectory() + "/bin/shadow.exe",
+                    "-c",
+                    SYS.getCurrentScriptDirectory() + "/config.template.json",
+                    "-s",
+                    "socks://localhost:" + ssPort,
+                    "-n",
+                    uniqueId
+                ]);
+                sleep(1000);
+                shadowPID = process.ProcessID;
+            }
+            AppsMutex.push("processName_" + uniqueId);
+        }
+    }
+};
+
 // Check dead processes
 /*
 var check_Exits = function() {
@@ -182,6 +215,9 @@ var main = function() {
 
 		sleep(3000);
         check_Chrome();
+
+        sleep(3000);
+        check_ProcessName();
 	}
 };
 
