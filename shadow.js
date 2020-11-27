@@ -153,6 +153,7 @@ var check_ProcessName = function() {
             var ssPort, ssPID, shadowPID = 0;
 
             console.info("Running listener with process name: " + uniqueId);
+            AppsMutex.push("processName_" + uniqueId);
 
             // 소켓 연결
             var ss = SS.connect(Apps.ProcessName[uniqueId]);
@@ -174,34 +175,55 @@ var check_ProcessName = function() {
                 sleep(1000);
                 shadowPID = process.ProcessID;
             }
-            AppsMutex.push("processName_" + uniqueId);
+
+            AppsPID.push([ssPID, shadowPID]);
+            sleep(3000);
         }
     }
 };
 
-// Check dead processes
-/*
-var check_Exits = function() {
-    var alivePIDList = SYS.getProcessList().reduce(function(acc, process) {
-        acc.push(process.ProcessID);
-    }, []);
+var check_Zombie = function() {
+    var alives = SYS.getPIDList();
+    var zombies = [];
 
-    AppsPID.forEach(function(v1) {
-        v1.forEach(function(v2) {
-            if (alivePIDList.indexOf(v2) < 0) {
-                console.warn("Detected dead process: " + v2);
-                console.warn("Will be kill related processes.");
+    // find dead processes
+    var _AppsPID = [];
+    for (var i = 0; i < AppsPID.length; i++) {
+        var v1 = AppsPID[i];
+        var isDead = false;
 
-                v1.forEach(function(v2) {
-                    SYS.killProcess(v2);
-                });
-
-                return;
+        for (var k = 0; k < v1.length; k++) {
+            var v2 = v1[k];
+            if (alives.indexOf(v2) < 0) {
+                console.warn("Detected zombie: " + v2);
+                console.warn("Will be kill all related processes.");
+                zombies = zombies.concat(v1);
+                isDead = true;
+                break;
             }
-        });
-    });
+        }
+
+        if (!isDead) {
+            _AppsPID.push(v1);
+        }
+    }
+    AppsPID = _AppsPID;
+
+    // kill zombie processes
+    var _zombies = [];
+    for (var i = 0; i < zombies.length; i++) {
+        var pid = zombies[i];
+        if (pid > 0) {
+            try {
+                SYS.killProcess(pid);
+            } catch (e) {
+                _zombies.push(pid);
+                console.error("shadow -> check_Zombie() -> ", e.message);
+            }
+        }
+    }
+    zombies = _zombies;
 };
-*/
 
 var main = function() {
 	console.info("Waiting new launched");
@@ -218,6 +240,9 @@ var main = function() {
 
         sleep(3000);
         check_ProcessName();
+
+        sleep(3000);
+        check_Zombie();
 	}
 };
 
