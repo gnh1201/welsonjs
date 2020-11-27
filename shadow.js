@@ -11,62 +11,64 @@ var NoxPlayer = require("lib/noxplayer");
 var Chrome = require("lib/chrome");
 
 var Apps = {
-	LDPlayer: {},
-	NoxPlayer: {},
-	Chrome: {},
-	ProcessName: {}
+    LDPlayer: {},
+    NoxPlayer: {},
+    Chrome: {},
+    ProcessName: {}
 };
 var AppsMutex = [];
 var AppsPID = [];
 
 var getAvailablePID = function() {
-	var items = [];
+    var items = [];
     var cmd = "tasklist | findstr .exe";
     var result = SHELL.exec(cmd);
     var lines = result.split(/\r?\n/);
     for(var i = 0; i < lines.length; i++) {
-		var row = lines[i].split(/\s+/);
+        var row = lines[i].split(/\s+/);
         items.push(row[1]);
-	}
-	return items;
+    }
+    return items;
 };
 
 var items = XML.load("staticip.xml").select("/StaticIP/Item").toArray();
 for (var i = 0; i < items.length; i++) {
-	try {
-		var name = items[i].getDOM().selectSingleNode("Name").text;
-		var uniqueId = items[i].getDOM().selectSingleNode("UniqueID").text;
-		var ipAddress = items[i].getDOM().selectSingleNode("IPAddress").text;
+    try {
+        var name = items[i].getDOM().selectSingleNode("Name").text;
+        var uniqueId = items[i].getDOM().selectSingleNode("UniqueID").text;
+        var ipAddress = items[i].getDOM().selectSingleNode("IPAddress").text;
 
-		if (name in Apps) {
-			Apps[name][uniqueId] = ipAddress;
-		}
-	} catch (e) {}
+        if (name in Apps) {
+            Apps[name][uniqueId] = ipAddress;
+        }
+    } catch (e) {}
 }
 
 // App 1. LDPlayer
 var check_LDPlayer = function() {
     var ssPort, ssPID, shadowPID = 0;
-	var items = LDPlayer.getList();
+    var items = LDPlayer.getList();
 
-	for (var i = 0; i < items.length; i++) {
-		var pid = items[i].PIDVBox;
-		var title = items[i].title;
-		if (pid > 0 && AppsMutex.indexOf(pid) < 0) {
-			console.info("New launched LDPlayer: " + title);
-			AppsMutex.push(pid);
+    for (var i = 0; i < items.length; i++) {
+        var pid = items[i].PIDVBox;
+        var title = items[i].title;
+        if (pid > 0 && AppsMutex.indexOf(pid) < 0) {
+            console.info("New launched LDPlayer: " + title);
+            AppsMutex.push(pid);
 
-			if (title in Apps.LDPlayer) {
-                var ss = SS.connect(Apps.LDPlayer[title]);
-                ssPort = ss.listenPort;
-                ssPID = ss.processID;
-			} else {
-				console.error("Not assigned static IP: " + title);
-				continue;
-			}
+            if (title in Apps.LDPlayer) {
+                while (!SYS.isAlivePID(ssPID)) {
+                    var ss = SS.connect(Apps.LDPlayer[title]);
+                    ssPort = ss.listenPort;
+                    ssPID = ss.processID;
+                }
+            } else {
+                console.error("Not assigned static IP: " + title);
+                continue;
+            }
 
             var process;
-            while (!(shadowPID > 0)) {
+            while (!SYS.isAlivePID(shadowPID)) {
                 process = SHELL.createProcess([
                     SYS.getCurrentScriptDirectory() + "/bin/shadow.exe",
                     "-c",
@@ -76,42 +78,44 @@ var check_LDPlayer = function() {
                     "-p",
                     pid
                 ]);
-                sleep(1000);
+                sleep(3000);
                 shadowPID = process.ProcessID;
             }
 
             AppsPID.push([pid, ssPID, shadowPID]);
 
-			console.info("Waiting new launched");
-			sleep(3000);
-		}
-	}
+            console.info("Waiting new launched");
+            sleep(3000);
+        }
+    }
 };
 
 // App 2. NoxPlayer
 var check_NoxPlayer = function() {
     var ssPort, ssPID, shadowPID = 0;
-	var items = NoxPlayer.getList();
+    var items = NoxPlayer.getList();
 
-	for (var i = 0; i < items.length; i++) {
-		var pid = items[i].PID;
-		var hostname = items[i].hostname;
+    for (var i = 0; i < items.length; i++) {
+        var pid = items[i].PID;
+        var hostname = items[i].hostname;
 
-		if (pid > 0 && AppsMutex.indexOf(pid) < 0) {
-			console.info("New launched NoxPlayer: " + hostname);
-			AppsMutex.push(pid);
+        if (pid > 0 && AppsMutex.indexOf(pid) < 0) {
+            console.info("New launched NoxPlayer: " + hostname);
+            AppsMutex.push(pid);
 
-			if (hostname in Apps.NoxPlayer) {
-                var ss = SS.connect(Apps.NoxPlayer[hostname]);
-                ssPort = ss.listenPort;
-                ssPID = ss.processID;
-			} else {
-				console.error("Not assigned static IP: " + hostname);
-				continue;
-			}
+            if (hostname in Apps.NoxPlayer) {
+                while (!SYS.isAlivePID(ssPID)) {
+                    var ss = SS.connect(Apps.NoxPlayer[hostname]);
+                    ssPort = ss.listenPort;
+                    ssPID = ss.processID;
+                }
+            } else {
+                console.error("Not assigned static IP: " + hostname);
+                continue;
+            }
 
             var process;
-            while (!(shadowPID > 0)) {
+            while (!SYS.isAlivePID(shadowPID)) {
                 process = SHELL.createProcess([
                     SYS.getCurrentScriptDirectory() + "/bin/shadow.exe",
                     "-c",
@@ -121,29 +125,29 @@ var check_NoxPlayer = function() {
                     "-p",
                     pid
                 ]);
-                sleep(1000);
+                sleep(3000);
                 shadowPID = process.ProcessID;
             }
 
             AppsPID.push([pid, ssPID, shadowPID]);
 
-			console.info("Waiting new launched");
-			sleep(3000);
-		}
-	}
+            console.info("Waiting new launched");
+            sleep(3000);
+        }
+    }
 };
 
 // App 3. Chrome
 var check_Chrome = function() {
-	for (var uniqueId in Apps.Chrome) {
-		if (AppsMutex.indexOf("chrome_" + uniqueId) < 0) {
+    for (var uniqueId in Apps.Chrome) {
+        if (AppsMutex.indexOf("chrome_" + uniqueId) < 0) {
             console.info("Creating Chrome Shoutcut: " + uniqueId);
 
             // 바탕화면에 바로가기만 생성
             Chrome.create().setProfile(uniqueId, uniqueId).createShoutcut("https://google.com");
             AppsMutex.push("chrome_" + uniqueId);
-		}
-	}
+        }
+    }
 };
 
 // App 4. ProcessName
@@ -156,13 +160,15 @@ var check_ProcessName = function() {
             AppsMutex.push("processName_" + uniqueId);
 
             // 소켓 연결
-            var ss = SS.connect(Apps.ProcessName[uniqueId]);
-            ssPort = ss.listenPort;
-            ssPID = ss.processID;
+            while (!SYS.isAlivePID(ssPID)) {
+                var ss = SS.connect(Apps.ProcessName[uniqueId]);
+                ssPort = ss.listenPort;
+                ssPID = ss.processID;
+            }
 
             // 프로세스 이름으로 실행
             var process;
-            while (!(shadowPID > 0)) {
+            while (!SYS.isAlivePID(shadowPID)) {
                 process = SHELL.createProcess([
                     SYS.getCurrentScriptDirectory() + "/bin/shadow.exe",
                     "-c",
@@ -172,7 +178,7 @@ var check_ProcessName = function() {
                     "-n",
                     uniqueId
                 ]);
-                sleep(1000);
+                sleep(3000);
                 shadowPID = process.ProcessID;
             }
 
@@ -226,16 +232,16 @@ var check_Zombie = function() {
 };
 
 var main = function() {
-	console.info("Waiting new launched");
+    console.info("Waiting new launched");
 
-	while (true) {
-		sleep(3000);
-		check_LDPlayer();
+    while (true) {
+        sleep(3000);
+        check_LDPlayer();
 
-		sleep(3000);
-		check_NoxPlayer();
+        sleep(3000);
+        check_NoxPlayer();
 
-		sleep(3000);
+        sleep(3000);
         check_Chrome();
 
         sleep(3000);
@@ -243,7 +249,7 @@ var main = function() {
 
         sleep(3000);
         check_Zombie();
-	}
+    }
 };
 
 exports.main = main;
