@@ -82,7 +82,7 @@ var getLocalApplications = function() {
                 && applications[k].uniqueId == localApplications[i].uniqueId
                 && applications[k].createdBy == userId)
             {
-                entry.find("select").data("application-id", applications[i].id);
+                entry.find("select").data("application-id", applications[k].id);
                 serverId = applications[k].server;
                 break;
             }
@@ -139,30 +139,32 @@ var getMyApplications = function() {
         xmlStrings.push('<?xml version="1.0" encoding="UTF-8"?>');
         xmlStrings.push("<StaticIP>");
         for (var i = 0; i < res.data.length; i++) {
-            xmlStrings.push("<Item>");
-            xmlStrings.push("<Name>" + res.data[i].name + "</Name>");
-            xmlStrings.push("<UniqueID>" + res.data[i].unique_id + "</UniqueID>");
-            for (var k = 0; k < servers.length; k++) {
-                if (servers[k].data.id == res.data[i].server) {
-                    xmlStrings.push("<IPAddress>" + servers[k].data.ipaddress + "</IPAddress>");
-                    applications.push({
-                        id: res.data[i].id,
-                        name: res.data[i].name,
-                        uniqueId: res.data[i].unique_id,
-                        server: res.data[i].server,
-                        ipAddress: servers[k].data.ipaddress,
-                        createdBy: userId
+            if (res.data[i].created_by == userId) {
+                xmlStrings.push("<Item>");
+                xmlStrings.push("<Name>" + res.data[i].name + "</Name>");
+                xmlStrings.push("<UniqueID>" + res.data[i].unique_id + "</UniqueID>");
+                for (var k = 0; k < servers.length; k++) {
+                    if (servers[k].data.id == res.data[i].server) {
+                        xmlStrings.push("<IPAddress>" + servers[k].data.ipaddress + "</IPAddress>");
+                        applications.push({
+                            id: res.data[i].id,
+                            name: res.data[i].name,
+                            uniqueId: res.data[i].unique_id,
+                            server: res.data[i].server,
+                            ipAddress: servers[k].data.ipaddress,
+                            createdBy: userId
+                        });
+                    }
+                }
+                xmlStrings.push("</Item>");
+
+                // for Chrome
+                if (res.data[i].name == "Chrome") {
+                    localApplications.push({
+                        name: "Chrome",
+                        uniqueId: res.data[i].unique_id
                     });
                 }
-            }
-            xmlStrings.push("</Item>");
-
-            // for Chrome
-            if (res.data[i].name == "Chrome") {
-                localApplications.push({
-                    name: "Chrome",
-                    uniqueId: res.data[i].unique_id
-                });
             }
         }
         xmlStrings.push("</StaticIP>");
@@ -176,6 +178,9 @@ var getMyApplications = function() {
         .setContentType("application/x-www-form-urlencoded")
         .setBearerAuth(token)
         .setUseCache(false)
+        .setParameters({
+            "filter[created_by][eq]": userId
+        })
         .get(apiUrl + "/netsolid/items/applications", onSuccess)
     ;
 };
@@ -190,7 +195,6 @@ var getMyServers = function(assignedServers) {
                 entry.find("a.title").text(res.data[i].ipaddress);
                 entry.find("div.description").text(res.data[i].name);
                 entry.appendTo("#listview_servers");
-                
                 servers.push({
                     "data": res.data[i],
                     "entry": entry
@@ -205,6 +209,9 @@ var getMyServers = function(assignedServers) {
         .setContentType("application/x-www-form-urlencoded")
         .setBearerAuth(token)
         .setUseCache(false)
+        .setParameters({
+            "limit": "-1"
+        })
         .get(apiUrl + "/netsolid/items/servers", onSuccess)
     ;
 
@@ -230,6 +237,9 @@ var getAssignedServers = function() {
         .setContentType("application/x-www-form-urlencoded")
         .setBearerAuth(token)
         .setUseCache(false)
+        .setParameters({
+            "filter[assigned_to][eq]": userId
+        })
         .get(apiUrl + "/netsolid/items/assignedservers", onSuccess)
     ;
 };
