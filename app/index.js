@@ -42,10 +42,10 @@ var getLocalApplications = function() {
     for (var i = 0; i < NoxPList.length; i++) {
         localApplications.push({
             name: "NoxPlayer",
-            uniqueId: NoxPList[i].hostname
+            uniqueId: NoxPList[i].title
         });
     }
-    
+
     // Chrome
     /*
     localApplications.push({
