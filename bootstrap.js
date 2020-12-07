@@ -8,6 +8,7 @@ var PS = require("lib/powershell");
 var REG = require("lib/registry");
 var SYS = require("lib/system");
 var SHELL = require("lib/shell");
+var UPDATER = require("lib/updater");
 
 var appName = "welsonjs";
 
@@ -28,16 +29,24 @@ exports.main = function(args) {
     REG.write(REG.HKCR, appName + "\\DefaultIcon", "", SYS.getCurrentScriptDirectory() + "\\app\\favicon.ico,0", REG.STRING);
     REG.write(REG.HKCR, appName + "\\shell\\open\\command", "", "cmd.exe /c cscript " + SYS.getCurrentScriptDirectory() + "\\app.js uriloader \"%1\"", REG.STRING);
 
+    // check updates
+    console.log("Checking updates...");
+    UPDATER.checkUpdates();
+
     // open web application
     console.log("Trying open GUI...");
 
     // detect old process
     var processList = SYS.getProcessList();
     for (var i = 0; i < processList.length; i++) {
-        var process = processList[i];
-        if (process.Caption == "mshta.exe") {
-            SYS.killProcess(process.ProcessID);
-        }
+        try {
+            var process = processList[i];
+            if (process.Caption == "mshta.exe") {
+                console.warn("Will be kill process ID: " + process.ProcessID);
+                SYS.killProcess(process.ProcessID);
+                sleep(1000);
+            }
+        } catch (e) {}
     }
 
     // open web application
