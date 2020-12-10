@@ -78,14 +78,14 @@ var check_LDPlayer = function() {
                     "-p",
                     pid
                 ]);
-                sleep(3000);
+                sleep(1500);
                 shadowPID = process.ProcessID;
             }
 
             AppsPID.push([pid, ssPID, shadowPID]);
 
             console.info("Waiting new launched");
-            sleep(3000);
+            sleep(1500);
         }
     }
 };
@@ -97,20 +97,20 @@ var check_NoxPlayer = function() {
 
     for (var i = 0; i < items.length; i++) {
         var pid = items[i].PID;
-        var hostname = items[i].hostname;
+        var title = items[i].title;
 
         if (pid > 0 && AppsMutex.indexOf(pid) < 0) {
-            console.info("New launched NoxPlayer: " + hostname);
+            console.info("New launched NoxPlayer: " + title);
             AppsMutex.push(pid);
 
-            if (hostname in Apps.NoxPlayer) {
+            if (title in Apps.NoxPlayer) {
                 while (!SYS.isAlivePID(ssPID)) {
-                    var ss = SS.connect(Apps.NoxPlayer[hostname]);
+                    var ss = SS.connect(Apps.NoxPlayer[title]);
                     ssPort = ss.listenPort;
                     ssPID = ss.processID;
                 }
             } else {
-                console.error("Not assigned static IP: " + hostname);
+                console.error("Not assigned static IP: " + title);
                 continue;
             }
 
@@ -125,14 +125,14 @@ var check_NoxPlayer = function() {
                     "-p",
                     pid
                 ]);
-                sleep(3000);
+                sleep(1500);
                 shadowPID = process.ProcessID;
             }
 
             AppsPID.push([pid, ssPID, shadowPID]);
 
             console.info("Waiting new launched");
-            sleep(3000);
+            sleep(1500);
         }
     }
 };
@@ -144,7 +144,12 @@ var check_Chrome = function() {
             console.info("Creating Chrome Shoutcut: " + uniqueId);
 
             // 바탕화면에 바로가기만 생성
-            Chrome.create().setProfile(uniqueId, uniqueId).createShoutcut("https://google.com");
+            var number = uniqueId.replace(/[^0-9]/g,'');
+            Chrome.create()
+                .setProfile(uniqueId, uniqueId)
+                .setInPrivate(true)
+                .createShoutcut("https://google.com")
+            ;
             AppsMutex.push("chrome_" + uniqueId);
         }
     }
@@ -178,12 +183,12 @@ var check_ProcessName = function() {
                     "-n",
                     uniqueId
                 ]);
-                sleep(3000);
+                sleep(1500);
                 shadowPID = process.ProcessID;
             }
 
             AppsPID.push([ssPID, shadowPID]);
-            sleep(3000);
+            sleep(1500);
         }
     }
 };
@@ -235,19 +240,19 @@ var main = function() {
     console.info("Waiting new launched");
 
     while (true) {
-        sleep(3000);
+        sleep(1500);
         check_LDPlayer();
 
-        sleep(3000);
+        sleep(1500);
         check_NoxPlayer();
 
-        sleep(3000);
+        sleep(1500);
         check_Chrome();
 
-        sleep(3000);
+        sleep(1500);
         check_ProcessName();
 
-        sleep(3000);
+        sleep(1500);
         check_Zombie();
     }
 };
