@@ -21,11 +21,13 @@ var assign = function() {
     SHELL.runVisibleWindow("cscript app.js shadow");
 };
 
+/*
 var pingtest = function() {
     for (var i = 0; i < servers.length; i++) {
-        servers[i].entry.find("span.ping").text(SYS.ping(servers[i].data.ipaddress) + " ms");
+        servers[i].entry.find("span.status").text(SYS.ping(servers[i].data.ipaddress) + " ms");
     }
 };
+*/
 
 var getLocalApplications = function() {
     // LDPlayer
@@ -194,6 +196,7 @@ var getMyServers = function(assignedServers) {
                 var entry = template.clone();
                 entry.find("a.title").text(res.data[i].ipaddress);
                 entry.find("div.description").text(res.data[i].name);
+                entry.find("span.status").text(res.data[i].status !== "published" ? "점검중" : "사용가능");
                 entry.appendTo("#listview_servers");
                 servers.push({
                     "data": res.data[i],
@@ -210,13 +213,15 @@ var getMyServers = function(assignedServers) {
         .setBearerAuth(token)
         .setUseCache(false)
         .setParameters({
+            //"filter[status][eq]": "published", // get only available items
+            "filter[id][in]": assignedServers.join(','),
             "limit": "-1"
         })
         .get(apiUrl + "/netsolid/items/servers", onSuccess)
     ;
 
-    pingtest();
-    setInterval(pingtest, 5000);
+    //pingtest();
+    //setInterval(pingtest, 5000);
     //document.getElementById("btn_pingtest").onclick = pingtest;
 
     getMyApplications();
@@ -238,6 +243,7 @@ var getAssignedServers = function() {
         .setBearerAuth(token)
         .setUseCache(false)
         .setParameters({
+            //"filter[status][eq]": "published", // get only available items
             "filter[assigned_to][eq]": userId
         })
         .get(apiUrl + "/netsolid/items/assignedservers", onSuccess)
@@ -252,7 +258,7 @@ var getNotices = function() {
             var entry = template.clone();
             entry.find("a.title").text(res.data[i].title);
             entry.find("div.description").text(res.data[i].content);
-            entry.find("span.ping").text(res.data[i].created_on.substring(0, 10));
+            entry.find("span.status").text(res.data[i].created_on.substring(0, 10));
             entry.appendTo("#listview_notices");
         }
 
@@ -262,6 +268,7 @@ var getNotices = function() {
     HTTP.create()
         .setContentType("application/x-www-form-urlencoded")
         .setParameters({
+            "filter[status][eq]": "published", // get only available items
             "sort": "-created_on",
             "limit": 3
         })

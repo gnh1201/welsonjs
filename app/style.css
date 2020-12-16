@@ -2,7 +2,7 @@ html, body {
     padding: 0;
     margin: 0;
     width: 100%;
-    height: 90%;
+	overflow: hidden;
     font-size: 1em;
     font-family: "맑은 고딕", "Malgun Gothic", "Segoe UI", Calibri, Arial, Sans-Serif;
 }
@@ -14,8 +14,6 @@ input, textarea {
 
 #app {
     width: 100%;
-    height: 100%;
-    overflow: auto;
 }
 
 #loading {
