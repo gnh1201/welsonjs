@@ -68,7 +68,7 @@ var getLocalApplications = function() {
     for (var i = 0; i < servers.length; i++) {
         template.find("select").append($("<option/>").attr({
             value: servers[i].data.id
-        }).text(servers[i].data.ipaddress));
+        }).text(servers[i].data.ipaddress + (servers[i].data.status !== "published" ? "(점검중)" : "")));
     }
 
     for (var i = 0; i < localApplications.length; i++) {
