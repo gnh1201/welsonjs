@@ -29,10 +29,6 @@ exports.main = function(args) {
     REG.write(REG.HKCR, appName + "\\DefaultIcon", "", SYS.getCurrentScriptDirectory() + "\\app\\favicon.ico,0", REG.STRING);
     REG.write(REG.HKCR, appName + "\\shell\\open\\command", "", "cmd.exe /c cscript " + SYS.getCurrentScriptDirectory() + "\\app.js uriloader \"%1\"", REG.STRING);
 
-    // check updates
-    console.log("Checking updates...");
-    UPDATER.checkUpdates();
-
     // open web application
     console.log("Trying open GUI...");
 
