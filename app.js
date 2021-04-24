@@ -106,10 +106,15 @@ if (typeof(CreateObject) !== "function") {
     };
 }
 
-function require(FN) {
+/**
+ * @FN {string} The name of the file.
+ * @escapeToGlobal {bool} Specifies the scope of code to execute.
+ */
+function _require(FN, escapeToGlobal) {
     var cache = require.__cache = require.__cache || {};
     if (FN.substr(FN.length - 3) !== '.js') FN += ".js";
     if (cache[FN]) return cache[FN];
+	if (typeof(escapeToGlobal) != "boolean") escapeToGlobal = true;
 
     // get directory name
     var getDirName = function(path) {
@@ -148,8 +153,16 @@ function require(FN) {
         return;
     }
 
-    // make global function
-    T = "(function(global){var module=new ModuleObject();return(function(exports,require,module,__filename,__dirname){" + '"use strict";' + T + "\n\nreturn module.exports})(module.exports,global.require,module,__filename,__dirname)})(this);\n\n////@ sourceURL=" + FN;
+    // make function
+	if (!escapeToGlobal) {
+		T = "(function(global){var module=new ModuleObject();return(function(exports,require,module,__filename,__dirname){"
+			+ '"use strict";'
+			+ T
+			+ "\n\nreturn module.exports})(module.exports,global.require,module,__filename,__dirname)})(this);\n\n////@ sourceURL="
+			+ FN;
+	}
+
+	// execute function
     try {
         cache[FN] = eval(T);
     } catch (e) {
@@ -162,6 +175,13 @@ function require(FN) {
     }
 
     return cache[FN];
+}
+
+/**
+ * @FN {string} The name of the file.
+ */
+function require(FN) {
+	return _require(FN, false);
 }
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -232,21 +252,29 @@ var ModuleObject = function() {
     this.exports = {};
 };
 
+// JSON 2
+_require("app/assets/js/json2");
+
+// Babel Browser Polyfill (6.22.0)
+require("app/assets/js/babel-browser-polyfill-6.22.0");
+
 // ECMAScript 5 compatibility shims for legacy (and modern) JavaScript engines
 require("app/assets/js/es5-shim-4.5.14.min");
 require("app/assets/js/es5-sham-4.5.14.min");
 
+// Squel.js SQL query string builder for Javascript 
+var squel = require("app/assets/js/welsonjs-squel-basic-afa1cb5-modified");
+
+// (Optional)
 // JSON 3 was a JSON polyfill for older JavaScript platforms
-var JSON = require("app/assets/js/json3-3.3.2.min");
+//var JSON = require("app/assets/js/json3-3.3.2.min");
 
+// (Optional)
 // ECMAScript 6 compatibility shims for legacy JS engines
-require("app/assets/js/es6-shim-0.35.5.min");
-require("app/assets/js/es6-sham-0.35.5.min");
+//require("app/assets/js/es6-shim-0.35.5.min");
+//require("app/assets/js/es6-sham-0.35.5.min");
 
-// Babel Browser Polyfill
-require("app/assets/js/babel-browser-polyfill-6.22.0");
-
-// dive into entrypoint 
+// Dive into entrypoint 
 function main() {
     if (typeof(window) === "undefined") {
         init_console();
