@@ -244,7 +244,7 @@ require("app/assets/js/es6-shim-0.35.5.min");
 require("app/assets/js/es6-sham-0.35.5.min");
 
 // Babel Browser Polyfill
-require("app/assets/js/babal-browser-polyfill-6.22.0");
+require("app/assets/js/babel-browser-polyfill-6.22.0");
 
 // dive into entrypoint 
 function main() {
