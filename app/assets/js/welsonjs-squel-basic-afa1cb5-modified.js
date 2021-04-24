@@ -2998,16 +2998,14 @@ function _buildSquel() {
     },
 	str: function str() {
       var inst = new cls.FunctionBlock();
-	  WScript.Echo(typeof(inst['function']));
-      //inst.function.apply(inst, arguments);
+	  inst['function'].apply(inst, arguments);
       return inst;
     },
     rstr: function rstr() {
       var inst = new cls.FunctionBlock({
         rawNesting: true
       });
-	  WScript.Echo(typeof(inst['function']));
-      //inst.function.apply(inst, arguments);
+	  inst['function'].apply(inst, arguments);
       return inst;
     },
     registerValueHandler: cls.registerValueHandler
