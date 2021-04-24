@@ -10,7 +10,7 @@ WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on 
   - [github:paulmillr/es6-shim](https://github.com/paulmillr/es6-shim)
   - [github:bestiejs/json3](https://github.com/bestiejs/json3)
   - [github:douglascrockford/JSON-js](https://github.com/douglascrockford/JSON-js)
-  - [cdnjs:babel-core/5.8.34](https://cdnjs.com/libraries/babel-core/5.8.34) - browser-polyfill.js
+  - [github:gimox/babel-browser-polyfill](https://github.com/gimox/babel-browser-polyfill) (6.22.0)
 - HTML5, CSS3 compatibility
   - [github:aFarkas/html5shiv](https://github.com/aFarkas/html5shiv)
   - [github:parndt/jquery-html5-placeholder-shim](https://github.com/parndt/jquery-html5-placeholder-shim)
@@ -41,7 +41,7 @@ WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on 
 - lib/security (Security Policy interface)
 - lib/sendmail (Sendmail interface with 3rdparty)
 - lib/shell (Command Prompt interface)
-- lib/timer (`setTimeout` implementation for not supported environment)
+- lib/timer (`setTimeout` polyfills)
 - lib/powershell (Windows Powershell interface)
 - lib/service (Windows Service interface)
 - lib/oldbrowser (ES5/ES6, HTML/JS/CSS compatibility)

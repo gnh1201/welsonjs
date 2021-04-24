@@ -243,8 +243,8 @@ var JSON = require("app/assets/js/json3-3.3.2.min");
 require("app/assets/js/es6-shim-0.35.5.min");
 require("app/assets/js/es6-sham-0.35.5.min");
 
-// Babel-core browser-polyfill
-require("app/assets/js/babel-core-browser-polyfill-5.8.38.min");
+// Babel Browser Polyfill
+require("app/assets/js/babal-browser-polyfill-6.22.0");
 
 // dive into entrypoint 
 function main() {
