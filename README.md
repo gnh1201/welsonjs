@@ -1,5 +1,5 @@
 # welsonjs
-WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on WSH/HTA (wsh.js)
+WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on WSH/HTA (wsh.js), GTK/GladeXML supported.
 
 ## Structure
 ![Structure](app/assets/img/structure.png)
