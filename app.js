@@ -61,6 +61,13 @@ var console = {
         }
         this._messages.push(msg);
     },
+    assert: function(assertion) {
+        if (arguments.length > 1 && assertion === arguments[0]) {
+            if(!assertion) {
+                this.error("Assertion failed: " + this._join(arguments.slice(1)));
+            }
+        }
+    },
     clear: function() {
         this._messages = [];
     },
