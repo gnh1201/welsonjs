@@ -34,13 +34,13 @@
 //    loaded.
 
 var exit = function(status) {
-	console.warn("Exit caused by status " + status);
+    console.warn("Exit caused by status " + status);
 
     if (typeof(WScript) !== "undefined") {
         WScript.quit(status);
     } else if (typeof(window) !== "undefined") {
-		window.close();
-	}
+        window.close();
+    }
 };
 
 var console = {
