@@ -34,10 +34,13 @@
 //    loaded.
 
 var exit = function(status) {
+	console.warn("Exit caused by status " + status);
+
     if (typeof(WScript) !== "undefined") {
         WScript.quit(status);
-    }
-    console.warn("Exit caused: " + status);
+    } else if (typeof(window) !== "undefined") {
+		window.close();
+	}
 };
 
 var console = {
@@ -57,6 +60,9 @@ var console = {
             WScript.echo("  * " + msg);
         }
         this._messages.push(msg);
+    },
+    clear: function() {
+        this._messages = [];
     },
     log: function() {
         this._echo(arguments);
@@ -114,7 +120,7 @@ function _require(FN, escapeToGlobal) {
     var cache = require.__cache = require.__cache || {};
     if (FN.substr(FN.length - 3) !== '.js') FN += ".js";
     if (cache[FN]) return cache[FN];
-	if (typeof(escapeToGlobal) != "boolean") escapeToGlobal = true;
+    if (typeof(escapeToGlobal) != "boolean") escapeToGlobal = true;
 
     // get directory name
     var getDirName = function(path) {
@@ -154,15 +160,15 @@ function _require(FN, escapeToGlobal) {
     }
 
     // make function
-	if (!escapeToGlobal) {
-		T = "(function(global){var module=new ModuleObject();return(function(exports,require,module,__filename,__dirname){"
-			+ '"use strict";'
-			+ T
-			+ "\n\nreturn module.exports})(module.exports,global.require,module,__filename,__dirname)})(this);\n\n////@ sourceURL="
-			+ FN;
-	}
+    if (!escapeToGlobal) {
+        T = "(function(global){var module=new ModuleObject();return(function(exports,require,module,__filename,__dirname){"
+            + '"use strict";'
+            + T
+            + "\n\nreturn module.exports})(module.exports,global.require,module,__filename,__dirname)})(this);\n\n////@ sourceURL="
+            + FN;
+    }
 
-	// execute function
+    // execute function
     try {
         cache[FN] = eval(T);
     } catch (e) {
@@ -181,7 +187,7 @@ function _require(FN, escapeToGlobal) {
  * @FN {string} The name of the file.
  */
 function require(FN) {
-	return _require(FN, false);
+    return _require(FN, false);
 }
 
 /////////////////////////////////////////////////////////////////////////////////

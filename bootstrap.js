@@ -8,7 +8,7 @@ var PS = require("lib/powershell");
 var REG = require("lib/registry");
 var SYS = require("lib/system");
 var SHELL = require("lib/shell");
-var UPDATER = require("lib/updater");
+//var UPDATER = require("lib/updater");
 
 var appName = "welsonjs";
 
@@ -30,8 +30,8 @@ exports.main = function(args) {
     REG.write(REG.HKCR, appName + "\\shell\\open\\command", "", "cmd.exe /c cscript " + SYS.getCurrentScriptDirectory() + "\\app.js uriloader \"%1\"", REG.STRING);
 
     // check updates
-    console.log("Checking updates...");
-    UPDATER.checkUpdates();
+    //console.log("Checking updates...");
+    //UPDATER.checkUpdates();
 
     // open web application
     console.log("Trying open GUI...");
@@ -46,7 +46,9 @@ exports.main = function(args) {
                 SYS.killProcess(process.ProcessID);
                 sleep(1000);
             }
-        } catch (e) {}
+        } catch (e) {
+            console.warn(e.message);
+        }
     }
 
     // open web application
