@@ -158,7 +158,6 @@ if (typeof(CreateObject) !== "function") {
  */
 function require(FN) {
     var cache = require.__cache = require.__cache || {};
-    var global = require.__global;
     if (FN.substr(FN.length - 3) !== '.js') FN += ".js";
     if (cache[FN]) return cache[FN];
 
@@ -203,7 +202,7 @@ function require(FN) {
     T = "(function(global){var module=new ModuleObject();return(function(exports,require,module,__filename,__dirname){"
         + '"use strict";'
         + T
-        + "\n\nreturn module.exports})(module.exports,global.require,module,__filename,__dirname)})(global);\n\n////@ sourceURL="
+        + "\n\nreturn module.exports})(module.exports,global.require,module,__filename,__dirname)})(require.__global);\n\n////@ sourceURL="
         + FN;
 
     // execute function
