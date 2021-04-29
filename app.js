@@ -300,26 +300,25 @@ var ModuleObject = function() {
 };
 
 // JSON 2
-_require("app/assets/js/json2");
+//_require("app/assets/js/json2");
 
-// Babel Browser Polyfill (6.22.0)
-require("app/assets/js/babel-browser-polyfill-6.22.0");
+// JSON 3 was a JSON polyfill for older JavaScript platforms
+_require("app/assets/js/json3-3.3.2.min");
+
+// Babel Polyfill (7.12.1)
+require("app/assets/js/welsonjs-babel-polyfill-7.12.1-modified");
 
 // ECMAScript 5 compatibility shims for legacy (and modern) JavaScript engines
-require("app/assets/js/es5-shim-4.5.14.min");
-require("app/assets/js/es5-sham-4.5.14.min");
+require("app/assets/js/es5-shim-4.5.15.min");
+require("app/assets/js/es5-sham-4.5.15.min");
 
-// Squel.js SQL query string builder for Javascript 
+// Squel.js SQL query string builder for Javascript
 var squel = require("app/assets/js/welsonjs-squel-basic-afa1cb5-modified");
 
 // (Optional)
-// JSON 3 was a JSON polyfill for older JavaScript platforms
-//var JSON = require("app/assets/js/json3-3.3.2.min");
-
-// (Optional)
 // ECMAScript 6 compatibility shims for legacy JS engines
-//require("app/assets/js/es6-shim-0.35.5.min");
-//require("app/assets/js/es6-sham-0.35.5.min");
+//require("app/assets/js/es6-shim-0.35.6.ljharb-62dbad5");
+//require("app/assets/js/es6-sham.0.35.6.ljharb-62dbad5");
 
 // Dive into entrypoint 
 function main() {
