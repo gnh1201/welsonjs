@@ -158,7 +158,7 @@ if (typeof(CreateObject) !== "function") {
  */
 function require(FN) {
     var cache = require.__cache = require.__cache || {};
-	var global = require.__global;
+    var global = require.__global;
     if (FN.substr(FN.length - 3) !== '.js') FN += ".js";
     if (cache[FN]) return cache[FN];
 
