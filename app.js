@@ -306,7 +306,6 @@ require("app/assets/js/es5-sham-4.5.15.min");
 // Squel.js SQL query string builder for Javascript
 var squel = require("app/assets/js/squel-basic-5.13.0.hiddentao-afa1cb5.edited");
 
-// (Optional)
 // ECMAScript 6 compatibility shims for legacy JS engines
 require("app/assets/js/es6-shim-0.35.6.ljharb-62dbad5.edited");
 require("app/assets/js/es6-sham.0.35.6.ljharb-62dbad5");
