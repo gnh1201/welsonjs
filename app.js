@@ -45,6 +45,7 @@ var exit = function(status) {
 
 var console = {
     _timers: {},
+    _counters: {},
     _messages: [],
     _join: function(args, sep) {
         args = args || [];
@@ -88,17 +89,35 @@ var console = {
         this._echo(arguments, "debug");
     },
     time: function(label) {
-        this._timers[label] = new Date();
+        label = label || "default";
+        if (!(label in this._timers)) {
+            this._timers[label] = new Date();
+        }
     },
     timeLog: function(label, end) {
+        label = label || "default";
         if (label in this._timers) {
             console.debug(label + ": " + ((new Date()).getTime() - this._timers[label].getTime()) + "ms" + (end ? " - timer ended" : "")); 
         }
     },
     timeEnd: function(label) {
+        label = label || "default";
         if (label in this._timers) {
             this.timeLog();
             delete this._timers[label];
+        }
+    },
+    count: function(label) {
+        label = label || "default";
+        if (!(label in this._counters)) {
+            this._counters[label] = 1;
+        }
+    },
+    countReset: function(label) {
+        label = label || "default";
+        if (label in this._counters) {
+            this.timeLog();
+            delete this._counters[label];
         }
     }
 };
