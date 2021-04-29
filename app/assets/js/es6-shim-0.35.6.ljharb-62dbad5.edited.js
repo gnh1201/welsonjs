@@ -69,7 +69,7 @@
   var _some = Function.call.bind(Array.prototype.some);
 
   var defineProperty = function (object, name, value, force) {
-    if (!force && name in object) { return; }
+    if (!object || (!force && name in object)) { return; }
     if (supportsDescriptors) {
       Object.defineProperty(object, name, {
         configurable: true,

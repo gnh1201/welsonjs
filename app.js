@@ -155,13 +155,12 @@ if (typeof(CreateObject) !== "function") {
 
 /**
  * @FN {string} The name of the file.
- * @escapeToGlobal {bool} Specifies the scope of code to execute.
  */
-function _require(FN, escapeToGlobal) {
+function require(FN) {
     var cache = require.__cache = require.__cache || {};
+	var global = require.__global;
     if (FN.substr(FN.length - 3) !== '.js') FN += ".js";
     if (cache[FN]) return cache[FN];
-    if (typeof(escapeToGlobal) != "boolean") escapeToGlobal = true;
 
     // get directory name
     var getDirName = function(path) {
@@ -201,13 +200,11 @@ function _require(FN, escapeToGlobal) {
     }
 
     // make function
-    if (!escapeToGlobal) {
-        T = "(function(global){var module=new ModuleObject();return(function(exports,require,module,__filename,__dirname){"
-            + '"use strict";'
-            + T
-            + "\n\nreturn module.exports})(module.exports,global.require,module,__filename,__dirname)})(this);\n\n////@ sourceURL="
-            + FN;
-    }
+	T = "(function(global){var module=new ModuleObject();return(function(exports,require,module,__filename,__dirname){"
+		+ '"use strict";'
+		+ T
+		+ "\n\nreturn module.exports})(module.exports,global.require,module,__filename,__dirname)})(global);\n\n////@ sourceURL="
+		+ FN;
 
     // execute function
     try {
@@ -223,13 +220,7 @@ function _require(FN, escapeToGlobal) {
 
     return cache[FN];
 }
-
-/**
- * @FN {string} The name of the file.
- */
-function require(FN) {
-    return _require(FN, false);
-}
+require.__global = this;
 
 /////////////////////////////////////////////////////////////////////////////////
 // Load script, and call app.main()
@@ -303,7 +294,7 @@ var ModuleObject = function() {
 //_require("app/assets/js/json2");
 
 // JSON 3 was a JSON polyfill for older JavaScript platforms
-_require("app/assets/js/json3-3.3.2.min");
+require("app/assets/js/json3-3.3.2.min");
 
 // Babel Polyfill (7.12.1)
 require("app/assets/js/babel-polyfill-7.12.1.edited");
@@ -317,8 +308,8 @@ var squel = require("app/assets/js/squel-basic-5.13.0.hiddentao-afa1cb5.edited")
 
 // (Optional)
 // ECMAScript 6 compatibility shims for legacy JS engines
-//require("app/assets/js/es6-shim-0.35.6.ljharb-62dbad5");
-//require("app/assets/js/es6-sham.0.35.6.ljharb-62dbad5");
+require("app/assets/js/es6-shim-0.35.6.ljharb-62dbad5.edited");
+require("app/assets/js/es6-sham.0.35.6.ljharb-62dbad5");
 
 // Dive into entrypoint 
 function main() {
