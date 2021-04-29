@@ -10,7 +10,7 @@ WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on 
   - [github:paulmillr/es6-shim](https://github.com/paulmillr/es6-shim)
   - [github:bestiejs/json3](https://github.com/bestiejs/json3)
   - [github:douglascrockford/JSON-js](https://github.com/douglascrockford/JSON-js)
-  - [github:gimox/babel-browser-polyfill](https://github.com/gimox/babel-browser-polyfill) (6.22.0)
+  - [cdnjs:babel-polyfill](https://cdnjs.com/libraries/babel-polyfill) (7.12.1)
 - HTML5, CSS3 compatibility
   - [github:aFarkas/html5shiv](https://github.com/aFarkas/html5shiv)
   - [github:parndt/jquery-html5-placeholder-shim](https://github.com/parndt/jquery-html5-placeholder-shim)
