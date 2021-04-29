@@ -200,11 +200,11 @@ function require(FN) {
     }
 
     // make function
-	T = "(function(global){var module=new ModuleObject();return(function(exports,require,module,__filename,__dirname){"
-		+ '"use strict";'
-		+ T
-		+ "\n\nreturn module.exports})(module.exports,global.require,module,__filename,__dirname)})(global);\n\n////@ sourceURL="
-		+ FN;
+    T = "(function(global){var module=new ModuleObject();return(function(exports,require,module,__filename,__dirname){"
+        + '"use strict";'
+        + T
+        + "\n\nreturn module.exports})(module.exports,global.require,module,__filename,__dirname)})(global);\n\n////@ sourceURL="
+        + FN;
 
     // execute function
     try {
