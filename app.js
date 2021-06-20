@@ -156,8 +156,10 @@ if (typeof(CreateObject) !== "function") {
 /**
  * @FN {string} The name of the file.
  */
-function require(FN) {
+function require(FN, flag) {
     var cache = require.__cache = require.__cache || {};
+	var flag = (typeof(flag) !== "number" ? 0 : flag);
+
     if (FN.substr(FN.length - 3) !== '.js') FN += ".js";
     if (cache[FN]) return cache[FN];
 
@@ -206,11 +208,15 @@ function require(FN) {
         + FN;
 
     // execute function
-    try {
-        cache[FN] = eval(T);
-    } catch (e) {
-        console.error("PARSE ERROR! ", e.number, ", ", e.description, ", FN=", FN);
-    }
+	try {
+		if (flag < 1) {
+			cache[FN] = eval(T);
+		} else {
+			eval(T);
+		}
+	} catch (e) {
+		console.error("PARSE ERROR! ", e.number, ", ", e.description, ", FN=", FN);
+	}
 
     // check type of callback return
     if (typeof(cache[FN]) === "object") {
@@ -290,10 +296,10 @@ var ModuleObject = function() {
 };
 
 // JSON 2
-//_require("app/assets/js/json2");
+require("app/assets/js/json2", 1);
 
 // JSON 3 was a JSON polyfill for older JavaScript platforms
-require("app/assets/js/json3-3.3.2.min");
+//var JSON = require("app/assets/js/json3-3.3.2.min");
 
 // Babel Polyfill (7.12.1)
 require("app/assets/js/babel-polyfill-7.12.1.edited");
