@@ -59,6 +59,7 @@ WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on 
 - lib/tun2socks (TUN2SOCKS interface)
 - lib/hosts (Hosts file interface)
 - lib/gtk (GTK-server GUI interface)
+- lib/chrome (Chrome Web Browser Debugging interface)
 
 ## Make your own `sayhello` example
 
