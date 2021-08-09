@@ -1,4 +1,4 @@
-exports.main = function() {
+function main(args) {
 	console.log(squel.select({ separator: "\n" })
         .from("students")
         .field("name")
@@ -7,4 +7,6 @@ exports.main = function() {
         .field("GROUP_CONCAT(DISTINCT test_score ORDER BY test_score DESC SEPARATOR ' ')")
         .group("name")
         .toString());
-};
+}
+
+exports.main = main;
