@@ -124,7 +124,7 @@ var console = {
 
 if (typeof(CreateObject) !== "function") {
     var CreateObject = function(progId, serverName, callback) {
-        var progIds = [];
+        var progIds = (progId instanceof Array ? progId : [progId]);
         var _CreateObject = function(p, s) {
             if (typeof(WScript) !== "undefined") {
                 return WScript.CreateObject(p, s);
@@ -132,12 +132,6 @@ if (typeof(CreateObject) !== "function") {
                 return new ActiveXObject(p);
             }
         };
-
-        if (typeof(progId) == "object") {
-            progIds = progId;
-        } else {
-            progIds.push(progId);
-        }
 
         for (var i = 0; i < progIds.length; i++) {
             try {
@@ -156,82 +150,91 @@ if (typeof(CreateObject) !== "function") {
 /**
  * @FN {string} The name of the file.
  */
-function require(FN, flag) {
-    var cache = require.__cache = require.__cache || {};
-	var flag = (typeof(flag) !== "number" ? 0 : flag);
+function include(FN) {
+	if (FN.substr(FN.length - 3) !== '.js') FN += ".js";
+	return eval(require.__load__(FN));
+}
 
+/**
+ * @FN {string} The name of the file.
+ */
+function require(FN) {
+    var cache = require.__cache__ = require.__cache__ || {};
     if (FN.substr(FN.length - 3) !== '.js') FN += ".js";
     if (cache[FN]) return cache[FN];
-
-    // get directory name
-    var getDirName = function(path) {
-        var delimiter = "\\";
-        var pos = path.lastIndexOf(delimiter);
-        return (pos > -1 ? path.substring(0, pos) : "");
-    };
-
-    // get current script directory
-    var getCurrentScriptDirectory = function() {
-        if (typeof(WScript) !== "undefined") {
-            return getDirName(WScript.ScriptFullName);
-        } else if (typeof(document) !== "undefined") {
-            return getDirName(document.location.pathname);
-        } else {
-            return ".";
-        }
-    };
-
+	
     // get file and directory name
-    var __filename = getCurrentScriptDirectory() + "\\" + FN;
-    var __dirname = getDirName(__filename);
-
-    // load script file
-    // use ADODB.Stream instead of Scripting.FileSystemObject, because of UTF-8 (unicode)
-    var objStream = CreateObject("ADODB.Stream");
-    var T = null;
-    try {
-        objStream.charSet = "utf-8";
-        objStream.open();
-        objStream.loadFromFile(__filename);
-        T = objStream.readText();
-        objStream.close();
-    } catch (e) {
-        console.error("LOAD ERROR! ", e.number, ", ", e.description, ", FN=", FN);
-        return;
-    }
+    var __filename__ = require.__getCurrentScriptDirectory__() + "\\" + FN;
+    var __dirname__ = require.__getDirName__(__filename__);
+	var T = require.__load__(FN);
 
     // make function
-    T = "(function(global){var module=new ModuleObject();return(function(exports,require,module,__filename,__dirname){"
+    T = "(function(global){var module=new require.__ModuleObject__();return(function(exports,require,module,__filename,__dirname){"
         + '"use strict";'
         + T
-        + "\n\nreturn module.exports})(module.exports,global.require,module,__filename,__dirname)})(require.__global);\n\n////@ sourceURL="
-        + FN;
+        + "\n\nreturn module.exports})(module.exports,global.require,module,__filename__,__dirname__)})(require.__global__);\n\n////@ sourceURL="
+        + FN
+	;
 
     // execute function
 	try {
-		if (flag < 1) {
-			cache[FN] = eval(T);
-		} else {
-			eval(T);
-		}
+		cache[FN] = eval(T);
 	} catch (e) {
-		console.error("PARSE ERROR! ", e.number, ", ", e.description, ", FN=", FN);
+		console.error("PARSE ERROR!", e.number, ",", e.description, ", FN=", FN);
 	}
 
-    // check type of callback return
+    // check is it exists VERSIONINFO
     if (typeof(cache[FN]) === "object") {
         if ("VERSIONINFO" in cache[FN]) console.log(cache[FN].VERSIONINFO);
     }
 
     return cache[FN];
 }
-require.__global = this;
+require.__global__ = this;
+require.__ModuleObject__ = function() {
+    this.exports = {};
+};
+require.__getDirName__ = function(path) {
+	var delimiter = "\\";
+	var pos = path.lastIndexOf(delimiter);
+	return (pos > -1 ? path.substring(0, pos) : "");
+};
+require.__getCurrentScriptDirectory__ = function() {
+	if (typeof(WScript) !== "undefined") {
+		return require.__getDirName__(WScript.ScriptFullName);
+	} else if (typeof(document) !== "undefined") {
+		return require.__getDirName__(document.location.pathname);
+	} else {
+		return ".";
+	}
+};
+require.__load__ = function(FN) {
+	// get filename
+	var __filename__ = require.__getCurrentScriptDirectory__() + "\\" + FN;
+
+	// load script file
+	// use ADODB.Stream instead of Scripting.FileSystemObject, because of UTF-8 (unicode)
+	var objStream = CreateObject("ADODB.Stream");
+	var T = null;
+	try {
+		objStream.charSet = "utf-8";
+		objStream.open();
+		objStream.loadFromFile(__filename__);
+		T = objStream.readText();
+		objStream.close();
+	} catch (e) {
+		console.error("LOAD ERROR! ", e.number, ", ", e.description, ", FN=", FN);
+		return;
+	}
+
+	return T;
+};
 
 /////////////////////////////////////////////////////////////////////////////////
 // Load script, and call app.main()
 /////////////////////////////////////////////////////////////////////////////////
 
-function init_console() {
+function initializeConsole() {
     if (typeof(WScript) === "undefined") {
         console.error("Error, WScript is not defined");
         exit(1);
@@ -252,15 +255,15 @@ function init_console() {
                     exit(exitstatus);
                 }
             } else {
-                console.error("Error, missing main entry point in ", name, ".js");
+                console.error("Error, missing main entry point in", name + ".js");
             }
         } else {
-            console.error("Error, cannot find ", name, ".js");
+            console.error("Error, cannot find", name + ".js");
         }
     }
 }
 
-function init_window(name, args, w, h) {
+function initializeWindow(name, args, w, h) {
     if (typeof(window) === "undefined") {
         console.error("Error, window is not defined");
         exit(1);
@@ -290,13 +293,8 @@ function init_window(name, args, w, h) {
     }
 }
 
-// define module object
-var ModuleObject = function() {
-    this.exports = {};
-};
-
 // JSON 2
-require("app/assets/js/json2", 1);
+include("app/assets/js/json2");
 
 // JSON 3 was a JSON polyfill for older JavaScript platforms
 //var JSON = require("app/assets/js/json3-3.3.2.min");
@@ -309,19 +307,15 @@ require("app/assets/js/es5-shim-4.5.15.min");
 require("app/assets/js/es5-sham-4.5.15.min");
 
 // Squel.js SQL query string builder for Javascript
-var squel = require("app/assets/js/squel-basic-5.13.0.hiddentao-afa1cb5.edited");
-
-// (Optional) ECMAScript 6 compatibility shims for legacy JS engines
-//require("app/assets/js/es6-shim-0.35.6.ljharb-62dbad5.edited");
-//require("app/assets/js/es6-sham.0.35.6.ljharb-62dbad5");
+var squel = require("app/assets/js/squel-basic-5.13.0.hiddentao-afa1cb5.wsh");
 
 // Dive into entrypoint 
-function main() {
+function __main__() {
     if (typeof(window) === "undefined") {
-        init_console();
+        initializeConsole();
     } else {
         console.log("welcome");
     }
 }
 
-main();
+__main__();
