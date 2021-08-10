@@ -151,8 +151,8 @@ if (typeof(CreateObject) !== "function") {
  * @FN {string} The name of the file.
  */
 function include(FN) {
-	if (FN.substr(FN.length - 3) !== '.js') FN += ".js";
-	return eval(require.__load__(FN));
+    if (FN.substr(FN.length - 3) !== '.js') FN += ".js";
+    return eval(require.__load__(FN));
 }
 
 /**
@@ -163,11 +163,11 @@ function require(FN) {
 
     if (FN.substr(FN.length - 3) !== '.js') FN += ".js";
     if (cache[FN]) return cache[FN];
-	
+    
     // get file and directory name
     var __filename__ = require.__getCurrentScriptDirectory__() + "\\" + FN;
     var __dirname__ = require.__getDirName__(__filename__);
-	var T = require.__load__(FN);
+    var T = require.__load__(FN);
 
     // build
     T = "(function(global){var module=new require.__ModuleObject__();return(function(exports,require,module,__filename,__dirname){"
@@ -175,14 +175,14 @@ function require(FN) {
         + T
         + "\n\nreturn module.exports})(module.exports,global.require,module,__filename__,__dirname__)})(require.__global__);\n\n////@ sourceURL="
         + FN
-	;
+    ;
 
     // execute
-	try {
-		cache[FN] = eval(T);
-	} catch (e) {
-		console.error("PARSE ERROR!", e.number, ",", e.description, ", FN=", FN);
-	}
+    try {
+        cache[FN] = eval(T);
+    } catch (e) {
+        console.error("PARSE ERROR!", e.number, ",", e.description, ", FN=", FN);
+    }
 
     // print VERSIONINFO
     if (typeof(cache[FN]) === "object") {
@@ -196,39 +196,39 @@ require.__ModuleObject__ = function() {
     this.exports = {};
 };
 require.__getDirName__ = function(path) {
-	var delimiter = "\\";
-	var pos = path.lastIndexOf(delimiter);
-	return (pos > -1 ? path.substring(0, pos) : "");
+    var delimiter = "\\";
+    var pos = path.lastIndexOf(delimiter);
+    return (pos > -1 ? path.substring(0, pos) : "");
 };
 require.__getCurrentScriptDirectory__ = function() {
-	if (typeof(WScript) !== "undefined") {
-		return require.__getDirName__(WScript.ScriptFullName);
-	} else if (typeof(document) !== "undefined") {
-		return require.__getDirName__(document.location.pathname);
-	} else {
-		return ".";
-	}
+    if (typeof(WScript) !== "undefined") {
+        return require.__getDirName__(WScript.ScriptFullName);
+    } else if (typeof(document) !== "undefined") {
+        return require.__getDirName__(document.location.pathname);
+    } else {
+        return ".";
+    }
 };
 require.__load__ = function(FN) {
-	// get filename
-	var __filename__ = require.__getCurrentScriptDirectory__() + "\\" + FN;
+    // get filename
+    var __filename__ = require.__getCurrentScriptDirectory__() + "\\" + FN;
 
-	// load script file
-	// use ADODB.Stream instead of Scripting.FileSystemObject, because of UTF-8 (unicode)
-	var objStream = CreateObject("ADODB.Stream");
-	var T = null;
-	try {
-		objStream.charSet = "utf-8";
-		objStream.open();
-		objStream.loadFromFile(__filename__);
-		T = objStream.readText();
-		objStream.close();
-	} catch (e) {
-		console.error("LOAD ERROR! ", e.number, ", ", e.description, ", FN=", FN);
-		return;
-	}
+    // load script file
+    // use ADODB.Stream instead of Scripting.FileSystemObject, because of UTF-8 (unicode)
+    var objStream = CreateObject("ADODB.Stream");
+    var T = null;
+    try {
+        objStream.charSet = "utf-8";
+        objStream.open();
+        objStream.loadFromFile(__filename__);
+        T = objStream.readText();
+        objStream.close();
+    } catch (e) {
+        console.error("LOAD ERROR! ", e.number, ", ", e.description, ", FN=", FN);
+        return;
+    }
 
-	return T;
+    return T;
 };
 
 /////////////////////////////////////////////////////////////////////////////////
