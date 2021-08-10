@@ -97,7 +97,7 @@ var console = {
     timeLog: function(label, end) {
         label = label || "default";
         if (label in this._timers) {
-            console.debug(label + ": " + ((new Date()).getTime() - this._timers[label].getTime()) + "ms" + (end ? " - timer ended" : "")); 
+            console.debug(label + ": ", ((new Date()).getTime() - this._timers[label].getTime()) + "ms", (end ? " - timer ended" : "")); 
         }
     },
     timeEnd: function(label) {
@@ -181,7 +181,7 @@ function require(FN) {
     try {
         cache[FN] = eval(T);
     } catch (e) {
-        console.error("PARSE ERROR!", e.number, ",", e.description, ", FN=", FN);
+        console.error("PARSE ERROR!", e.number + ",", e.description + ",", "FN=" + FN);
     }
 
     // print VERSIONINFO
@@ -224,7 +224,7 @@ require.__load__ = function(FN) {
         T = objStream.readText();
         objStream.close();
     } catch (e) {
-        console.error("LOAD ERROR! ", e.number, ", ", e.description, ", FN=", FN);
+        console.error("LOAD ERROR!", e.number + ",", e.description + ",", "FN=" + FN);
         return;
     }
 
