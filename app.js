@@ -160,6 +160,7 @@ function include(FN) {
  */
 function require(FN) {
     var cache = require.__cache__ = require.__cache__ || {};
+
     if (FN.substr(FN.length - 3) !== '.js') FN += ".js";
     if (cache[FN]) return cache[FN];
 	
@@ -168,7 +169,7 @@ function require(FN) {
     var __dirname__ = require.__getDirName__(__filename__);
 	var T = require.__load__(FN);
 
-    // make function
+    // build
     T = "(function(global){var module=new require.__ModuleObject__();return(function(exports,require,module,__filename,__dirname){"
         + '"use strict";'
         + T
@@ -176,14 +177,14 @@ function require(FN) {
         + FN
 	;
 
-    // execute function
+    // execute
 	try {
 		cache[FN] = eval(T);
 	} catch (e) {
 		console.error("PARSE ERROR!", e.number, ",", e.description, ", FN=", FN);
 	}
 
-    // check is it exists VERSIONINFO
+    // print VERSIONINFO
     if (typeof(cache[FN]) === "object") {
         if ("VERSIONINFO" in cache[FN]) console.log(cache[FN].VERSIONINFO);
     }
