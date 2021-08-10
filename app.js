@@ -122,7 +122,7 @@ var console = {
     }
 };
 
-if (typeof(CreateObject) !== "function") {
+if (typeof(CreateObject) === "undefined") {
     var CreateObject = function(progId, serverName, callback) {
         var progIds = (progId instanceof Array ? progId : [progId]);
         var _CreateObject = function(p, s) {
