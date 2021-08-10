@@ -97,7 +97,7 @@ var console = {
     timeLog: function(label, end) {
         label = label || "default";
         if (label in this._timers) {
-            console.debug(label + ": ", ((new Date()).getTime() - this._timers[label].getTime()) + "ms", (end ? " - timer ended" : "")); 
+            console.debug(label + ":", ((new Date()).getTime() - this._timers[label].getTime()) + "ms", (end ? " - timer ended" : "")); 
         }
     },
     timeEnd: function(label) {
