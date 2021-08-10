@@ -300,12 +300,12 @@ include("app/assets/js/json2");
 // JSON 3 was a JSON polyfill for older JavaScript platforms
 //var JSON = require("app/assets/js/json3-3.3.2.min");
 
-// Babel Polyfill (7.12.1)
-require("app/assets/js/babel-polyfill-7.12.1.edited");
+// core-js (formerly babel-polyfill)
+require("app/assets/js/corejs-build-20210810");
 
-// ECMAScript 5 compatibility shims for legacy (and modern) JavaScript engines
-require("app/assets/js/es5-shim-4.5.15.min");
-require("app/assets/js/es5-sham-4.5.15.min");
+// es5-shims
+//require("app/assets/js/es5-shim-4.5.15.min");
+//require("app/assets/js/es5-sham-4.5.15.min");
 
 // Squel.js SQL query string builder for Javascript
 var squel = require("app/assets/js/squel-basic-5.13.0.hiddentao-afa1cb5.wsh");
