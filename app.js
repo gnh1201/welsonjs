@@ -285,11 +285,11 @@ function initializeWindow(name, args, w, h) {
                 exit(exitStatus);
             }
         } else {
-            console.error("Error, missing main entry point in ", name, ".js");
+            console.error("Error, missing main entry point in", name + ".js");
             exit(1);
         }
     } else {
-        console.error("Error, cannot find ", name, ".js");
+        console.error("Error, cannot find", name + ".js");
         exit(1);
     }
 }
