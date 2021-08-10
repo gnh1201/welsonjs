@@ -34,7 +34,7 @@
 //    loaded.
 
 var exit = function(status) {
-    console.warn("Exit caused by status " + status);
+    console.error("Exit caused by status " + status);
 
     if (typeof(WScript) !== "undefined") {
         WScript.quit(status);
@@ -281,7 +281,6 @@ function initializeWindow(name, args, w, h) {
         if (app.main) {
             var exitStatus = app.main.call(app, args);
             if (exitStatus > 0) {
-                console.error("error");
                 exit(exitStatus);
             }
         } else {
