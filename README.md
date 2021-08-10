@@ -1,16 +1,13 @@
 # welsonjs
-WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on WSH/HTA (wsh.js), GTK/GladeXML supported.
+WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on WSH/HTA.
 
 ## Structure
 ![Structure](app/assets/img/structure.png)
 
 ## Specifications
-- ES6(ECMAScript 6, Optional), ES5(ECMAScript 5), JSON compatibility
-  - [github:es-shims/es5-shim](https://github.com/es-shims/es5-shim)
-  - [github:paulmillr/es6-shim](https://github.com/paulmillr/es6-shim)
-  - [github:bestiejs/json3](https://github.com/bestiejs/json3)
+- ES5(ECMAScript 5), JSON compatibility
   - [github:douglascrockford/JSON-js](https://github.com/douglascrockford/JSON-js)
-  - [cdnjs:babel-polyfill](https://cdnjs.com/libraries/babel-polyfill) (7.12.1)
+  - [github:zloirock/core-js](https://github.com/zloirock/core-js)
 - HTML5, CSS3 compatibility
   - [github:aFarkas/html5shiv](https://github.com/aFarkas/html5shiv)
   - [github:parndt/jquery-html5-placeholder-shim](https://github.com/parndt/jquery-html5-placeholder-shim)
@@ -28,7 +25,7 @@ WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on 
   - [github:hiddentao/squel](https://github.com/hiddentao/squel)
   - [github:BorisMoore/jsrender](https://github.com/BorisMoore/jsrender)
 - [module.exports](https://nodejs.org/en/knowledge/getting-started/what-is-require/), CommonJS, UMD compatibility
-- [NPM](https://catswords.re.kr/go/npmjs) compatibility
+- [NPM](https://www.npmjs.com/) compatibility
 - Ready to use on Windows machine immediately. No require additional softwares installation.
 
 ## Included libraries
@@ -60,6 +57,7 @@ WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on 
 - lib/hosts (Hosts file interface)
 - lib/gtk (GTK/GladeXML server GUI interface)
 - lib/chrome (Chrome Web Browser Debugging interface)
+- lib/toolkit (`WelsonJS.Toolkit` native component)
 
 ## Make your own `sayhello` example
 
