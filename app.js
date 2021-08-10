@@ -251,9 +251,9 @@ function initializeConsole() {
         var app = require(name);
         if (app) {
             if (app.main) {
-                var exitstatus = app.main.call(this, args);
-                if (typeof(exitstatus) !== "undefined") {
-                    exit(exitstatus);
+                var exitStatus = app.main.call(this, args);
+                if (typeof(exitStatus) !== "undefined") {
+                    exit(exitStatus);
                 }
             } else {
                 console.error("Error, missing main entry point in", name + ".js");
