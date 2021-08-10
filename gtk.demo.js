@@ -3,7 +3,7 @@ var GTK = require("lib/gtk");
 function main() {
     GTK.init(function() {
         var win, table, button, entry, text, radiogroup, radio1, radio2;
-        
+
         // create new window
         win = new GTK.Window({
             title: "WelsonJS GTK GUI Demo Application",
