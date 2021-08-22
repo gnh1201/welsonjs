@@ -13,17 +13,21 @@
  *         - https://stackoverflow.com/questions/9501022/cannot-create-an-object-from-a-active-x-component
  *         - https://stackoverflow.com/questions/13547639/return-window-handle-by-its-name-title
  *         - https://blog.naver.com/zlatmgpdjtiq/222016292758
+ *         - https://stackoverflow.com/questions/5427020/prompt-dialog-in-windows-forms
  */
 
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Windows.Forms;
 
 namespace WelsonJS
 {
     [ComVisible(true)]
     public class Toolkit
     {
+        private static string ApplicationName = "WelsonJS";
+
         [DllImport("user32.dll")]
         public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
 
@@ -112,6 +116,26 @@ namespace WelsonJS
             }
 
             return result;
+        }
+
+        [ComVisible(true)]
+        public int Alert(string message)
+        {
+            MessageBox.Show(message, ApplicationName);
+            return 0;
+        }
+
+        [ComVisible(true)]
+        public bool Confirm(string message)
+        {
+            return (MessageBox.Show(message, ApplicationName, MessageBoxButtons.YesNo) == DialogResult.Yes);
+        }
+
+        [ComVisible(true)]
+        public string Prompt(string message, string _default = "")
+        {
+            string result = WelsonJS.Prompt.ShowDialog(message, ApplicationName);
+            return (result == "" ? _default : result);
         }
     }
 }
