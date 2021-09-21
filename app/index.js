@@ -2,6 +2,9 @@
 // index.js
 ////////////////////////////////////////////////////////////////////////
 
+var FILE = require("lib/file");
+var OldBrowser = require("lib/oldbrowser");
+
 var token;
 if (FILE.fileExists("token.txt")) {
     token = FILE.readFile("token.txt", "utf-8");
