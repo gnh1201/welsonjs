@@ -14,6 +14,7 @@ Example:
 
 ```
 C:\Windows\Microsoft.NET\Framework\v2.0.50727\RegAsm.exe /codebase WelsonJS.Toolkit.dll
+C:\Windows\Microsoft.NET\Framework64\v2.0.50727\RegAsm.exe /codebase WelsonJS.Toolkit.dll
 ```
 
 Thank you.
