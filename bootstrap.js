@@ -22,7 +22,11 @@ exports.main = function(args) {
     REG.write(REG.HKCU, "SOFTWARE\\Policies\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\\Lockdown_Zones\\4", "1406", "00000000", REG.DWORD);
     REG.write(REG.HKLM, "SOFTWARE\\Policies\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\\Lockdown_Zones\\4", "1406", "00000000", REG.DWORD);
 
-    // register URI scheme
+    // Register HTA file association
+    console.log("Registering HTA file association...");
+    REG.execFile("Default_HTA.reg");
+
+    // Register URI scheme
     console.log("Registering URI scheme...");
     REG.write(REG.HKCR, appName, "", "URL:" + appName, REG.STRING);
     REG.write(REG.HKCR, appName, "URL Protocol", "", REG.STRING);
