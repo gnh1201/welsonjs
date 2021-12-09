@@ -1,5 +1,5 @@
 # welsonjs
-WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on WSH/HTA. GTK compatible.
+WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on WSH/HTA or GTK.
 
 ## Structure
 ![Structure](app/assets/img/structure.png)
@@ -89,7 +89,7 @@ hello
 ## Make own setup file
 - compile `setup.iss` file with [Inno Setup](https://jrsoftware.org/isinfo.php)
 
-## [NEW] Advanced XML Parser
+## XML Parser (Experimental)
 ```
 var XML = require("lib/xml");
 var nodes = XML.load("config.xml").select("/Config/ApiUrl").toArray();
@@ -117,6 +117,9 @@ var nodeAttribute = XML.load("config.xml").select("/Config/ApiUrl").first().getA
 - [johnjohnsp1/WindowsScriptHostExtension](https://github.com/johnjohnsp1/WindowsScriptHostExtension) - Inject DLL Prototype using Microsoft.Windows.ACTCTX COM Object
 - [kuntashov/jsunit](https://github.com/kuntashov/jsunit) - JSUnit port for Windows Scripting Host
 - [nickdoth/WSHHttpServer](https://github.com/nickdoth/WSHHttpServer) - HTTP server based on Windows Script Host
+
+## Image stocks
+- [7418_blocks_color_modules_rgb_square_icon](https://www.iconfinder.com/icons/7418/blocks_color_modules_rgb_square_icon) (Icon File) - Sergio Sanchesz Lopez, Futurosoft
 
 ## Contact me
 - gnh1201@gmail.com
