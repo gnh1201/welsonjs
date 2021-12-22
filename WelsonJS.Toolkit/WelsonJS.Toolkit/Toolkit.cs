@@ -1,5 +1,5 @@
 ﻿/*
- * WelsonJS.Toolkit: WelsonJS CSharp.NET native component
+ * WelsonJS.Toolkit: WelsonJS C#.NET native component
  * 
  *     description:
  *         WelsonJS - Build Windows desktop apps with JavaScript, HTML, and CSS based on WSH/HTA.
@@ -14,7 +14,9 @@
  *         - https://stackoverflow.com/questions/13547639/return-window-handle-by-its-name-title
  *         - https://blog.naver.com/zlatmgpdjtiq/222016292758
  *         - https://stackoverflow.com/questions/5427020/prompt-dialog-in-windows-forms
- *         - https://stackoverflow.com/questions/60203135/set-delta-in-a-wm-mousewheel-message-to-send-with-postmessage
+ *         - https://stackoverflow.com/questions/31856473/how-to-send-an-enter-press-to-another-application-in-wpf
+ *         - https://stackoverflow.com/questions/11365605/c-sharp-postmessage-syntax-trying-to-post-a-wm-char-to-another-applications-win
+ *         - https://docs.microsoft.com/ko-kr/windows/win32/inputdev/virtual-key-codes?redirectedfrom=MSDN
  */
 
 using System;
@@ -57,31 +59,10 @@ namespace WelsonJS
             WM_CHAR = 0x102,     //char
             WM_COMMAND = 0x111
         }
-        public enum WinMsgMouseKey : int
-        {
-            MK_NONE = 0x0000,
-            MK_LBUTTON = 0x0001,
-            MK_RBUTTON = 0x0002,
-            MK_SHIFT = 0x0004,
-            MK_CONTROL = 0x0008,
-            MK_MBUTTON = 0x0010,
-            MK_XBUTTON1 = 0x0020,
-            MK_XBUTTON2 = 0x0040
-        }
 
-        public int directionUp = 1;
-        public int directionDown = -1;
-        public const uint WM_MOUSEWHEEL = 0x020A;
-
-        public IntPtr MAKEWPARAM(int direction, float multiplier, WinMsgMouseKey button)
+        public enum WVirtualKeys : int
         {
-            int delta = (int)(SystemInformation.MouseWheelScrollDelta * multiplier);
-            return (IntPtr)(((delta << 16) * Math.Sign(direction) | (ushort)button));
-        }
-
-        public IntPtr MAKELPARAM(int low, int high)
-        {
-            return (IntPtr)((high << 16) | (low & 0xFFFF));
+            VK_RETURN = 0x0D
         }
 
         public IntPtr QueryHandleWindow(string wName)
@@ -166,37 +147,20 @@ namespace WelsonJS
         }
 
         [ComVisible(true)]
-        public bool MouseWheelDown(string wName)
+        public bool SendEnterKey(string wName)
         {
-            bool result = false;
-
             IntPtr hWnd = QueryHandleWindow(wName);
+
             if (hWnd != IntPtr.Zero)
             {
-                // Scrolls [Handle] down by 1/2 wheel rotation with Left Button pressed
-                IntPtr wParam = MAKEWPARAM(directionDown, .5f, WinMsgMouseKey.MK_LBUTTON);
-                IntPtr lParam = MAKELPARAM(Cursor.Position.X, Cursor.Position.Y);
-                result = PostMessage(hWnd, WM_MOUSEWHEEL, (int)wParam, lParam);
+                PostMessage(hWnd, (int)WMessages.WM_KEYDOWN, (char)WVirtualKeys.VK_RETURN, IntPtr.Zero);
+                PostMessage(hWnd, (int)WMessages.WM_KEYUP, (char)WVirtualKeys.VK_RETURN, IntPtr.Zero);
+                return true;
             }
-
-            return result;
-        }
-
-        [ComVisible(true)]
-        public bool MouseWheelUp(string wName)
-        {
-            bool result = false;
-
-            IntPtr hWnd = QueryHandleWindow(wName);
-            if (hWnd != IntPtr.Zero)
+            else
             {
-                // Scrolls [Handle] up by 1/2 wheel rotation with Left Button pressed
-                IntPtr wParam = MAKEWPARAM(directionUp, .5f, WinMsgMouseKey.MK_LBUTTON);
-                IntPtr lParam = MAKELPARAM(Cursor.Position.X, Cursor.Position.Y);
-                result = PostMessage(hWnd, WM_MOUSEWHEEL, (int)wParam, lParam);
+                return false;
             }
-
-            return result;
         }
     }
 }
