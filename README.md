@@ -61,9 +61,9 @@ WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on 
 
 ## Make your own `sayhello` example
 
-### 1. Write a file `lib/sayhello-lib.js`
+### 1. Write a file `lib/sayhello.js`
 ```
-exports.VERSIONINFO = "sayhello library (sayhello-lib.js) version 0.1
+exports.VERSIONINFO = "SayHello Library (sayhello.js) version 0.1
 exports.global = global;
 exports.require = global.require;
 
@@ -74,31 +74,29 @@ exports.say = function() {
 
 ### 2. Write a file `sayhello.js`
 ```
-var sayhello = require("lib/sayhello-lib");
-exports.main = function() {
-    sayhello.say();
-};
+var SayHello = require("lib/sayhello");
+
+function main() {
+    console.log("calling say()");
+    SayHello.say();
+    console.log("ended say()");
+}
+
+exports.main = main;
 ```
 
 ### 3. Execute file on the command prompt
 ```
 C:\Users\John\Documents\GitHub\welsonjs> cscript app.js sayhello
+calling say()
 hello
+ended say()
 ```
 
-## Make own setup file
-- compile `setup.iss` file with [Inno Setup](https://jrsoftware.org/isinfo.php)
+## How to make your own setup file
+- Please check `setup.iss` file it could be compile with [Inno Setup](https://jrsoftware.org/isinfo.php)
 
-## XML Parser (Experimental)
-```
-var XML = require("lib/xml");
-var nodes = XML.load("config.xml").select("/Config/ApiUrl").toArray();
-var node = XML.load("config.xml").select("/Config/ApiUrl").first();
-var nodeText = XML.load("config.xml").select("/Config/ApiUrl").first().getText();
-var nodeAttribute = XML.load("config.xml").select("/Config/ApiUrl").first().getAttribute("name");
-```
-
-## Screenshot
+## Screenshots
 ![Screenshot 1](app/assets/img/screenshot.png)
 
 ## Thanks!
