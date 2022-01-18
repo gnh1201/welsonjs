@@ -8,7 +8,7 @@ These files are used by WelsonJS - https://github.com/gnh1201/welsonjs
   * jopbrown/gtk-server [gtk-server-2.4.5-gtk-2.24.32-win64] - https://github.com/jopbrown/gtk-server
   * DDoSolitary/shadowsocks-libev-win [Nightly] - https://github.com/DDoSolitary/shadowsocks-libev-win
   * libffi-7.dll - Modified DLL binary from GIMP
-  * UnZip for Windows - http://gnuwin32.sourceforge.net/packages/unzip.htm\
+  * UnZip for Windows - http://gnuwin32.sourceforge.net/packages/unzip.htm
   * Python Windows embeddable package [3.10.2]
     * 64-bit - https://www.python.org/downloads/release/python-3102/
     * 32-bit - https://www.python.org/downloads/release/python-3102/
