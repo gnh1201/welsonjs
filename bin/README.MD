@@ -15,9 +15,11 @@ These files are used by WelsonJS - https://github.com/gnh1201/welsonjs
   * Python Modules
     * Beautiful Soup [4.9.0] - https://www.crummy.com/software/BeautifulSoup/bs4/doc/
 	* python-nmap [0.7.1] - https://bitbucket.org/xael/python-nmap
+	* pywin32 [Build 303] - https://github.com/mhammond/pywin32
+  * NMAP for Windows [7.92] - https://nmap.org/download.html
 
 ## Updated
-  * 2022-01-08
+  * 08:24:47 (UTC), Tuesday, 18 January 2022
 
 ## Download Link
-  * https://drive.google.com/file/d/1o5pHIvyD16rvQu59Gc62NVmWckNKx7WJ/view?usp=sharing
+  * https://drive.google.com/file/d/1P0mDtb5mTzqoijyJOqA28ZPmR_PdDDf5/view?usp=sharing
