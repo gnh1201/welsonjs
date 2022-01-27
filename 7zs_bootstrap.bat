@@ -1,5 +1,4 @@
 @echo off
-mkdir %SYSTEMDRIVE%\iotscan
-xcopy /s *.* %SYSTEMDRIVE%\iotscan
-pushd %SYSTEMDRIVE%\iotscan
+xcopy /s welsonjs\* %SYSTEMDRIVE%\welsonjs\
+pushd %SYSTEMDRIVE%\welsonjs
 bootstrap.bat
