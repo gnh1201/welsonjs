@@ -58,7 +58,7 @@ var console = {
     },
     _echoCallback: null,
     _echo: function(args, type) {
-		// if not type is "log", then "{type}: {msg}"
+        // if not type is "log", then "{type}: {msg}"
         msg = (typeof(type) !== "undefined" ? type + ": " : "") + this._join(args);
         if (typeof(WScript) !== "undefined") {
             WScript.echo("  * " + msg);
