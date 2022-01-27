@@ -60,13 +60,13 @@ var console = {
     _echo: function(args, type) {
         msg = (typeof(type) !== "undefined" ? type + ": " : "") + this._join(args);
         if (typeof(WScript) !== "undefined") {
-            WScript.echo("  * " + msg);
+            WScript.echo("  * " + (type == "log" ? msg : "[" + type + "] " + msg));
         }
         this._messages.push(msg);
 
         // after calling echo
-        if (typeof this._echoCallback === "function") {
-            _echoCallback(this);
+        if (['error', 'info', 'warn'].indexOf(type) > -1 && typeof this._echoCallback === "function") {
+            this._echoCallback(this);
         }
     },
     assert: function(assertion) {
