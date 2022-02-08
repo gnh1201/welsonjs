@@ -316,6 +316,9 @@ require("app/assets/js/corejs-build-20210810");
 // Squel.js SQL query string builder for Javascript
 var squel = require("app/assets/js/squel-basic-5.13.0.hiddentao-afa1cb5.wsh");
 
+// JavaScript YAML parser and dumper. 
+var yaml = require("app/assets/js/js-yaml-4.1.0.wsh");
+
 // Dive into entrypoint 
 function __main__() {
     if (typeof(window) === "undefined") {
