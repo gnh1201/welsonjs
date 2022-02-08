@@ -5,9 +5,10 @@ WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on 
 ![Structure](app/assets/img/structure.png)
 
 ## Specifications
-- ES5(ECMAScript 5), JSON compatibility
+- ES5(ECMAScript 5), XML, JSON, YAML compatibility
   - [github:douglascrockford/JSON-js](https://github.com/douglascrockford/JSON-js)
   - [github:zloirock/core-js](https://github.com/zloirock/core-js)
+  - [github:nodeca/js-yaml](https://github.com/nodeca/js-yaml)
 - HTML5, CSS3 compatibility
   - [github:aFarkas/html5shiv](https://github.com/aFarkas/html5shiv)
   - [github:parndt/jquery-html5-placeholder-shim](https://github.com/parndt/jquery-html5-placeholder-shim)
