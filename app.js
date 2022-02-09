@@ -58,16 +58,47 @@ var console = {
     },
     _echoCallback: null,
     _echo: function(args, type) {
-        // if not type is "log", then "{type}: {msg}"
-        msg = (typeof(type) !== "undefined" ? type + ": " : "") + this._join(args);
-        if (typeof(WScript) !== "undefined") {
-            WScript.echo("  * " + msg);
+        var message = "";
+        var params = {
+            type: type,
+            channel: 'default',
+            messsage: ''
+        };
+
+        if (args.length > 0) {
+            if (typeof args[0] === "string") {
+                // if not type is "log", then "{type}: {message}"
+                if (typeof type !== "undefined") {
+                    message += (type + ": " + this._join(args));
+                } else {
+                    message += this._join(args);
+                }
+                if (typeof WScript !== "undefined") {
+                    WScript.echo("  * " + message)
+                }
+                this._messages.push(message);
+				params.message = message;
+            } else if (typeof args[0] === "object") {
+                if ('message' in args[0]) {
+					if (typeof type !== "undefined") {
+						message += (type + ": " + args[0].message);
+					} else {
+						message += args[0].message;
+					}
+                }
+                if (typeof WScript !== "undefined") {
+                    WScript.echo("  * " + message);
+                }
+                this._messages.push(args[0].message);
+                for (var k in args[0]) {
+                    params[k] = args[0][k];
+                }
+            }
         }
-        this._messages.push(msg);
 
         // after calling echo
         if (['error', 'info', 'warn'].indexOf(type) > -1 && typeof this._echoCallback === "function") {
-            this._echoCallback(this);
+            this._echoCallback(params);
         }
     },
     assert: function(assertion) {
