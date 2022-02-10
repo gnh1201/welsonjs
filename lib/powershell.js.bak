@@ -39,5 +39,5 @@ exports.execCommand = function(cmd) {
 };
 
 exports.runAs = function(cmd) {
-    return exports.execCommand("Start-Process cmd \"/q /c " + addslashes(SHELL.makeCmdLine(cmd)) + "\" -Verb RunAs");
+    return exports.execCommand("Start-Process cmd \"/q /c " + SHELL.addslashes(SHELL.makeCmdLine(cmd)) + "\" -Verb RunAs");
 };
