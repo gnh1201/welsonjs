@@ -1,5 +1,0 @@
-;!@Install@!UTF-8!
-Title="WelsonJS Portable"
-BeginPrompt="Do you want start WelsonJS Potable?"
-RunProgram="welsonjs\\bootstrap.bat"
-;!@InstallEnd@!
