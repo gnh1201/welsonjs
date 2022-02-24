@@ -77,14 +77,14 @@ var console = {
                     WScript.echo("  * " + message)
                 }
                 this._messages.push(message);
-                params.message = message;
+				params.message = message;
             } else if (typeof args[0] === "object") {
                 if ('message' in args[0]) {
-                    if (typeof type !== "undefined") {
-                        message += (type + ": " + args[0].message);
-                    } else {
-                        message += args[0].message;
-                    }
+					if (typeof type !== "undefined") {
+						message += (type + ": " + args[0].message);
+					} else {
+						message += args[0].message;
+					}
                 }
                 if (typeof WScript !== "undefined") {
                     WScript.echo("  * " + message);
@@ -98,7 +98,13 @@ var console = {
 
         // after calling echo
         if (['error', 'info', 'warn'].indexOf(type) > -1 && typeof this._echoCallback === "function") {
-            this._echoCallback(params);
+			try {
+				this._echoCallback(params);
+			} catch (e) {
+                if (typeof WScript !== "undefined") {
+                    WScript.echo("  * Exception of _echoCallback:", e.message);
+                }
+			}
         }
     },
     assert: function(assertion) {
