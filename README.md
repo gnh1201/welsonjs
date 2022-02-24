@@ -25,6 +25,7 @@ WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on 
   - [github:kamranahmedse/jquery-toast-plugin](https://github.com/kamranahmedse/jquery-toast-plugin)
   - [github:hiddentao/squel](https://github.com/hiddentao/squel)
   - [github:BorisMoore/jsrender](https://github.com/BorisMoore/jsrender)
+- [Includes binaries](bin/README.md)
 - [module.exports](https://nodejs.org/en/knowledge/getting-started/what-is-require/), CommonJS, UMD compatibility
 - [NPM](https://www.npmjs.com/) compatibility
 - Ready to use on Windows machine immediately. No require additional softwares installation.
@@ -47,10 +48,9 @@ WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on 
 - lib/oldbrowser (ES5/ES6, HTML/JS/CSS compatibility)
 - lib/uri (URI scheme interface)
 - lib/winlibs (Windows DLL(Dynamic-link library) interface)
-- lib/autohotkey ([AutoHotKey](https://catswords.re.kr/go/autohotkey) interface)
-- lib/autoit3 ([AutoIt3](https://catswords.re.kr/go/autoit3) interface)
-- lib/cloudflare ([Cloudflare Argo Tunnel](https://catswords.re.kr/go/argotunnel) interface)
-- lib/shadowsocks ([Shadowsocks](https://catswords.re.kr/go/shadowsocks) interface)
+- lib/autohotkey ([AutoHotkey](https://www.autohotkey.com/) interface)
+- lib/autoit ([AutoIt3/AutoItX](https://www.autoitscript.com/) interface)
+- lib/shadowsocks ([Shadowsocks](https://shadowsocks.org/) interface)
 - lib/excel (Microsoft Excel interface)
 - lib/vbscript (VBScript interface)
 - lib/wintap (Windows-TAP interface)
@@ -121,4 +121,4 @@ ended say()
 - [7418_blocks_color_modules_rgb_square_icon](https://www.iconfinder.com/icons/7418/blocks_color_modules_rgb_square_icon) (Icon File) - Sergio Sanchesz Lopez, Futurosoft
 
 ## Contact me
-- gnh1201@gmail.com
+- catswords@protonmail.com

@@ -77,14 +77,14 @@ var console = {
                     WScript.echo("  * " + message)
                 }
                 this._messages.push(message);
-				params.message = message;
+                params.message = message;
             } else if (typeof args[0] === "object") {
                 if ('message' in args[0]) {
-					if (typeof type !== "undefined") {
-						message += (type + ": " + args[0].message);
-					} else {
-						message += args[0].message;
-					}
+                    if (typeof type !== "undefined") {
+                        message += (type + ": " + args[0].message);
+                    } else {
+                        message += args[0].message;
+                    }
                 }
                 if (typeof WScript !== "undefined") {
                     WScript.echo("  * " + message);
