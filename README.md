@@ -25,7 +25,7 @@ WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on 
   - [github:kamranahmedse/jquery-toast-plugin](https://github.com/kamranahmedse/jquery-toast-plugin)
   - [github:hiddentao/squel](https://github.com/hiddentao/squel)
   - [github:BorisMoore/jsrender](https://github.com/BorisMoore/jsrender)
-- [Includes binaries](bin/README.md)
+- [Includes binaries](https://github.com/gnh1201/welsonjs/blob/master/bin/README.MD)
 - [module.exports](https://nodejs.org/en/knowledge/getting-started/what-is-require/), CommonJS, UMD compatibility
 - [NPM](https://www.npmjs.com/) compatibility
 - Ready to use on Windows machine immediately. No require additional softwares installation.
