@@ -98,13 +98,13 @@ var console = {
 
         // after calling echo
         if (['error', 'info', 'warn'].indexOf(type) > -1 && typeof this._echoCallback === "function") {
-			try {
-				this._echoCallback(params);
-			} catch (e) {
+            try {
+                this._echoCallback(params);
+            } catch (e) {
                 if (typeof WScript !== "undefined") {
                     WScript.echo("  * Exception of _echoCallback:", e.message);
                 }
-			}
+            }
         }
     },
     assert: function(assertion) {
