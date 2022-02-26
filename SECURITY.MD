@@ -7,6 +7,8 @@ This approach is very helpful in providing an easy development environment. Howe
 
 Some of the contents of this project are inspired by the attack vectors of several bad reputed hackers. This project is based on several implementation cases of VBScript, JScript, Powershell, and WMI.
 
+Using this project to create malicious code and network abuse tools (e.g. DDoS attack tool) may be subject to punishment in your country.
+
 Please use it only to create a webapp similar to Electron or legally penetration testing tool.
 
 ## Report abuse
