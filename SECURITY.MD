@@ -1,9 +1,9 @@
 # Security Note for WelsonJS
 
 ## Caution
-This repository includes a recent cases on how to access Windows APIs and functions at the JavaScript level.
+This repository includes recent cases on how to access Windows APIs and functions at the JavaScript level.
 
-This approach is very helpful in providing an easy development environment. However, on the contrary, it can be used maliciously.
+This way can provide a flexible development environment for anyone, but it also applies to those with malicious purposes.
 
 Some of the contents of this project are inspired by the attack vectors of several bad reputed hackers.
 
