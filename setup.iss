@@ -1,5 +1,5 @@
 ; @created_on 2020-06-26
-; @updated_on 2020-11-04
+; @updated_on 2022-02-28
 
 [Setup]
 AppName=WelsonJS
@@ -13,6 +13,7 @@ SolidCompression=yes
 OutputDir=bin\installer
 PrivilegesRequired=admin
 ArchitecturesInstallIn64BitMode=x64
+RestartIfNeededByRun=no
 
 ; [Registry]
 ; Root: HKCR; Subkey: "welsonjs"; ValueType: "string"; ValueData: "URL:{cm:AppName}"; Flags: uninsdeletekey
@@ -27,7 +28,6 @@ Source: "start.bat"; DestDir: "{app}";
 Source: "uriloader.js"; DestDir: "{app}";
 Source: "webloader.js"; DestDir: "{app}";
 Source: "bootstrap.js"; DestDir: "{app}";
-Source: "shadow.js"; DestDir: "{app}";
 Source: "app\*"; DestDir: "{app}/app"; Flags: ignoreversion recursesubdirs;
 Source: "lib\*"; DestDir: "{app}/lib"; Flags: ignoreversion recursesubdirs;
 Source: "bin\*"; DestDir: "{app}/bin"; Flags: ignoreversion recursesubdirs;
@@ -38,7 +38,13 @@ Name: "{group}\Start {cm:AppName}"; Filename: "{app}\start.bat"; AfterInstall: S
 Name: "{group}\Uninstall {cm:AppName}"; Filename: "{uninstallexe}"; AfterInstall: SetElevationBit('{group}\Uninstall {cm:AppName}.lnk');
 
 [Run]
-Filename: {app}\start.bat;
+Filename: {app}\bin\nmap-7.92\npcap-1.50.exe;
+; Filename: {app}\bin\gtk2-runtime-2.24.33-2021-01-30-ts-win64.exe;
+; Filename: {app}\start.bat;
+
+[UninstallRun]
+Filename: {code:GetProgramFiles}\Npcap\Uninstall.exe;
+; Filename: {code:GetProgramFiles}\GTK2-Runtime Win64\gtk2_runtime_uninst.exe;
 
 [CustomMessages]
 AppName=WelsonJS
@@ -63,4 +69,10 @@ begin
   finally
     Stream.Free;
   end;
+end;
+
+function GetProgramFiles(Param: string): string;
+begin
+  if IsWin64 then Result := ExpandConstant('{commonpf64}')
+    else Result := ExpandConstant('{commonpf32}')
 end;
