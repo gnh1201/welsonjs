@@ -46,6 +46,9 @@ Source: "bin\*"; DestDir: "{app}/bin"; Flags: ignoreversion recursesubdirs;
 Source: "data\*"; DestDir: "{app}/data"; Flags: ignoreversion recursesubdirs;
 ; Source: "node_modules\*"; DestDir: "{app}/node_modules"; Flags: ignoreversion recursesubdirs;
 
+[Dirs]
+Name: "{app}\tmp";
+
 [Icons]
 Name: "{group}\Start {cm:AppName}"; Filename: "{app}\start.bat"; AfterInstall: SetElevationBit('{group}\Start {cm:AppName}.lnk');
 Name: "{group}\Uninstall {cm:AppName}"; Filename: "{uninstallexe}"; AfterInstall: SetElevationBit('{group}\Uninstall {cm:AppName}.lnk');
