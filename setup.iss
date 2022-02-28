@@ -3,10 +3,10 @@
 
 [Setup]
 AppName=WelsonJS
-AppVersion=0.1.3
+AppVersion=0.2.3
 WizardStyle=modern
-DefaultDirName={pf}\WelsonJS
-DefaultGroupName=WelsonJS
+DefaultDirName={pf}\{cm:AppName}
+DefaultGroupName={cm:AppName}
 UninstallDisplayIcon={app}\UnInst.exe
 Compression=lzma2
 SolidCompression=yes
@@ -24,6 +24,9 @@ RestartIfNeededByRun=no
 [Files]
 Source: "app.js"; DestDir: "{app}";
 Source: "app.hta"; DestDir: "{app}";
+Source: "Default_HTA.reg"; DestDir: "{app}";
+Source: "LICENSE"; DestDir: "{app}";
+Source: "*.md"; DestDir: "{app}";
 Source: "start.bat"; DestDir: "{app}";
 Source: "uriloader.js"; DestDir: "{app}";
 Source: "webloader.js"; DestDir: "{app}";
@@ -31,6 +34,7 @@ Source: "bootstrap.js"; DestDir: "{app}";
 Source: "app\*"; DestDir: "{app}/app"; Flags: ignoreversion recursesubdirs;
 Source: "lib\*"; DestDir: "{app}/lib"; Flags: ignoreversion recursesubdirs;
 Source: "bin\*"; DestDir: "{app}/bin"; Flags: ignoreversion recursesubdirs;
+Source: "data\*"; DestDir: "{app}/data"; Flags: ignoreversion recursesubdirs;
 ; Source: "node_modules\*"; DestDir: "{app}/node_modules"; Flags: ignoreversion recursesubdirs;
 
 [Icons]
@@ -47,7 +51,7 @@ Filename: {code:GetProgramFiles}\Npcap\Uninstall.exe;
 ; Filename: {code:GetProgramFiles}\GTK2-Runtime Win64\gtk2_runtime_uninst.exe;
 
 [CustomMessages]
-AppName=WelsonJS
+AppName=IoTScanner
 
 [Code]
 procedure SetElevationBit(Filename: string);
