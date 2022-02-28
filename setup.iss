@@ -51,7 +51,7 @@ Filename: {code:GetProgramFiles}\Npcap\Uninstall.exe;
 ; Filename: {code:GetProgramFiles}\GTK2-Runtime Win64\gtk2_runtime_uninst.exe;
 
 [CustomMessages]
-AppName=IoTScanner
+AppName=WelsonJS
 
 [Code]
 procedure SetElevationBit(Filename: string);
