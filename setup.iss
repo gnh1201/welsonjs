@@ -3,7 +3,7 @@
 
 [Setup]
 AppName=WelsonJS
-AppVersion=0.2.3
+AppVersion=0.2.3-dev
 WizardStyle=modern
 DefaultDirName={pf}\{cm:AppName}
 DefaultGroupName={cm:AppName}
