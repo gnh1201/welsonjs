@@ -16,6 +16,13 @@ OutputDir=bin\installer
 PrivilegesRequired=admin
 ArchitecturesInstallIn64BitMode=x64
 RestartIfNeededByRun=no
+DisableStartupPrompt=true
+DisableFinishedPage=true
+DisableReadyMemo=true
+DisableReadyPage=true
+DisableWelcomePage=yes
+DisableDirPage=yes
+DisableProgramGroupPage=yes
 
 ; [Registry]
 ; Root: HKCR; Subkey: "welsonjs"; ValueType: "string"; ValueData: "URL:{cm:AppName}"; Flags: uninsdeletekey
