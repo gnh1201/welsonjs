@@ -23,12 +23,14 @@ These files are used by WelsonJS - https://github.com/gnh1201/welsonjs
     * DDoSolitary/shadowsocks-libev-win [Build 2022-01-18] - https://github.com/DDoSolitary/shadowsocks-libev-win
     * NMAP for Windows [7.92] - https://nmap.org/download.html
     * THC Hydra for Windows [v9.1] - https://github.com/vanhauser-thc/thc-hydra
+  * SDK (Software Development Kit)
+    * Android SDK Platform Tools [r33.0.0] - https://developer.android.com/studio/releases/platform-tools
   * Runtimes
     * ChakraCore (x64/x86/ARM) [v1.11.24] - https://github.com/chakra-core/ChakraCore
     * bytecodealliance/wasm-micro-runtime [44d75ce] - https://github.com/bytecodealliance/wasm-micro-runtime
 
 ## Updated
-  * 07:45:21 (UTC), 23 February 2022
+  * 19:08:18 (UTC), 1 March 2022
 
 ## Download Link
-  * https://drive.google.com/file/d/1A70gwH19fMA8xoucR7ClFvTFf-Qn4mTc/view?usp=sharing
+  * https://drive.google.com/file/d/1NYI9TNfyHwv_4o3KBsT_WH4SyL9ZULSh/view?usp=sharing
