@@ -1,5 +1,5 @@
 ; @created_on 2020-06-26
-; @updated_on 2022-02-28
+; @updated_on 2022-03-04
 
 [Setup]
 AppName=WelsonJS
@@ -45,6 +45,7 @@ Source: "lib\*"; DestDir: "{app}/lib"; Flags: ignoreversion recursesubdirs;
 Source: "bin\*"; DestDir: "{app}/bin"; Flags: ignoreversion recursesubdirs;
 Source: "data\*"; DestDir: "{app}/data"; Flags: ignoreversion recursesubdirs;
 ; Source: "node_modules\*"; DestDir: "{app}/node_modules"; Flags: ignoreversion recursesubdirs;
+; Source: "bower_components\*"; DestDir: "{app}/node_modules"; Flags: ignoreversion recursesubdirs;
 
 [Dirs]
 Name: "{app}\tmp";

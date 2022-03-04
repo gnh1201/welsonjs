@@ -1,6 +1,6 @@
 {
   "name": "welsonjs",
-  "version": "0.1.2",
+  "version": "0.2.3-dev",
   "description": "Build a Windows desktop apps with JavaScript, HTML, and CSS based on WSH/HTA",
   "main": "app.js",
   "directories": {
@@ -41,15 +41,17 @@
   },
   "homepage": "https://github.com/gnh1201/welsonjs#readme",
   "dependencies": {
-    "es5-shim": "^4.5.14",
-    "es6-shim": "^0.35.5",
+    "core-js": "^3.21.1",
     "excanvas": "^2.0.0",
+    "html5media": "^1.2.1",
     "html5shiv": "^3.7.3",
-    "jquery": "^3.5.1",
+    "jquery": "^3.6.0",
     "jquery-form": "^4.3.0",
     "jquery-toast-plugin": "^1.3.2",
-    "jquery-ui": "^1.13.0",
-    "json3": "^3.3.3",
-    "modernizr": "^3.11.3"
+    "jquery-ui": "^1.13.1",
+    "js-yaml": "^4.1.0",
+    "jsrender": "^1.0.11",
+    "modernizr": "^3.12.0",
+    "squel": "^5.13.0"
   }
 }
