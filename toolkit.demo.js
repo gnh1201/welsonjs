@@ -1,3 +1,5 @@
+// toolkit.demo.js
+
 var Chrome = require("lib/chrome");
 var Toolkit = require("lib/toolkit");
 
