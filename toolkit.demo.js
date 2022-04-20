@@ -1,4 +1,5 @@
 // toolkit.demo.js
+// This example includes Microsoft Edge controls and mouse clicks.
 
 var Chrome = require("lib/chrome");
 var Toolkit = require("lib/toolkit");
