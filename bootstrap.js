@@ -4,11 +4,11 @@
 //
 /////////////////////////////////////////////////////////////////////////////////
 
+var STD = require("lib/std");
 var PS = require("lib/powershell");
 var REG = require("lib/registry");
 var SYS = require("lib/system");
 var SHELL = require("lib/shell");
-//var UPDATER = require("lib/updater");
 
 var appName = "welsonjs";
 
@@ -33,10 +33,6 @@ exports.main = function(args) {
     REG.write(REG.HKCR, appName + "\\DefaultIcon", "", SYS.getCurrentScriptDirectory() + "\\app\\favicon.ico,0", REG.STRING);
     REG.write(REG.HKCR, appName + "\\shell\\open\\command", "", "cmd.exe /c cscript " + SYS.getCurrentScriptDirectory() + "\\app.js uriloader \"%1\"", REG.STRING);
 
-    // check updates
-    //console.log("Checking updates...");
-    //UPDATER.checkUpdates();
-
     // open web application
     console.log("Trying open GUI...");
 
@@ -46,9 +42,11 @@ exports.main = function(args) {
         try {
             var process = processList[i];
             if (process.Caption == "mshta.exe") {
-                console.warn("Will be kill process ID:", process.ProcessID);
-                SYS.killProcess(process.ProcessID);
-                sleep(1000);
+                //console.warn("Will be kill process ID:", process.ProcessID);
+                //SYS.killProcess(process.ProcessID);
+                //sleep(1000);
+                STD.alert("Please close the running application (PID: " + process.processID + ")");
+                return 0;
             }
         } catch (e) {
             console.warn(e.message);
