@@ -11,7 +11,8 @@ def main(args):
     (options, args) = parser.parse_args()
 
     nm = nmap.PortScanner(nmap_search_path=('bin/nmap-7.92/nmap',))
-    result = nm.scan(hosts=options.hosts, arguments='-T5 -sV -p21-25,80,139,443,445,1883,2179,2323,3389,7547,8080,8443,8883')
+    #result = nm.scan(hosts=options.hosts, arguments='-T5 -sV -p21-25,80,139,443,445,1883,2179,2323,3389,7547,8080,8443,8883')
+    result = nm.scan(hosts=options.hosts, arguments='-T5 -sV -p0-65535 --max-retries 0')
 
     print(json.dumps(result))
 
