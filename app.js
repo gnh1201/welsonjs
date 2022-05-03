@@ -63,7 +63,7 @@ var console = {
             type: type,
             channel: 'default',
             messsage: '',
-			datetime: new Date().toISOString()
+            datetime: new Date().toISOString()
         };
 
         if (args.length > 0) {
