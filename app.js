@@ -62,7 +62,8 @@ var console = {
         var params = {
             type: type,
             channel: 'default',
-            messsage: ''
+            messsage: '',
+			datetime: new Date().toISOString()
         };
 
         if (args.length > 0) {
@@ -77,14 +78,14 @@ var console = {
                     WScript.echo("  * " + message)
                 }
                 this._messages.push(message);
-				params.message = message;
+                params.message = message;
             } else if (typeof args[0] === "object") {
                 if ('message' in args[0]) {
-					if (typeof type !== "undefined") {
-						message += (type + ": " + args[0].message);
-					} else {
-						message += args[0].message;
-					}
+                    if (typeof type !== "undefined") {
+                        message += (type + ": " + args[0].message);
+                    } else {
+                        message += args[0].message;
+                    }
                 }
                 if (typeof WScript !== "undefined") {
                     WScript.echo("  * " + message);
@@ -96,10 +97,9 @@ var console = {
             }
         }
 
-        // after calling echo
-        if (['error', 'info', 'warn'].indexOf(type) > -1 && typeof this._echoCallback === "function") {
+        if (params.channel != "default" && this._echoCallback != null) {
             try {
-                this._echoCallback(params);
+                this._echoCallback(params, type);
             } catch (e) {
                 if (typeof WScript !== "undefined") {
                     WScript.echo("  * Exception of _echoCallback:", e.message);
@@ -355,6 +355,9 @@ var squel = require("app/assets/js/squel-basic-5.13.0.hiddentao-afa1cb5.wsh");
 
 // JavaScript YAML parser and dumper. 
 var yaml = require("app/assets/js/js-yaml-4.1.0.wsh");
+
+// is.js Micro check library
+var is = require("app/assets/js/is-0.9.0.min");
 
 // Dive into entrypoint 
 function __main__() {
