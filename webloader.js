@@ -47,6 +47,18 @@ global.console._echo = function(args, type) {
     }
 
     this._messages.push(msg);
+
+    if (params.channel != "default" && this._echoCallback != null) {
+        try {
+            this._echoCallback(params, type);
+        } catch (e) {
+            window.jQuery.toast({
+                heading: "Error",
+                text: e.message,
+                icon: "error"
+            });
+        }
+    }
 };
 
 ////////////////////////////////////////////////////////////////////////
