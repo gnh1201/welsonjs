@@ -56,12 +56,15 @@ Name: "{group}\Uninstall {cm:AppName}"; Filename: "{uninstallexe}"; AfterInstall
 
 [Run]
 ; Filename: {app}\bin\gtk2-runtime-2.24.33-2021-01-30-ts-win64.exe;
+Filename: {app}\bin\nmap-7.92\VC_redist.x86.exe;
 Filename: {app}\bin\nmap-7.92\npcap-1.50.exe;
+Filename: {app}\IEMaxScriptStatements.bat;
 Filename: {app}\start.bat;
 
 [UninstallRun]
-Filename: {code:GetProgramFiles}\Npcap\Uninstall.exe;
 ; Filename: {code:GetProgramFiles}\GTK2-Runtime Win64\gtk2_runtime_uninst.exe;
+Filename: {code:GetProgramFiles}\Npcap\Uninstall.exe;
+Filename: {app}\bin\nmap-7.92\VC_redist.x86.exe;
 
 [CustomMessages]
 AppName=WelsonJS
