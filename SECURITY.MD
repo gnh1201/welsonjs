@@ -14,7 +14,7 @@ Please use it only to create a webapp similar to Electron or legally penetration
 ## Known use cases
 In general, WelsonJS is used in the following situations.
 
-  * Testing web accessibility satisfaction (e.g. W3C WEB-ARIA, DDA law in US/EU/KR)
+  * Testing web accessibility satisfaction (e.g. W3C WEB-ARIA, W3C WCAG, DDA law in US/EU/KR)
   * Explore vulnerabilities of equipment within the local network
   * Manage reliability of client environments such as VPN and proxies
 
