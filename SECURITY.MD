@@ -18,7 +18,9 @@ In general, WelsonJS is used in the following situations.
   * Explore vulnerabilities of equipment within the local network
   * Manage reliability of client environments such as VPN and proxies
 
-Note: If you deviate from the previous case mentioned above, please contact us before using it.
+Note 1: If you deviate from the previous case mentioned above, please contact us before using it.
+
+Note 2: A similar approach that WelsonJS uses has been called `LOLBins` in the cyber security community since 2018. This is not intended to be but you will get the hints you need for extensions.
 
 ## Report abuse
 If you find any abuse cases of this project, please report it.
