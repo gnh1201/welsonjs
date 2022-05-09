@@ -11,6 +11,13 @@ Using this project to create malicious code and network abuse tools (e.g. DDoS a
 
 Please use it only to create a webapp similar to Electron or legally penetration testing tool.
 
+## Known use cases
+In general, WelsonJS is used in the following situations.
+
+  * Testing web accessibility satisfaction (e.g. W3C WEB-ARIA)
+  * Explore vulnerabilities of equipment within the local network
+  * Manage reliability of client environments such as proxies
+
 ## Report abuse
 If you find any abuse cases of this project, please report it.
 
