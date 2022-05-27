@@ -1,6 +1,8 @@
 # welsonjs
 WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on WSH/HTA or GTK.
 
+[![Buy me a coffee](https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png)](https://www.buymeacoffee.com/catswords)
+
 ## Structure
 ![Structure](app/assets/img/structure.png)
 
