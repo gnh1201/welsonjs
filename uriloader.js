@@ -8,7 +8,7 @@ var SHELL = require("lib/shell");
 var URI = require("lib/uri");
 var WINLIBS = require("lib/winlibs");
 
-exports.main = function(args) {
+function main(args) {
     var uri = args[0];
     var pos = uri.indexOf(":///");
     if (pos < 0) {
@@ -115,3 +115,5 @@ exports.main = function(args) {
 
     return 0;
 };
+
+exports.main = main;
