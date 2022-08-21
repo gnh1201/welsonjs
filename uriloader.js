@@ -114,6 +114,6 @@ function main(args) {
     }
 
     return 0;
-};
+}
 
 exports.main = main;
