@@ -228,9 +228,15 @@ function require(FN) {
         console.error("PARSE ERROR!", e.number + ",", e.description + ",", "FN=" + FN);
     }
 
-    // print VERSIONINFO
+    // print VERSIONINFO and AUTHOR
     if (typeof(cache[FN]) === "object") {
-        if ("VERSIONINFO" in cache[FN]) console.log(cache[FN].VERSIONINFO);
+        if ("VERSIONINFO" in cache[FN]) {
+            if ("AUTHOR" in cache[FN]) {
+                console.log(cache[FN].VERSIONINFO + " by " + cache[FN].AUTHOR);
+            } else {
+                console.log(cache[FN].VERSIONINFO);
+            }
+        }
     }
 
     return cache[FN];
