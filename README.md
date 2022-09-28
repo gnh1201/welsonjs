@@ -63,6 +63,7 @@ WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on 
 - lib/gtk (GTK/GladeXML server GUI interface)
 - lib/chrome (Chrome Web Browser Debugging interface)
 - lib/toolkit (`WelsonJS.Toolkit` native component)
+- lib/pipe-ipc (PIPE-based IPC(Inter-Process Communication) implementation)
 
 ## Make your own `sayhello` example
 
