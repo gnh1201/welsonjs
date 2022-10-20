@@ -176,9 +176,9 @@ namespace WelsonJS
         }
 
         [ComVisible(true)]
-        public bool SendFnKey(int num) {
+        public bool SendFnKey(string wName, int num) {
             IntPtr hWnd = QueryHandleWindow(wName);
-            char cKey = 0x00;
+            char cKey = (char)0x00;
 
             if (hWnd != IntPtr.Zero)
             {
@@ -195,7 +195,6 @@ namespace WelsonJS
                     case 10: cKey = (char)WVirtualKeys.VK_F10; break;
                     case 11: cKey = (char)WVirtualKeys.VK_F11; break;
                     case 12: cKey = (char)WVirtualKeys.VK_F12; break;
-                    default: cKey = 0x00;
                 }
                 
                 if (cKey != 0x00) {
