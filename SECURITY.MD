@@ -12,7 +12,7 @@ Please use it only to create a web technology based application similar to Elect
 ## Known use cases
 In general, WelsonJS is used in the following situations.
 
-  * Test web accessibility (e.g. W3C WEB-ARIA, W3C WCAG, DDA law in US/EU/KR)
+  * Test web accessibility and compliance: e.g. W3C standards(WEB-ARIA, WCAG), The national laws(ADA/DDA, GDPR)
   * Explore vulnerabilities of equipment within the local network
   * Improve availablity of a clients of VPN or Proxy
 
