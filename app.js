@@ -34,11 +34,11 @@
 //    loaded.
 
 var exit = function(status) {
-    console.error("Exit caused by status " + status);
+    console.error("Exit", status, "caused");
 
-    if (typeof(WScript) !== "undefined") {
+    if (typeof WScript !== "undefined") {
         WScript.quit(status);
-    } else if (typeof(window) !== "undefined") {
+    } else if (typeof window !== "undefined") {
         window.close();
     }
 };
@@ -57,6 +57,11 @@ var console = {
         return res;
     },
     _echoCallback: null,
+    _wshEcho: function(message) {
+        if (typeof WScript !== "undefined") {
+            WScript.echo("[*] " + message)
+        }
+    },
     _echo: function(args, type) {
         var message = "";
         var params = {
@@ -74,9 +79,7 @@ var console = {
                 } else {
                     message += this._join(args);
                 }
-                if (typeof WScript !== "undefined") {
-                    WScript.echo("  * " + message)
-                }
+                this._wshEcho(message);
                 this._messages.push(message);
                 params.message = message;
             } else if (typeof args[0] === "object") {
@@ -87,9 +90,7 @@ var console = {
                         message += args[0].message;
                     }
                 }
-                if (typeof WScript !== "undefined") {
-                    WScript.echo("  * " + message);
-                }
+                this._wshEcho(message);
                 this._messages.push(args[0].message);
                 for (var k in args[0]) {
                     params[k] = args[0][k];
@@ -101,9 +102,7 @@ var console = {
             try {
                 this._echoCallback(params, type);
             } catch (e) {
-                if (typeof WScript !== "undefined") {
-                    WScript.echo("  * Exception of _echoCallback:", e.message);
-                }
+                this._wshEcho("Exception on _echoCallback: " + e.message);
             }
         }
     },
@@ -166,11 +165,11 @@ var console = {
     }
 };
 
-if (typeof(CreateObject) === "undefined") {
+if (typeof CreateObject === "undefined") {
     var CreateObject = function(progId, serverName, callback) {
         var progIds = (progId instanceof Array ? progId : [progId]);
         var _CreateObject = function(p, s) {
-            if (typeof(WScript) !== "undefined") {
+            if (typeof WScript !== "undefined") {
                 return WScript.CreateObject(p, s);
             } else {
                 return new ActiveXObject(p);
@@ -180,7 +179,7 @@ if (typeof(CreateObject) === "undefined") {
         for (var i = 0; i < progIds.length; i++) {
             try {
                 var obj = _CreateObject(progIds[i], serverName);
-                if (typeof(callback) === "function") {
+                if (typeof callback === "function") {
                     callback(obj, progIds[i]);
                 }
                 return obj;
@@ -229,7 +228,7 @@ function require(FN) {
     }
 
     // print VERSIONINFO and AUTHOR
-    if (typeof(cache[FN]) === "object") {
+    if (typeof cache[FN] === "object") {
         if ("VERSIONINFO" in cache[FN]) {
             if ("AUTHOR" in cache[FN]) {
                 console.log(cache[FN].VERSIONINFO + " by " + cache[FN].AUTHOR);
@@ -251,9 +250,9 @@ require.__getDirName__ = function(path) {
     return (pos > -1 ? path.substring(0, pos) : "");
 };
 require.__getCurrentScriptDirectory__ = function() {
-    if (typeof(WScript) !== "undefined") {
+    if (typeof WScript !== "undefined") {
         return require.__getDirName__(WScript.ScriptFullName);
-    } else if (typeof(document) !== "undefined") {
+    } else if (typeof document !== "undefined") {
         return require.__getDirName__(document.location.pathname);
     } else {
         return ".";
@@ -286,7 +285,7 @@ require.__load__ = function(FN) {
 /////////////////////////////////////////////////////////////////////////////////
 
 function initializeConsole() {
-    if (typeof(WScript) === "undefined") {
+    if (typeof WScript === "undefined") {
         console.error("Error, WScript is not defined");
         exit(1);
     }
@@ -302,7 +301,7 @@ function initializeConsole() {
         if (app) {
             if (app.main) {
                 var exitStatus = app.main.call(this, args);
-                if (typeof(exitStatus) !== "undefined") {
+                if (typeof exitStatus !== "undefined") {
                     exit(exitStatus);
                 }
             } else {
@@ -315,14 +314,14 @@ function initializeConsole() {
 }
 
 function initializeWindow(name, args, w, h) {
-    if (typeof(window) === "undefined") {
+    if (typeof window === "undefined") {
         console.error("Error, window is not defined");
         exit(1);
     }
     var app = require(name);
 
     // "set default size of window";
-    if (typeof(w) !== "undefined" && typeof(h) !== "undefined") {
+    if (typeof w !== "undefined" && typeof h !== "undefined") {
         window.resizeTo(w, h);
     }
 
@@ -367,7 +366,7 @@ var is = require("app/assets/js/is-0.9.0.min");
 
 // Dive into entrypoint 
 function __main__() {
-    if (typeof(window) === "undefined") {
+    if (typeof window === "undefined") {
         initializeConsole();
     } else {
         console.log("welcome");
