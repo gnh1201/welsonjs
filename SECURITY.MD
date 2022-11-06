@@ -15,6 +15,7 @@ In general, WelsonJS is used in the following situations.
   * Test web accessibility and compliance: e.g. W3C standards(WEB-ARIA, WCAG), The national laws(ADA/DDA, GDPR)
   * Explore vulnerabilities of equipment within the local network
   * Improve availablity of a clients of VPN or Proxy
+  * Build automation, CD/CI(Continuous Integration/Continuous Delivery), DevOps, SecOps
 
 Note 1: If you deviate from the previous case mentioned above, please contact us before using it.
 
