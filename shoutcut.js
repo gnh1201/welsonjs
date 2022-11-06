@@ -1,7 +1,7 @@
 var SHELL = require("lib/shell");
 var SYS = require("lib/system");
 
-exports.main = function(args) {
+function main(args) {
     if (args.length < 1) {
         console.error("arguments could not be empty")
         return;
@@ -24,3 +24,5 @@ exports.main = function(args) {
         console.error("onShoutcut not defined");
     }
 };
+
+exports.main = main;
