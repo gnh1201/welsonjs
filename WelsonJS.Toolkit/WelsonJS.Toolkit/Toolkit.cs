@@ -5,8 +5,11 @@
  *         WelsonJS - Build Windows desktop apps with JavaScript, HTML, and CSS based on WSH/HTA.
  *         https://github.com/gnh1201/welsonjs
  * 
+ *     author:
+ *         Namhyeon Go <abuse@catswords.net>
+ *
  *     license:
- *         gnh1201/welsonjs is licensed under the Microsoft Public License (Ms-PL)
+ *         gnh1201/welsonjs is licensed under the Microsoft Reciprocal License (MS-RL)
  * 
  *     references:
  *         - https://stackoverflow.com/questions/9004352/call-a-function-in-a-console-app-from-vbscript
