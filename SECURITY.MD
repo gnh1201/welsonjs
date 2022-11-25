@@ -24,4 +24,4 @@ Note 2: A similar approach that WelsonJS uses has been called `LOLBins` in the c
 ## Report abuse
 If you find any abuse cases of this project, please report it.
 
-  * catswords@protonmail.com
+  * abuse@catswords.net

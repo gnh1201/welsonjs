@@ -366,6 +366,8 @@ var is = require("app/assets/js/is-0.9.0.min");
 
 // Dive into entrypoint 
 function __main__() {
+    console.log("Report abuse or security issue: abuse@catswords.net");
+
     if (typeof window === "undefined") {
         initializeConsole();
     } else {
