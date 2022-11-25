@@ -1,5 +1,6 @@
 ; @created_on 2020-06-26
 ; @updated_on 2022-03-04
+; @author Namhyeon Go <abuse@catswords.net>
 
 [Setup]
 AppName=WelsonJS
