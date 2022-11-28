@@ -16,4 +16,10 @@ kids =
     name: "Ida"
     age:  9
 
-console.log "Hello world, CoffeeScript";
+main = (args) -> 
+  console.log song.join(',')
+  console.log Object.keys(singers).join(',')
+  console.log bitlist.join(',')
+  console.log "Hello world, CoffeeScript"
+
+exports.main = main

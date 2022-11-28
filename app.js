@@ -225,6 +225,8 @@ function require(FN) {
                 "bare": true
             });
         });
+		
+		console.log(T);
     }
 
     // compile
