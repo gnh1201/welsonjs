@@ -18,8 +18,9 @@ kids =
 
 main = (args) -> 
   console.log song.join(',')
-  console.log Object.keys(singers).join(',')
+  console.log JSON.stringify(singers)
   console.log bitlist.join(',')
+  console.log JSON.stringify(kids)
   console.log "Hello world, CoffeeScript"
 
 exports.main = main
