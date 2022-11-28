@@ -32,6 +32,9 @@
 //    The appname argument causes <appname>.js to be loaded. The interface returned
 //    must define main = function(args) {}, which is called once the module is
 //    loaded.
+//
+//    Report abuse or security issue: abuse@catswords.net
+//
 
 var exit = function(status) {
     console.error("Exit", status, "caused");
@@ -203,16 +206,25 @@ function include(FN) {
  */
 function require(FN) {
     var cache = require.__cache__ = require.__cache__ || {};
+    var suffix = FN.substr(FN.lastIndexOf('.'));
 
-    if (FN.substr(FN.length - 3) !== '.js') FN += ".js";
+    if (suffix !== '.js' && suffix !== '.coffee') FN += ".js";
     if (cache[FN]) return cache[FN];
-    
+
     // get file and directory name
     var __filename__ = require.__getCurrentScriptDirectory__() + "\\" + FN;
     var __dirname__ = require.__getDirName__(__filename__);
     var T = require.__load__(FN);
 
-    // build
+    // pre-compile if CoffeeScript (Experimental)
+    if (suffix === '.coffee' && typeof CoffeeScript !== "undefined") {
+        T = CoffeeScript.compile(T, {
+            "bare": true,
+            "shiftLine": true
+        });
+    }
+
+    // compile
     T = "(function(global){var module=new require.__ModuleObject__();return(function(exports,require,module,__filename,__dirname){"
         + '"use strict";'
         + T
@@ -305,7 +317,7 @@ function initializeConsole() {
                     exit(exitStatus);
                 }
             } else {
-                console.error("Error, missing main entry point in", name + ".js");
+                console.error("Error, missing main entry point in", name);
             }
         } else {
             console.error("Error, cannot find", name + ".js");
@@ -348,8 +360,8 @@ include("app/assets/js/json2");
 // JSON 3 was a JSON polyfill for older JavaScript platforms
 //var JSON = require("app/assets/js/json3-3.3.2.min");
 
-// core-js (formerly babel-polyfill)
-require("app/assets/js/corejs-build-20210810");
+// core-js (Formerly aka, babel-polyfill)
+require("app/assets/js/corejs-20210810.wsh");
 
 // es5-shims
 //require("app/assets/js/es5-shim-4.5.15.min");
@@ -364,15 +376,17 @@ var yaml = require("app/assets/js/js-yaml-4.1.0.wsh");
 // is.js Micro check library
 var is = require("app/assets/js/is-0.9.0.min");
 
+// CoffeeScript v2.7.0 for legacy
+include("app/assets/js/coffeescript-legacy-2.7.0.min");
+
 // Dive into entrypoint 
 function __main__() {
-    console.log("Report abuse or security issue: abuse@catswords.net");
-
     if (typeof window === "undefined") {
         initializeConsole();
     } else {
         console.log("welcome");
     }
+	console.log("Report abuse or security issue: abuse@catswords.net");
 }
 
 __main__();
