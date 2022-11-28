@@ -9,7 +9,13 @@ var OldBrowser = require("lib/oldbrowser");
 // Override global.console._echo()
 ////////////////////////////////////////////////////////////////////////
 global.console._echo = function(args, type) {
-    var heading, icon, msg = this._join(args);
+    var heading, icon, message = this._join(args);
+    var params = {
+        type: type,
+        channel: 'default',
+        message: '',
+        datetime: new Date().toISOString()
+    };
 
     switch(type) {
         case "error":
@@ -36,17 +42,17 @@ global.console._echo = function(args, type) {
         if (typeof(window.jQuery.toast) !== "undefined") {
             window.jQuery.toast({
                 heading: heading,
-                text: msg,
+                text: message,
                 icon: icon
             });
         } else {
-            window.alert(msg);
+            window.alert(message);
         }
     } catch (e) {
         window.alert(e.message);
     }
 
-    this._messages.push(msg);
+    this._messages.push(message);
 
     if (params.channel != "default" && this._echoCallback != null) {
         try {

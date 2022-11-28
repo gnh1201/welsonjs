@@ -70,7 +70,7 @@ var console = {
         var params = {
             type: type,
             channel: 'default',
-            messsage: '',
+            message: '',
             datetime: new Date().toISOString()
         };
 
