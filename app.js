@@ -228,7 +228,7 @@ function require(FN) {
     }
 
     // compile
-    T = "(function(global){var module=new require.__ModuleObject__();return(function(exports,require,module,__filename,__dirname){"
+    T = "(function(global){var module=new require.__ModulePrototype__();return(function(exports,require,module,__filename,__dirname){"
         + '"use strict";'
         + T
         + "\n\nreturn module.exports})(module.exports,global.require,module,__filename__,__dirname__)})(require.__global__);\n\n////@ sourceURL="
@@ -256,7 +256,7 @@ function require(FN) {
     return cache[FN];
 }
 require.__global__ = this;
-require.__ModuleObject__ = function() {
+require.__ModulePrototype__ = function() {
     this.exports = {};
 };
 require.__getDirName__ = function(path) {

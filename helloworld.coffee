@@ -1,3 +1,5 @@
+fortune = require "lib/fortune.coffee"
+
 song = ["do", "re", "mi", "fa", "so"]
 
 singers = {Jagger: "Rock", Elvis: "Roll"}
@@ -22,5 +24,6 @@ main = (args) ->
   console.log bitlist.join(',')
   console.log JSON.stringify(kids)
   console.log "Hello world, CoffeeScript"
+  console.log fortune.sayFortune("Foutune!")
 
 exports.main = main
