@@ -278,7 +278,7 @@ require.__load__ = function(FN) {
     var __filename__ = require.__getCurrentScriptDirectory__() + "\\" + FN;
 
     // load script file
-    // use ADODB.Stream instead of Scripting.FileSystemObject, because of UTF-8 (unicode)
+    // use ADODB.Stream instead of Scripting.FileSystemObject, because of supporting UTF-8 (Unicode)
     var objStream = CreateObject("ADODB.Stream");
     var T = null;
     try {
@@ -298,15 +298,19 @@ require.__msie9__ = function(FN, params, callback) {
     if (FN.substr(FN.length - 3) !== '.js') FN += ".js";
 
     var exports = null;
-    var T = require.__load__("app/assets/js/corejs-20210810.wsh.js") + "\n" + require.__load__(FN);
-    var htmlfile = new ActiveXObject("htmlfile");
-    htmlfile.write('<meta http-equiv="X-UA-Compatible" content="IE=9">');
-    htmlfile.write('<script>\n' + T + '\n</script>');
-    if (typeof callback === "function") {
-        //console.log(htmlfile.parentWindow.navigator.userAgent);
-        exports = callback(params, htmlfile.parentWindow, htmlfile.parentWindow.document);
+    try {
+        var T = require.__load__("app/assets/js/corejs-20210810.wsh.js") + "\n" + require.__load__(FN);
+        var htmlfile = CreateObject("htmlfile");
+        htmlfile.write('<meta http-equiv="X-UA-Compatible" content="IE=9">');
+        htmlfile.write('<script type="text/javascript">//<!--<![CDATA[\n' + T + '\n//]]>--></script>');
+        if (typeof callback === "function") {
+            //console.log(htmlfile.parentWindow.navigator.userAgent);
+            exports = callback(params, htmlfile.parentWindow, htmlfile.parentWindow.document);
+        }
+        htmlfile.close();
+    } catch (e) {
+        console.error("LOAD ERROR!", e.number + ",", e.description + ",", "FN=" + FN);
     }
-    htmlfile.close();
 
     return exports;
 };
