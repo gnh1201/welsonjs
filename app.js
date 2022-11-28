@@ -196,7 +196,7 @@ if (typeof CreateObject === "undefined") {
 /**
  * @FN {string} The name of the file.
  */
-function include(FN) {
+function __include__(FN) {
     if (FN.substr(FN.length - 3) !== '.js') FN += ".js";
     return eval(require.__load__(FN));
 }
@@ -216,11 +216,14 @@ function require(FN) {
     var __dirname__ = require.__getDirName__(__filename__);
     var T = require.__load__(FN);
 
-    // pre-compile if CoffeeScript (Experimental)
-    if (suffix === '.coffee' && typeof CoffeeScript !== "undefined") {
-        T = CoffeeScript.compile(T, {
-            "bare": true,
-            "shiftLine": true
+    // pre-compile if CoffeeScript v2.7.0
+    if (suffix === '.coffee') {
+        T = require.__msie9__("app/assets/js/coffeescript-legacy-2.7.0.min", [T], function(p, w, d) {
+            return w.CoffeeScript.compile(p[0], {
+                "header": true,
+                "sourceMap": false,
+                "bare": true
+            });
         });
     }
 
@@ -291,6 +294,22 @@ require.__load__ = function(FN) {
 
     return T;
 };
+require.__msie9__ = function(FN, params, callback) {
+    if (FN.substr(FN.length - 3) !== '.js') FN += ".js";
+
+    var exports = null;
+    var T = require.__load__("app/assets/js/corejs-20210810.wsh.js") + "\n" + require.__load__(FN);
+    var htmlfile = new ActiveXObject("htmlfile");
+    htmlfile.write('<meta http-equiv="X-UA-Compatible" content="IE=9">');
+    htmlfile.write('<script>\n' + T + '\n</script>');
+    if (typeof callback === "function") {
+        //console.log(htmlfile.parentWindow.navigator.userAgent);
+        exports = callback(params, htmlfile.parentWindow, htmlfile.parentWindow.document);
+    }
+    htmlfile.close();
+
+    return exports;
+};
 
 /////////////////////////////////////////////////////////////////////////////////
 // Load script, and call app.main()
@@ -355,7 +374,7 @@ function initializeWindow(name, args, w, h) {
 }
 
 // JSON 2
-include("app/assets/js/json2");
+__include__("app/assets/js/json2");
 
 // JSON 3 was a JSON polyfill for older JavaScript platforms
 //var JSON = require("app/assets/js/json3-3.3.2.min");
@@ -376,9 +395,6 @@ var yaml = require("app/assets/js/js-yaml-4.1.0.wsh");
 // is.js Micro check library
 var is = require("app/assets/js/is-0.9.0.min");
 
-// CoffeeScript v2.7.0 for legacy
-include("app/assets/js/coffeescript-legacy-2.7.0.min");
-
 // Dive into entrypoint 
 function __main__() {
     if (typeof window === "undefined") {
@@ -386,7 +402,6 @@ function __main__() {
     } else {
         console.log("welcome");
     }
-	console.log("Report abuse or security issue: abuse@catswords.net");
 }
 
 __main__();
