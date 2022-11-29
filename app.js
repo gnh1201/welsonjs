@@ -208,7 +208,7 @@ function require(FN) {
     var cache = require.__cache__ = require.__cache__ || {};
     var suffix = FN.substr(FN.lastIndexOf('.'));
 
-    if (suffix !== '.js' && suffix !== '.coffee') FN += ".js";
+    if ('.js$.coffee$.ls$'.indexOf(suffix + '$') < 0) FN += ".js";
     if (cache[FN]) return cache[FN];
 
     // get file and directory name
@@ -216,15 +216,26 @@ function require(FN) {
     var __dirname__ = require.__getDirName__(__filename__);
     var T = require.__load__(FN);
 
-    // pre-compile if CoffeeScript v2.7.0
-    if (suffix === '.coffee') {
-        T = require.__msie9__("app/assets/js/coffeescript-legacy-2.7.0.min", [T], function(p, w, d) {
-            return w.CoffeeScript.compile(p[0], {
-                "header": true,
-                "sourceMap": false,
-                "bare": true
+    // pre-compile if use Transpiler
+    switch (suffix) {
+        case '.coffee':  // CoffeeScript 2
+            T = require.__msie9__("app/assets/js/coffeescript-legacy-2.7.0.min", [T], function(p, w, d) {
+                return w.CoffeeScript.compile(p[0], {
+                    "header": true,
+                    "sourceMap": false,
+                    "bare": true
+                });
             });
-        });
+            break;
+
+        case ".ls":  // LiveScript
+            T = require.__msie9__("app/assets/js/livescript-1.6.1.min", [T], function(p, w, d) {
+                return w.require("livescript").compile(p[0], {
+                    "header": true,
+                    "bare": true
+                });
+            });
+            break;
     }
 
     // compile
