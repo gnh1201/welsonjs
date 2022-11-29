@@ -206,7 +206,9 @@ function __include__(FN) {
  */
 function require(FN) {
     var cache = require.__cache__ = require.__cache__ || {};
-    var suffix = FN.substr(FN.lastIndexOf('.'));
+    var suffix = (function(pos) {
+        return pos < 0 ? '.' : FN.substr(pos);
+    })(FN.lastIndexOf('.'));
 
     if ('.js$.coffee$.ls$'.indexOf(suffix + '$') < 0) FN += ".js";
     if (cache[FN]) return cache[FN];
