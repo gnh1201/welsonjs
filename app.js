@@ -229,10 +229,10 @@ function require(FN) {
             break;
 
         case ".ls":  // LiveScript
-            T = require.__msie9__("app/assets/js/livescript-1.6.1.min", [T], function(p, w, d) {
-                return w.require("livescript").compile(p[0], {
+            T = require.__msie9__("app/assets/js/livescript-1.6.1.min", [T, "app/assets/ls/prelude.ls"], function(p, w, d) {
+                return w.require("livescript").compile(require.__load__(p[1]) + "\n\n" + p[0], {
                     "header": true,
-                    "bare": true
+                    "bare": false
                 });
             });
             break;
@@ -245,6 +245,8 @@ function require(FN) {
         + "\n\nreturn module.exports})(module.exports,global.require,module,__filename__,__dirname__)})(require.__global__);\n\n////@ sourceURL="
         + FN
     ;
+    
+    if (suffix == ".ls") console.log(T);
 
     // execute
     try {
@@ -354,7 +356,7 @@ function initializeConsole() {
                 console.error("Error, missing main entry point in", name);
             }
         } else {
-            console.error("Error, cannot find", name + ".js");
+            console.error("Error, cannot find", name);
         }
     }
 }
