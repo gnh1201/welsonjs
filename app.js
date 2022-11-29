@@ -310,9 +310,35 @@ require.__msie9__ = function(FN, params, callback) {
 
     var exports = null;
     try {
-        var T = require.__load__("app/assets/js/core-js-3.26.1.minified.js") + "\n\n" + require.__load__(FN);
+        var T = require.__load__("app/assets/js/core-js-3.26.1.minified.js")
+            + "\n\n" + require.__load__("app/assets/js/html5shiv-printshiv-3.7.3.min.js")
+            + "\n\n" + require.__load__("app/assets/js/modernizr-2.8.3.min.js")
+            + "\n\n" + require.__load__(FN);
         var htmlfile = CreateObject("htmlfile");
         htmlfile.write('<meta http-equiv="X-UA-Compatible" content="IE=9">');
+        htmlfile.write('<script type="text/javascript">//<!--<![CDATA[\n' + T + '\n//]]>--></script>');
+        if (typeof callback === "function") {
+            //console.log(htmlfile.parentWindow.navigator.userAgent);
+            exports = callback(params, htmlfile.parentWindow, htmlfile.parentWindow.document);
+        }
+        htmlfile.close();
+    } catch (e) {
+        console.error("LOAD ERROR!", e.number + ",", e.description + ",", "FN=" + FN);
+    }
+
+    return exports;
+};
+require.__modernie__ = function(FN, params, callback) {
+    if (FN.substr(FN.length - 3) !== '.js') FN += ".js";
+
+    var exports = null;
+    try {
+        var T = require.__load__("app/assets/js/core-js-3.26.1.minified.js")
+            + "\n\n" + require.__load__("app/assets/js/modernizr-2.8.3.min.js")
+            + "\n\n" + require.__load__("app/assets/js/babel-standalone-7.20.6.min.js");
+            + "\n\n" + require.__load__(FN);
+        var htmlfile = CreateObject("htmlfile");
+        htmlfile.write('<meta http-equiv="X-UA-Compatible" content="IE=edge">');
         htmlfile.write('<script type="text/javascript">//<!--<![CDATA[\n' + T + '\n//]]>--></script>');
         if (typeof callback === "function") {
             //console.log(htmlfile.parentWindow.navigator.userAgent);
