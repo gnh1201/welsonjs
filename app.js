@@ -310,7 +310,7 @@ require.__msie9__ = function(FN, params, callback) {
 
     var exports = null;
     try {
-        var T = require.__load__("app/assets/js/corejs-20210810.wsh.js") + "\n" + require.__load__(FN);
+        var T = require.__load__("app/assets/js/core-js-3.26.1.minified.js") + "\n\n" + require.__load__(FN);
         var htmlfile = CreateObject("htmlfile");
         htmlfile.write('<meta http-equiv="X-UA-Compatible" content="IE=9">');
         htmlfile.write('<script type="text/javascript">//<!--<![CDATA[\n' + T + '\n//]]>--></script>');
@@ -395,7 +395,7 @@ __include__("app/assets/js/json2");
 //var JSON = require("app/assets/js/json3-3.3.2.min");
 
 // core-js (Formerly aka, babel-polyfill)
-require("app/assets/js/corejs-20210810.wsh");
+require("app/assets/js/core-js-3.26.1.minified");
 
 // es5-shims
 //require("app/assets/js/es5-shim-4.5.15.min");
