@@ -232,7 +232,7 @@ function require(FN) {
             T = require.__msie9__("app/assets/js/livescript-1.6.1.min", [T, "app/assets/ls/prelude.ls"], function(p, w, d) {
                 return w.require("livescript").compile(require.__load__(p[1]) + "\n\n" + p[0], {
                     "header": true,
-                    "bare": false
+                    "bare": true
                 });
             });
             break;
