@@ -24,6 +24,6 @@ main = (args) ->
   console.log bitlist.join(',')
   console.log JSON.stringify(kids)
   console.log "Hello world, CoffeeScript"
-  console.log fortune.sayFortune("Foutune!")
+  fortune.sayFortune("foutune!")
 
 exports.main = main

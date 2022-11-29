@@ -1,3 +1,5 @@
+fortune = require "lib/fortune.ls"
+
 # Easy listing of implicit objects
 table1 =
   * id: 1
@@ -19,5 +21,6 @@ main = (args) ->
   console.log JSON.stringify(table1)
   console.log JSON.stringify(table2)
   console.log "Hello world, LiveScript"
-  
+  fortune.sayFortune "fortune!"
+
 exports.main = main
