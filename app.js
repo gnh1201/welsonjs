@@ -34,6 +34,7 @@
 //    loaded.
 //
 //    Report abuse or security issue: abuse@catswords.net
+//    https://github.com/gnh1201/welsonjs
 //
 
 var exit = function(status) {
