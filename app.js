@@ -239,7 +239,7 @@ function require(FN) {
             });
             break;
 
-        case ".ts"  // TypeScript (Testing)
+        case ".ts":  // TypeScript
             T = require.__modernie__("app/assets/js/typescript-4.9.4", [T], function(p, w, d) {
                 return w.ts.transpile(p[0]);
             });
@@ -341,13 +341,13 @@ require.__modernie__ = function(FN, params, callback) {
 
     var exports = null;
     try {
-        var IEVersion, T = '', htmlfile = CreateObject("htmlfile");
+        var ua = '', T = '', htmlfile = CreateObject("htmlfile");
 
         htmlfile.write('<meta http-equiv="X-UA-Compatible" content="IE=edge">');
-        htmlfile.write('<script type="text/javascript">//<!--<![CDATA[\nwindow.__getIEVersion__=function(){for(var e,i=3,n=document.createElement("div"),t=n.getElementsByTagName("i");n.innerHTML="<!--[if gt IE "+ ++i+"]><i></i><![endif]-->",t[0];);return i>4?i:e};\n//]]>--></script>');
-        IEVersion = htmlfile.parentWindow.__getIEVersion__();
+        htmlfile.write('<script type="text/javascript">//<!--<![CDATA[\n\nfunction __getUserAgent__(){return window.navigator.userAgent}\n\n//]]>--></script>');
+        ua = htmlfile.parentWindow.__getUserAgent__();
 
-        if (typeof IEVersion !== "undefined" && IEVersion > 9) {
+        if (ua.indexOf('Trident/ ')) {
             T = require.__load__("app/assets/js/core-js-3.26.1.minified.js")
                 + "\n\n" + require.__load__("app/assets/js/modernizr-2.8.3.min.js")
                 + "\n\n" + require.__load__("app/assets/js/babel-standalone-7.20.6.min.js")
