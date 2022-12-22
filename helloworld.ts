@@ -4,4 +4,4 @@ function main(args) {
     console.log(message);
 }
 
-exports.main = main;
+export {main}
