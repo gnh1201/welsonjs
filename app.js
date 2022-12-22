@@ -210,7 +210,7 @@ function require(FN) {
         return pos < 0 ? '.' : FN.substr(pos);
     })(FN.lastIndexOf('.'));
 
-    if ('.js$.coffee$.ls$'.indexOf(suffix + '$') < 0) FN += ".js";
+    if ('.js$.coffee$.ls$.ts$'.indexOf(suffix + '$') < 0) FN += ".js";
     if (cache[FN]) return cache[FN];
 
     // get file and directory name
@@ -236,6 +236,12 @@ function require(FN) {
                     "header": true,
                     "bare": true
                 });
+            });
+            break;
+
+        case ".ts"  // TypeScript (Testing)
+            T = require.__modernie__("app/assets/js/typescript-4.9.4", [T], function(p, w, d) {
+                return w.ts.transpile(p[0]);
             });
             break;
     }
@@ -335,13 +341,25 @@ require.__modernie__ = function(FN, params, callback) {
 
     var exports = null;
     try {
-        var T = require.__load__("app/assets/js/core-js-3.26.1.minified.js")
-            + "\n\n" + require.__load__("app/assets/js/modernizr-2.8.3.min.js")
-            + "\n\n" + require.__load__("app/assets/js/babel-standalone-7.20.6.min.js");
-            + "\n\n" + require.__load__(FN);
-        var htmlfile = CreateObject("htmlfile");
+        var IEVersion, T = '', htmlfile = CreateObject("htmlfile");
+
         htmlfile.write('<meta http-equiv="X-UA-Compatible" content="IE=edge">');
+        htmlfile.write('<script type="text/javascript">//<!--<![CDATA[\nwindow.__getIEVersion__=function(){for(var e,i=3,n=document.createElement("div"),t=n.getElementsByTagName("i");n.innerHTML="<!--[if gt IE "+ ++i+"]><i></i><![endif]-->",t[0];);return i>4?i:e};\n//]]>--></script>');
+        IEVersion = htmlfile.parentWindow.__getIEVersion__();
+
+        if (typeof IEVersion !== "undefined" && IEVersion > 9) {
+            T = require.__load__("app/assets/js/core-js-3.26.1.minified.js")
+                + "\n\n" + require.__load__("app/assets/js/modernizr-2.8.3.min.js")
+                + "\n\n" + require.__load__("app/assets/js/babel-standalone-7.20.6.min.js")
+                + "\n\n" + require.__load__(FN);
+        } else {
+            T = require.__load__("app/assets/js/core-js-3.26.1.minified.js")
+                + "\n\n" + require.__load__("app/assets/js/html5shiv-printshiv-3.7.3.min.js")
+                + "\n\n" + require.__load__("app/assets/js/modernizr-2.8.3.min.js")
+                + "\n\n" + require.__load__(FN);
+        }
         htmlfile.write('<script type="text/javascript">//<!--<![CDATA[\n' + T + '\n//]]>--></script>');
+
         if (typeof callback === "function") {
             //console.log(htmlfile.parentWindow.navigator.userAgent);
             exports = callback(params, htmlfile.parentWindow, htmlfile.parentWindow.document);
