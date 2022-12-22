@@ -31,7 +31,7 @@ WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on 
 - [module.exports](https://nodejs.org/en/knowledge/getting-started/what-is-require/), CommonJS, UMD compatibility
 - [NPM](https://www.npmjs.com/) compatibility
 - [CoffeeScript 2](https://coffeescript.org/)/[LiveScript](https://livescript.net/) compatibility
-- [Typescript](https://www.typescriptlang.org/) compatibility
+- [TypeScript](https://www.typescriptlang.org/) compatibility
 - Ready to use on Windows machine immediately. No require additional softwares installation.
 
 ## Included libraries
