@@ -11,6 +11,7 @@ var SYS = require("lib/system");
 var SHELL = require("lib/shell");
 
 var appName = "welsonjs";
+var isDisabledRegisterURIScheme = false;
 
 exports.main = function(args) {
     // unlock file
@@ -27,11 +28,15 @@ exports.main = function(args) {
     REG.execFile("Default_HTA.reg");
 
     // Register URI scheme
-    console.log("Registering URI scheme...");
-    REG.write(REG.HKCR, appName, "", "URL:" + appName, REG.STRING);
-    REG.write(REG.HKCR, appName, "URL Protocol", "", REG.STRING);
-    REG.write(REG.HKCR, appName + "\\DefaultIcon", "", SYS.getCurrentScriptDirectory() + "\\app\\favicon.ico,0", REG.STRING);
-    REG.write(REG.HKCR, appName + "\\shell\\open\\command", "", "cmd.exe /c cscript " + SYS.getCurrentScriptDirectory() + "\\app.js uriloader \"%1\"", REG.STRING);
+    if (!isDisabledRegisterURIScheme) {
+        console.log("Registering URI scheme...");
+        REG.write(REG.HKCR, appName, "", "URL:" + appName, REG.STRING);
+        REG.write(REG.HKCR, appName, "URL Protocol", "", REG.STRING);
+        REG.write(REG.HKCR, appName + "\\DefaultIcon", "", SYS.getCurrentScriptDirectory() + "\\app\\favicon.ico,0", REG.STRING);
+        REG.write(REG.HKCR, appName + "\\shell\\open\\command", "", "cmd.exe /c cscript " + SYS.getCurrentScriptDirectory() + "\\app.js uriloader \"%1\"", REG.STRING);
+    } else {
+        console.log("Skipped register URI scheme");
+    }
 
     // open web application
     console.log("Trying open GUI...");
