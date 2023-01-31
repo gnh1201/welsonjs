@@ -3,6 +3,8 @@ WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on 
 
 [![Buy me a coffee](https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png)](https://www.buymeacoffee.com/catswords/thanks-welsonjs-users)
 
+WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)***
+
 ## Structure
 ![Structure](app/assets/img/structure.png)
 
