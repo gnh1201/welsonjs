@@ -1,13 +1,7 @@
 # Security Note for WelsonJS
 
 ## Caution
-This repository includes recent cases on how to access Windows APIs and functions at the JavaScript level.
-
-This way can provide a flexible development environment for anyone, but it also applies to those with malicious purposes.
-
-Using this project to create an abuse tools (e.g. DoS attack) may be subject to punishment in your country.
-
-Please use it only to create a web technology based application similar to Electron or legally testing tool.
+This repository contains information on accessing Windows APIs and functions on the JavaScript runtime, along with recent case studies. While this can provide a flexible development environment for anyone, it can also be misused for malicious purposes. Please be aware that using this project to create abuse tools, such as a DoS attack, may result in legal punishment in your country. We encourage you to use this project only for creating web technology-based applications, like Electron, or legally permitted testing tools.
 
 ## Known use cases
 In general, WelsonJS is used in the following situations.
