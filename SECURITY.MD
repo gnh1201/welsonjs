@@ -4,7 +4,7 @@
 This repository contains information on accessing Windows APIs and functions on the JavaScript runtime, along with recent case studies. While this can provide a flexible development environment for anyone, it can also be misused for malicious purposes. Please be aware that using this project to create abuse tools, such as a DoS attack, may result in legal punishment in your country. We encourage you to use this project only for creating web technology-based applications, like Electron, or legally permitted testing tools.
 
 ## Known use cases
-In general, WelsonJS is used in the following situations.
+WelsonJS is typically used in the following situations:
 
   * Test web accessibility and compliance: e.g. W3C standards(WEB-ARIA, WCAG), The national laws(ADA/DDA, GDPR)
   * Explore vulnerabilities of equipment within the local network
