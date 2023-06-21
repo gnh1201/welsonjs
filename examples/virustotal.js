@@ -76,7 +76,7 @@ function main(args) {
                 "file-view",
                 "vt-ui-file-card"
             ]) +
-            ".shadowRoot.querySelector('vt-ui-generic-card > div:nth-child(2) > div:nth-child(1) > div.object-id > div.file-name > a').innerText"
+            ".shadowRoot.querySelector('div > div.card-body > div > div.hstack.gap-4 > div.vstack.gap-2.align-self-center.text-truncate > div.file-name.text-truncate > a').innerText"
         );
 
         // 최근 진단 날짜 확인
@@ -86,7 +86,7 @@ function main(args) {
                 "file-view",
                 "vt-ui-file-card"
             ]) +
-            ".shadowRoot.querySelector('vt-ui-generic-card > div:nth-child(2) > div:nth-child(1) > div:nth-child(3) > div').innerText"
+            ".shadowRoot.querySelector('div > div.card-body > div > div.hstack.gap-4 > div:nth-child(5) > vt-ui-time-ago').getAttribute('data-tooltip-text')"
         );
 
         // 국내 백신 진단 여부 확인
