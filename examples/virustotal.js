@@ -7,15 +7,16 @@ var Chrome = require("lib/chrome");
 var RAND = require("lib/rand");
 
 function getHashes() {
-    var lines = [];
+    var rows = [];
 
-    var rows = splitLn(FILE.readFile("data\\hashes.txt", "utf-8"));
-    for (var i = 0; i < rows.length; i++) {
-        var row = rows[i].split(',');
-        if (row.length == 2) lines.push(row);
+    var lines = splitLn(FILE.readFile("data\\hashes.txt", "utf-8"));
+    for (var i = 0; i < lines.length; i++) {
+        var row = lines[i].split(',');
+        if (row.length == 2) rows.push(row);
+        if (row.length == 1) rows.push(['', row[0]]);
     }
 
-    return lines;
+    return rows;
 }
 
 function main(args) {
