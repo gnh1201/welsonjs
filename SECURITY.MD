@@ -15,6 +15,9 @@ Note 1: If you plan to use WelsonJS for a purpose other than those mentioned abo
 
 Note 2: A similar approach to WelsonJS has been called LOLBins in the cybersecurity community since 2018. While WelsonJS is not intended to be used for malicious purposes, it may provide useful hints for extensions.
 
+## Guidelines for the use of online shopping platforms
+It has been observed within the past two years that some users of this tool have produced results similar to DDoS attacks when using online shopping platforms. When using online shopping platforms, it is strongly advised to use them only for asset evaluation purposes. Failure to comply with this recommendation may result in legal action being taken.
+
 ## Report abuse
 If you discover any instances of this project being misused, please report them.
 
