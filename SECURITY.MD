@@ -10,6 +10,7 @@ WelsonJS is typically used for the following purposes:
   * Exploring vulnerabilities of equipment within the local network.
   * Improving the availability of VPN or Proxy clients.
   * Building automation, CD/CI (Continuous Integration/Continuous Delivery), DevOps, and SecOps.
+  * Asset evaluation (e.g. Online shopping history)
 
 Note 1: If you plan to use WelsonJS for a purpose other than those mentioned above, please contact us beforehand.
 
