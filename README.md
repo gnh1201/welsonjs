@@ -5,7 +5,7 @@ WelsonJS - Build a Windows desktop apps with JavaScript, HTML, and CSS based on 
 
 WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)***
 
-The default license for this project is GPL 3.0. However, if the GPL 3.0 license is not compatible with Microsoft products, it is subject to the MS-RL license.
+Dual license notice: The default license for this project is GPL 3.0. However, if the GPL 3.0 license is not compatible with Microsoft products, it is subject to the MS-RL license.
 
 ## Structure
 ![Structure](app/assets/img/structure.png)
