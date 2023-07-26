@@ -327,8 +327,15 @@ require.__msie9__ = function(FN, params, callback) {
         htmlfile.write('<meta http-equiv="X-UA-Compatible" content="IE=9">');
         htmlfile.write('<script type="text/javascript">//<!--<![CDATA[\n' + T + '\n//]]>--></script>');
         if (typeof callback === "function") {
+            var loadScript = function(FN) {
+                if (FN.indexOf('://') > -1) {
+                    htmlfile.write('<script type="text/javascript" src="' + FN + '"></script>');
+                } else {
+                    htmlfile.write('<script type="text/javascript">//<!--<![CDATA[\n' + require.__load__(FN) + '\n//]]>--></script>');
+                }
+            };
             //console.log(htmlfile.parentWindow.navigator.userAgent);
-            exports = callback(params, htmlfile.parentWindow, htmlfile.parentWindow.document);
+            exports = callback(params, htmlfile.parentWindow, htmlfile.parentWindow.document, loadScript);
         }
         htmlfile.close();
     } catch (e) {
@@ -362,8 +369,15 @@ require.__modernie__ = function(FN, params, callback) {
         htmlfile.write('<script type="text/javascript">//<!--<![CDATA[\n' + T + '\n//]]>--></script>');
 
         if (typeof callback === "function") {
+            var loadScript = function(FN) {
+                if (FN.indexOf('://') > -1) {
+                    htmlfile.write('<script type="text/javascript" src="' + FN + '"></script>');
+                } else {
+                    htmlfile.write('<script type="text/javascript">//<!--<![CDATA[\n' + require.__load__(FN) + '\n//]]>--></script>');
+                }
+            };
             //console.log(htmlfile.parentWindow.navigator.userAgent);
-            exports = callback(params, htmlfile.parentWindow, htmlfile.parentWindow.document);
+            exports = callback(params, htmlfile.parentWindow, htmlfile.parentWindow.document, loadScript);
         }
         htmlfile.close();
     } catch (e) {
