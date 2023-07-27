@@ -29,7 +29,7 @@ We are aware of cases where WelsonJS is used for the purpose of video streaming 
 We are aware of instances where WelsonJS has been used by legitimate cybersecurity firms to discover and test vulnerabilities (such as credential stuffing) in IoT devices. If you intend to use WelsonJS as a security testing tool, it should be done in a controlled environment that complies with legal regulations.
 
 ### For the use of cloud monitoring
-WelsonJS is a project initiated by a cloud specialist company in response to a request to develop a lightweight program (e.g., agent) for collecting metrics on Windows systems. While using WelsonJS for this purpose is desirable, ensuring security in the server-client communication is entirely the responsibility of the customer.
+WelsonJS is a project initiated by a cloud service provider in response to a request to develop a lightweight software (e.g., agent) for collecting metrics on Windows systems. While using WelsonJS for this purpose is desirable, ensuring security in the server-client communication is entirely the responsibility of the user.
 
 ## Report abuse
 If you discover any instances of this project being misused, please report them.
