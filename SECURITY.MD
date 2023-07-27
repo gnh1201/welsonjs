@@ -17,8 +17,11 @@ WelsonJS is typically used for the following purposes:
   1. If you plan to use WelsonJS for a purpose other than those mentioned above, please contact us beforehand.
   2. If you are looking for ways to use WelsonJS more efficiently, referencing the [LOLBAS (Living Off The Land Binaries and Scripts)](https://lolbas-project.github.io/) list can be helpful.
 
-## Guidelines for the use of online shopping and delivery websites
+## Guideline for the use of online shopping and delivery websites
 We are aware of cases where WelsonJS has been used for asset valuation to access websites of online shopping or delivery companies. This is a good use case, but there have been reports of website downtime caused by excessive concurrent requests. Please exercise caution and avoid excessive simultaneous executions.
+
+## Guideline for the use of online video streaming quality testing and improvement
+We are aware of cases where WelsonJS is used for the purpose of video streaming quality testing and improvement. It should be used solely for expert-level streaming quality testing, often referred to by terms like 4K, 8K, HD, FHD, UHD, 720p, 1080p, etc. For such purposes, it is recommended to use videos provided by television manufacturers (e.g., LG, Samsung) or graphics card manufacturers (e.g., NVIDIA, AMD) specifically for testing purposes. It is essential to avoid using videos that contain content not legally permitted in the region. The WelsonJS developers and maintainers take no responsibility for the use of videos containing illegal content.
 
 ## Report abuse
 If you discover any instances of this project being misused, please report them.
