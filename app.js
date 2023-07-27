@@ -471,6 +471,10 @@ var yaml = require("app/assets/js/js-yaml-4.1.0.wsh");
 // is.js Micro check library
 var is = require("app/assets/js/is-0.9.0.min");
 
+// Intl (ECMA-402) polyfill
+//var Intl = require("app/assets/js/Intl-1.2.5-e93b114.min");
+//console.log(new Intl.NumberFormat().format(1234567890.123456));
+
 // Dive into entrypoint 
 function __main__() {
     if (typeof window === "undefined") {
