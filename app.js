@@ -211,7 +211,7 @@ function require(FN) {
         return pos < 0 ? '.' : FN.substr(pos);
     })(FN.lastIndexOf('.'));
 
-    if ('.js$.coffee$.ls$.ts$'.indexOf(suffix + '$') < 0) FN += ".js";
+    if ('.js$.coffee$.ls$.ts$.re$'.indexOf(suffix + '$') < 0) FN += ".js";
     if (cache[FN]) return cache[FN];
 
     // get file and directory name
@@ -219,10 +219,10 @@ function require(FN) {
     var __dirname__ = require.__getDirName__(__filename__);
     var T = require.__load__(FN);
 
-    // pre-compile if use Transpiler
+    // transpile
     switch (suffix) {
         case '.coffee':  // CoffeeScript 2
-            T = require.__msie9__("app/assets/js/coffeescript-legacy-2.7.0.min", [T], function(p, w, d) {
+            T = require.__msie9__("app/assets/js/coffeescript-legacy-2.7.0.min", [T], function(p, w, d, l) {
                 return w.CoffeeScript.compile(p[0], {
                     "header": true,
                     "sourceMap": false,
@@ -232,7 +232,7 @@ function require(FN) {
             break;
 
         case ".ls":  // LiveScript
-            T = require.__msie9__("app/assets/js/livescript-1.6.1.min", [T, "app/assets/ls/prelude.ls"], function(p, w, d) {
+            T = require.__msie9__("app/assets/js/livescript-1.6.1.min", [T, "app/assets/ls/prelude.ls"], function(p, w, d, l) {
                 return w.require("livescript").compile(require.__load__(p[1]) + "\n\n" + p[0], {
                     "header": true,
                     "bare": true
@@ -241,8 +241,16 @@ function require(FN) {
             break;
 
         case ".ts":  // TypeScript
-            T = require.__modernie__("app/assets/js/typescript-4.9.4", [T], function(p, w, d) {
+            T = require.__modernie__("app/assets/js/typescript-4.9.4", [T], function(p, w, d, l) {
                 return w.ts.transpile(p[0]);
+            });
+            break;
+
+        case ".re":  // Rescript (aka. BuckleScript, ReasonML)
+            T = require.__modernie__("app/assets/js/rescript-compiler-10.1.2", [T], function(p, w, d, l) {
+                var compiler = w.rescript_compiler.make();
+                var result = compiler.rescript.compile(p[0]);
+                return result.js_code;
             });
             break;
     }
@@ -294,6 +302,9 @@ require.__getCurrentScriptDirectory__ = function() {
     }
 };
 require.__load__ = function(FN) {
+    // if empty
+    if (FN == '') return '';
+
     // get filename
     var __filename__ = require.__getCurrentScriptDirectory__() + "\\" + FN;
 
@@ -315,7 +326,8 @@ require.__load__ = function(FN) {
     return T;
 };
 require.__msie9__ = function(FN, params, callback) {
-    if (FN.substr(FN.length - 3) !== '.js') FN += ".js";
+    if (typeof FN !== "string" || FN == null) FN = '';
+    else if (FN.substr(FN.length - 3) !== '.js') FN += ".js";
 
     var exports = null;
     try {
@@ -345,7 +357,8 @@ require.__msie9__ = function(FN, params, callback) {
     return exports;
 };
 require.__modernie__ = function(FN, params, callback) {
-    if (FN.substr(FN.length - 3) !== '.js') FN += ".js";
+    if (typeof FN !== "string" || FN == null) FN = '';
+    else if (FN.substr(FN.length - 3) !== '.js') FN += ".js";
 
     var exports = null;
     try {
@@ -369,11 +382,11 @@ require.__modernie__ = function(FN, params, callback) {
         htmlfile.write('<script type="text/javascript">//<!--<![CDATA[\n' + T + '\n//]]>--></script>');
 
         if (typeof callback === "function") {
-            var loadScript = function(FN) {
-                if (FN.indexOf('://') > -1) {
-                    htmlfile.write('<script type="text/javascript" src="' + FN + '"></script>');
+            var loadScript = function(src) {
+                if (src.indexOf('://') > -1) {
+                    htmlfile.write('<script type="text/javascript" src="' + src + '"></script>');
                 } else {
-                    htmlfile.write('<script type="text/javascript">//<!--<![CDATA[\n' + require.__load__(FN) + '\n//]]>--></script>');
+                    htmlfile.write('<script type="text/javascript">//<!--<![CDATA[\n' + require.__load__(src) + '\n//]]>--></script>');
                 }
             };
             //console.log(htmlfile.parentWindow.navigator.userAgent);
