@@ -34,8 +34,7 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
 - [Includes binaries](https://github.com/gnh1201/welsonjs/blob/master/bin/README.MD)
 - [module.exports](https://nodejs.org/en/knowledge/getting-started/what-is-require/), CommonJS, UMD compatibility
 - [NPM](https://www.npmjs.com/) compatibility
-- [CoffeeScript 2](https://coffeescript.org/)/[LiveScript](https://livescript.net/) compatibility
-- [TypeScript](https://www.typescriptlang.org/) compatibility
+- Pre-included transpiler - e.g. [TypeScript](https://www.typescriptlang.org/), [CoffeeScript 2](https://coffeescript.org/), [LiveScript](https://livescript.net/), [Rescript](https://rescript-lang.org/)
 - Ready to use on Windows machine immediately. No require additional softwares installation.
 
 ## Included libraries
