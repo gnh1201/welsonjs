@@ -11,6 +11,8 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
 ![Structure](app/assets/img/structure.png)
 
 ## Specifications
+- Built-in transpilers: [TypeScript](https://www.typescriptlang.org/), [Rescript](https://rescript-lang.org/), [CoffeeScript 2](https://coffeescript.org/), [LiveScript](https://livescript.net/)
+- Ready to use on Windows machine immediately. No require additional software installation.
 - ES5(ECMAScript 5), XML, JSON, YAML compatibility
   - [github:zloirock/core-js](https://github.com/zloirock/core-js)
   - [github:douglascrockford/JSON-js](https://github.com/douglascrockford/JSON-js) (aka. JSON2.js)
@@ -34,8 +36,6 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
 - [Includes binaries](https://github.com/gnh1201/welsonjs/blob/master/bin/README.MD)
 - [module.exports](https://nodejs.org/en/knowledge/getting-started/what-is-require/), CommonJS, UMD compatibility
 - [NPM](https://www.npmjs.com/) compatibility
-- Pre-included transpilers: [TypeScript](https://www.typescriptlang.org/), [Rescript](https://rescript-lang.org/), [CoffeeScript 2](https://coffeescript.org/), [LiveScript](https://livescript.net/)
-- Ready to use on Windows machine immediately. No require additional softwares installation.
 
 ## Included libraries
 - lib/std (Standard library)
