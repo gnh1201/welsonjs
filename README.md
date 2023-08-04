@@ -1,5 +1,5 @@
 # welsonjs
-WelsonJS - Build an Windows desktop app with JavaScript, TypeScript, ReScript, and HTML/CSS
+WelsonJS - Build a Windows desktop app with JavaScript, TypeScript, ReScript, and HTML/CSS on WSH(Windows Scripting Host)
 
 [![Buy me a coffee](https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png)](https://www.buymeacoffee.com/catswords/thanks-welsonjs-users)
 
