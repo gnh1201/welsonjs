@@ -129,4 +129,6 @@ ended say()
 - [7418_blocks_color_modules_rgb_square_icon](https://www.iconfinder.com/icons/7418/blocks_color_modules_rgb_square_icon) (Icon File) - Sergio Sanchesz Lopez, Futurosoft
 
 ## Contact me
+If you have any inquiries regarding this project or if you are interested in becoming a partner, please don't hesitate to contact us. Particularly, for those using this project for website quality improvement automation, technical support will be exclusively available to partners.
+
 - abuse@catswords.net
