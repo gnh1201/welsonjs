@@ -132,5 +132,5 @@ ended say()
 If you have any inquiries regarding this project or if you are interested in becoming a partner, please don't hesitate to contact us. Particularly, for those using this project for website quality improvement automation, technical support will be exclusively available to partners.
 
 - abuse@catswords.net
-- ActivityPub @catswords_oss@catswords.social
+- ActivityPub [@catswords_oss@catswords.social](https://catswords.social/@catswords_oss)
 
