@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+service WelsonAppLoader {
+  rpc Run (AppRequest) returns (AppResponse) {}
+}
+
+message AppRequest {
+  string appName = 1;
+}
+
+// The response message containing the greetings
+message AppResponse {
+  string responseText = 1;
+}
