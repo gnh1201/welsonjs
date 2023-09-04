@@ -36,6 +36,7 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
 - [Includes binaries](https://github.com/gnh1201/welsonjs/blob/master/bin/README.MD)
 - [module.exports](https://nodejs.org/en/knowledge/getting-started/what-is-require/), CommonJS, UMD compatibility
 - [NPM](https://www.npmjs.com/) compatibility
+- [gRPC](https://grpc.io/) protocol support (New feature in 2023)
 
 ## Included libraries
 - lib/std (Standard library)
