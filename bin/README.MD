@@ -38,4 +38,5 @@ These files are used by WelsonJS - https://github.com/gnh1201/welsonjs
 
 ## Download Links
   * https://ipfs.io/ipfs/QmehdjRf1j59LeAugaycUu1JoAybzPM2Af1UaYo7yvRJku?filename=welsonjs-bin-20220304-2.7z
+  * https://ipfs.catswords.net/ipfs/QmehdjRf1j59LeAugaycUu1JoAybzPM2Af1UaYo7yvRJku?filename=welsonjs-bin-20220304-2.7z
   * https://drive.google.com/file/d/10ZbGRQzYFKstLfm6YtgxDlQTih2wTZAM/view?usp=sharing
