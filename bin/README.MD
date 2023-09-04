@@ -38,3 +38,6 @@
 ## Report abuse
   * abuse@catswords.net
   * ActivityPub @catswords_oss@catswords.social
+
+## Download Link
+  * https://ipfs.io/ipfs/QmbNK25Ufi7s9UdNdB9cYazczvAzpQoq4R59GXeJ2RTo7d?filename=welsonjs-bin-20230905-1.7z
