@@ -172,17 +172,10 @@ var console = {
 if (typeof CreateObject === "undefined") {
     var CreateObject = function(progId, serverName, callback) {
         var progIds = (progId instanceof Array ? progId : [progId]);
-        var _CreateObject = function(p, s) {
-            if (typeof WScript !== "undefined") {
-                return WScript.CreateObject(p, s);
-            } else {
-                return new ActiveXObject(p);
-            }
-        };
 
         for (var i = 0; i < progIds.length; i++) {
             try {
-                var obj = _CreateObject(progIds[i], serverName);
+                var obj = CreateObject.make(progIds[i], serverName);
                 if (typeof callback === "function") {
                     callback(obj, progIds[i]);
                 }
@@ -190,6 +183,13 @@ if (typeof CreateObject === "undefined") {
             } catch (e) {
                 console.error(e.message);
             };
+        }
+    };
+    CreateObject.make = function(p, s) {
+        if (typeof WScript !== "undefined") {
+            return WScript.CreateObject(p, s);
+        } else if (typeof ActiveXObject !== "undefined") {
+            return new ActiveXObject(p);
         }
     };
 }
