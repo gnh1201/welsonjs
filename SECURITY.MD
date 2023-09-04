@@ -35,4 +35,4 @@ WelsonJS is a project initiated by a cloud service provider in response to a req
 If you discover any instances of this project being misused, please report them.
 
   * abuse@catswords.net
-  * ActivityPub @catswords_oss@catswords.social
+  * ActivityPub [@catswords_oss@catswords.social](https://catswords.social/@catswords_oss)
