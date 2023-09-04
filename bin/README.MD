@@ -1,5 +1,6 @@
 # Windows Binaries for WelsonJS
-These files are used by WelsonJS - https://github.com/gnh1201/welsonjs
+  * WelsonJS project link: https://github.com/gnh1201/welsonjs
+  * Updated at 2023-09-05
 
 ## Included binaries
   * GTK+
@@ -16,10 +17,11 @@ These files are used by WelsonJS - https://github.com/gnh1201/welsonjs
   * Python Windows embeddable package [3.10.2]
     * 64-bit - https://www.python.org/downloads/release/python-3102/
     * 32-bit - https://www.python.org/downloads/release/python-3102/
-  * Python Modules (32bit/64bit)
+  * Python Modules (32bit or 64bit)
     * Beautiful Soup [4.9.0] - https://www.crummy.com/software/BeautifulSoup/bs4/doc/
     * python-nmap [0.7.1] - https://bitbucket.org/xael/python-nmap
     * pywin32 [Build 303] - https://github.com/mhammond/pywin32
+	* gRPC [Release v1.57.0] - https://github.com/grpc/grpc
   * Network tools
     * CURL for Windows [7.81.0] - https://curl.se/windows/
     * basil00/Divert [2.2.0] - https://github.com/basil00/Divert
@@ -33,10 +35,6 @@ These files are used by WelsonJS - https://github.com/gnh1201/welsonjs
     * ChakraCore (x64/x86/ARM) [v1.11.24] - https://github.com/chakra-core/ChakraCore
     * bytecodealliance/wasm-micro-runtime [44d75ce] - https://github.com/bytecodealliance/wasm-micro-runtime
 
-## Updated
-  * 02:23:37 (UTC), Friday, 4 March 2022
-
-## Download Links
-  * https://ipfs.io/ipfs/QmehdjRf1j59LeAugaycUu1JoAybzPM2Af1UaYo7yvRJku?filename=welsonjs-bin-20220304-2.7z
-  * https://ipfs.catswords.net/ipfs/QmehdjRf1j59LeAugaycUu1JoAybzPM2Af1UaYo7yvRJku?filename=welsonjs-bin-20220304-2.7z
-  * https://drive.google.com/file/d/10ZbGRQzYFKstLfm6YtgxDlQTih2wTZAM/view?usp=sharing
+## Report abuse
+  * abuse@catswords.net
+  * ActivityPub @catswords_oss@catswords.social
