@@ -10,7 +10,7 @@ import win32com
 import win32com.client
 import pythoncom
 
-sys.path.insert(0, '')
+sys.path.insert(0, os.path.dirname(__file__))
 
 from concurrent import futures
 import logging
