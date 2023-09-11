@@ -1,10 +1,10 @@
 ; @created_on 2020-06-26
-; @updated_on 2022-03-04
+; @updated_on 2023-09-11
 ; @author Namhyeon Go <abuse@catswords.net>
 
 [Setup]
 AppName=WelsonJS
-AppVersion=0.2.3-dev
+AppVersion=0.2.6-dev
 WizardStyle=modern
 ; DefaultDirName={pf}\{cm:AppName}
 DefaultDirName={commonpf}\{cm:AppName}
@@ -41,6 +41,7 @@ Source: "start.bat"; DestDir: "{app}";
 Source: "uriloader.js"; DestDir: "{app}";
 Source: "webloader.js"; DestDir: "{app}";
 Source: "bootstrap.js"; DestDir: "{app}";
+Source: "scriptcontrol.js"; DestDir: "{app}";
 Source: "app\*"; DestDir: "{app}/app"; Flags: ignoreversion recursesubdirs;
 Source: "lib\*"; DestDir: "{app}/lib"; Flags: ignoreversion recursesubdirs;
 Source: "bin\*"; DestDir: "{app}/bin"; Flags: ignoreversion recursesubdirs;
@@ -57,15 +58,15 @@ Name: "{group}\Uninstall {cm:AppName}"; Filename: "{uninstallexe}"; AfterInstall
 
 [Run]
 ; Filename: {app}\bin\gtk2-runtime-2.24.33-2021-01-30-ts-win64.exe;
-Filename: {app}\bin\nmap-7.92\VC_redist.x86.exe;
-Filename: {app}\bin\nmap-7.92\npcap-1.50.exe;
+; Filename: {app}\bin\nmap-7.92\VC_redist.x86.exe;
+; Filename: {app}\bin\nmap-7.92\npcap-1.50.exe;
 Filename: {app}\IEMaxScriptStatements.bat;
 Filename: {app}\start.bat;
 
 [UninstallRun]
 ; Filename: {code:GetProgramFiles}\GTK2-Runtime Win64\gtk2_runtime_uninst.exe;
-Filename: {code:GetProgramFiles}\Npcap\Uninstall.exe;
-Filename: {app}\bin\nmap-7.92\VC_redist.x86.exe;
+; Filename: {code:GetProgramFiles}\Npcap\Uninstall.exe;
+; Filename: {app}\bin\nmap-7.92\VC_redist.x86.exe;
 
 [CustomMessages]
 AppName=WelsonJS
