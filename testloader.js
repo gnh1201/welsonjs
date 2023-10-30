@@ -8,13 +8,58 @@ var profile = JSON.parse(FILE.readFile("data/test-oss-20231030.json", FILE.CdoCh
 
 // implement the tests
 var test_implements = {
-    "es5_polyfills": function() {},
+	
+	// Ref 1: https://gist.github.com/CityRay/c56e4fa874af9370cc1a367bd43095b0
+    "es5_polyfills": function() {
+		var parseIntIgnoresLeadingZeros = (function () {
+		  return parseInt('010', 10) === 10;
+		}());
+		console.log("parseIntIgnoresLeadingZeros: " + String(parseIntIgnoresLeadingZeros) + " (Default on the built-in engine: true)");
 
-    "registry_find_provider": function() {},
+		var DateISOString = (function () {
+		  return !!(Date && Date.prototype && Date.prototype.toISOString);
+		}());
+		console.log("DateISOString: " + String(DateISOString) + " (Default on the built-in engine: false)");
 
-    "registry_read": function() {},
+		var result = !!(parseIntIgnoresLeadingZeros && DateISOString);
 
-    "registry_write": function() {},
+		console.log(result ?
+			"ECMAScript 5 수준의 런타임입니다. 필수 테스트를 모두 통과하였습니다." :
+			"ECMAScript 5 수준의 런타임이 아닙니다. 필수 테스트 중 하나를 실패하였습니다.");
+	},
+
+	// Ref 1: https://learn.microsoft.com/en-us/previous-versions/windows/desktop/regprov/stdregprov
+    "registry_find_provider": function() {
+		var REG = require("lib/registry");
+
+		console.log("레지스트리 제공자(StdRegProv) 클래스에 접근을 시도합니다.");
+		var provider = REG.getProvider();
+		
+		console.log(typeof provider !== "undefined" ?
+			"레지스트리 제공자 클래스에 성공적으로 연결되었습니다." :
+			"레지스트리 제공자 클래스에 연결하는데 문제가 있습니다.");
+	},
+
+    "registry_write": function() {
+		var REG = require("lib/registry");
+		var appName = "welsonjs";
+		
+		console.log("레지스트리에 쓰기를 시도합니다.");
+		REG.write(REG.HKCU, appName + "\\WelsonJSTest", "", "here are in", REG.STRING);
+		console.log("레지스트리에 쓰기를 완료하였습니다.");
+	},
+
+    "registry_read": function() {
+		var REG = require("lib/registry");
+		var appName = "welsonjs";
+		
+		console.log("레지스트리 읽기를 시도합니다.");
+		var response = REG.read(REG.HKCU, appName + "\\WelsonJSTest", "", REG.STRING);
+		console.log("읽음: " + response);
+		console.log(response === "here are in" ?
+			"레지스트리를 정상적으로 읽었습니다." :
+			"레지스트리를 읽는데 문제가 있습니다.");
+	},
 
     "wmi_create_object": function() {},
 

@@ -46,13 +46,13 @@
             "tags": ["Windows 시스템", "레지스트리(Registry) 제어"]
         },
         {
-            "id": "registry_read",
-            "description": "레지스트리 읽기",
+            "id": "registry_write",
+            "description": "레지스트리 쓰기",
             "tags": ["Windows 시스템", "레지스트리(Registry) 제어"]
         },
         {
-            "id": "registry_write",
-            "description": "레지스트리 쓰기",
+            "id": "registry_read",
+            "description": "레지스트리 읽기",
             "tags": ["Windows 시스템", "레지스트리(Registry) 제어"]
         },
         {
