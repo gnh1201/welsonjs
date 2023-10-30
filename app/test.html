@@ -1,0 +1,32 @@
+<div class="cell">
+    <div class="col width-fill">
+        <div class="col">
+            <div class="panel cell">
+                <div class="header">기능 테스트 목록</div>
+                {{for data.tests}}
+                <div class="body">
+                    <div class="cell">
+                        <div class="col">
+                            <div class="col width-fit mobile-width-fit"><span class="icon icon-bookmark color-blue"></span></div>
+                            <div class="col width-fill mobile-width-fill" style="position: relative">
+                                <span class="float-right" style="position: absolute; top: 0; right: 0;">
+									<button class="button" type="button">시험</button>
+                                </span>
+                                <div class="col width-fill mobile-width-fill">
+                                    <a class="fatty" href="#">{{:tags[0]}}</a>
+                                </div>
+                                <div class="col">
+                                    {{:description}}
+                                </div>
+								<div class="col">
+									{{for tags}}<span class="icon icon-tag"></span> {{:}}{{/for}}
+								</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {{/for}}
+            </div>
+        </div>
+    </div>
+</div>

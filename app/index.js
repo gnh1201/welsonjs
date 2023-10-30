@@ -7,47 +7,46 @@ var Router = require("lib/router").Router;
 
 // using jsrender
 Router.setRender(function(filename, data) {
-	var template = OldBrowser.setContent(FILE.readFile(filename, FILE.CdoCharset.CdoUTF_8));
-	var tmpl = $.templates(template);
-	return tmpl.render(data);
+    var template = FILE.readFile(filename, FILE.CdoCharset.CdoUTF_8);
+    var tmpl = $.templates(template);
+	OldBrowser.setContent(tmpl.render(data));
 });
 
 // main
 Router.add('/', function(render) {
-	render("app\\signin.html", {});
+    render("app\\signin.html", {});
 
-	var token;
-	if (FILE.fileExists("token.txt")) {
-		token = FILE.readFile("token.txt", FILE.CdoCharset.CdoUTF_8);
-	}
+    var token;
+    if (FILE.fileExists("token.txt")) {
+        token = FILE.readFile("token.txt", FILE.CdoCharset.CdoUTF_8);
+    }
 
-	document.getElementById("loginform").onsubmit = function(ev) {
-		ev.preventDefault();
-	};
+    document.getElementById("loginform").onsubmit = function(ev) {
+        ev.preventDefault();
+    };
 
-	if (FILE.fileExists("credential.json")) {
-		var credential = JSON.parse(FILE.readFile("credential.json", FILE.CdoCharset.CdoUTF_8));
-		document.getElementById("txt_email").value = credential.email;
-		document.getElementById("txt_password").value = credential.password;
-	}
+    if (FILE.fileExists("credential.json")) {
+        var credential = JSON.parse(FILE.readFile("credential.json", FILE.CdoCharset.CdoUTF_8));
+        document.getElementById("txt_email").value = credential.email;
+        document.getElementById("txt_password").value = credential.password;
+    }
 
-	document.getElementById("btn_submit").onclick = function() {
-		var credential = {
-			"email": document.getElementById("txt_email").value,
-			"password": document.getElementById("txt_password").value
-		};
-		
-		FILE.writeFile("credential.json", JSON.stringify(credential), FILE.CdoCharset.CdoUTF_8);
-	};
+    document.getElementById("btn_submit").onclick = function() {
+        var credential = {
+            "email": document.getElementById("txt_email").value,
+            "password": document.getElementById("txt_password").value
+        };
+        
+        FILE.writeFile("credential.json", JSON.stringify(credential), FILE.CdoCharset.CdoUTF_8);
+    };
 });
 
 // test
 Router.add('/test', function(render) {
-	var profile = JSON.parse(FILE.readFile("data/test-oss-20231030.json", FILE.CdoCharset.CdoUTF_8));
-
-	render("app\\test.html", {
-		"profile": profile
-	});
+    var data = JSON.parse(FILE.readFile("data/test-oss-20231030.json", FILE.CdoCharset.CdoUTF_8));
+    render("app\\test.html", {
+        "data": data
+    });
 });
 
 // go
