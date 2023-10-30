@@ -241,6 +241,11 @@
             "tags": ["휴먼 인터페이스", "가상 휴면 인터페이스"]
         },
         {
+            "id": "vhid_prompt",
+            "description": "Prompt() API 호출 시 서술형 응답 받을 수 있음",
+            "tags": ["휴먼 인터페이스", "가상 휴면 인터페이스"]
+        },
+        {
             "id": "network_http_get",
             "description": "HTTP GET 전송",
             "tags": ["네트워크", "HTTP 전송 및 처리"]

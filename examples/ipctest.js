@@ -8,7 +8,7 @@ function recordDead(name) {
 }
 
 function checkIsDead(name) {
-    var text = FILE.readFile(filename, "utf-8");
+    var text = FILE.readFile(filename, FILE.CdoCharset.CdoUTF_8);
     var deadNames = splitLn(text);
     return deadNames.indexOf(name) > -1;
 }
