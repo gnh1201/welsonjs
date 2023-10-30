@@ -4,7 +4,7 @@ var FILE = require("lib/file");
 var filename = "data\\dead_targets.txt";
 
 function recordDead(name) {
-    FILE.rotateFile(filename, name + "\r\n", 1000, "utf-8");
+    FILE.rotateFile(filename, name + "\r\n", 1000, FILE.CdoCharset.CdoUTF_8);
 }
 
 function checkIsDead(name) {

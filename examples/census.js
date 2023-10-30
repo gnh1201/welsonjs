@@ -7,10 +7,10 @@ var Punycode = require("lib/punycode");
 function main() {
     var lines = [];
 
-    var district = JSON.parse(FILE.readFile("data\\korea-administrative-district.json", "utf-8"));
+    var district = JSON.parse(FILE.readFile("data\\korea-administrative-district.json", FILE.CdoCharset.CdoUTF_8));
     var districtData = district.data;
 
-    var domains = splitLn(FILE.readFile("data\\domains.txt", "utf-8"));
+    var domains = splitLn(FILE.readFile("data\\domains.txt", FILE.CdoCharset.CdoUTF_8));
 
     var digFrame = function(handler, domain, response) {
         var frameURLs = handler.getFrameURLs();
@@ -76,7 +76,7 @@ function main() {
         lines.push(row.join(":"));
     });
 
-    FILE.appendFile("data\\matches.txt", lines.join("\r\n"), "utf-8");
+    FILE.appendFile("data\\matches.txt", lines.join("\r\n"), FILE.CdoCharset.CdoUTF_8);
 }
 
 exports.main = main;

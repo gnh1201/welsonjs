@@ -7,17 +7,17 @@ var OldBrowser = require("lib/oldbrowser");
 
 var token;
 if (FILE.fileExists("token.txt")) {
-    token = FILE.readFile("token.txt", "utf-8");
+    token = FILE.readFile("token.txt", FILE.CdoCharset.CdoUTF_8);
 }
 
-OldBrowser.setContent(FILE.readFile("app\\signin.html", "utf-8"));
+OldBrowser.setContent(FILE.readFile("app\\signin.html", FILE.CdoCharset.CdoUTF_8));
 
 document.getElementById("loginform").onsubmit = function(ev) {
 	ev.preventDefault();
 };
 
 if (FILE.fileExists("credential.json")) {
-	var credential = JSON.parse(FILE.readFile("credential.json", "utf-8"));
+	var credential = JSON.parse(FILE.readFile("credential.json", FILE.CdoCharset.CdoUTF_8));
 	document.getElementById("txt_email").value = credential.email;
 	document.getElementById("txt_password").value = credential.password;
 }
@@ -28,5 +28,5 @@ document.getElementById("btn_submit").onclick = function() {
 		"password": document.getElementById("txt_password").value
 	};
 	
-	FILE.writeFile("credential.json", JSON.stringify(credential), "utf-8");
+	FILE.writeFile("credential.json", JSON.stringify(credential), FILE.CdoCharset.CdoUTF_8);
 };

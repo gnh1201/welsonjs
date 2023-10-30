@@ -6,7 +6,7 @@ var HTTP = require("lib/http");
 var RAND = require("lib/rand");
 
 function main() {
-    var domains = splitLn(FILE.readFile("data\\target_domains.txt", "utf-8"));
+    var domains = splitLn(FILE.readFile("data\\target_domains.txt", FILE.CdoCharset.CdoUTF_8));
     var urls = [];
 
     domains.forEach(function(x) {
@@ -29,7 +29,7 @@ function main() {
         sleep(RAND.getInt(1000, 2000));
     });
 
-    FILE.writeFile("data\\target_urls.txt", urls.join("\r\n"), "utf-8");
+    FILE.writeFile("data\\target_urls.txt", urls.join("\r\n"), FILE.CdoCharset.CdoUTF_8);
 
     console.log("Done");
 }

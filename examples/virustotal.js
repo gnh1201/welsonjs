@@ -9,7 +9,7 @@ var RAND = require("lib/rand");
 function getHashes() {
     var rows = [];
 
-    var lines = splitLn(FILE.readFile("data\\hashes.txt", "utf-8"));
+    var lines = splitLn(FILE.readFile("data\\hashes.txt", FILE.CdoCharset.CdoUTF_8));
     for (var i = 0; i < lines.length; i++) {
         var row = lines[i].split(',');
         if (row.length == 2) rows.push(row);
@@ -112,7 +112,7 @@ function main(args) {
 
     hashes.forEach(callback1);
 
-    FILE.appendFile("data\\vt_matches_2.txt", lines.join("\r\n"), "utf-8");
+    FILE.appendFile("data\\vt_matches_2.txt", lines.join("\r\n"), FILE.CdoCharset.CdoUTF_8);
 }
 
 exports.main = main;

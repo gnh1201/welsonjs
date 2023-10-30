@@ -115,7 +115,7 @@ exports.IEVersion = OldBrowser.getIEVersion();
 ////////////////////////////////////////////////////////////////////////
 exports.main = function(args) {
     // make will display contents
-    OldBrowser.setContent(FILE.readFile("app\\index.html", "utf-8"));
+    OldBrowser.setContent(FILE.readFile("app\\index.html", FILE.CdoCharset.CdoUTF_8));
 
     // add stylesheets
     OldBrowser.addStylesheet("app/assets/css/jquery-ui-1.21.1.min.css");
