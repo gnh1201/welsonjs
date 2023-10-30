@@ -1,7 +1,9 @@
-// testloader
+// testloader.js
 
+// load libraries
 var FILE = require("lib/file");
 
+// load the test profile
 var profile = JSON.parse(FILE.readFile("data/test-oss-20231030.json", FILE.CdoCharset.CdoUTF_8));
 
 // implement the tests
@@ -15,7 +17,7 @@ var test_implements = {
     "registry_write": function() {},
 
     "wmi_create_object": function() {},
-    
+
     "wmi_execute_query": function() {},
 
     "wmi_result_query": function() {},
