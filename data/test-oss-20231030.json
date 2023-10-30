@@ -1,0 +1,390 @@
+{
+    "description": "WelsonJS feature test profile for OSS contest 2023 in Korea",
+    "date": "2023-10-30",
+    "revision": "r1",
+    "authors": [
+        "Namhyeon Go <gnh1201@gmail.com"
+    ],
+    "links": [
+        "https://github.com/gnh1201/welsonjs",
+        "https://catswords.social/@catswords_oss"
+    ],
+    "tags": [
+        "javascript",
+        "microsoft",
+        "coffeescript",
+        "windows",
+        "typescript",
+        "html5",
+        "js",
+        "uri",
+        "desktop",
+        "ie",
+        "hta",
+        "es5",
+        "electronjs",
+        "jscript",
+        "wsh",
+        "mshtml",
+        "lolbins",
+        "lolbas",
+        "rescript",
+        "mshta"
+    ],
+    "schema": {
+        "version": "0.1"
+    },
+    "tests": [
+        {
+            "id": "es5_polyfills",
+            "description": "ES5 수준 이상의 폴리필(Polyfill) 성공 여부 (Windows 내장 엔진에서 ES5 수준 이상의 폴리필 수행)",
+            "tags": ["Javascript 엔진", "ECMAScript Polyfills"]
+        },
+        {
+            "id": "registry_find_provider",
+            "description": "레지스트리 제공자 찾기",
+            "tags": ["Windows 시스템", "레지스트리(Registry) 제어"]
+        },
+        {
+            "id": "registry_read",
+            "description": "레지스트리 읽기",
+            "tags": ["Windows 시스템", "레지스트리(Registry) 제어"]
+        },
+        {
+            "id": "registry_write",
+            "description": "레지스트리 쓰기",
+            "tags": ["Windows 시스템", "레지스트리(Registry) 제어"]
+        },
+        {
+            "id": "wmi_create_object",
+            "description": "WMI 오브젝트 생성",
+            "tags": ["Windows 시스템", "WMI(Windows Management Instrumentation) 제어"]
+        },
+        {
+            "id": "wmi_execute_query",
+            "description": "WMI 쿼리 실행",
+            "tags": ["Windows 시스템", "WMI(Windows Management Instrumentation) 제어"]
+        },
+        {
+            "id": "wmi_result_query",
+            "description": "WMI 쿼리 결과",
+            "tags": ["Windows 시스템", "WMI(Windows Management Instrumentation) 제어"]
+        },
+        {
+            "id": "shell_create_object",
+            "description": "쉘(Shell) 오브젝트 생성",
+            "tags": ["Windows 시스템", "Windows 쉘(Shell)"]
+        },
+        {
+            "id": "shell_build_command_line",
+            "description": "명령 행 빌드 (입력: KV Object -> 출력: Shell Command Line)",
+            "tags": ["Windows 시스템", "Windows 쉘(Shell)"]
+        },
+        {
+            "id": "shell_set_charset",
+            "description": "명령 행 빌드 (입력: KV Object -> 출력: Shell Command Line)",
+            "tags": ["Windows 시스템", "Windows 쉘(Shell)"]
+        },
+        {
+            "id": "shell_working_directory",
+            "description": "작업 디렉토리(Working Directory) 설정",
+            "tags": ["Windows 시스템", "Windows 쉘(Shell)"]
+        },
+        {
+            "id": "shell_create_process",
+            "description": "프로세스 생성",
+            "tags": ["Windows 시스템", "Windows 쉘(Shell)"]
+        },
+        {
+            "id": "shell_execute",
+            "description": "쉘 명령어 실행 (결과(stdout, stderr)를 수신)",
+            "tags": ["Windows 시스템", "Windows 쉘(Shell)"]
+        },
+        {
+            "id": "shell_run",
+            "description": "쉘 명령어 실행 (결과와 무관하게 fork)",
+            "tags": ["Windows 시스템", "Windows 쉘(Shell)"]
+        },
+        {
+            "id": "shell_run_as",
+            "description": "쉘 명령어 실행 (관리자 권한으로 실행)",
+            "tags": ["Windows 시스템", "Windows 쉘(Shell)"]
+        },
+        {
+            "id": "shell_find_my_documents",
+            "description": "내 문서(My Documents) 위치 가져오기",
+            "tags": ["Windows 시스템", "Windows 쉘(Shell)"]
+        },
+        {
+            "id": "shell_release",
+            "description": "생성된 쉘 오브젝트 해제",
+            "tags": ["Windows 시스템", "Windows 쉘(Shell)"],
+
+        },
+        {
+            "id": "powershell_set_command",
+            "description": "실행할 명령(커맨드라인) 지정",
+            "tags": ["Windows 시스템", "Windows 파워쉘(Powershell)"]
+        },
+        {
+            "id": "powershell_set_file",
+            "description": "실행할 파일(*.ps1) 지정",
+            "tags": ["Windows 시스템", "Windows 파워쉘(Powershell)"]
+        },
+        {
+            "id": "powershell_set_uri",
+            "description": "URI를 이용하여 명령 지정",
+            "tags": ["Windows 시스템", "Windows 파워쉘(Powershell)"]
+        },
+        {
+            "id": "powershell_execute",
+            "description": "명령 실행 (유저 모드)",
+            "tags": ["Windows 시스템", "Windows 파워쉘(Powershell)"]
+        },
+        {
+            "id": "powershell_run_as",
+            "description": "명령 실행 (관리자 모드)",
+            "tags": ["Windows 시스템", "Windows 파워쉘(Powershell)"]
+        },
+        {
+            "id": "system_resolve_env",
+            "description": "환경변수 해석기(Resolver)가 환경변수를 적절히 해석하는지 확인",
+            "tags": ["Windows 시스템", "시스템 정보"]
+        },
+        {
+            "id": "system_check_as",
+            "description": "현재 프로세스 자신이 관리자 모드인지 체크",
+            "tags": ["Windows 시스템", "시스템 정보"]
+        },
+        {
+            "id": "system_get_os_version",
+            "description": "현재 OS 버전 불러오기",
+            "tags": ["Windows 시스템", "시스템 정보"]
+        },
+        {
+            "id": "system_get_architecture",
+            "description": "현재 아키텍쳐 불러오기",
+            "tags": ["Windows 시스템", "시스템 정보"]
+        },
+        {
+            "id": "system_get_uuid",
+            "description": "현재 장치 고유번호(UUID) 불러오기",
+            "tags": ["Windows 시스템", "시스템 정보"]
+        },
+        {
+            "id": "system_get_working_directory",
+            "description": "현재 작업 디렉토리 불러오기",
+            "tags": ["Windows 시스템", "시스템 정보"]
+        },
+        {
+            "id": "system_get_script_directory",
+            "description": "현재 스크립트 디렉토리 불러오기",
+            "tags": ["Windows 시스템", "시스템 정보"]
+        },
+        {
+            "id": "system_get_network_interfaces",
+            "description": "네트워크 인터페이스 정보 불러오기",
+            "tags": ["Windows 시스템", "시스템 정보"]
+        },
+        {
+            "id": "system_get_process_list",
+            "description": "활성 프로세스 목록 불러오기",
+            "tags": ["Windows 시스템", "시스템 정보"]
+        },
+        {
+            "id": "system_get_process_list_by_name",
+            "description": "프로세스 이름으로 특정 활성 프로세스 찾기",
+            "tags": ["Windows 시스템", "시스템 정보"]
+        },
+        {
+            "id": "system_register_uri",
+            "description": "URI를 등록하고 URI 요청 내용에 따른 명령 수행",
+            "tags": ["Windows 시스템", "시스템 정보"]
+        },
+        {
+            "id": "system_pipe_ipc",
+            "description": "두개 이상의 프로세스 간 통신",
+            "tags": ["Windows 시스템", "시스템 정보"]
+        },
+        {
+            "id": "vhid_find_window",
+            "description": "활성창(Window) 핸들 찾기",
+            "tags": ["휴먼 인터페이스", "가상 휴면 인터페이스"]
+        },
+        {
+            "id": "vhid_send_click",
+            "description": "가상 클릭(Click) 보내기",
+            "tags": ["휴먼 인터페이스", "가상 휴면 인터페이스"]
+        },
+        {
+            "id": "vhid_send_keys",
+            "description": "가상 문자키(a-zA-Z0-9) 보내기",
+            "tags": ["휴먼 인터페이스", "가상 휴면 인터페이스"]
+        },
+        {
+            "id": "vhid_send_key_enter",
+            "description": "가상 엔터키 보내기",
+            "tags": ["휴먼 인터페이스", "가상 휴면 인터페이스"]
+        },
+        {
+            "id": "vhid_send_key_functions",
+            "description": "가상 FN키 보내기",
+            "tags": ["휴먼 인터페이스", "가상 휴면 인터페이스"]
+        },
+        {
+            "id": "vhid_alert",
+            "description": "Alert() API 호출 시 메시지 출력 여부",
+            "tags": ["휴먼 인터페이스", "가상 휴면 인터페이스"]
+        },
+        {
+            "id": "vhid_confirm",
+            "description": "Confirm() API 호출 시 메시지 출력 및 Yes/No 선택",
+            "tags": ["휴먼 인터페이스", "가상 휴면 인터페이스"]
+        },
+        {
+            "id": "network_http_get",
+            "description": "HTTP GET 전송",
+            "tags": ["네트워크", "HTTP 전송 및 처리"]
+        },
+        {
+            "id": "network_http_post",
+            "description": "HTTP POST 전송",
+            "tags": ["네트워크", "HTTP 전송 및 처리"]
+        },
+        {
+            "id": "network_http_extended",
+            "description": "HTTP 확장 메소드(FETCH, PUT 등) 전송",
+            "tags": ["네트워크", "HTTP 전송 및 처리"]
+        },
+        {
+            "id": "network_attach_debugger",
+            "description": "HTTP 디버거(Fiddler 등) 설정(Attach) 지원",
+            "tags": ["네트워크", "HTTP 전송 및 처리"]
+        },
+        {
+            "id": "network_detect_charset",
+            "description": "HTTP 응답 본문에서 문자셋(Charset) 탐지",
+            "tags": ["네트워크", "HTTP 전송 및 처리"]
+        },
+        {
+            "id": "network_detect_http_ssl",
+            "description": "접속 대상 웹사이트의 보안통신(SSL) 사용 여부 탐지",
+            "tags": ["네트워크", "HTTP 전송 및 처리"]
+        },
+        {
+            "id": "network_send_icmp",
+            "description": "PING(ICMP) 전송",
+            "tags": ["네트워크", "PING(ICMP) 전송"]
+        },
+        {
+            "id": "extramath_dtm",
+            "description": "2개 이상의 주어진 문장으로부터 DTM (문서-용어 행렬) 생성",
+            "tags": ["고급 문자열 처리", "자연어 처리"]
+        },
+        {
+            "id": "extramath_cosine_similarity",
+            "description": "주어진 두 문장의 유사도를 코사인 유사도로 비교",
+            "tags": ["고급 문자열 처리", "자연어 처리"]
+        },
+        {
+            "id": "base64_encode",
+            "description": "BASE64 인코딩",
+            "tags": ["고급 문자열 처리", "BASE64"]
+        },
+        {
+            "id": "base64_decode",
+            "description": "BASE64 디코딩",
+            "tags": ["고급 문자열 처리", "BASE64"]
+        },
+        {
+            "id": "chromium_run",
+            "description": "웹 브라우저 실행",
+            "tags": ["웹 브라우저 제어", "웹 브라우저 제어 (크로미움 계열)"]
+        },
+        {
+            "id": "chromium_create_profile",
+            "description": "프로파일 생성",
+            "tags": ["웹 브라우저 제어", "웹 브라우저 제어 (크로미움 계열)"]
+        },
+        {
+            "id": "chromium_run_incognito",
+            "description": "개인정보 보호 모드로 웹 브라우저 실행",
+            "tags": ["웹 브라우저 제어", "웹 브라우저 제어 (크로미움 계열)"]
+        },
+        {
+            "id": "chromium_navigate",
+            "description": "URL로 주소 이동",
+            "tags": ["웹 브라우저 제어", "웹 브라우저 제어 (크로미움 계열)"]
+        },
+        {
+            "id": "chromium_get_active_pages",
+            "description": "활성 페이지 목록 불러오기",
+            "tags": ["웹 브라우저 제어", "웹 브라우저 제어 (크로미움 계열)"]
+        },
+        {
+            "id": "chromium_find_page_by_id",
+            "description": "고유 ID로 페이지 찾기",
+            "tags": ["웹 브라우저 제어", "웹 브라우저 제어 (크로미움 계열)"]
+        },
+        {
+            "id": "chromium_find_pages_by_title",
+            "description": "페이지 제목으로 페이지 찾기",
+            "tags": ["웹 브라우저 제어", "웹 브라우저 제어 (크로미움 계열)"]
+        },
+        {
+            "id": "chromium_move_focused",
+            "description": "창 포커스 이동",
+            "tags": ["웹 브라우저 제어", "웹 브라우저 제어 (크로미움 계열)"]
+        },
+        {
+            "id": "chromium_adjust_window_size",
+            "description": "창 크기 제어",
+            "tags": ["웹 브라우저 제어", "웹 브라우저 제어 (크로미움 계열)"]
+        },
+        {
+            "id": "chromium_get_element_position",
+            "description": "제공된 CSS Selector와 일치하는 단일 객체 포지션 찾기",
+            "tags":  ["웹 브라우저 제어", "웹 브라우저 제어 (크로미움 계열)"]
+        },
+        {
+            "id": "chromium_get_mapreduced_element_position",
+            "description": "CSS Selector와 일치하는 다중 객체 중 조건에 맞는 객체의 포지션 찾기",
+            "tags":  ["웹 브라우저 제어", "웹 브라우저 제어 (크로미움 계열)"]
+        },
+        {
+            "id": "chromium_set_value_to_textbox",
+            "description": "대상 객체가 사용자 입력형(TextArea 또는 TextInput인 경우) 값 설정하기",
+            "tags":  ["웹 브라우저 제어", "웹 브라우저 제어 (크로미움 계열)"]
+        },
+        {
+            "id": "chromium_send_click",
+            "description": "가상 클릭(Click) 보내기",
+            "tags":  ["웹 브라우저 제어", "웹 브라우저 제어 (크로미움 계열)"]
+        },
+        {
+            "id": "chromium_send_keys",
+            "description": "가상 키(Key) 보내기",
+            "tags":  ["웹 브라우저 제어", "웹 브라우저 제어 (크로미움 계열)"]
+        },
+        {
+            "id": "chromium_auto_scroll_until_end",
+            "description": "수직 스크롤이 있을 시 스크롤이 끝날 때까지 자동으로 화면 탐색하기",
+            "tags": ["웹 브라우저 제어", "웹 브라우저 제어 (크로미움 계열)"]
+        },
+        {
+            "id": "grpc_run_server",
+            "description": "gRPC 서버 실행",
+            "tags": ["gRPC"]
+        },
+        {
+            "id": "grpc_receive_command",
+            "description": "gRPC로 들어온 명령을 스크립트로 받음",
+            "tags": ["gRPC"]
+        },
+        {
+            "id": "gui_check",
+            "description": "WebView (GUI) 환경에서도 (1)Windows 시스템/Windows 쉘(Shell), (2)Windows 시스템/WMI 제어 기능이 동작 가능.",
+            "tags": ["WebView"]
+        }
+    ]
+}
