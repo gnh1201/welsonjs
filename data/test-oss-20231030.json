@@ -1,7 +1,7 @@
 {
     "description": "WelsonJS feature test profile for OSS contest 2023 in Korea",
     "date": "2023-10-30",
-    "revision": "r1",
+    "revision": "r2",
     "authors": [
         "Namhyeon Go <gnh1201@gmail.com"
     ],
@@ -198,12 +198,12 @@
         {
             "id": "system_register_uri",
             "description": "URI를 등록하고 URI 요청 내용에 따른 명령 수행",
-            "tags": ["Windows 시스템", "시스템 정보"]
+            "tags": ["Windows 시스템", "URI(Uniform Resource Identifier) 등록"]
         },
         {
             "id": "system_pipe_ipc",
             "description": "두개 이상의 프로세스 간 통신",
-            "tags": ["Windows 시스템", "시스템 정보"]
+            "tags": ["Windows 시스템", "IPC(프로세스 간 통신)"]
         },
         {
             "id": "vhid_find_window",
