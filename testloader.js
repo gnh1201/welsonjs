@@ -158,6 +158,7 @@ function main(args) {
         });
         var description = test.description;
 
+		console.log("Test ID: " + test_id);
         console.log("Will be test: " + description);
 
         try {
@@ -166,10 +167,9 @@ function main(args) {
             console.error("ERROR: " + e.message)
         }
 
-        console.log("Test ended");
+        console.log("Will be close this window after 90 seconds");
+		sleep(90 * 1000);
     }
-
-    console.log(args.join(", "));
 }
 
 exports.main = main;

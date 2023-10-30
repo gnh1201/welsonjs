@@ -2,6 +2,7 @@
 // The entrypoint on WelsonJS GUI envionment
 
 var FILE = require("lib/file");
+var SHELL = require("lib/shell");
 var OldBrowser = require("lib/oldbrowser");
 var Router = require("lib/router").Router;
 
@@ -43,6 +44,10 @@ Router.add('/', function(render) {
 
 // test
 Router.add('/test', function(render) {
+	window.test_start = function(test_id) {
+		SHELL.show(["cscript", "app.js", "testloader", test_id]);
+	};
+	
     var data = JSON.parse(FILE.readFile("data/test-oss-20231030.json", FILE.CdoCharset.CdoUTF_8));
     render("app\\test.html", {
         "data": data
