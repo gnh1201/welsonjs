@@ -375,7 +375,7 @@ var test_implements = {
         var response1 = HTTP.put("https://httpbin.org/put", {}, {});
         console.log("응답: " + response1);
         
-        var response2 = HTTP.put("https://httpbin.org/patch", {}, {});
+        var response2 = HTTP.patch("https://httpbin.org/patch", {}, {});
         console.log("응답: " + response2);
     },
 
