@@ -10,7 +10,11 @@
                             <div class="col width-fit mobile-width-fit"><span class="icon icon-bookmark color-blue"></span></div>
                             <div class="col width-fill mobile-width-fill" style="position: relative">
                                 <span class="float-right" style="position: absolute; top: 0; right: 0;">
-									<button class="button" type="button" onclick="javascript:test_start('{{:id}}')">시험</button>
+                                    {{if id == 'gui_check'}}
+                                    <button class="button" type="button" onclick="javascript:gui_check()">시험</button>
+                                    {{else}}
+                                    <button class="button" type="button" onclick="javascript:test_start('{{:id}}')">시험</button>
+                                    {{/if}}
                                 </span>
                                 <div class="col width-fill mobile-width-fill">
                                     <a class="fatty" href="#">{{:tags[0]}}</a>
@@ -18,9 +22,9 @@
                                 <div class="col">
                                     {{:description}}
                                 </div>
-								<div class="col">
-									{{for tags}}<span class="icon icon-tag"></span> {{:}}{{/for}}
-								</div>
+                                <div class="col">
+                                    {{for tags}}<span class="icon icon-tag"></span> {{:}}{{/for}}
+                                </div>
                             </div>
                         </div>
                     </div>

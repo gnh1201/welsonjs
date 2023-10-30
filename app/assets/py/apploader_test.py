@@ -20,7 +20,7 @@ import WelsonAppLoader_pb2_grpc
 def run():
     with grpc.insecure_channel("localhost:50051") as channel:
         stub = WelsonAppLoader_pb2_grpc.WelsonAppLoaderStub(channel)
-        response = stub.Run(WelsonAppLoader_pb2.AppRequest(appName="extramath-test"))
+        response = stub.Run(WelsonAppLoader_pb2.AppRequest(appName="testloader"))
     print("Response: " + response.responseText)
 
 if __name__ == "__main__":

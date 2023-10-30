@@ -47,6 +47,16 @@ Router.add('/test', function(render) {
 	window.test_start = function(test_id) {
 		SHELL.show(["cscript", "app.js", "testloader", test_id]);
 	};
+
+	window.gui_check = function() {
+		var text1 = SHELL.exec("echo hello world!");
+		alert(text1);
+
+		var text2 = require("lib/system").getOS();
+		alert(text2);
+
+		alert("모든 메시지가 정상적으로 보였다면 테스트에 성공한 것입니다.");
+	};
 	
     var data = JSON.parse(FILE.readFile("data/test-oss-20231030.json", FILE.CdoCharset.CdoUTF_8));
     render("app\\test.html", {

@@ -77,12 +77,12 @@
         },
         {
             "id": "shell_build_command_line",
-            "description": "명령 행 빌드 (입력: KV Object -> 출력: Shell Command Line)",
+            "description": "명령 행 빌드 (입력: Array Object, 출력: Unescaped Command String)",
             "tags": ["Windows 시스템", "Windows 쉘(Shell)"]
         },
         {
             "id": "shell_set_charset",
-            "description": "명령 행 빌드 (입력: KV Object -> 출력: Shell Command Line)",
+            "description": "문자셋(Charset) 설정",
             "tags": ["Windows 시스템", "Windows 쉘(Shell)"]
         },
         {
