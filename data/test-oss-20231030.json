@@ -118,8 +118,7 @@
         {
             "id": "shell_release",
             "description": "생성된 쉘 오브젝트 해제",
-            "tags": ["Windows 시스템", "Windows 쉘(Shell)"],
-
+            "tags": ["Windows 시스템", "Windows 쉘(Shell)"]
         },
         {
             "id": "powershell_set_command",

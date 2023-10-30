@@ -2,11 +2,10 @@
 
 var FILE = require("lib/file");
 
-// read the test profile
 var profile = JSON.parse(FILE.readFile("data/test-oss-20231030.json", FILE.CdoCharset.CdoUTF_8));
 
 // implement the tests
-var tests = {
+var test_implements = {
     "es5_polyfills": function() {},
 
     "registry_find_provider": function() {},
@@ -146,9 +145,28 @@ var tests = {
     "grpc_receive_command": function() {},
 
     "gui_check": function() {}
-}
+};
 
 function main(args) {
+    var test_id = args[0];
+
+    if (test_id in test_implements) {
+        var test = profile.tests.find(function(x) {
+            return (x.id == test_id);
+        });
+        var description = test.description;
+
+        console.log("Will be test: " + description);
+
+        try {
+            test_implements[test_id]();
+        } catch (e) {
+            console.error("ERROR: " + e.message)
+        }
+
+        console.log("Test ended");
+    }
+
     console.log(args.join(", "));
 }
 
