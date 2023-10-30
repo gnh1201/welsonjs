@@ -1,32 +1,32 @@
-// a mafia style PIPE IPC based file I/O test
+var PipeIPC = require("lib/pipe-ipc");
+var RAND = require("lib/rand");
 
-var FILE = require("lib/file");
-var filename = "data\\dead_targets.txt";
-
-function recordDead(name) {
-    FILE.rotateFile(filename, name + "\r\n", 1000, FILE.CdoCharset.CdoUTF_8);
-}
-
-function checkIsDead(name) {
-    var text = FILE.readFile(filename, FILE.CdoCharset.CdoUTF_8);
-    var deadNames = splitLn(text);
-    return deadNames.indexOf(name) > -1;
-}
+var texts = [
+	"Think like a man of action and act like man of thought.",
+	"Courage is very important. Like a muscle, it is strengthened by use.",
+	"Life is the art of drawing sufficient conclusions from insufficient premises.",
+	"By doubting we come at the truth.",
+	"A man that hath no virtue in himself, ever envieth virtue in others.",
+	"When money speaks, the truth keeps silent."
+];
 
 function main(args) {
-    while (true)  {
-        recordDead("kim@example.org");
-        //recordDead("lee@example.org");
-        recordDead("park@example.org");
-        //recordDead("choi@example.org");
-        recordDead("hong@example.org");
+	var pipe = PipeIPC.create("helloworld");
+	var sender = RAND.uuidv4();
+	
+	while (true) {
+		var text_out = RAND.one(texts);
+		pipe.write("<" + sender + "> " + text_out);
+		console.log("Sent: " + text_out);
 
-        console.log(checkIsDead("kim@example.org") ? "DEAD" : "ALIVE");
-        console.log(checkIsDead("lee@example.org") ? "DEAD" : "ALIVE");
-        console.log(checkIsDead("park@example.org") ? "DEAD" : "ALIVE");
-        console.log(checkIsDead("choi@example.org") ? "DEAD" : "ALIVE");
-        console.log(checkIsDead("hong@example.org") ? "DEAD" : "ALIVE");
-    }
-}
+		var text_in = pipe.read();
+		while (text_in == ("<" + sender + "> " + text_out) || text_in == "") {
+			sleep(1);
+			text_in = pipe.read();
+		}
+
+		console.log("Recieved: " + text_in);
+	}
+};
 
 exports.main = main;

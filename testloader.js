@@ -181,25 +181,38 @@ var test_implements = {
     },
 
     "powershell_set_command": function() {
-        
+        var PS = require("lib/powershell");
+        var PSInstance = PS.create();
+        PSInstance.load("Write-Output \"hello world\"");
+        console.log("설정된 명령어: " + PSInstance.target);
     },
 
     "powershell_set_file": function() {
-        
+        var PS = require("lib/powershell");
+        var PSInstance = PS.create();
+        PSInstance.loadFile("app\\assets\\ps1\\helloworld");
+        console.log("설정된 파일: " + PSInstance.target);
     },
 
     "powershell_set_uri": function() {
-        
+        var PS = require("lib/powershell");
+        var PSInstance = PS.create();
+        PSInstance.loadURI("data:text/plain;base64,V3JpdGUtT3V0cHV0ICJoZWxsbyB3b3JsZCI=");
+        console.log("설정된 URI: " + PSInstance.target);
     },
 
     "powershell_execute": function() {
-        
+        var PS = require("lib/powershell");
+        var response = PS.execScript("app\\assets\\ps1\\helloworld");
+        console.log("실행 결과 값: " + response);
     },
 
     "powershell_run_as": function() {
-        
+        var PS = require("lib/powershell");
+        var response = PS.runAs("app\\assets\\ps1\\helloworld");
+        console.log("실행 결과 값: " + response);
     },
-    
+
     "system_resolve_env": function() {
         var SYS = require("lib/system");
 
@@ -276,83 +289,119 @@ var test_implements = {
     },
 
     "system_pipe_ipc": function() {
-		
-	},
+        var SHELL = require("lib/shell");
+        
+        for (var i = 0; i < 3; i++) {
+            SHELL.show(["cscript", "app.js", "examples/ipctest"]);
+        }
+    },
 
     "vhid_find_window": function() {
-		var SHELL = require("lib/shell");
-		var Toolkit = require("lib/toolkit");
-		
-		// 메모장 열기
-		SHELL.run(["notepad"]);
-
-		// 3초 대기
-		sleep(5000);
-
-		// 키 보내기
-		Toolkit.sendKeys("제목 없음 - Windows 메모장", "dasdasdasdasasdasdasd");
-		console.log("키를 보냈습니다.");
-	},
+        console.log("동일한 기능이 포함된 chromium_send_click 또는 chromium_send_keys 테스트를 수행하십시오");
+    },
 
     "vhid_send_click": function() {
-		
-	},
+        console.log("동일한 기능이 포함된 chromium_send_click 테스트를 수행하십시오");
+    },
 
     "vhid_send_keys": function() {
-		
-	},
+        console.log("동일한 기능이 포함된 chromium_send_keys 테스트를 수행하십시오");
+    },
 
     "vhid_send_key_enter": function() {
-		
-	},
+        var Chrome = require("lib/chrome");
+        var wbInstance = Chrome.startDebugInPrivate("https://en.key-test.ru/", null, "welsonjs_test", 9222, true);
+
+        console.log("참고: vhid_send_key_enter 테스트의 엔터 키 기능은 웹 브라우저가 키코드를 처리하도록 작성되었습니다.");
+        console.log("5초 후 명령을 수행합니다.");
+        sleep(5000);
+
+        wbInstance.focus();
+        wbInstance.sendEnterKey();
+        sleep(1000);
+    },
 
     "vhid_send_key_functions": function() {
-		
-	},
+        var Toolkit = require("lib/toolkit");
+        var Chrome = require("lib/chrome");
+        var wbInstance = Chrome.startDebugInPrivate("https://example.org", null, "welsonjs_test", 9222, true);
+
+        console.log("웹 브라우저를 열고 F1 키를 눌러 도움말 페이지를 열겠습니다.");
+        console.log("5초 후 명령을 수행합니다.");
+        sleep(5000);
+
+        wbInstance.focus();
+        Toolkit.sendFnKey(wbInstance.pageId.substring(0, 6), 1);  // F1 키 누름
+    },
 
     "vhid_alert": function() {
-		var Toolkit = require("lib/toolkit");
+        var Toolkit = require("lib/toolkit");
 
-		Toolkit.alert("잘 보이면 테스트에 성공한 것입니다.");
-	},
+        Toolkit.alert("잘 보이면 테스트에 성공한 것입니다.");
+    },
  
     "vhid_confirm": function() {
-		var Toolkit = require("lib/toolkit");
-		
-		var answer = Toolkit.confirm("예 또는 아니오를 눌러주세요");
-		console.log(String(answer));
-	},
+        var Toolkit = require("lib/toolkit");
+        
+        var answer = Toolkit.confirm("예 또는 아니오를 눌러주세요");
+        console.log(String(answer));
+    },
 
     "vhid_prompt": function() {
-		var Toolkit = require("lib/toolkit");
+        var Toolkit = require("lib/toolkit");
 
-		var answer = Toolkit.prompt("Enter your input:");
-		console.log(String(answer));
-	},
+        var answer = Toolkit.prompt("Enter your input:");
+        console.log(String(answer));
+    },
 
     "network_http_get": function() {
-		
-	},
+        var HTTP = require("lib/http");
+
+        console.log("HTTP GET 요청으로 내 외부 IP를 확인합니다.");
+        var response = HTTP.get("https://api.ipify.org/", {}, {});
+        console.log("내 외부 IP: " + response);
+    },
 
     "network_http_post": function() {
-		
-	},
+        var HTTP = require("lib/http");
+
+        var response = HTTP.get("https://httpbin.org/post", {}, {});
+        console.log("응답: " + response);
+    },
 
     "network_http_extended": function() {
-		
-	},
+        var HTTP = require("lib/http");
+
+        var response1 = HTTP.put("https://httpbin.org/put", {}, {});
+        console.log("응답: " + response1);
+        
+        var response2 = HTTP.put("https://httpbin.org/patch", {}, {});
+        console.log("응답: " + response2);
+    },
 
     "network_attach_debugger": function() {
-		
-	},
+        var HTTP = require("lib/http");
+
+        HTTP.create("CURL")
+            .attachDebugger("FIDDLER")
+            .get("https://api.ipify.org/");
+    },
 
     "network_detect_charset": function() {
-		
-	},
+        var HTTP = require("lib/http");
+
+        var response = HTTP.get("https://example.org/", {}, {});
+        var charset = HTTP.create("CURL").detectCharset(response);
+
+        console.log("감지된 문자셋: " + charset);
+    },
 
     "network_detect_http_ssl": function() {
-		
-	},
+        var HTTP = require("lib/http");
+
+        var response = HTTP.create("CURL").get("https://example.org/");
+        var charset = HTTP.create("CURL").detectCharset(response);
+    },
 
     "network_send_icmp": function() {
         var SYS = require("lib/system");
@@ -434,129 +483,189 @@ var test_implements = {
     },
 
     "chromium_run": function() {
-		var Chrome = require("lib/chrome");
-		Chrome.startDebugInPrivate("https://example.org", null, "welsonjs_test", 9222, true);
+        var Chrome = require("lib/chrome");
+        Chrome.startDebugInPrivate("https://example.org", null, "welsonjs_test", 9222, true);
     },
 
     "chromium_create_profile": function() {
-		
-	},
+        var Chrome = require("lib/chrome");
+        console.log("welsonjs_test 프로파일을 생성합니다. (웹 브라우저를 실행하여 생성합니다.)");
+        Chrome.startDebug("https://example.org", null, "welsonjs_test", 9222, true);
+    },
 
     "chromium_run_incognito": function() {
-		var Chrome = require("lib/chrome");
-		Chrome.startDebugInPrivate("https://example.org", null, "welsonjs_test", 9222, true);
-	},
+        var Chrome = require("lib/chrome");
+        Chrome.startDebugInPrivate("https://example.org", null, "welsonjs_test", 9222, true);
+    },
 
     "chromium_navigate": function() {
-		var Chrome = require("lib/chrome");
-		var wbInstance = Chrome.startDebugInPrivate("https://example.org", null, "welsonjs_test", 9222, true);
-		
-		console.log("5초 후 구글로 이동합니다.");
-		sleep(5000);
+        var Chrome = require("lib/chrome");
+        var wbInstance = Chrome.startDebugInPrivate("https://example.org", null, "welsonjs_test", 9222, true);
+        
+        console.log("5초 후 구글로 이동합니다.");
+        sleep(5000);
 
-		wbInstance.setPageId(null);
-		wbInstance.navigate("https://google.com");
-	},
+        wbInstance.setPageId(null);
+        wbInstance.navigate("https://google.com");
+    },
 
     "chromium_get_active_pages": function() {
-		var Chrome = require("lib/chrome");
-		var wbInstance = Chrome.startDebugInPrivate("https://example.org", null, "welsonjs_test", 9222, true);
-		
-		console.log("5초 후 페이지 목록을 불러옵니다.");
-		sleep(5000);
+        var Chrome = require("lib/chrome");
+        var wbInstance = Chrome.startDebugInPrivate("https://example.org", null, "welsonjs_test", 9222, true);
+        
+        console.log("5초 후 페이지 목록을 불러옵니다.");
+        sleep(5000);
 
-		var pageList = wbInstance.getPageList();
-		pageList.forEach(function(x) {
-			console.log(x.title);
-		});
-	},
+        var pageList = wbInstance.getPageList();
+        pageList.forEach(function(x) {
+            console.log(x.title);
+        });
+    },
 
     "chromium_find_page_by_id": function() {
-		var Chrome = require("lib/chrome");
-		var wbInstance = Chrome.startDebugInPrivate("https://example.org", null, "welsonjs_test", 9222, true);
-		
-		console.log("5초 후 페이지 ID를 불러옵니다.");
-		sleep(5000);
+        var Chrome = require("lib/chrome");
+        var wbInstance = Chrome.startDebugInPrivate("https://example.org", null, "welsonjs_test", 9222, true);
+        
+        console.log("5초 후 페이지 ID를 불러옵니다.");
+        sleep(5000);
 
-		var pageId = wbInstance.getPageList()[0].id;
-		console.log("페이지 ID: " + pageId);
+        var pageId = wbInstance.getPageList()[0].id;
+        console.log("페이지 ID: " + pageId);
 
-		console.log("페이지 ID로 페이지 찾기");
-		var page = wbInstance.getPageById(pageId);
+        console.log("페이지 ID로 페이지 찾기");
+        var page = wbInstance.getPageById(pageId);
 
-		console.log("페이지 제목: " + page.title);
-	},
+        console.log("페이지 제목: " + page.title);
+    },
 
     "chromium_find_pages_by_title": function() {
-		var Chrome = require("lib/chrome");
-		var wbInstance = Chrome.startDebugInPrivate("https://example.org", null, "welsonjs_test", 9222, true);
-		
-		console.log("5초 후 페이지 타이틀을 불러옵니다.");
-		sleep(5000);
+        var Chrome = require("lib/chrome");
+        var wbInstance = Chrome.startDebugInPrivate("https://example.org", null, "welsonjs_test", 9222, true);
+        
+        console.log("5초 후 페이지 타이틀을 불러옵니다.");
+        sleep(5000);
 
-		var pageTitle = wbInstance.getPageList()[0].title;
-		console.log("페이지 타이틀: " + pageTitle);
+        var pageTitle = wbInstance.getPageList()[0].title;
+        console.log("페이지 타이틀: " + pageTitle);
 
-		console.log("페이지 타이틀로 페이지 찾기");
-		var pages = wbInstance.getPagesByTitle(pageTitle);   // 타이틀로 찾는 경우 복수형으로 반환됨
+        console.log("페이지 타이틀로 페이지 찾기");
+        var pages = wbInstance.getPagesByTitle(pageTitle);   // 타이틀로 찾는 경우 복수형으로 반환됨
 
-		console.log("페이지 ID: " + pages[0].id);
-	},
+        console.log("페이지 ID: " + pages[0].id);
+    },
 
     "chromium_move_focused": function() {
-		var Chrome = require("lib/chrome");
-		
-		var wbInstances = [];
-		wbInstances.push(Chrome.startDebugInPrivate("https://example.org", null, "welsonjs_test", 9222, true));
-		sleep(2000);
-		wbInstances.push(Chrome.startDebugInPrivate("https://naver.com", null, "welsonjs_test_2", 9223, true));
-		sleep(2000);
-		wbInstances.push(Chrome.startDebugInPrivate("https://daum.net", null, "welsonjs_test_3", 9224, true));
-		sleep(2000);
+        var Chrome = require("lib/chrome");
+        
+        var wbInstances = [];
+        wbInstances.push(Chrome.startDebugInPrivate("https://example.org", null, "welsonjs_test", 9222, true));
+        sleep(2000);
+        wbInstances.push(Chrome.startDebugInPrivate("https://naver.com", null, "welsonjs_test_2", 9223, true));
+        sleep(2000);
+        wbInstances.push(Chrome.startDebugInPrivate("https://daum.net", null, "welsonjs_test_3", 9224, true));
+        sleep(2000);
 
-		var wbInstance = wbInstances[1];
-		wbInstance.setPageId(null);
-		wbInstance.focus();
-	},
+        var wbInstance = wbInstances[1];
+        wbInstance.setPageId(null);
+        wbInstance.focus();
+    },
 
-    "chromium_adjust_window_size": function() {},
+    "chromium_adjust_window_size": function() {
+        var Chrome = require("lib/chrome");
+        var wbInstance = Chrome.startDebugInPrivate("https://example.org", null, "welsonjs_test", 9222, true);
+
+        console.log("5초 후 명령을 수행합니다.");
+        sleep(5000);
+
+        wbInstance.focus();
+        wbInstance.autoAdjustByWindow(10, 10, 1024, 1280, 720, 768);
+    },
 
     "chromium_get_element_position": function() {
-		var Chrome = require("lib/chrome");
-		var wbInstance = Chrome.startDebugInPrivate("https://example.org", null, "welsonjs_test", 9222, true);
-		
-		console.log("5초 후 명령을 수행합니다.");
-		sleep(5000);
-		
-		console.log(JSON.stringify(wbInstance.getElementPosition("p")));
-	},
+        var Chrome = require("lib/chrome");
+        var wbInstance = Chrome.startDebugInPrivate("https://example.org", null, "welsonjs_test", 9222, true);
+        
+        console.log("5초 후 명령을 수행합니다.");
+        sleep(5000);
+        
+        console.log(JSON.stringify(wbInstance.getElementPosition("p")));
+    },
 
     "chromium_get_mapreduced_element_position": function() {
-		var Chrome = require("lib/chrome");
-		var wbInstance = Chrome.startDebugInPrivate("https://example.org", null, "welsonjs_test", 9222, true);
-		
-		console.log("5초 후 명령을 수행합니다.");
-		sleep(5000);
+        var Chrome = require("lib/chrome");
+        var wbInstance = Chrome.startDebugInPrivate("https://example.org", null, "welsonjs_test", 9222, true);
+        
+        console.log("5초 후 명령을 수행합니다.");
+        sleep(5000);
 
-		console.log("More information... 버튼의 위치를 탐색");
-		console.log(JSON.stringify(wbInstance.getNestedElementPosition("p", ":self", "More information...")));
-	},
+        console.log("More information... 버튼의 위치를 탐색");
+        console.log(JSON.stringify(wbInstance.getNestedElementPosition("p", ":self", "More information...")));
+    },
 
     "chromium_set_value_to_textbox": function() {
-		
-	},
+        var Chrome = require("lib/chrome");
+        var wbInstance = Chrome.startDebugInPrivate("https://html5doctor.com/demos/forms/forms-example.html", null, "welsonjs_test", 9222, true);
+        
+        console.log("5초 후 명령을 수행합니다.");
+        sleep(5000);
+
+        wbInstance.setValue("#given-name", "길동");
+        wbInstance.setValue("#family-name", "홍");
+    },
 
     "chromium_send_click": function() {
-		
-	},
+        var RAND = require("lib/rand");
+        var Chrome = require("lib/chrome");
+        var wbInstance = Chrome.startDebugInPrivate("https://html5doctor.com/demos/forms/forms-example.html", null, "welsonjs_test", 9222, true);
+        
+        console.log("5초 후 명령을 수행합니다.");
+        sleep(5000);
+        
+        wbInstance.focus();
+        wbInstance.traceMouseClick();
+
+        while (true) {
+            wbInstance.vMouseClick(RAND.getInt(20, 200), RAND.getInt(20, 200));
+            sleep(2000);
+        }
+    },
 
     "chromium_send_keys": function() {
-		
-	},
+        var Chrome = require("lib/chrome");
+        var wbInstance = Chrome.startDebugInPrivate("https://html5doctor.com/demos/forms/forms-example.html", null, "welsonjs_test", 9222, true);
+        
+        console.log("5초 후 명령을 수행합니다.");
+        sleep(5000);
+        
+        wbInstance.focus();
+        wbInstance.traceMouseClick();
+
+        console.log("이메일 필드 위치 찾기");
+        var emailInputPosition = wbInstance.getElementPosition("#email");
+        wbInstance.vMouseClick(emailInputPosition.x + 2, emailInputPosition.y + 2);
+        sleep(1000);
+        
+        console.log("가상 키 보내기");
+        wbInstance.vSendKeys("hong@example.org");
+    },
 
     "chromium_auto_scroll_until_end": function() {
-		
-	},
+        var Chrome = require("lib/chrome");
+        var wbInstance = Chrome.startDebugInPrivate("https://en.wikipedia.org/wiki/Lorem_ipsum", null, "welsonjs_test", 9222, true);
+
+        console.log("5초 후 명령을 수행합니다.");
+        sleep(5000);
+        
+        wbInstance.focus();
+        wbInstance.traceMouseClick();
+
+        console.log("스크롤이 끝날 때까지 계속 스크롤을 조정합니다.");
+
+        while(!wbInstance.isPageScrollEnded()) {
+            wbInstance.scrollBy(0, 150);
+            sleep(2000);
+        }
+    },
 
     "grpc_run_server": function() {
         var SHELL = require("lib/shell");
@@ -571,8 +680,8 @@ var test_implements = {
     },
 
     "gui_check": function() {
-		console.log("GUI 환경에서 실행하여 주십시오");
-	}
+        console.log("GUI 환경에서 실행하여 주십시오");
+    }
 };
 
 function main(args) {
