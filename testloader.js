@@ -3,7 +3,7 @@
 var FILE = require("lib/file");
 
 // read the test profile
-var profile = JSON.parse(FILE.readFile("data/test-oss-20231030.json", FILE.PipeIPC.CdoUTF_8));
+var profile = JSON.parse(FILE.readFile("data/test-oss-20231030.json", FILE.CdoCharset.CdoUTF_8));
 
 // implement the tests
 var tests = {
