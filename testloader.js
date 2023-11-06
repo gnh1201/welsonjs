@@ -137,6 +137,16 @@ var test_implements = {
 
     "shell_create_process": function() {
         var SHELL = require("lib/shell");
+
+        var shell = SHELL.create();
+        var process = shell.createProcess("calc.exe");
+        sleep(1500);
+        var processId = process.ProcessId;
+        console.log("프로세스 ID:", processId);
+        sleep(1500);
+        shell.release();
+
+        console.log("계산기가 정상적으로 실행되었는지 확인하세요.");
     },
 
     "shell_execute": function() {
