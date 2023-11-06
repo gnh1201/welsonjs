@@ -260,9 +260,11 @@ var test_implements = {
 
     "system_get_network_interfaces": function() {
         var SYS = require("lib/system");
-        
-        var net_interfaces = SYS.getNetworkInterfaces();
-        console.log(JSON.stringify(net_interfaces));
+
+        var netInterfaces = SYS.getNetworkInterfaces();
+        netInterfaces.forEach(function(x) {
+            console.log(x.Caption);
+        });
     },
 
     "system_get_process_list": function() {
@@ -270,7 +272,7 @@ var test_implements = {
         
         var processList = SYS.getProcessList();
         processList.forEach(function(x) {
-            console.log(x.Caption, x.ProcessID);
+            console.log(x.Caption, x.ProcessId);
         });
     },
 
@@ -279,7 +281,7 @@ var test_implements = {
         
         var processList = SYS.getProcessListByName("explorer.exe");
         processList.forEach(function(x) {
-            console.log(x.Caption, x.ProcessID);
+            console.log(x.Caption, x.ProcessId);
         });
     },
 
