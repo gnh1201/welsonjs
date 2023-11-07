@@ -1,0 +1,44 @@
+{
+    "description": "WelsonJS GTK-Server (GTK 2) test profile",
+    "date": "2023-11-07",
+    "revision": "r1",
+    "authors": [
+        "Namhyeon Go <gnh1201@gmail.com"
+    ],
+    "links": [
+        "https://github.com/gnh1201/welsonjs",
+        "https://catswords.social/@catswords_oss"
+    ],
+    "tags": [
+        "javascript",
+        "microsoft",
+        "coffeescript",
+        "windows",
+        "typescript",
+        "html5",
+        "js",
+        "uri",
+        "desktop",
+        "ie",
+        "hta",
+        "es5",
+        "electronjs",
+        "jscript",
+        "wsh",
+        "mshtml",
+        "lolbins",
+        "lolbas",
+        "rescript",
+        "mshta"
+    ],
+    "schema": {
+        "version": "0.1"
+    },
+    "tests": [
+        {
+            "id": "gtkserver_test",
+            "description": "GTK Server를 이용한 GUI(그래픽 사용자 인터페이스) 구현 가능 여부 확인",
+            "tags": ["GTK", "GTK"]
+        },
+	]
+}
