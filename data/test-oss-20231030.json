@@ -1,9 +1,9 @@
 {
-    "description": "WelsonJS feature test profile for OSS contest 2023 in Korea",
+    "description": "WelsonJS test profile for OSS contest 2023 in Republic of Korea",
     "date": "2023-10-30",
-    "revision": "r2",
+    "revision": "20231030r2",
     "authors": [
-        "Namhyeon Go <gnh1201@gmail.com"
+        "Namhyeon Go <gnh1201@gmail.com>"
     ],
     "links": [
         "https://github.com/gnh1201/welsonjs",
