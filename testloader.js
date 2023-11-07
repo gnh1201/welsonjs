@@ -694,7 +694,7 @@ var test_implements = {
         console.log("GUI 환경에서 실행하여 주십시오");
     },
     
-    // profile: data/test-gtk-server.json
+    // profile: data/test-misc-20231107.json
     "gtkserver_test": function() {
         var GTK = require("lib/gtk");
 
@@ -762,6 +762,32 @@ var test_implements = {
 
             GTK.wait();
         }
+    },
+    
+    // profile: data/test-misc-20231107.json
+    "toolkit_msedge_test": function() {
+        var Chrome = require("lib/chrome");
+        var Toolkit = require("lib/toolkit");
+        
+        var wbInstance = Chrome.create().setVendor("msedge").open("https://google.com");
+        sleep(5000);
+        //console.log(wbInstance.getHTML("body"));
+
+        wbInstance.focus();
+        wbInstance.traceMouseClick();
+        Toolkit.sendClick("Google", 30, 30, 1);
+    },
+    
+    // profile: data/test-misc-20231107.json
+    "squel_sqlmap_test": function() {
+        console.log(squel.select({ separator: "\n" })
+            .from("students")
+            .field("name")
+            .field("MIN(test_score)")
+            .field("MAX(test_score)")
+            .field("GROUP_CONCAT(DISTINCT test_score ORDER BY test_score DESC SEPARATOR ' ')")
+            .group("name")
+            .toString());
     }
 };
 

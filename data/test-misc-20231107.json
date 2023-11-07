@@ -1,5 +1,5 @@
 {
-    "description": "WelsonJS GTK-Server (GTK 2) test profile",
+    "description": "WelsonJS test profile for Miscellaneous",
     "date": "2023-11-07",
     "revision": "r1",
     "authors": [
@@ -40,5 +40,15 @@
             "description": "GTK Server를 이용한 GUI(그래픽 사용자 인터페이스) 구현 가능 여부 확인",
             "tags": ["GTK", "GTK"]
         },
-	]
+        {
+            "id": "toolkit_msedge_test",
+            "description": "This example includes Microsoft Edge controls and mouse clicks.",
+            "tags": ["Web Browser", "Web Browser Control"]
+        },
+        {
+            "id": "squel_sqlmap_test",
+            "description": "Test SQL mapping with squel library.",
+            "tags": ["Database", "SQL Mapper"]
+        }
+    ]
 }
