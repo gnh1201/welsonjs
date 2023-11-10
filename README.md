@@ -9,6 +9,8 @@ WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)***
 
 Dual license notice: The default license for this project is GPL 3.0. However, if the GPL 3.0 license is not compatible with Microsoft products, it is subject to the MS-RL license.
 
+I presented this project at an open-source contest in Republic of Korea in November 2023. [See the presentation.](https://www.slideshare.net/gnh1201/welsonjs-2023)
+
 ## Structure
 ![Structure](app/assets/img/structure.png)
 
