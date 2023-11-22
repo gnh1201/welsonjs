@@ -16,25 +16,27 @@ I presented this project in [the open-source contest in the Republic of Korea in
 - Built-in transpilers: [TypeScript](https://www.typescriptlang.org/), [Rescript](https://rescript-lang.org/), [CoffeeScript 2](https://coffeescript.org/), [LiveScript](https://livescript.net/)
 - Ready to use on Windows machine immediately. No require additional software installation.
 - ES5(ECMAScript 5), XML, JSON, YAML compatibility
-  - [github:zloirock/core-js](https://github.com/zloirock/core-js)
-  - [github:douglascrockford/JSON-js](https://github.com/douglascrockford/JSON-js) (aka. JSON2.js)
-  - [github:nodeca/js-yaml](https://github.com/nodeca/js-yaml)
+  - [github.com/zloirock/core-js](https://github.com/zloirock/core-js)
+  - [github.com/douglascrockford/JSON-js](https://github.com/douglascrockford/JSON-js) (aka. JSON2.js)
+  - [github.com/nodeca/js-yaml](https://github.com/nodeca/js-yaml)
 - HTML5, CSS3 compatibility
-  - [github:aFarkas/html5shiv](https://github.com/aFarkas/html5shiv)
-  - [github:parndt/jquery-html5-placeholder-shim](https://github.com/parndt/jquery-html5-placeholder-shim)
-  - [github:scottjehl/Respond](https://github.com/scottjehl/Respond)
-  - [github:keithclark/selectivizr](https://github.com/keithclark/selectivizr)
-  - [github:arv/ExplorerCanvas](https://github.com/arv/ExplorerCanvas)
-  - [github:etianen/html5media](https://github.com/etianen/html5media)
-  - [github:Modernizr/Modernizr](https://github.com/Modernizr/Modernizr)
+  - [github.com/aFarkas/html5shiv](https://github.com/aFarkas/html5shiv)
+  - [github.com/parndt/jquery-html5-placeholder-shim](https://github.com/parndt/jquery-html5-placeholder-shim)
+  - [github.com/scottjehl/Respond](https://github.com/scottjehl/Respond)
+  - [github.com/keithclark/selectivizr](https://github.com/keithclark/selectivizr)
+  - [github.com/arv/ExplorerCanvas](https://github.com/arv/ExplorerCanvas)
+  - [github.com/etianen/html5media](https://github.com/etianen/html5media)
+  - [github.com/Modernizr/Modernizr](https://github.com/Modernizr/Modernizr)
 - Default CSS Framework
-  - [github:jslegers/cascadeframework](https://github.com/jslegers/cascadeframework)
+  - [github.com/jslegers/cascadeframework](https://github.com/jslegers/cascadeframework)
+- WYSIWYG HTML Editor
+  - [github.com/summernote/summernote](https://github.com/summernote/summernote)
 - Included libraries
   - [jQuery](https://jquery.com/)
   - [jQuery UI](https://jqueryui.com/)
-  - [github:kamranahmedse/jquery-toast-plugin](https://github.com/kamranahmedse/jquery-toast-plugin)
-  - [github:hiddentao/squel](https://github.com/hiddentao/squel)
-  - [github:BorisMoore/jsrender](https://github.com/BorisMoore/jsrender)
+  - [github.com/kamranahmedse/jquery-toast-plugin](https://github.com/kamranahmedse/jquery-toast-plugin)
+  - [github.com/hiddentao/squel](https://github.com/hiddentao/squel)
+  - [github.com/BorisMoore/jsrender](https://github.com/BorisMoore/jsrender)
 - [Includes binaries](https://github.com/gnh1201/welsonjs/blob/master/bin/README.MD)
 - [module.exports](https://nodejs.org/en/knowledge/getting-started/what-is-require/), CommonJS, UMD compatibility
 - [NPM](https://www.npmjs.com/) compatibility

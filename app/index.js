@@ -10,7 +10,7 @@ var Router = require("lib/router").Router;
 Router.setRender(function(filename, data) {
     var template = FILE.readFile(filename, FILE.CdoCharset.CdoUTF_8);
     var tmpl = $.templates(template);
-	OldBrowser.setContent(tmpl.render(data));
+    OldBrowser.setContent(tmpl.render(data));
 });
 
 // main
@@ -44,23 +44,51 @@ Router.add('/', function(render) {
 
 // test
 Router.add('/test', function(render) {
-	window.test_start = function(test_id) {
-		SHELL.show(["cscript", "app.js", "testloader", test_id]);
-	};
+    window.test_start = function(test_id) {
+        SHELL.show(["cscript", "app.js", "testloader", test_id]);
+    };
 
-	window.gui_check = function() {
-		var text1 = SHELL.exec("echo hello world!");
-		alert(text1);
+    window.gui_check = function() {
+        var text1 = SHELL.exec("echo hello world!");
+        alert(text1);
 
-		var text2 = require("lib/system").getOS();
-		alert(text2);
+        var text2 = require("lib/system").getOS();
+        alert(text2);
 
-		alert("모든 메시지가 정상적으로 보였다면 테스트에 성공한 것입니다.");
-	};
-	
+        alert("모든 메시지가 정상적으로 보였다면 테스트에 성공한 것입니다.");
+    };
+    
     var data = JSON.parse(FILE.readFile("data/test-oss-20231030.json", FILE.CdoCharset.CdoUTF_8));
     render("app\\test.html", {
         "data": data
+    });
+});
+
+// nodepad
+Router.add('/notepad', function(render) {
+    // load resources
+    OldBrowser.addResources([
+        {
+            type: "javascript",
+            url: "app/assets/mixed/summernote-0.8.18-dist/summernote-lite.js"
+        },
+        {
+            type: "stylesheet",
+            url: "app/assets/mixed/summernote-0.8.18-dist/summernote-lite.css"
+        }
+    ]);
+
+    // set DOM id
+    var target_dom_id = "summernote";
+
+    // load HTML
+    render("app/notepad.html", {
+        "target_dom_id": target_dom_id
+    });
+
+    // load Summernote (wysiwyg editor)
+    $('#' + target_dom_id).summernote({
+        minHeight: 300
     });
 });
 
