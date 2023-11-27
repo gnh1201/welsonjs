@@ -1,6 +1,7 @@
 # Windows Binaries for WelsonJS
   * WelsonJS project link: https://github.com/gnh1201/welsonjs
   * Updated at 2023-09-05
+  * NOTE: The binaries listed here are for special purpose users, and regular users do not need them.
 
 ## Included binaries
   * GTK+
