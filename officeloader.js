@@ -49,7 +49,7 @@ function test() {
     questions.forEach(function(x) {
         var answer = ChatGPT.chat(x);
         console.log("받은 답변:", answer);
-        excel.setValueByPosition(i, 1, answer);
+        excel.getCellByPosition(i, 1).setValue(answer);
         i++;
     });
 
