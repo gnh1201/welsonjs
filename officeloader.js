@@ -1,7 +1,36 @@
+// officeloader.js
+// Namhyeon Go <abuse@catswords.net>
+// https://github.com/gnh1201/welsonjs
+
+var SYS = require("lib/system");
 var Office = require("lib/msoffice");
 var ChatGPT = require("lib/chatgpt");
 
 function main(args) {
+    // 기존 파일을 여는 경우 인자에 파일 경로 추가
+    if (args.length > 0) {
+        var filename = args[0];
+        open(filename);
+    } else {
+        test();
+    }
+}
+
+function open(filename) {
+    // 엑셀 인스턴스 생성
+    var excel = new Office.Excel();
+    
+    // 엑셀 열기
+    excel.open(filename);
+    
+    // .... 여기서 작업하세요 ....
+
+    // 엑셀 닫기
+    //excel.close();
+}
+
+function test() {
+    // 엑셀 인스턴스 생성
     var excel = new Office.Excel();
     
     // 질문 목록
@@ -24,6 +53,7 @@ function main(args) {
         i++;
     });
 
+    // 엑셀 닫기
     //excel.close();
 }
 
