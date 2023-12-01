@@ -5,7 +5,7 @@
     "authors": [
         "Namhyeon Go <gnh1201@gmail.com>"
     ],
-    "dependencies": [
+    "packages": [
         {
             "scope": ["lib/toolkit", "lib/chrome"],
             "name": "github.com/gnh1201/welsonjs/WelsonJS.Toolkit",
@@ -119,8 +119,8 @@
         {
             "scope": ["lib/gtk"],
             "name": "github.com/jopbrown/gtk-server",
-            "author": "jopbrown",
-            "distributer": "jopbrown",
+            "author": "@jopbrown",
+            "distributer": "@jopbrown",
             "license": "ISC",
             "architecture": ["amd64"],
             "website": "https://github.com/jopbrown/gtk-server",
@@ -302,6 +302,7 @@
             "distributer": "Igor Pavlov",
             "license": ["LGPL"],
             "architecture": ["amd64", "x86", "arm64"],
+            "website": "https://7-zip.org",
             "release": {
                 "version": "23.01",
                 "build": "2023-06-20",
@@ -332,6 +333,164 @@
                     "tags": ["archive", "7z", "standalone"]
                 }
             ]
+        },
+        {
+            "scope": [],
+            "name": "github.com/basil00/Divert",
+            "author": "@basil00",
+            "distributer": "@basil00",
+            "license": "LGPLv3",
+            "architecture": ["amd64", "x86"],
+            "website": "https://reqrypt.org/",
+            "release": {
+                "version": "2.2.2",
+                "build": "1789526ecfb9ff5397c94f9f54c1a3dc2fb60440",
+                "date": "2022-09-21",
+                "changelog": "https://reqrypt.org/windivert-changelog.txt"
+            },
+            "environment": {
+                "knownAs": [
+                    "WinDivert.dll",
+                    "WinDivert32.sys",
+                    "WinDivert64.sys",
+                ],
+                "knownPath": []
+            },
+            "binaries": [
+                {
+                    "architecture": "amd64",
+                    "downloadLink": "https://github.com/basil00/Divert/releases/download/v2.2.2/WinDivert-2.2.2-A.zip",
+                    "tags": ["archive", "zip", "library"]
+                },
+                {
+                    "architecture": "x86",
+                    "downloadLink": "https://github.com/basil00/Divert/releases/download/v2.2.2/WinDivert-2.2.2-A.zip",
+                    "tags": ["archive", "zip", "library"]
+                }
+            ]
+        },
+        {
+            "scope": ["lib/websocket", "lib/chrome"],
+            "name": "github.com/vi/websocat",
+            "author": "@vi",
+            "distributer": "@vi",
+            "license": "MIT",
+            "architecture": ["amd64", "x86"],
+            "website": "https://github.com/vi/websocat",
+            "release": {
+                "version": "1.12.0",
+                "build": "cb2966c9bf715a59bd2de5891a14d788deacfadd",
+                "date": "2023-09-18",
+                "changelog": "https://github.com/vi/websocat/releases/tag/v1.12.0"
+            },
+            "environment": {
+                "knownAs": [
+                    "websocat",
+                    "websocat.exe"
+                ],
+                "knownPath": []
+            },
+            "binaries": [
+                {
+                    "architecture": "amd64",
+                    "downloadLink": "https://github.com/vi/websocat/releases/download/v1.12.0/websocat.x86_64-pc-windows-gnu.exe",
+                    "tags": ["binary", "exe", "standalone"]
+                },
+                {
+                    "architecture": "x86",
+                    "downloadLink": "https://github.com/vi/websocat/releases/download/v1.12.0/websocat.i686-pc-windows-gnu.exe",
+                    "tags": ["binary", "exe", "standalone"]
+                }
+            ]
+        },
+        {
+            "scope": ["lib/shadowsocks"],
+            "name": "github.com/DDoSolitary/shadowsocks-libev-win",
+            "author": "@shadowsocks",
+            "distributer": "@DDoSolitary",
+            "license": "GPLv3",
+            "architecture": ["amd64", "x86"],
+            "website": "https://github.com/DDoSolitary/shadowsocks-libev-win",
+            "release": {
+                "version": "nightly",
+                "build": "nightly",
+                "date": "nightly",
+                "changelog": "https://github.com/shadowsocks/shadowsocks-libev/releases"
+            },
+            "environment": {
+                "knownAs": [
+                    "ss-local",
+                    "ss-local.exe"
+                ],
+                "knownPath": []
+            },
+            "binaries": [
+                {
+                    "architecture": "amd64",
+                    "downloadLink": "https://ddosolitary-builds.sourceforge.io/shadowsocks-libev-win/",
+                    "tags": ["archive", "zip", "standalone"]
+                },
+                {
+                    "architecture": "x86",
+                    "downloadLink": "https://ddosolitary-builds.sourceforge.io/shadowsocks-libev-win/",
+                    "tags": ["archive", "zip", "standalone"]
+                }
+            ]
+        },
+        {
+            "scope": ["lib/nmap"],
+            "name": "NMAP for Windows",
+            "website": "https://nmap.org/"
+        },
+        {
+            "scope": [],
+            "name": "THC Hydra for Windows",
+            "website": "https://github.com/vanhauser-thc/thc-hydra"
+        },
+        {
+            "scope": ["lib/adb"],
+            "name": "Android SDK Platform Tools",
+            "website": "https://developer.android.com/studio/releases/platform-tools"
+        },
+        {
+            "scope": [],
+            "name": "ChakraCore",
+            "website": "https://github.com/chakra-core/ChakraCore"
+        },
+        {
+            "scope": [],
+            "name": "github.com/bytecodealliance/wasm-micro-runtime",
+            "website": "https://github.com/bytecodealliance/wasm-micro-runtime"
+        },
+        {
+            "scope": ["lib/python"],
+            "name": "Python Windows embeddable package",
+            "website": "https://www.python.org/downloads/release/python-3102/"
+        },
+        {
+            "scope": ["lib/python"],
+            "name": "Beautiful Soup",
+            "website": "https://www.crummy.com/software/BeautifulSoup/bs4/doc/"
+        },
+        {
+            "scope": ["lib/python"],
+            "name": "python-nmap",
+            "website": "https://bitbucket.org/xael/python-nmap"
+        },
+        {
+            "scope": ["lib/python"],
+            "name": "pywin32",
+            "website": "https://github.com/mhammond/pywin32"
+        },
+        {
+            "scope": ["lib/python"],
+            "name": "gRPC",
+            "website": "https://github.com/grpc/grpc"
+        },
+        {
+            "scope": ["lib/gtk"],
+            "name": "libffi",
+            "website": "http://sourceware.org/libffi/"
         }
     ]
 }
