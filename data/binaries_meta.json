@@ -1,0 +1,207 @@
+{
+    "description": "WelsonJS binaries dependency profile",
+    "date": "2023-12-01",
+    "revision": "1",
+    "authors": [
+        "Namhyeon Go <gnh1201@gmail.com>"
+    ],
+    "dependencies": [
+        {
+            "scope": ["lib/toolkit", "lib/chrome"],
+            "name": "github.com/gnh1201/welsonjs/WelsonJS.Toolkit",
+            "author": "Namhyeon Go",
+            "distributer": "Namhyeon Go",
+            "license": "MS-RL",
+            "architecture": ["x86"],
+            "website": "https://github.com/gnh1201/welsonjs",
+            "release": {
+                "version": "2022-10-21",
+                "build": "2022-10-21",
+                "date": "2022-10-21",
+                "changelog": "https://github.com/gnh1201/welsonjs/commits/master/WelsonJS.Toolkit.dll"
+            },
+            "environment": {
+                "knownAs": [
+                    "WelsonJS.Toolkit",
+                    "WelsonJS.Toolkit.dll"
+                ],
+                "knownPath": [
+                    "./WelsonJS.Toolkit.dll"
+                ],
+            },
+            "binaries": [
+                {
+                    "architecture": "x86",
+                    "downloadLink": "https://github.com/gnh1201/welsonjs/raw/master/WelsonJS.Toolkit.dll",
+                    "tags": ["binary", "dll", "library", "dotnet", "dotnet2.0"]
+                }
+            ]
+        },
+        {
+            "scope": ["lib/http"],
+            "name": "github.com/curl/curl",
+            "author": "Daniel Stenberg, and many contributors",
+            "distributer": "curl.se",
+            "license": "ISC",
+            "architecture": ["amd64", "arm64", "x86"],
+            "website": "https://curl.se/windows/",
+            "release": {
+                "version": "8.4.0",
+                "build": "8.4.0_7",
+                "date": "2023-10-11",
+                "changelog": "https://curl.se/changes.html#8_4_0"
+            },
+            "environment": {
+                "knownAs": [
+                    "curl",
+                    "curl.exe"
+                ],
+                "knownPath": []
+            },
+            "binaries": [
+                {
+                    "architecture": "amd64",
+                    "downloadLink": "https://curl.se/download/curl-8.4.0.zip",
+                    "integrity": {
+                        "sha256": "53570e562d2d7f77b35682e69a52ec9702faf2504ad1655ce38ceb30bc9d7800"
+                    },
+                    "tags": ["archive", "zip", "standalone"]
+                },
+                {
+                    "architecture": "arm64",
+                    "downloadLink": "https://curl.se/windows/dl-8.4.0_7/curl-8.4.0_7-win64a-mingw.zip",
+                    "integrity": {
+                        "sha256": "93f592bdbd56644db995f94736c23ea245cc12bdcecf6acd28acf28ebadc18e4"
+                    },
+                    "tags": ["archive", "zip", "standalone"]
+                },
+                {
+                    "architecture": "x86",
+                    "downloadLink": "https://curl.se/windows/dl-8.4.0_7/curl-8.4.0_7-win32-mingw.zip",
+                    "integrity": {
+                        "sha256": "e3273ba15aef794d6c8aa02cc1e2bc446fd6804ec534c9e8456db853485bc02b"
+                    },
+                    "tags": ["archive", "zip", "standalone"]
+                }
+            ]
+        },
+        {
+            "scope": ["lib/gtk"],
+            "name": "github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer",
+            "author": "The GNOME Project",
+            "distributer": "tschoonj",
+            "license": "LGPLv2",
+            "architecture": ["amd64"],
+            "website": "https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer",
+            "environment": {
+                "knownAs": [
+                    "gtk3",
+                    "gtk3-runtime",
+                    "gtk3-runtime-3.24.31-2022-01-04-ts-win64",
+                    "gtk3-runtime-3.24.31-2022-01-04-ts-win64.exe"
+                ],
+                "knownPath": []
+            },
+            "release": {
+                "version": "2",
+                "build": "2022-01-04",
+                "date": "2022-01-04",
+                "changelog": "https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer/releases/tag/2022-01-04"
+            },
+            "binaries": [
+                {
+                    "architecture": "amd64",
+                    "soruce": "https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer/releases/download/2022-01-04/gtk3-runtime-3.24.31-2022-01-04-ts-win64.exe",
+                    "tags": ["binary", "exe", "installer"]
+                }
+            ]
+        },
+        {
+            "scope": ["lib/gtk"],
+            "name": "github.com/jopbrown/gtk-server",
+            "author": "jopbrown",
+            "distributer": "jopbrown",
+            "license": "ISC",
+            "architecture": ["amd64"],
+            "website": "https://github.com/jopbrown/gtk-server",
+            "release": {
+                "version": "2.4.5",
+                "build": "2.4.5-gtk-2.24.32-win64",
+                "date": "2019-08-11",
+                "changelog": "https://github.com/jopbrown/gtk-server/releases/tag/v2.4.5"
+            },
+            "environment": {
+                "knownAs": [
+                    "gtk-server",
+                    "gtk-server.exe"
+                ],
+                "knownPath": []
+            },
+            "binaries": [
+                {
+                    "architecture": "amd64",
+                    "downloadLink": "https://github.com/jopbrown/gtk-server/releases/download/v2.4.5/gtk-server-2.4.5-gtk-2.24.32-win64.zip",
+                    "tags": ["archive", "zip", "standalone"]
+                }
+            ]
+        },
+        {
+            "scope": [],
+            "name": "Zip for WIndows",
+            "author": "gnuwin32",
+            "distributer": "gnuwin32",
+            "license": "GPL",
+            "architecture": ["x86"],
+            "website": "https://gnuwin32.sourceforge.net/packages/zip.htm",
+            "release": {
+                "version": "3.0",
+                "build": "2008-07-13",
+                "date": "2008-07-13",
+                "changelog": "https://gnuwin32.sourceforge.net/packages/zip.htm"
+            },
+            "environment": {
+                "knownAs": [
+                    "zip",
+                    "zip.exe"
+                ],
+                "knownPath": []
+            },
+            "binaries": [
+                {
+                    "architecture": "x86",
+                    "downloadLink": "http://downloads.sourceforge.net/gnuwin32/zip-3.0-bin.zip",
+                    "tags": ["archive", "zip", "standalone"]
+                }
+            ]
+        },
+        {
+            "scope": [],
+            "name": "Unzip for WIndows",
+            "author": "gnuwin32",
+            "distributer": "gnuwin32",
+            "license": "GPL",
+            "architecture": ["x86"],
+            "website": "https://gnuwin32.sourceforge.net/packages/unzip.htm",
+            "release": {
+                "version": "5.51",
+                "build": "2005-01-14",
+                "date": "2005-01-14",
+                "changelog": "https://gnuwin32.sourceforge.net/packages/unzip.htm"
+            },
+            "environment": {
+                "knownAs": [
+                    "unzip",
+                    "unzip.exe"
+                ],
+                "knownPath": []
+            },
+            "binaries": [
+                {
+                    "architecture": "x86",
+                    "downloadLink": "https://gnuwin32.sourceforge.net/downlinks/unzip-bin-zip.php",
+                    "tags": ["archive", "zip", "standalone"]
+                }
+            ]
+        }
+    ]
+}
