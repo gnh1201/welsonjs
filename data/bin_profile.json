@@ -7,6 +7,33 @@
     ],
     "dependencies": [
         {
+            "scope": ["lib/toolkit", "lib/chrome"],
+            "name": "github.com/gnh1201/welsonjs/WelsonJS.Toolkit",
+            "author": "Namhyeon Go",
+            "distributer": "Namhyeon Go",
+            "license": "MS-RL",
+            "architecture": ["x86"],
+            "website": "https://github.com/gnh1201/welsonjs",
+            "release": {
+                "version": "2022-10-21",
+                "build": "2022-10-21",
+                "date": "2022-10-21",
+                "changelog": "https://github.com/gnh1201/welsonjs/commits/master/WelsonJS.Toolkit.dll"
+            },
+            "environment": [
+                "knownAs": "WelsonJS.Toolkit.dll",
+                "runtime": "Microsoft dotNET Framework 2.0",
+                "binaries" [
+                    {
+                        "architecture": "x86",
+                        "source": "https://github.com/gnh1201/welsonjs/raw/master/WelsonJS.Toolkit.dll",
+                        "isArchive": false,
+                        "isInstaller": false
+                    }
+                ]
+            ]
+        },
+        {
             "scope": ["lib/http"],
             "name": "github.com/curl/curl",
             "author": "Daniel Stenberg, and many contributors",
