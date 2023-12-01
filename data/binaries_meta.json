@@ -1,5 +1,5 @@
 {
-    "description": "WelsonJS binaries dependency profile",
+    "description": "WelsonJS binaries metadata",
     "date": "2023-12-01",
     "revision": "1",
     "authors": [
@@ -89,7 +89,7 @@
             "scope": ["lib/gtk"],
             "name": "github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer",
             "author": "The GNOME Project",
-            "distributer": "tschoonj",
+            "distributer": "@tschoonj",
             "license": "LGPLv2",
             "architecture": ["amd64"],
             "website": "https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer",
@@ -111,7 +111,7 @@
             "binaries": [
                 {
                     "architecture": "amd64",
-                    "soruce": "https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer/releases/download/2022-01-04/gtk3-runtime-3.24.31-2022-01-04-ts-win64.exe",
+                    "downloadLink": "https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer/releases/download/2022-01-04/gtk3-runtime-3.24.31-2022-01-04-ts-win64.exe",
                     "tags": ["binary", "exe", "installer"]
                 }
             ]
@@ -200,6 +200,136 @@
                     "architecture": "x86",
                     "downloadLink": "https://gnuwin32.sourceforge.net/downlinks/unzip-bin-zip.php",
                     "tags": ["archive", "zip", "standalone"]
+                }
+            ]
+        },
+        {
+            "scope": [],
+            "name": "Tar for Windows",
+            "author": "gnuwin32",
+            "distributer": "gnuwin32",
+            "license": "GPL",
+            "architecture": ["x86"],
+            "website": "https://gnuwin32.sourceforge.net/packages/gtar.htm",
+            "release": {
+                "version": "1.13",
+                "build": "2003-10-03",
+                "date": "2003-10-03",
+                "changelog": "https://gnuwin32.sourceforge.net/packages/gtar.htm"
+            },
+            "environment": {
+                "knownAs": [
+                    "tar",
+                    "tar.exe"
+                ],
+                "knownPath": []
+            },
+            "binaries": [
+                {
+                    "architecture": "x86",
+                    "downloadLink": "https://gnuwin32.sourceforge.net/downlinks/tar-bin-zip.php",
+                    "tags": ["archive", "tar", "standalone"]
+                }
+            ]
+        },
+        {
+            "scope": [],
+            "name": "MsCompress for Windows",
+            "author": "gnuwin32",
+            "distributer": "gnuwin32",
+            "license": "GPL",
+            "architecture": ["x86"],
+            "website": "https://gnuwin32.sourceforge.net/packages/mscompress.htm",
+            "release": {
+                "version": "0.3",
+                "build": "2004-03-14",
+                "date": "2004-03-14",
+                "changelog": "https://gnuwin32.sourceforge.net/packages/mscompress.htm"
+            },
+            "environment": {
+                "knownAs": [
+                    "mscompress",
+                    "mscompress.exe"
+                ],
+                "knownPath": []
+            },
+            "binaries": [
+                {
+                    "architecture": "x86",
+                    "downloadLink": "https://gnuwin32.sourceforge.net/downlinks/mscompress-bin-zip.php",
+                    "tags": ["archive", "lz77", "standalone"]
+                }
+            ]
+        },
+        {
+            "scope": [],
+            "name": "github.com/philr/bzip2-windows",
+            "author": "Julian Seward",
+            "distributer": "@philr",
+            "license": "BSD-3",
+            "architecture": ["amd64", "x86"],
+            "website": "https://github.com/philr/bzip2-windows",
+            "release": {
+                "version": "1.0.8",
+                "build": "8e56475016326118631e2d71d65e0067b877df9c",
+                "date": "2019-07-14",
+                "changelog": "https://github.com/philr/bzip2-windows/releases/tag/v1.0.8.0"
+            },
+            "environment": {
+                "knownAs": [
+                    "bzip2",
+                    "bzip2.exe"
+                ],
+                "knownPath": []
+            },
+            "binaries": [
+                {
+                    "architecture": "amd64",
+                    "downloadLink": "https://github.com/philr/bzip2-windows/releases/download/v1.0.8.0/bzip2-1.0.8.0-win-x64.zip",
+                    "tags": ["archive", "bzip2", "standalone"]
+                },
+                {
+                    "architecture": "x86",
+                    "downloadLink": "https://github.com/philr/bzip2-windows/releases/download/v1.0.8.0/bzip2-1.0.8.0-win-x86.zip",
+                    "tags": ["archive", "bzip2", "standalone"]
+                }
+            ]
+        },
+        {
+            "scope": [],
+            "name": "7-Zip",
+            "author": "Igor Pavlov",
+            "distributer": "Igor Pavlov",
+            "license": ["LGPL"],
+            "architecture": ["amd64", "x86", "arm64"],
+            "release": {
+                "version": "23.01",
+                "build": "2023-06-20",
+                "date": "2023-06-20",
+                "changelog": "https://www.7-zip.org/download.html"
+            },
+            "environment": {
+                "knownAs": [
+                    "7za",
+                    "7za.exe"
+                ],
+                "knownPath": []
+            },
+            "binaries": [
+                {
+                    "architecture": "amd64",
+                    "downloadLink": "https://www.7-zip.org/a/7z2301-extra.7z",
+                    "tags": ["archive", "7z", "standalone"]
+                },
+                {
+                    "architecture": "x86",
+                    "downloadLink": "https://www.7-zip.org/a/7z2301-extra.7z",
+                    "tags": ["archive", "7z", "standalone"]
+                },
+                {
+                    "architecture": "arm64",
+                    "downloadLink": "https://www.7-zip.org/a/7z2301-arm64.exe",
+                    "tags": ["archive", "7z", "standalone"]
                 }
             ]
         }
