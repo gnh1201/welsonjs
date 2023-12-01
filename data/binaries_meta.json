@@ -8,7 +8,7 @@
     "packages": [
         {
             "scope": ["lib/toolkit", "lib/chrome"],
-            "name": "github.com/gnh1201/welsonjs/WelsonJS.Toolkit",
+            "name": "WelsonJS.Toolkit",
             "author": "Namhyeon Go",
             "distributer": "Namhyeon Go",
             "license": "MS-RL",
