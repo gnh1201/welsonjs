@@ -1,0 +1,40 @@
+[
+    {
+        "name": "curl",
+        "vendor": "cURL",
+        "architecture": ["amd64", "arm64", "x86"],
+        "website": "https://curl.se/windows/",
+        "release": {
+            "version": "8.4.0"
+            "build": "8.4.0_7",
+            "date": "2023-10-11",
+            "changelog": "https://curl.se/changes.html#8_4_0"
+        },
+        "binaries": [
+            {
+                "architecture": "amd64",
+                "source": "https://curl.se/download/curl-8.4.0.zip",
+                "isCompressed": true,
+                "integrity": {
+                    "sha256": "53570e562d2d7f77b35682e69a52ec9702faf2504ad1655ce38ceb30bc9d7800"
+                }
+            },
+            {
+                "architecture": "arm64",
+                "source": "https://curl.se/windows/dl-8.4.0_7/curl-8.4.0_7-win64a-mingw.zip",
+                "isCompressed": true,
+                "integrity": {
+                    "sha256": "93f592bdbd56644db995f94736c23ea245cc12bdcecf6acd28acf28ebadc18e4"
+                }
+            },
+            {
+                "architecture": "x86",
+                "source": "https://curl.se/windows/dl-8.4.0_7/curl-8.4.0_7-win32-mingw.zip",
+                "isCompressed": true,
+                "integrity": {
+                    "sha256": "e3273ba15aef794d6c8aa02cc1e2bc446fd6804ec534c9e8456db853485bc02b"
+                }
+            }
+        ]
+    }
+]
