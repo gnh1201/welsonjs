@@ -69,7 +69,8 @@ I presented this project in [the open-source contest in the Republic of Korea in
 ## Make your own `sayhello` example
 
 ### 1. Write a file `lib/sayhello.js`
-```
+```js
+// lib/sayhello.js
 function say() {
     console.log("hello");
 }
@@ -83,7 +84,8 @@ exports.require = global.require;
 ```
 
 ### 2. Write a file `sayhello.js`
-```
+```js
+// sayhello.js
 var SayHello = require("lib/sayhello");
 
 function main() {
@@ -96,7 +98,7 @@ exports.main = main;
 ```
 
 ### 3. Execute file on the command prompt
-```
+```cmd
 C:\Users\oss\Documents\GitHub\welsonjs> cscript app.js sayhello
 calling say()
 hello
