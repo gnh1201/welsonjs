@@ -44,46 +44,42 @@ I presented this project in [the open-source contest in the Republic of Korea in
 
 ## Included libraries
 - lib/std (Standard library)
-- lib/system (System library)
-- lib/base64 (BASE64 Encode and Decode)
-- lib/db (Database interface)
+- lib/system (System interface)
+- lib/base64 (BASE64 encode and decode)
 - lib/file (File I/O interface)
-- lib/http (HTTP interface)
-- lib/json (JSON Encode and Decode)
+- lib/http (HTTP interface with MSXML and cURL)
+- lib/json (JSON library)
 - lib/registry (Windows Registry interface)
-- lib/security (Security Policy interface)
-- lib/sendmail (Sendmail interface with 3rdparty)
-- lib/shell (Command Prompt interface)
-- lib/timer (`setTimeout` polyfills)
+- lib/security (Windows Security Policy interface)
+- lib/shell (Windows Shell (Command Prompt) interface)
 - lib/powershell (Windows Powershell interface)
 - lib/service (Windows Service interface)
-- lib/oldbrowser (ES5/ES6, HTML/JS/CSS compatibility)
+- lib/oldbrowser (ES5, HTML5/CSS3 compatibility layer)
 - lib/uri (URI scheme interface)
 - lib/winlibs (Windows DLL(Dynamic-link library) interface)
 - lib/autohotkey ([AutoHotkey](https://www.autohotkey.com/) interface)
 - lib/autoit ([AutoIt3/AutoItX](https://www.autoitscript.com/) interface)
-- lib/shadowsocks ([Shadowsocks](https://shadowsocks.org/) interface)
-- lib/excel (Microsoft Excel interface)
-- lib/vbscript (VBScript interface)
-- lib/wintap (Windows-TAP interface)
-- lib/tun2socks (TUN2SOCKS interface)
-- lib/hosts (Hosts file interface)
+- lib/msoffice (Microsoft Office (e.g. Excel) interface)
 - lib/gtk (GTK/GladeXML server GUI interface)
 - lib/chrome (Chrome Web Browser Debugging interface)
 - lib/toolkit (`WelsonJS.Toolkit` native component)
 - lib/pipe-ipc (PIPE-based IPC(Inter-Process Communication) implementation)
+- Everything you can imagine. 
 
 ## Make your own `sayhello` example
 
 ### 1. Write a file `lib/sayhello.js`
 ```
-exports.VERSIONINFO = "SayHello Library (sayhello.js) version 0.1
-exports.global = global;
-exports.require = global.require;
-
-exports.say = function() {
+function say() {
     console.log("hello");
 }
+
+exports.say = say;
+
+exports.VERSIONINFO = "SayHello Library (sayhello.js) version 0.1";
+exports.AUTHOR = "abuse@catswords.net";   // e.g. YOUR EMAIL ADDRESS
+exports.global = global;
+exports.require = global.require;
 ```
 
 ### 2. Write a file `sayhello.js`
@@ -101,7 +97,7 @@ exports.main = main;
 
 ### 3. Execute file on the command prompt
 ```
-C:\Users\John\Documents\GitHub\welsonjs> cscript app.js sayhello
+C:\Users\oss\Documents\GitHub\welsonjs> cscript app.js sayhello
 calling say()
 hello
 ended say()
@@ -138,4 +134,3 @@ If you have any inquiries about this project or if you are interested in becomin
 
 - abuse@catswords.net
 - ActivityPub [@catswords_oss@catswords.social](https://catswords.social/@catswords_oss)
-
