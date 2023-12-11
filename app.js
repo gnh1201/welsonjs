@@ -219,7 +219,7 @@ function require(FN) {
         var basepath = getCurrentScriptDirectory();
         var filepaths = [
             path.join(basepath, FN),    // WelsonJS base library 
-            path.join(basepath, "Scripts", FN)    // NuGet
+            path.join(basepath, "Scripts", FN),    // NuGet
             path.join(basepath, "bower_components", FN),    // Bower
             path.join(basepath, "node_modules", FN),    // NPM
         ];
