@@ -211,7 +211,7 @@ function require(FN) {
         return pos < 0 ? '.' : FN.substr(pos);
     })(FN.lastIndexOf('.'));
 
-    if ('.js$.coffee$.ls$.ts$.re$'.indexOf(suffix + '$') < 0) FN += ".js";
+    if ('.js$.jse$.coffee$.ls$.ts$.re$.res$'.indexOf(suffix + '$') < 0) FN += ".js";
     if (cache[FN]) return cache[FN];
 
     // get file and directory name
