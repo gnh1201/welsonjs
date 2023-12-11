@@ -215,7 +215,34 @@ function require(FN) {
     if (cache[FN]) return cache[FN];
 
     // get file and directory name
-    var __filename__ = require.__getCurrentScriptDirectory__() + "\\" + FN;
+    var __filename__ = (function(getCurrentScriptDirectory, fileExists, path) {
+        var basepath = getCurrentScriptDirectory();
+        var filepaths = [
+            path.join(basepath, FN),
+            path.join(basepath, "bower_components", FN),
+            path.join(basepath, "node_modules", FN)
+        ];
+        var filename = filepaths[0];
+
+        if (!fileExists(filename)) {
+            for (var i = 1; i < filepaths.length; i++) {
+                if (fileExists(filepaths[i])) {
+                    filename = filepaths[i];
+                    break;
+                }
+            }
+        }
+
+        return filename;
+    })(require.__getCurrentScriptDirectory__, CreateObject("Scripting.FileSystemObject").FileExists, {
+        join: function() {
+            var result = arguments[0];
+            for (var i = 1; i < arguments.length; i++) {
+                result += "\\" + arguments[i];
+            }
+            return result;
+        }
+    });
     var __dirname__ = require.__getDirName__(__filename__);
     var T = require.__load__(FN);
 
