@@ -288,8 +288,7 @@ require.__ModulePrototype__ = function() {
     this.exports = {};
 };
 require.__getDirName__ = function(path) {
-    var delimiter = "\\";
-    var pos = path.lastIndexOf(delimiter);
+    var pos = Math.max.apply(null, [path.lastIndexOf("\\"), path.lastIndexOf("/")]);
     return (pos > -1 ? path.substring(0, pos) : "");
 };
 require.__getCurrentScriptDirectory__ = function() {
