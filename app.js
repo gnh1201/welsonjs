@@ -218,9 +218,10 @@ function require(FN) {
     var __filename__ = (function(getCurrentScriptDirectory, fileExists, path) {
         var basepath = getCurrentScriptDirectory();
         var filepaths = [
-            path.join(basepath, FN),
-            path.join(basepath, "bower_components", FN),
-            path.join(basepath, "node_modules", FN)
+            path.join(basepath, FN),    // WelsonJS base library 
+            path.join(basepath, "Scripts", FN)    // NuGet
+            path.join(basepath, "bower_components", FN),    // Bower
+            path.join(basepath, "node_modules", FN),    // NPM
         ];
         var filename = filepaths[0];
 
