@@ -277,6 +277,7 @@ function require(FN) {
             break;
 
         case ".re":  // Rescript (aka. BuckleScript, ReasonML)
+        case ".res":
             T = require.__modernie__("app/assets/js/rescript-compiler-10.1.2", [T], function(p, w, d, l) {
                 var compiler = w.rescript_compiler.make();
                 var result = compiler.rescript.compile(p[0]);
