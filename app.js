@@ -234,7 +234,9 @@ function require(FN) {
         }
 
         return filename;
-    })(require.__getCurrentScriptDirectory__, CreateObject("Scripting.FileSystemObject").FileExists, {
+    })(require.__getCurrentScriptDirectory__, function(filename) {
+        return CreateObject("Scripting.FileSystemObject").FileExists(filename);
+    }, {
         join: function() {
             var result = arguments[0];
             for (var i = 1; i < arguments.length; i++) {
