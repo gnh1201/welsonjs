@@ -31,7 +31,7 @@ We are aware of instances where WelsonJS has been used by legitimate cybersecuri
 ### For the use of cloud monitoring
 WelsonJS is a project initiated by a cloud service provider in response to a request to develop a lightweight software (e.g., agent) for collecting metrics on Windows systems. While using WelsonJS for this purpose is desirable, ensuring security in the server-client communication is entirely the responsibility of the user.
 
-## Alternative names for this project
+## Alternative names
 This program is also known by the following name. This name is used solely for the purpose of identifying the work and does not impact the license:
 - "C-2021-000237" (Copyright Registration Online System, Korea Copyright Commission, Republic of Korea)
 - "A0562" (2023 Open-source Development Contest, NIPA National IT Industry Promotion Agency, Republic of Korea)
