@@ -1,4 +1,6 @@
-﻿using System.Windows.Forms;
+﻿// Prompt.cs
+// https://github.com/gnh1201/welsonjs
+using System.Windows.Forms;
 
 namespace WelsonJS
 {

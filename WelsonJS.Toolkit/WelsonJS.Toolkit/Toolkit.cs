@@ -1,15 +1,18 @@
 ﻿/*
- * WelsonJS.Toolkit: WelsonJS C#.NET native component
+ * WelsonJS.Toolkit: WelsonJS dotnet native component
  * 
  *     description:
- *         WelsonJS - Build Windows desktop apps with JavaScript, HTML, and CSS based on WSH/HTA.
- *         https://github.com/gnh1201/welsonjs
+ *         WelsonJS - Build a Windows app on the Windows built-in JavaScript engine
+ * 
+ *     website:
+ *         - https://github.com/gnh1201/welsonjs
+ *         - https://catswords.social/@catswords_oss
  * 
  *     author:
  *         Namhyeon Go <abuse@catswords.net>
  *
  *     license:
- *         gnh1201/welsonjs is licensed under the Microsoft Reciprocal License (MS-RL)
+ *         GPLv3 or MS-RL(Microsoft Reciprocal License)
  * 
  *     references:
  *         - https://stackoverflow.com/questions/9004352/call-a-function-in-a-console-app-from-vbscript
@@ -23,6 +26,7 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -31,8 +35,9 @@ namespace WelsonJS
 {
     [ComVisible(true)]
     public class Toolkit
-    {
-        private static string ApplicationName = "WelsonJS";
+    {   
+        private Dictionary<string, NamedSharedMemory> sharedMemoryDict;
+        public static string ApplicationName = "WelsonJS";
 
         [DllImport("user32.dll")]
         public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
@@ -210,6 +215,74 @@ namespace WelsonJS
             else
             {
                 return false;
+            }
+        }
+
+        // [Toolkit] Access to a shared memory #96
+
+        [ComVisible(true)]
+        public bool OpenNamedSharedMemory(string lpName)
+        {
+            NamedSharedMemory sharedMemory = new NamedSharedMemory(lpName);
+            sharedMemoryDict.Add(lpName, sharedMemory);
+            return sharedMemory.IsInitialized();
+        }
+
+        [ComVisible(true)]
+        public NamedSharedMemory GetSharedMemory(string lpName)
+        {
+            if (sharedMemoryDict.ContainsKey(lpName))
+            {
+                NamedSharedMemory sharedMemory = sharedMemoryDict[lpName];
+                if (sharedMemory.IsInitialized())
+                {
+                    return sharedMemory;
+                }
+            }
+
+            return null;
+        }
+
+        [ComVisible(true)]
+        public void CloseNamedSharedMemory(string lpName)
+        {
+            NamedSharedMemory sharedMemory = GetSharedMemory(lpName);
+            if (sharedMemory != null)
+            {
+                sharedMemory.Close();
+                sharedMemoryDict.Remove(lpName);
+            }
+        }
+
+        [ComVisible(true)]
+        public string ReadTextFromSharedMemory(string lpName)
+        {
+            NamedSharedMemory sharedMemory = GetSharedMemory(lpName);
+            if (sharedMemory != null)
+            {
+                return sharedMemory.ReadText();
+            }
+
+            return "";
+        }
+
+        [ComVisible(true)]
+        public void WriteTextToSharedMemory(string lpName, string text)
+        {
+            NamedSharedMemory sharedMemory = GetSharedMemory(lpName);
+            if (sharedMemory != null)
+            {
+                sharedMemory.WriteText(text);
+            }
+        }
+
+        [ComVisible(true)]
+        public void ClearSharedMemory(string lpName)
+        {
+            NamedSharedMemory sharedMemory = GetSharedMemory(lpName);
+            if (sharedMemory != null)
+            {
+                sharedMemory.Clear();
             }
         }
     }
