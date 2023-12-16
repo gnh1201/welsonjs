@@ -38,14 +38,7 @@ namespace WelsonJS
     [ComVisible(true)]
     public class Toolkit
     {
-        private Dictionary<string, NamedSharedMemory> sharedMemoryDict;
-
         public static readonly string ApplicationName = "WelsonJS";
-
-        public Toolkit()
-        {
-            sharedMemoryDict = new Dictionary<string, NamedSharedMemory>();
-        }
 
         [ComVisible(true)]
         public bool SendClick(string title, int x, int y)
@@ -66,6 +59,7 @@ namespace WelsonJS
             return SendKey(hWnd, key);
         }
 
+        // [ComVisible(false)]
         public bool SendKey(IntPtr hWnd, char key)
         {
             return Window.PostMessage(hWnd, (int)Window.Message.WM_CHAR, key, IntPtr.Zero);
@@ -151,20 +145,12 @@ namespace WelsonJS
 
         // [Toolkit] Access to a shared memory #96
 
-        [ComVisible(true)]
-        public bool OpenNamedSharedMemory(string lpName)
-        {
-            NamedSharedMemory sharedMemory = new NamedSharedMemory(lpName);
-            sharedMemoryDict.Add(lpName, sharedMemory);
-            return sharedMemory.IsInitialized();
-        }
-
-        [ComVisible(true)]
+        // [ComVisible(false)]
         public NamedSharedMemory GetSharedMemory(string lpName)
         {
-            if (sharedMemoryDict.ContainsKey(lpName))
+            if (NamedSharedMemory.Cached.ContainsKey(lpName))
             {
-                NamedSharedMemory sharedMemory = sharedMemoryDict[lpName];
+                NamedSharedMemory sharedMemory = NamedSharedMemory.Cached[lpName];
                 if (sharedMemory.IsInitialized())
                 {
                     return sharedMemory;
@@ -175,13 +161,20 @@ namespace WelsonJS
         }
 
         [ComVisible(true)]
+        public bool OpenNamedSharedMemory(string lpName)
+        {
+            NamedSharedMemory sharedMemory = new NamedSharedMemory(lpName);
+            return sharedMemory.IsInitialized();
+        }
+
+
+        [ComVisible(true)]
         public void CloseNamedSharedMemory(string lpName)
         {
             NamedSharedMemory sharedMemory = GetSharedMemory(lpName);
             if (sharedMemory != null)
             {
                 sharedMemory.Close();
-                sharedMemoryDict.Remove(lpName);
             }
         }
 

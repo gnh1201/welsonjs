@@ -19,6 +19,8 @@
  * 
  */
 using System;
+using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -28,6 +30,9 @@ namespace WelsonJS
     {
         private IntPtr hFile;
         private IntPtr hFileMappingObject;
+        private string _lpName;
+
+        public static Dictionary<string, NamedSharedMemory> Cached;
 
         [Flags]
         public enum FileProtection : uint
@@ -91,8 +96,19 @@ namespace WelsonJS
 
         public void Open(string lpName)
         {
-            hFile = FileMappingNative.CreateFileMapping((IntPtr)(-1), IntPtr.Zero, FileProtection.PAGE_READWRITE, 0u, 1024u, lpName);
-            hFileMappingObject = FileMappingNative.MapViewOfFile(hFile, FileMapAccess.FILE_MAP_ALL_ACCESS, 0u, 0u, 1024u);
+            _lpName = lpName;
+
+            if (!Cached.ContainsKey(_lpName))
+            {
+                hFile = FileMappingNative.CreateFileMapping((IntPtr)(-1), IntPtr.Zero, FileProtection.PAGE_READWRITE, 0u, 1024u, _lpName);
+                hFileMappingObject = FileMappingNative.MapViewOfFile(hFile, FileMapAccess.FILE_MAP_ALL_ACCESS, 0u, 0u, 1024u);
+                Cached.Add(_lpName, this);
+            }
+            else
+            {
+                hFile = IntPtr.Zero;
+                hFileMappingObject = IntPtr.Zero;
+            }
         }
 
         public bool IsInitialized()
@@ -130,6 +146,11 @@ namespace WelsonJS
             {
                 FileMappingNative.CloseHandle(hFile);
                 hFile = IntPtr.Zero;
+            }
+
+            if (Cached.ContainsKey(_lpName))
+            {
+                Cached.Remove(_lpName);
             }
         }
     }
