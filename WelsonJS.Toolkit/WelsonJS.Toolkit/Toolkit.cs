@@ -1,5 +1,8 @@
 ﻿/*
- * WelsonJS.Toolkit: WelsonJS dotnet native component
+ * WelsonJS.Toolkit: WelsonJS dotNET native component
+ * 
+ *     filename:
+ *         Toolkit.cs
  * 
  *     description:
  *         WelsonJS - Build a Windows app on the Windows built-in JavaScript engine
@@ -27,7 +30,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -35,115 +37,51 @@ namespace WelsonJS
 {
     [ComVisible(true)]
     public class Toolkit
-    {   
+    {
         private Dictionary<string, NamedSharedMemory> sharedMemoryDict;
-        public static string ApplicationName = "WelsonJS";
 
-        [DllImport("user32.dll")]
-        public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+        public static readonly string ApplicationName = "WelsonJS";
 
-        [DllImport("user32.dll")]
-        public static extern IntPtr FindWindowEx(IntPtr hWnd1, IntPtr hWnd2, string lpsz1, string lpsz2);
-
-        [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-        public static extern bool PostMessage(IntPtr hWnd, uint msg, int wParam, IntPtr lParam);
-
-        [DllImport("user32.dll")]
-        public static extern int SendMessage(IntPtr hWnd, uint msg, int wParam, IntPtr lParam);
-
-        public enum WMessages : int
+        public Toolkit()
         {
-            WM_MOUSEMOVE = 0x200,
-            WM_LBUTTONDOWN = 0x201, //Left mousebutton down
-            WM_LBUTTONUP = 0x202,  //Left mousebutton up
-            WM_LBUTTONDBLCLK = 0x203, //Left mousebutton doubleclick
-            WM_RBUTTONDOWN = 0x204, //Right mousebutton down
-            WM_RBUTTONUP = 0x205,   //Right mousebutton up
-            WM_RBUTTONDBLCLK = 0x206, //Right mousebutton doubleclick
-            WM_KEYDOWN = 0x100,  //Key down
-            WM_KEYUP = 0x101,   //Key up
-            WM_SYSKEYDOWN = 0x104,
-            WM_SYSKEYUP = 0x105,
-            WM_CHAR = 0x102,     //char
-            WM_COMMAND = 0x111
-        }
-
-        public enum WVirtualKeys : int
-        {
-            VK_RETURN = 0x0D,
-            VK_F1 = 0x70,
-            VK_F2 = 0x71,
-            VK_F3 = 0x72,
-            VK_F4 = 0x73,
-            VK_F5 = 0x74,
-            VK_F6 = 0x75,
-            VK_F7 = 0x76,
-            VK_F8 = 0x77,
-            VK_F9 = 0x78,
-            VK_F10 = 0x79,
-            VK_F11 = 0x7A,
-            VK_F12 = 0x7B
-        }
-
-        public IntPtr QueryHandleWindow(string wName)
-        {
-            IntPtr hWnd = IntPtr.Zero;
-
-            foreach (Process pList in Process.GetProcesses())
-            {
-                if (pList.MainWindowTitle.Contains(wName))
-                {
-                    hWnd = pList.MainWindowHandle;
-                    break;
-                }
-            }
-
-            return hWnd;
+            sharedMemoryDict = new Dictionary<string, NamedSharedMemory>();
         }
 
         [ComVisible(true)]
-        public bool SendClick(string wName, int X, int Y)
+        public bool SendClick(string title, int x, int y)
         {
-            bool result = false;
-
-            IntPtr hWnd = QueryHandleWindow(wName);
+            IntPtr hWnd = Window.GetWindowByTitleContains(title);
             if (hWnd != IntPtr.Zero) {
-                PostMessage(hWnd, (int)WMessages.WM_LBUTTONDOWN, 1, new IntPtr(Y * 0x10000 + X));
-                PostMessage(hWnd, (int)WMessages.WM_LBUTTONUP, 0, new IntPtr(Y * 0x10000 + X));
-                result = true;
+                Window.PostMessage(hWnd, (int)Window.Message.WM_LBUTTONDOWN, 1, new IntPtr(y * 0x10000 + x));
+                Window.PostMessage(hWnd, (int)Window.Message.WM_LBUTTONUP, 0, new IntPtr(y * 0x10000 + x));
             }
 
-            return result;
+            return hWnd != IntPtr.Zero;
         }
 
         [ComVisible(true)]
-        public bool SendKey(string wName, char key)
+        public bool SendKey(string title, char key)
         {
-            IntPtr hWnd = QueryHandleWindow(wName);
+            IntPtr hWnd = Window.GetWindowByTitleContains(title);
             return SendKey(hWnd, key);
         }
 
         public bool SendKey(IntPtr hWnd, char key)
         {
-            return PostMessage(hWnd, (int)WMessages.WM_CHAR, key, IntPtr.Zero);
+            return Window.PostMessage(hWnd, (int)Window.Message.WM_CHAR, key, IntPtr.Zero);
         }
 
         [ComVisible(true)]
-        public bool SendKeys(string wName, string str)
+        public bool SendKeys(string title, string str)
         {
-            bool result = false;
-
-            IntPtr hWnd = QueryHandleWindow(wName);
+            IntPtr hWnd = Window.GetWindowByTitleContains(title);
             if (hWnd != IntPtr.Zero)
             {
-                foreach (char i in str)
-                {
-                    SendKey(hWnd, i);
-                }
-                result = true;
+                foreach (char i in str) SendKey(hWnd, i);
+                return true;
             }
 
-            return result;
+            return false;
         }
 
         [ComVisible(true)]
@@ -167,55 +105,48 @@ namespace WelsonJS
         }
 
         [ComVisible(true)]
-        public bool SendEnterKey(string wName)
+        public bool SendEnterKey(string title)
         {
-            IntPtr hWnd = QueryHandleWindow(wName);
+            IntPtr hWnd = Window.GetWindowByTitleContains(title);
 
             if (hWnd != IntPtr.Zero)
             {
-                PostMessage(hWnd, (int)WMessages.WM_KEYDOWN, (char)WVirtualKeys.VK_RETURN, IntPtr.Zero);
-                PostMessage(hWnd, (int)WMessages.WM_KEYUP, (char)WVirtualKeys.VK_RETURN, IntPtr.Zero);
+                Window.PostMessage(hWnd, (int)Window.Message.WM_KEYDOWN, (char)Window.VirtualKey.VK_RETURN, IntPtr.Zero);
+                Window.PostMessage(hWnd, (int)Window.Message.WM_KEYUP, (char)Window.VirtualKey.VK_RETURN, IntPtr.Zero);
                 return true;
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
 
         [ComVisible(true)]
-        public bool SendFnKey(string wName, int num) {
-            IntPtr hWnd = QueryHandleWindow(wName);
-            char cKey = (char)0x00;
-
-            if (hWnd != IntPtr.Zero)
+        public bool SendFnKey(string title, int num) {
+            char[] fnKeys = new char[]
             {
-                switch (num) {
-                    case 1: cKey = (char)WVirtualKeys.VK_F1; break;
-                    case 2: cKey = (char)WVirtualKeys.VK_F2; break;
-                    case 3: cKey = (char)WVirtualKeys.VK_F3; break;
-                    case 4: cKey = (char)WVirtualKeys.VK_F4; break;
-                    case 5: cKey = (char)WVirtualKeys.VK_F5; break;
-                    case 6: cKey = (char)WVirtualKeys.VK_F6; break;
-                    case 7: cKey = (char)WVirtualKeys.VK_F7; break;
-                    case 8: cKey = (char)WVirtualKeys.VK_F8; break;
-                    case 9: cKey = (char)WVirtualKeys.VK_F9; break;
-                    case 10: cKey = (char)WVirtualKeys.VK_F10; break;
-                    case 11: cKey = (char)WVirtualKeys.VK_F11; break;
-                    case 12: cKey = (char)WVirtualKeys.VK_F12; break;
-                }
-                
-                if (cKey != 0x00) {
-                    PostMessage(hWnd, (int)WMessages.WM_KEYDOWN, cKey, IntPtr.Zero);
-                    PostMessage(hWnd, (int)WMessages.WM_KEYUP, cKey, IntPtr.Zero);
-                }
+                (char)0x00,
+                (char)Window.VirtualKey.VK_F1,
+                (char)Window.VirtualKey.VK_F2,
+                (char)Window.VirtualKey.VK_F3,
+                (char)Window.VirtualKey.VK_F4,
+                (char)Window.VirtualKey.VK_F5,
+                (char)Window.VirtualKey.VK_F6,
+                (char)Window.VirtualKey.VK_F7,
+                (char)Window.VirtualKey.VK_F8,
+                (char)Window.VirtualKey.VK_F9,
+                (char)Window.VirtualKey.VK_F10,
+                (char)Window.VirtualKey.VK_F11,
+                (char)Window.VirtualKey.VK_F12
+            };
+            IntPtr hWnd = Window.GetWindowByTitleContains(title);
 
+            if (hWnd != IntPtr.Zero && (fnKeys.Length + 1 < num))
+            {
+                Window.PostMessage(hWnd, (int)Window.Message.WM_KEYDOWN, fnKeys[num], IntPtr.Zero);
+                Window.PostMessage(hWnd, (int)Window.Message.WM_KEYUP, fnKeys[num], IntPtr.Zero);
                 return true;
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
 
         // [Toolkit] Access to a shared memory #96
