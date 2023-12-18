@@ -1,22 +1,21 @@
 // testloader.js
+// Namhyeon Go <abuse@catswords.net>
+// https://github.com/gnh1201/welsonjs
 
 // load libraries
 var FILE = require("lib/file");
-
-// load the test profile
-var profile = JSON.parse(FILE.readFile("data/test-oss-20231030.json", FILE.CdoCharset.CdoUTF_8));
 
 // implement the tests
 var test_implements = {
     // Ref 1: https://gist.github.com/CityRay/c56e4fa874af9370cc1a367bd43095b0
     "es5_polyfills": function() {
         var parseIntIgnoresLeadingZeros = (function () {
-          return parseInt('010', 10) === 10;
+            return parseInt('010', 10) === 10;
         }());
         console.log("parseIntIgnoresLeadingZeros: " + String(parseIntIgnoresLeadingZeros) + " (Default on the built-in engine: true)");
 
         var DateISOString = (function () {
-          return !!(Date && Date.prototype && Date.prototype.toISOString);
+            return !!(Date && Date.prototype && Date.prototype.toISOString);
         }());
         console.log("DateISOString: " + String(DateISOString) + " (Default on the built-in engine: false)");
 
@@ -788,13 +787,70 @@ var test_implements = {
             .field("GROUP_CONCAT(DISTINCT test_score ORDER BY test_score DESC SEPARATOR ' ')")
             .group("name")
             .toString());
+    },
+	
+    // profile: data/test-msoffice-20231219.json
+    "open_excel_file": function() {
+        var Office = require("lib/msoffice");
+        var excel = new Office.Excel();   // Create an Excel instance
+        excel.open("data\example.xlsx");   // Open the Excel window
+    },
+	
+    "open_excel_with_chatgpt": function() {
+        // Load libraries
+        var Office = require("lib/msoffice");
+        var ChatGPT = require("lib/chatgpt");
+
+        // Create an Excel instance
+        var excel = new Office.Excel();
+
+        // List of questions
+        var questions = [
+            "Which one does Mom like, and which one does Dad like?",
+            "If 100 billion won is deposited into my bank account without my knowledge, what would I do?",
+            "If my friend passed out from drinking, and Arnold Schwarzenegger suggests having a drink together alone, is it okay to ditch my friend and go with him?",
+            "If there's a snake in our tent during the company camping trip, should I wake up the manager, or should I escape on my own without waking him up?"
+        ];
+
+        // Open the Excel window
+        excel.open();
+        
+        // Answer to questions
+        var i = 1;
+        questions.forEach(function(x) {
+            var answer = ChatGPT.chat(x);
+            console.log("Answer:", answer);
+            excel.getCellByPosition(i, 1).setValue(answer);
+            i++;
+        });
+
+        // Close the Excel window
+        //excel.close();
+    },
+	
+    "open_powerpoint_file": function() {
+        var Office = require("lib/msoffice");   // Load libraries
+        var powerpoint = new Office.PowerPoint();   // Create a PowerPoint instance
+        powerpoint.open("data\example.pptx");   // Open the PowerPoint window
+    },
+    
+    "open_word_file": function() {
+        var Office = require("lib/msoffice");    // Load libraries
+        var word = new Office.Word();   // Create an Word instance
+        word.open("data\example.docx");   // Open the Word window
     }
 };
 
 function main(args) {
+    // EXAMPLE: cscript app.js testloader <es5_polyfills> <data\test-oss-20231030.json>
     if (args.length > 0) {
         var test_id = args[0];
+        var profilefile = args[1];
 
+        // load the test profile
+        var profile = JSON.parse(FILE.readFile(profilefile, FILE.CdoCharset.CdoUTF_8));
+
+        // do test
         if (test_id in test_implements) {
             var test = profile.tests.find(function(x) {
                 return (x.id == test_id);

@@ -1,3 +1,6 @@
+// shoutcut.js
+// Namhyeon Go <abuse@catswords.net>
+// https://github.com/gnh1201/welsonjs
 var SHELL = require("lib/shell");
 var SYS = require("lib/system");
 

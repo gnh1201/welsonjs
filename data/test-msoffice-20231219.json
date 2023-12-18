@@ -1,0 +1,59 @@
+{
+    "description": "WelsonJS test profile for Microsoft Office",
+    "date": "2023-12-19",
+    "revision": "20231219r1",
+    "authors": [
+        "Namhyeon Go <gnh1201@gmail.com>"
+    ],
+    "links": [
+        "https://github.com/gnh1201/welsonjs",
+        "https://catswords.social/@catswords_oss"
+    ],
+    "tags": [
+        "javascript",
+        "microsoft",
+        "coffeescript",
+        "windows",
+        "typescript",
+        "html5",
+        "js",
+        "uri",
+        "desktop",
+        "ie",
+        "hta",
+        "es5",
+        "jscript",
+        "wsh",
+        "msoffice",
+        "mshtml",
+        "lolbins",
+        "lolbas",
+        "rescript",
+        "mshta"
+    ],
+    "schema": {
+        "version": "0.1"
+    },
+    "tests": [
+        {
+            "id": "open_excel_file",
+            "description": "마이크로소프트 엑셀 파일 열기 및 편집 가능 여부 확인",
+            "tags": ["Office", "Excel"]
+        },
+        {
+            "id": "open_excel_with_chatgpt",
+            "description": "마이크로소프트 엑셀 파일 열기 및 ChatGPT를 이용한 편집 가능 여부 확인",
+            "tags": ["Office", "Excel"]
+        },
+        {
+            "id": "open_powerpoint_file",
+            "description": "마이크로소프트 파워포인트 파일 열기 및 편집 가능 여부 확인",
+            "tags": ["Office", "PowerPoint"]
+        },
+        {
+            "id": "open_word_file",
+            "description": "마이크로소프트 워드 파일 열기 및 편집 가능 여부 확인",
+            "tags": ["Office", "Word"]
+        }
+    ]
+}
