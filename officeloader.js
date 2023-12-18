@@ -1,13 +1,12 @@
 // officeloader.js
 // Namhyeon Go <abuse@catswords.net>
 // https://github.com/gnh1201/welsonjs
-
 var SYS = require("lib/system");
 var Office = require("lib/msoffice");
 var ChatGPT = require("lib/chatgpt");
 
 function main(args) {
-    // 기존 파일을 여는 경우 인자에 파일 경로 추가
+    // EXAMPLE: cscript app.js officeloader data\example.xlsx
     if (args.length > 0) {
         var filename = args[0];
         open(filename);
@@ -17,22 +16,56 @@ function main(args) {
 }
 
 function open(filename) {
-    // 엑셀 인스턴스 생성
-    var excel = new Office.Excel();
-    
-    // 엑셀 열기
-    excel.open(filename);
-    
-    // .... 여기서 작업하세요 ....
+    var filetypes = [
+        {"application": "excel", "filetypes": Office.Excel.SupportedFileTypes},
+        {"application": "powerpoint", "filetypes": Office.PowerPoint.SupportedFileTypes},
+        {"application": "word", "filetypes": Office.Word.SupportedFileTypes}
+    ];
 
-    // 엑셀 닫기
-    //excel.close();
+    var resolved_filetype = filetypes.reduce(function(a, x) {
+        if (a == '') {
+            var application = x.application;
+            var extensions = x.filetypes.reduce(function(b, x) {
+                return b.concat(x.extension);
+            }, []);
+
+            return extensions.reduce(function(b, x) {
+                return (b == '' && filename.lastIndexOf(x) > -1 ? application : b);
+            }, '');
+        }
+
+        return a;
+    }, '');
+    
+    switch (resolved_filetype) {
+        case "excel": {
+            var excel = new Office.Excel();   // Create an Excel instance
+            excel.open(filename);  // Open the Excel instance
+            break;
+        }
+        
+        case "powerpoint": {
+            var powerpoint = new Office.PowerPoint();   // Create a PowerPoint instance
+            powerpoint.open(filename);  // Open the PowerPoint instance
+            break;
+        }
+
+        case "word": {
+            var word = new Office.Word();   // Create an Word instance
+            word.open(filename);  // Open the Word instance
+            break;
+        }
+
+        default: {
+            console.error("Not supported filetype");
+        }
+    }
 }
 
 function test() {
     // 엑셀 인스턴스 생성
     var excel = new Office.Excel();
-    
+
     // 질문 목록
     var questions = [
         "엄마가 좋아 아빠가 좋아?",
