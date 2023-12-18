@@ -793,7 +793,7 @@ var test_implements = {
     "open_excel_file": function() {
         var Office = require("lib/msoffice");
         var excel = new Office.Excel();   // Create an Excel instance
-        excel.open("data\example.xlsx");   // Open the Excel window
+        excel.open("data\\example.xlsx");   // Open the Excel window
     },
 	
     "open_excel_with_chatgpt": function() {
@@ -831,13 +831,13 @@ var test_implements = {
     "open_powerpoint_file": function() {
         var Office = require("lib/msoffice");   // Load libraries
         var powerpoint = new Office.PowerPoint();   // Create a PowerPoint instance
-        powerpoint.open("data\example.pptx");   // Open the PowerPoint window
+        powerpoint.open("data\\example.pptx");   // Open the PowerPoint window
     },
     
     "open_word_file": function() {
         var Office = require("lib/msoffice");    // Load libraries
         var word = new Office.Word();   // Create an Word instance
-        word.open("data\example.docx");   // Open the Word window
+        word.open("data\\example.docx");   // Open the Word window
     }
 };
 
