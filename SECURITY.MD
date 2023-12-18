@@ -33,8 +33,9 @@ WelsonJS is a project initiated by a cloud service provider in response to a req
 
 ## Alternative names
 This program is also known by the following name. This name is used solely for the purpose of identifying the work and does not impact the license:
-- "C-2021-000237" (Copyright Registration Online System, Korea Copyright Commission, Republic of Korea)
 - "A0562" (2023 Open-source Development Contest, NIPA National IT Industry Promotion Agency, Republic of Korea)
+- "C-2021-000237" (Copyright Registration Online System, Korea Copyright Commission, Republic of Korea)
+- "Codename Macadamia" (2020)
 
 ## Report abuse
 If you discover any instances of this project being misused, please report them.
