@@ -1,5 +1,6 @@
 var SYS = require("lib/system");
 var HTTP = require("lib/http");
+//var Toolkit = require("lib/toolkit");
 
 function main(args) {
     console.log("Hello world");
@@ -11,8 +12,10 @@ function main(args) {
         var web = HTTP.create();
         console.log(web.userAgent);
     } catch (e) {
-        console.error("Something wrong");
+        console.error("lib/http: Something wrong");
     }
+
+    //Toolkit.create();
 }
 
 exports.main = main;
