@@ -35,7 +35,7 @@
   * SDK (Software Development Kit)
     * [Android SDK Platform Tools](https://developer.android.com/studio/releases/platform-tools) [r33.0.0]
   * Runtimes
-    * [ChakraCore (x64/x86/ARM)] (https://github.com/chakra-core/ChakraCore) [v1.11.24]
+    * [ChakraCore (x64/x86/ARM)](https://github.com/chakra-core/ChakraCore) [v1.11.24]
     * [bytecodealliance/wasm-micro-runtime](https://github.com/bytecodealliance/wasm-micro-runtime) [44d75ce]
 
 ## Report abuse
