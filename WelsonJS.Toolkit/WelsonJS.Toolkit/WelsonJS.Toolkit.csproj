@@ -47,6 +47,7 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Compression\LZ77.cs" />
     <Compile Include="NamedSharedMemory.cs" />
     <Compile Include="Prompt.cs" />
     <Compile Include="Toolkit.cs" />
