@@ -16,8 +16,8 @@
   * Embeddable Python
     * Python Windows embeddable package [3.10.2]
 	  * "Preconfigured Python for WelsonJS"
-	    * [Download welsonjs-preconfigured-python-3.10.2-embed.zip](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/welsonjs-preconfigured-python-3.10.2-embed.zip)
-		* [Download welsonjs-preconfigured-python-3.10.2-embed.7z](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/welsonjs-preconfigured-python-3.10.2-embed.7z)
+	    * [Download welsonjs-preconfigured-python-3.10.2-embed.zip (from Cloudflare R2)](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/welsonjs-preconfigured-python-3.10.2-embed.zip)
+		* [Download welsonjs-preconfigured-python-3.10.2-embed.7z (from Cloudflare R2)](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/welsonjs-preconfigured-python-3.10.2-embed.7z)
       * [64-bit](https://www.python.org/downloads/release/python-3102/)
       * [32-bit](https://www.python.org/downloads/release/python-3102/)
     * Python Modules (32bit or 64bit)
