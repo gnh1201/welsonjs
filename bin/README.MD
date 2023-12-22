@@ -9,13 +9,13 @@
   * GTK+
     * [GTK+ for Windows Runtime Environment Installer](https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer) [2.24.33-2021-01-30]]
     * [jopbrown/gtk-server](https://github.com/jopbrown/gtk-server) [gtk-server-2.4.5-gtk-2.24.32-win64]
-    * Download [libffi-7.dll](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/gtk-server-libffi-7.zip) [Modified file from Windows build of GIMP]
+    * "libffi-7.dll" [Download .zip](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/gtk-server-libffi-7.zip)
   * Compression
     * I recommend using [PeaZip](https://peazip.github.io/) or [7-Zip](https://www.7-zip.org/). I will provide an update to work with these software soon.
     * LZ77 (aka. MsCompress) algorithm supports its own implementation within this project.
   * Embeddable Python
     * Python Windows embeddable package [3.10.2]
-	  * Download "Preconfigured Python for WelsonJS" [zip](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/welsonjs-preconfigured-python-3.10.2-embed.zip) [7z](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/welsonjs-preconfigured-python-3.10.2-embed.7z)
+	  * "Preconfigured Python for WelsonJS" [Download .zip](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/welsonjs-preconfigured-python-3.10.2-embed.zip) [Download .7z](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/welsonjs-preconfigured-python-3.10.2-embed.7z)
       * [64-bit](https://www.python.org/downloads/release/python-3102/)
       * [32-bit](https://www.python.org/downloads/release/python-3102/)
     * Python Modules (32bit or 64bit)
