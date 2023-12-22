@@ -3,7 +3,7 @@
 ////////////////////////////////////////////////////////////////////////
 var CONFIG = require("lib/config");
 var FILE = require("lib/file");
-var OldBrowser = require("lib/oldbrowser");
+var Browser = require("lib/browser");
 
 ////////////////////////////////////////////////////////////////////////
 // Override global.console._echo()
@@ -108,26 +108,26 @@ global.exit = function() {
 ////////////////////////////////////////////////////////////////////////
 // exports.IEVersion
 ////////////////////////////////////////////////////////////////////////
-exports.IEVersion = OldBrowser.getIEVersion();
+exports.IEVersion = Browser.getIEVersion();
 
 ////////////////////////////////////////////////////////////////////////
 // exports.main()
 ////////////////////////////////////////////////////////////////////////
 exports.main = function(args) {
     // make will display contents
-    OldBrowser.setContent(FILE.readFile("app\\index.html", FILE.CdoCharset.CdoUTF_8));
+    Browser.setContent(FILE.readFile("app\\index.html", FILE.CdoCharset.CdoUTF_8));
 
     // add stylesheets
-    OldBrowser.addStylesheet("app/assets/css/jquery-ui-1.21.1.min.css");
-    OldBrowser.addStylesheet("app/assets/css/jquery.toast-1.3.2.min.css");
-    OldBrowser.addStylesheet("app/assets/css/cascade/production/build-full.min.css");
-    OldBrowser.addStylesheet("app/assets/css/style.css");
+    Browser.addStylesheet("app/assets/css/jquery-ui-1.21.1.min.css");
+    Browser.addStylesheet("app/assets/css/jquery.toast-1.3.2.min.css");
+    Browser.addStylesheet("app/assets/css/cascade/production/build-full.min.css");
+    Browser.addStylesheet("app/assets/css/style.css");
 
     // start
-    OldBrowser.start(function(el) {
+    Browser.start(function(el) {
         jQuery.support.cors = true;
 
-        OldBrowser.addScript("app/assets/js/jquery.toast-1.3.2.min.js", function(el) {
+        Browser.addScript("app/assets/js/jquery.toast-1.3.2.min.js", function(el) {
             var messages = global.console._messages;
             if (messages.length > 0) {
                 // print messages
@@ -136,8 +136,8 @@ exports.main = function(args) {
                 }
 
                 // start this app
-                OldBrowser.addScript("app/assets/js/jquery.form-4.3.0.min.js");
-                OldBrowser.addScript("app/index.js");
+                Browser.addScript("app/assets/js/jquery.form-4.3.0.min.js");
+                Browser.addScript("app/index.js");
 
                 // hide loading image
                 document.getElementById("loading").style.display = "none";

@@ -495,15 +495,8 @@ function initializeWindow(name, args, w, h) {
 // JSON 2
 __include__("app/assets/js/json2");
 
-// JSON 3 was a JSON polyfill for older JavaScript platforms
-//var JSON = require("app/assets/js/json3-3.3.2.min");
-
-// core-js (Formerly aka, babel-polyfill)
+// core-js (aka. babel-polyfill)
 require("app/assets/js/core-js-3.26.1.minified");
-
-// es5-shims
-//require("app/assets/js/es5-shim-4.5.15.min");
-//require("app/assets/js/es5-sham-4.5.15.min");
 
 // Squel.js SQL query string builder for Javascript
 var squel = require("app/assets/js/squel-basic-5.13.0.hiddentao-afa1cb5.wsh");

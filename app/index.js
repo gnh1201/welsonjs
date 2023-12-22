@@ -1,16 +1,27 @@
-// index.js
-// The entrypoint on WelsonJS GUI envionment
-
+// index.js - The entrypoint on WelsonJS GUI envionment
+// Namhyeon Go <abuse@catswords.net>
+// https://github.com/gnh1201/welsonjs
 var FILE = require("lib/file");
 var SHELL = require("lib/shell");
-var OldBrowser = require("lib/oldbrowser");
+var Browser = require("lib/browser");
 var Router = require("lib/router").Router;
 
 // using jsrender
 Router.setRender(function(filename, data) {
     var template = FILE.readFile(filename, FILE.CdoCharset.CdoUTF_8);
     var tmpl = $.templates(template);
-    OldBrowser.setContent(tmpl.render(data));
+    Browser.setContent(tmpl.render(data));
+
+    // check all links
+    Object.values(document.getElementsByTagName("a")).map(function(x) {
+        x.addEventListener("click", function(e) {
+            var href = e.target.getAttribute("href");    // NOTE: x.href != x.getAttribute("href")
+            if (href.indexOf('/') == 0) {
+                e.preventDefault();
+                Router.go(href);
+            }
+        });
+    });
 });
 
 // main
@@ -57,9 +68,10 @@ Router.add('/test', function(render) {
 
         alert("모든 메시지가 정상적으로 보였다면 테스트에 성공한 것입니다.");
     };
-    
-    var data = JSON.parse(FILE.readFile("data/test-oss-20231030.json", FILE.CdoCharset.CdoUTF_8));
-    render("app\\test.html", {
+
+    var content = FILE.readFile("data/test-oss-20231030.json", FILE.CdoCharset.CdoUTF_8);
+    var data = JSON.parse(content);
+    render("app/test.html", {
         "data": data
     });
 });
@@ -67,7 +79,7 @@ Router.add('/test', function(render) {
 // nodepad
 Router.add('/notepad', function(render) {
     // load resources
-    OldBrowser.addResources([
+    Browser.addResources([
         {
             type: "javascript",
             url: "app/assets/mixed/summernote-0.8.18-dist/summernote-lite.js"
