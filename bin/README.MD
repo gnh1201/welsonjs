@@ -7,7 +7,7 @@
 
 ## Recommended packages
   * GTK+
-    * [GTK+ for Windows Runtime Environment Installer](https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer) [2.24.33-2021-01-30]]
+    * [GTK+ for Windows Runtime Environment Installer](https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer) [2.24.33-2021-01-30]
     * [jopbrown/gtk-server](https://github.com/jopbrown/gtk-server) [gtk-server-2.4.5-gtk-2.24.32-win64]
     * "libffi-7.dll"
       * [Download gtk-server-libffi-7.zip (from Cloudflare R2)](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/gtk-server-libffi-7.zip)
