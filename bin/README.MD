@@ -32,7 +32,7 @@
     * [basil00/Divert](https://github.com/basil00/Divert) [2.2.0]
     * [vi/websocat](https://github.com/vi/websocat) [v1.9.0]
     * [DDoSolitary/shadowsocks-libev-win](https://github.com/DDoSolitary/shadowsocks-libev-win) [Build 2022-01-18]
-    * [NMAP for Windows [7.92]](https://nmap.org/download.html)
+    * [NMAP for Windows](https://nmap.org/download.html) [7.92]
     * [THC Hydra for Windows](https://github.com/vanhauser-thc/thc-hydra) [v9.1]
   * SDK (Software Development Kit)
     * [Android SDK Platform Tools](https://developer.android.com/studio/releases/platform-tools) [r33.0.0]
