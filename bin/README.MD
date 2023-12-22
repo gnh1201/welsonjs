@@ -17,21 +17,23 @@
     * LZ77 (aka. MsCompress) algorithm supports its own implementation within this project.
   * Embeddable Python
     * Python Windows embeddable package [3.10.2]
-	  * "Preconfigured Python for WelsonJS"
-	    * [Download welsonjs-preconfigured-python-3.10.2-embed.zip (from Cloudflare R2)](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/welsonjs-preconfigured-python-3.10.2-embed.zip)
-		* [Download welsonjs-preconfigured-python-3.10.2-embed.7z (from Cloudflare R2)](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/welsonjs-preconfigured-python-3.10.2-embed.7z)
+      * "Preconfigured Python for WelsonJS"
+        * [Download welsonjs-preconfigured-python-3.10.2-embed.zip (from Cloudflare R2)](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/welsonjs-preconfigured-python-3.10.2-embed.zip)
+        * [Download welsonjs-preconfigured-python-3.10.2-embed.7z (from Cloudflare R2)](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/welsonjs-preconfigured-python-3.10.2-embed.7z)
       * [64-bit](https://www.python.org/downloads/release/python-3102/)
       * [32-bit](https://www.python.org/downloads/release/python-3102/)
     * Python Modules (32bit or 64bit)
       * [Beautiful Soup](https://www.crummy.com/software/BeautifulSoup/bs4/doc/) [4.9.0] 
       * [python-nmap](https://bitbucket.org/xael/python-nmap) [0.7.1]
       * [pywin32](https://github.com/mhammond/pywin32) [Build 303]
-	  * [gRPC](https://github.com/grpc/grpc) [Release v1.57.0]
+      * [gRPC](https://github.com/grpc/grpc) [Release v1.57.0]
   * Network tools
     * [CURL for Windows](https://curl.se/windows/) [7.81.0]
     * [basil00/Divert](https://github.com/basil00/Divert) [2.2.0]
     * [vi/websocat](https://github.com/vi/websocat) [v1.9.0]
     * [DDoSolitary/shadowsocks-libev-win](https://github.com/DDoSolitary/shadowsocks-libev-win) [Build 2022-01-18]
+      * [Download shadowsocks-libev-win-build-20220118.zip (from Cloudflare R2)](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/shadowsocks-libev-win-build-20220118.zip)
+      * [Download welsonjs-preconfigured-python-3.10.2-embed.7z (from Cloudflare R2)](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/welsonjs-preconfigured-python-3.10.2-embed.7z)
     * [NMAP for Windows](https://nmap.org/download.html) [7.92]
     * [THC Hydra for Windows](https://github.com/vanhauser-thc/thc-hydra) [v9.1]
   * SDK (Software Development Kit)
