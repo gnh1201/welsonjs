@@ -209,5 +209,17 @@ namespace WelsonJS
                 sharedMemory.Clear();
             }
         }
+
+        [ComVisible(true)]
+        public void CompressLZ77(string input)
+        {
+            Compression.LZ77.Compress(input);
+        }
+
+        [ComVisible(true)]
+        public string DecompressLZ77(string compressData)
+        {
+            return Compression.LZ77.Decompress(compressData);
+        }
     }
 }

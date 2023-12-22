@@ -234,35 +234,6 @@
         },
         {
             "scope": [],
-            "name": "MsCompress for Windows",
-            "author": "gnuwin32",
-            "distributer": "gnuwin32",
-            "license": "GPL",
-            "architecture": ["x86"],
-            "website": "https://gnuwin32.sourceforge.net/packages/mscompress.htm",
-            "release": {
-                "version": "0.3",
-                "build": "2004-03-14",
-                "date": "2004-03-14",
-                "changelog": "https://gnuwin32.sourceforge.net/packages/mscompress.htm"
-            },
-            "environment": {
-                "knownAs": [
-                    "mscompress",
-                    "mscompress.exe"
-                ],
-                "knownPath": []
-            },
-            "binaries": [
-                {
-                    "architecture": "x86",
-                    "downloadLink": "https://gnuwin32.sourceforge.net/downlinks/mscompress-bin-zip.php",
-                    "tags": ["archive", "lz77", "standalone"]
-                }
-            ]
-        },
-        {
-            "scope": [],
             "name": "github.com/philr/bzip2-windows",
             "author": "Julian Seward",
             "distributer": "@philr",
