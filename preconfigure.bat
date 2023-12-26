@@ -1,6 +1,6 @@
 @echo off
 rem preconfigure.bat
-rem Namhyeon Go <gnh1201@gmail.com>
+rem Namhyeon Go (gnh1201@gmail.com)
 rem https://github.com/gnh1201/welsonjs
 
 pushd %~dp0
