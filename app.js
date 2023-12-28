@@ -520,7 +520,7 @@ function __main__() {
     console.log("   \\ V  V /  __/ \\__ \\ (_) | | | | |_| |___) |");
     console.log("    \\_/\\_/ \\___|_|___/\\___/|_| |_|\\___/|____/ ");
     console.log("");
-	console.log("    WelsonJS - Build a Windows app on the Windows built-in JavaScript engine");
+    console.log("    WelsonJS - Build a Windows app on the Windows built-in JavaScript engine");
     console.log("    https://github.com/gnh1201/welsonjs");
     console.log("");
 
