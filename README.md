@@ -64,6 +64,7 @@ I presented this project in [the open-source contest in the Republic of Korea in
 - lib/chrome (Chrome Web Browser Debugging interface)
 - lib/toolkit (`WelsonJS.Toolkit` native component)
 - lib/pipe-ipc (PIPE-based IPC(Inter-Process Communication) implementation)
+- lib/chatgpt ([ChatGPT](https://openai.com/chatgpt) integration)
 - Everything you can imagine. 
 
 ## Make your own `sayhello` example
