@@ -111,6 +111,8 @@ ended say()
 ## Screenshots
 ![Screenshot 1](app/assets/img/screenshot.png)
 
+![Screenshot 2](app/assets/img/screenshot2.png)
+
 ## Thanks!
 ![Thanks 1](app/assets/img/thanks.png)
 
