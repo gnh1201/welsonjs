@@ -8,10 +8,10 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("WelsonJS.Toolkit")]
 [assembly: AssemblyDescription("WelsonJS dotNET native component")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Catswords Research")]
+[assembly: AssemblyCompany("Catswords Research, Co.")]
 [assembly: AssemblyProduct("WelsonJS.Toolkit")]
-[assembly: AssemblyCopyright("Catswords Research (Licensed under GPLv3 or MS-RL)")]
-[assembly: AssemblyTrademark("WelsonJS.Toolkit")]
+[assembly: AssemblyCopyright("Catswords Research, Co. (Licensed under GPLv3 or MS-RL)")]
+[assembly: AssemblyTrademark("WelsonJS")]
 [assembly: AssemblyCulture("")]
 
 // ComVisible을 false로 설정하면 이 어셈블리의 형식이 COM 구성 요소에 

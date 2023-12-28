@@ -67,16 +67,16 @@ namespace WelsonJS
         {
             public const int INVALID_HANDLE_VALUE = -1;
 
-            [DllImport("Kernel32.dll", SetLastError = true)]
+            [DllImport("kernel32.dll", SetLastError = true)]
             public static extern IntPtr CreateFileMapping(IntPtr hFile, IntPtr lpAttributes, FileProtection flProtect, uint dwMaximumSizeHigh, uint dwMaximumSizeLow, string lpName);
 
-            [DllImport("Kernel32.dll", SetLastError = true)]
+            [DllImport("kernel32.dll", SetLastError = true)]
             public static extern IntPtr MapViewOfFile(IntPtr hFileMappingObject, FileMapAccess dwDesiredAccess, uint dwFileOffsetHigh, uint dwFileOffsetLow, uint dwNumberOfBytesToMap);
 
             [DllImport("kernel32.dll", SetLastError = true)]
             public static extern IntPtr OpenFileMapping(FileMapAccess dwDesiredAccess, bool bInheritHandle, string lpName);
 
-            [DllImport("Kernel32.dll", SetLastError = true)]
+            [DllImport("kernel32.dll", SetLastError = true)]
             [return: MarshalAs(UnmanagedType.Bool)]
             public static extern bool UnmapViewOfFile(IntPtr lpBaseAddress);
 
