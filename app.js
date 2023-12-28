@@ -513,6 +513,16 @@ var is = require("app/assets/js/is-0.9.0.min");
 
 // Dive into entrypoint 
 function __main__() {
+    console.log("");
+    console.log(" __        __   _                     _ ____  ");
+    console.log(" \\ \\      / /__| |___  ___  _ __     | / ___| ");
+    console.log("  \\ \\ /\\ / / _ \\ / __|/ _ \\| '_ \\ _  | \\___ \\ ");
+    console.log("   \\ V  V /  __/ \\__ \\ (_) | | | | |_| |___) |");
+    console.log("    \\_/\\_/ \\___|_|___/\\___/|_| |_|\\___/|____/ ");
+    console.log("");
+    console.log("     https://github.com/gnh1201/welsonjs");
+    console.log("");
+
     if (typeof window === "undefined") {
         initializeConsole();
     } else {
