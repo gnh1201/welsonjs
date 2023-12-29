@@ -29,9 +29,8 @@ namespace WelsonJS
     {
         private IntPtr hFile;
         private IntPtr hFileMappingObject;
-        private string _lpName;
-
-        public static Dictionary<string, NamedSharedMemory> Cached;
+        private string lpName;
+        private static Dictionary<string, NamedSharedMemory> memDict;
 
         [Flags]
         public enum FileProtection : uint
@@ -63,7 +62,7 @@ namespace WelsonJS
             FILE_MAP_ALL_ACCESS = 0xF001F
         }
 
-        public class FileMappingNative
+        public static class FileMappingNative
         {
             public const int INVALID_HANDLE_VALUE = -1;
 
@@ -90,24 +89,31 @@ namespace WelsonJS
 
         public NamedSharedMemory(string lpName)
         {
-            Open(lpName);
+            this.lpName = lpName;
+            Open();
         }
 
-        public void Open(string lpName)
+        public bool Open()
         {
-            _lpName = lpName;
+            if (memDict.ContainsKey(lpName))
+            {
+                hFile = memDict[lpName].hFile;
+                hFileMappingObject = memDict[lpName].hFileMappingObject;
+                return true;
+            }
 
-            if (!Cached.ContainsKey(_lpName))
+            try
             {
-                hFile = FileMappingNative.CreateFileMapping((IntPtr)(-1), IntPtr.Zero, FileProtection.PAGE_READWRITE, 0u, 1024u, _lpName);
+                hFile = FileMappingNative.CreateFileMapping((IntPtr)(-1), IntPtr.Zero, FileProtection.PAGE_READWRITE, 0u, 1024u, lpName);
                 hFileMappingObject = FileMappingNative.MapViewOfFile(hFile, FileMapAccess.FILE_MAP_ALL_ACCESS, 0u, 0u, 1024u);
-                Cached.Add(_lpName, this);
+                memDict.Add(lpName, this);
             }
-            else
+            catch
             {
-                hFile = IntPtr.Zero;
-                hFileMappingObject = IntPtr.Zero;
+                return false;
             }
+
+            return IsInitialized();
         }
 
         public bool IsInitialized()
@@ -120,37 +126,59 @@ namespace WelsonJS
             return Marshal.PtrToStringAnsi(hFileMappingObject);
         }
 
-        public void WriteText(string text, int size = 1024)
+        public bool WriteText(string text, int size = 1024)
         {
-            byte[] bytes = Encoding.ASCII.GetBytes(text);
-            byte[] array = new byte[size + 1];
-            Array.Copy(bytes, array, bytes.Length);
-            Marshal.Copy(array, 0, hFileMappingObject, size);
+            try
+            {
+                byte[] bytes = Encoding.ASCII.GetBytes(text);
+                byte[] array = new byte[size + 1];
+                Array.Copy(bytes, array, bytes.Length);
+                Marshal.Copy(array, 0, hFileMappingObject, size);
+            }
+            catch
+            {
+                return false;
+            }
+
+            return true;
         }
 
-        public void Clear(int size = 1024)
+        public bool Clear(int size = 1024)
         {
-            Marshal.Copy(new byte[size + 1], 0, hFileMappingObject, size);
+            try
+            {
+                Marshal.Copy(new byte[size + 1], 0, hFileMappingObject, size);
+            }
+            catch
+            {
+                return false;
+            }
+
+            return true;
         }
 
-        public void Close()
+        public bool Close()
         {
-            if (hFileMappingObject != IntPtr.Zero)
+            try
             {
-                FileMappingNative.UnmapViewOfFile(hFileMappingObject);
-                hFileMappingObject = IntPtr.Zero;
+                if (hFileMappingObject != IntPtr.Zero)
+                {
+                    FileMappingNative.UnmapViewOfFile(hFileMappingObject);
+                    hFileMappingObject = IntPtr.Zero;
+                }
+
+                if (hFile != IntPtr.Zero)
+                {
+                    FileMappingNative.CloseHandle(hFile);
+                    hFile = IntPtr.Zero;
+                }
+            }
+            catch
+            {
+                return false;
             }
 
-            if (hFile != IntPtr.Zero)
-            {
-                FileMappingNative.CloseHandle(hFile);
-                hFile = IntPtr.Zero;
-            }
-
-            if (Cached.ContainsKey(_lpName))
-            {
-                Cached.Remove(_lpName);
-            }
+            return true;
         }
     }
 }

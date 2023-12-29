@@ -144,73 +144,53 @@ namespace WelsonJS
         }
 
         // [Toolkit] Access to a shared memory #96
-
-        // [ComVisible(false)]
-        public NamedSharedMemory GetSharedMemory(string lpName)
+        [ComVisible(true)]
+        public bool WriteTextToSharedMemory(string lpName, string text)
         {
-            if (NamedSharedMemory.Cached.ContainsKey(lpName))
+            NamedSharedMemory mem = new NamedSharedMemory(lpName);
+            if (mem.IsInitialized())
             {
-                NamedSharedMemory sharedMemory = NamedSharedMemory.Cached[lpName];
-                if (sharedMemory.IsInitialized())
-                {
-                    return sharedMemory;
-                }
+                return mem.WriteText(text);
             }
 
-            return null;
-        }
-
-        [ComVisible(true)]
-        public bool OpenNamedSharedMemory(string lpName)
-        {
-            NamedSharedMemory sharedMemory = new NamedSharedMemory(lpName);
-            return sharedMemory.IsInitialized();
-        }
-
-
-        [ComVisible(true)]
-        public void CloseNamedSharedMemory(string lpName)
-        {
-            NamedSharedMemory sharedMemory = GetSharedMemory(lpName);
-            if (sharedMemory != null)
-            {
-                sharedMemory.Close();
-            }
+            return false;
         }
 
         [ComVisible(true)]
         public string ReadTextFromSharedMemory(string lpName)
         {
-            NamedSharedMemory sharedMemory = GetSharedMemory(lpName);
-            if (sharedMemory != null)
-            {
-                return sharedMemory.ReadText();
+            NamedSharedMemory mem = new NamedSharedMemory(lpName);
+            if (mem.IsInitialized()) {
+                return mem.ReadText();
             }
 
             return "";
         }
 
         [ComVisible(true)]
-        public void WriteTextToSharedMemory(string lpName, string text)
+        public bool ClearSharedMemory(string lpName)
         {
-            NamedSharedMemory sharedMemory = GetSharedMemory(lpName);
-            if (sharedMemory != null)
+            NamedSharedMemory mem = new NamedSharedMemory(lpName);
+            if (mem.IsInitialized())
             {
-                sharedMemory.WriteText(text);
+                return mem.Clear();
             }
+
+            return false;
         }
 
         [ComVisible(true)]
-        public void ClearSharedMemory(string lpName)
+        public bool CloseSharedMemory(string lpName)
         {
-            NamedSharedMemory sharedMemory = GetSharedMemory(lpName);
-            if (sharedMemory != null)
+            NamedSharedMemory mem = new NamedSharedMemory(lpName);
+            if (mem.IsInitialized())
             {
-                sharedMemory.Clear();
+                return mem.Close();
             }
+
+            return false;
         }
 
-        [ComVisible(true)]
         public void CompressLZ77(string input)
         {
             Compression.LZ77.Compress(input);
