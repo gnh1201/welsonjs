@@ -788,14 +788,14 @@ var test_implements = {
             .group("name")
             .toString());
     },
-	
+    
     // profile: data/test-msoffice-20231219.json
     "open_excel_file": function() {
         var Office = require("lib/msoffice");
         var excel = new Office.Excel();   // Create an Excel instance
         excel.open("data\\example.xlsx");   // Open the Excel window
     },
-	
+    
     "open_excel_with_chatgpt": function() {
         // Load libraries
         var Office = require("lib/msoffice");
@@ -827,7 +827,7 @@ var test_implements = {
         // Close the Excel window
         //excel.close();
     },
-	
+    
     "open_powerpoint_file": function() {
         var Office = require("lib/msoffice");   // Load libraries
         var powerpoint = new Office.PowerPoint();   // Create a PowerPoint instance
@@ -838,6 +838,26 @@ var test_implements = {
         var Office = require("lib/msoffice");    // Load libraries
         var word = new Office.Word();   // Create an Word instance
         word.open("data\\example.docx");   // Open the Word window
+    },
+    
+    "sharedmemory": function() {
+        var Toolkit = require("lib/toolkit");
+        var mem = new Toolkit.NamedSharedMemory("welsonjs_test");
+
+        console.log("Writing a text the to shared memory...");
+        mem.writeText("nice meet you");
+        
+        console.log("Writing a text from the shared memory...");
+        console.log(mem.readText() + ", too");
+        
+        console.log("Cleaning the shared memory...");
+        mem.clear()
+        console.log(mem.readText());
+
+        mem.close()
+        console.log("Closing the shared memory...");
+
+        console.log("Done");
     }
 };
 

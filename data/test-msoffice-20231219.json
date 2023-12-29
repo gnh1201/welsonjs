@@ -20,16 +20,15 @@
         "uri",
         "desktop",
         "ie",
-        "hta",
         "es5",
         "jscript",
         "wsh",
-        "msoffice",
         "mshtml",
         "lolbins",
         "lolbas",
         "rescript",
-        "mshta"
+        "mshta",
+		"chatgpt"
     ],
     "schema": {
         "version": "0.1"

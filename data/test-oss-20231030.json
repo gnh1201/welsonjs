@@ -20,7 +20,6 @@
         "uri",
         "desktop",
         "ie",
-        "hta",
         "es5",
         "electronjs",
         "jscript",
@@ -29,7 +28,8 @@
         "lolbins",
         "lolbas",
         "rescript",
-        "mshta"
+        "mshta",
+		"chatgpt"
     ],
     "schema": {
         "version": "0.1"

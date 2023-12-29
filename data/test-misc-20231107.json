@@ -20,16 +20,15 @@
         "uri",
         "desktop",
         "ie",
-        "hta",
         "es5",
-        "electronjs",
         "jscript",
         "wsh",
         "mshtml",
         "lolbins",
         "lolbas",
         "rescript",
-        "mshta"
+        "mshta",
+		"chatgpt"
     ],
     "schema": {
         "version": "0.1"
@@ -49,6 +48,11 @@
             "id": "squel_sqlmap_test",
             "description": "Test SQL mapping with squel library.",
             "tags": ["Database", "SQL Mapper"]
+        },
+        {
+            "id": "sharedmemory",
+            "description": "Write and read a text on the (named) shared memory",
+            "tags": ["Windows System", "IPC(Inter-Process Communication)"]
         }
     ]
 }
