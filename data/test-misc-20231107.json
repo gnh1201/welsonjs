@@ -28,7 +28,7 @@
         "lolbas",
         "rescript",
         "mshta",
-		"chatgpt"
+        "chatgpt"
     ],
     "schema": {
         "version": "0.1"

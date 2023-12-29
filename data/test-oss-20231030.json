@@ -21,7 +21,6 @@
         "desktop",
         "ie",
         "es5",
-        "electronjs",
         "jscript",
         "wsh",
         "mshtml",
@@ -29,7 +28,7 @@
         "lolbas",
         "rescript",
         "mshta",
-		"chatgpt"
+        "chatgpt"
     ],
     "schema": {
         "version": "0.1"
