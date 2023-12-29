@@ -30,7 +30,7 @@ namespace WelsonJS
         private IntPtr hFile;
         private IntPtr hFileMappingObject;
         private string lpName;
-        private static Dictionary<string, NamedSharedMemory> memDict;
+        private static Dictionary<string, NamedSharedMemory> memDict = new Dictionary<string, NamedSharedMemory>();
 
         [Flags]
         public enum FileProtection : uint
