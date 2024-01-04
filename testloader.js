@@ -858,6 +858,26 @@ var test_implements = {
         console.log("Closing the shared memory...");
 
         console.log("Done");
+    },
+
+    "sharedmemory_listener": function() {
+        var Toolkit = require("lib/toolkit");
+        var mem;
+        var memName = Toolkit.prompt("Input the shared memory name");
+
+        if (!memName) {
+            console.log("Aborted.");
+        } else {
+            mem = new Toolkit.NamedSharedMemory(memName);
+            console.log("Listening the shared memory:", memName);
+            while (true) {
+                var message = mem.readText(memName);
+                if (!!message) {
+                    console.log(memName + ": " + message);
+                }
+                sleep(1);
+            }
+        }
     }
 };
 

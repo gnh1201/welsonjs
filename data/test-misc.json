@@ -1,7 +1,7 @@
 {
-    "description": "WelsonJS test profile for Miscellaneous",
-    "date": "2023-11-07",
-    "revision": "20231107r1",
+    "description": "WelsonJS test profile (test-misc.json)",
+    "date": "2024-01-04",
+    "revision": "HEAD",
     "authors": [
         "Namhyeon Go <gnh1201@gmail.com>"
     ],
@@ -53,6 +53,11 @@
             "id": "sharedmemory",
             "description": "Write and read a text on the (named) shared memory",
             "tags": ["Windows System", "IPC(Inter-Process Communication)"]
-        }
+        },
+		{
+            "id": "sharedmemory_listener",
+            "description": "Read a text form the (named) shared memory, Repeatly",
+            "tags": ["Windows System", "IPC(Inter-Process Communication)"]
+		}
     ]
 }
