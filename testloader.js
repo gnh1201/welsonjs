@@ -868,14 +868,18 @@ var test_implements = {
         if (!memName) {
             console.log("Aborted.");
         } else {
+            // Open the shared memory
             mem = new Toolkit.NamedSharedMemory(memName);
+
+            // Open the second process will be communicate
+            Toolkit.openProcess();
+
+            // Listen the shared memory
             console.log("Listening the shared memory:", memName);
             while (true) {
                 var message = mem.readText(memName);
-                if (!!message) {
-                    console.log(memName + ": " + message);
-                }
-                sleep(1);
+                console.log(memName + ": ", message);
+                sleep(100);
             }
         }
     }

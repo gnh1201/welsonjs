@@ -123,13 +123,28 @@ namespace WelsonJS
 
         public string ReadText()
         {
-            return Marshal.PtrToStringAnsi(hFileMappingObject);
+            try 
+            {
+                if (hFile == IntPtr.Zero || hFileMappingObject == IntPtr.Zero)
+                {
+                    throw new Exception("Could not access the shared memory");
+                }
+                return Marshal.PtrToStringAnsi(hFileMappingObject);
+            }
+            catch (Exception e)
+            {
+                return "Exception: " + e.Message;
+            }
         }
 
         public bool WriteText(string text, int size = 1024)
         {
             try
             {
+                if (hFile == IntPtr.Zero || hFileMappingObject == IntPtr.Zero)
+                {
+                    throw new Exception("Could not access the shared memory");
+                }
                 byte[] bytes = Encoding.ASCII.GetBytes(text);
                 byte[] array = new byte[size + 1];
                 Array.Copy(bytes, array, bytes.Length);
@@ -161,17 +176,15 @@ namespace WelsonJS
         {
             try
             {
-                if (hFileMappingObject != IntPtr.Zero)
+                if (hFile == IntPtr.Zero || hFileMappingObject == IntPtr.Zero)
                 {
-                    FileMappingNative.UnmapViewOfFile(hFileMappingObject);
-                    hFileMappingObject = IntPtr.Zero;
+                    throw new Exception("Could not access the shared memory");
                 }
 
-                if (hFile != IntPtr.Zero)
-                {
-                    FileMappingNative.CloseHandle(hFile);
-                    hFile = IntPtr.Zero;
-                }
+                FileMappingNative.UnmapViewOfFile(hFileMappingObject);
+                hFileMappingObject = IntPtr.Zero;
+                FileMappingNative.CloseHandle(hFile);
+                hFile = IntPtr.Zero;
             }
             catch
             {

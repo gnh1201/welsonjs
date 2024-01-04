@@ -190,15 +190,34 @@ namespace WelsonJS
             return false;
         }
 
-        public void CompressLZ77(string input)
+        [ComVisible(true)]
+        public string GetFilePathFromDialog()
         {
-            Compression.LZ77.Compress(input);
+            return ProcessTool.OpenFileDialog();
         }
 
         [ComVisible(true)]
-        public string DecompressLZ77(string compressData)
+        public int OpenProcess(string filepath)
         {
-            return Compression.LZ77.Decompress(compressData);
+            return ProcessTool.Open(filepath);
+        }
+
+        [ComVisible(true)]
+        public bool CloseProcess(int processID)
+        {
+            return ProcessTool.Close(processID);
+        }
+
+        [ComVisible(true)]
+        public void CompressLZ77(string data)
+        {
+            Compression.LZ77.Compress(data);
+        }
+
+        [ComVisible(true)]
+        public string DecompressLZ77(string compressedData)
+        {
+            return Compression.LZ77.Decompress(compressedData);
         }
     }
 }
