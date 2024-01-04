@@ -103,11 +103,5 @@ dist
 # TernJS port file
 .tern-port
 
-# Custom directories and files
-bin/
-packages/
-config.xml
-staticip.xml
-
 # ChatGPT API Key
 data/chatgpt-apikey.txt
