@@ -889,23 +889,31 @@ var test_implements = {
 
     "sharedmemory_listener": function() {
         var Toolkit = require("lib/toolkit");
-        var mem;
-        var memName = Toolkit.prompt("Input the shared memory name");
+        var targets = (function() {
+            var s = Toolkit.prompt("Input the shared memory names (Comma seperated)");
+            return s.split(',');
+        })();
 
-        if (!memName) {
+        if (!targets) {
             console.log("Aborted.");
         } else {
             // Open the shared memory
-            mem = new Toolkit.NamedSharedMemory(memName);
+            var memories = targets.map(function(x) {
+                return [x, new Toolkit.NamedSharedMemory(x)];
+            });
 
             // Open the second process will be communicate
             Toolkit.openProcess();
 
             // Listen the shared memory
-            console.log("Listening the shared memory:", memName);
+            console.log("Listening the shared memory:", targets.join(', '));
             while (true) {
-                var message = mem.readText(memName);
-                console.log(memName + ": ", message);
+                console.log(new Date().toISOString());
+                memories.forEach(function(x) {
+                    var name = x[0];
+                    var mem = x[1];
+                    console.log(name + ": ", mem.readText());
+                });
                 sleep(100);
             }
         }
