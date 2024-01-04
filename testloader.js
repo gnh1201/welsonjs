@@ -847,7 +847,7 @@ var test_implements = {
         console.log("Writing a text the to shared memory...");
         mem.writeText("nice meet you");
         
-        console.log("Writing a text from the shared memory...");
+        console.log("Reading a text from the shared memory...");
         console.log(mem.readText() + ", too");
         
         console.log("Cleaning the shared memory...");
@@ -859,6 +859,33 @@ var test_implements = {
 
         console.log("Done");
     },
+    
+    "sharedmemory_write": function() {
+        var Toolkit = require("lib/toolkit");
+        var mem = new Toolkit.NamedSharedMemory("welsonjs_test");
+
+        console.log("Writing a text to the shared memory...");
+        mem.writeText("nice meet you");
+
+        console.log("Done");
+    },
+
+    "sharedmemory_read": function() {
+        var Toolkit = require("lib/toolkit");
+        var mem = new Toolkit.NamedSharedMemory("welsonjs_test");
+
+        console.log("Reading a text from the shared memory...");
+        console.log(mem.readText() + ", too");
+
+        console.log("Cleaning the shared memory...");
+        mem.clear()
+        console.log(mem.readText());
+
+        mem.close()
+        console.log("Closing the shared memory...");
+
+        console.log("Done");
+    },    
 
     "sharedmemory_listener": function() {
         var Toolkit = require("lib/toolkit");

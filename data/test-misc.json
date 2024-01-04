@@ -55,8 +55,18 @@
             "tags": ["Windows System", "IPC(Inter-Process Communication)"]
         },
 		{
+            "id": "sharedmemory_write",
+            "description": "Write a text to the (named) shared memory",
+            "tags": ["Windows System", "IPC(Inter-Process Communication)"]
+		},
+		{
+            "id": "sharedmemory_read",
+            "description": "Read a text from the (named) shared memory",
+            "tags": ["Windows System", "IPC(Inter-Process Communication)"]
+		}
+		{
             "id": "sharedmemory_listener",
-            "description": "Read a text form the (named) shared memory, Repeatly",
+            "description": "Read a text from the (named) shared memory, Repeatly",
             "tags": ["Windows System", "IPC(Inter-Process Communication)"]
 		}
     ]
