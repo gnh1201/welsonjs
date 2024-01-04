@@ -14,7 +14,7 @@ namespace WelsonJS.Toolkit.Experimental
             Console.Write("Input the shared memory name: ");
             listener.memName = Console.ReadLine();
 
-            Console.Write("Input the second process name: ");
+            Console.Write("Open the second process name: ");
             listener.processName = listener.OpenFileDialog();
 
             Thread listenerThread = new Thread(listener.Listen);
