@@ -30,7 +30,7 @@ namespace WelsonJS
         private IntPtr hFile;
         private IntPtr hFileMappingObject;
         private string lpName;
-        private static Dictionary<string, NamedSharedMemory> memDict = new Dictionary<string, NamedSharedMemory>();
+        private static Dictionary<string, NamedSharedMemory> memoryMap = new Dictionary<string, NamedSharedMemory>();
 
         [Flags]
         public enum FileProtection : uint
@@ -95,10 +95,10 @@ namespace WelsonJS
 
         public bool Open()
         {
-            if (memDict.ContainsKey(lpName))
+            if (memoryMap.ContainsKey(lpName))
             {
-                hFile = memDict[lpName].hFile;
-                hFileMappingObject = memDict[lpName].hFileMappingObject;
+                hFile = memoryMap[lpName].hFile;
+                hFileMappingObject = memoryMap[lpName].hFileMappingObject;
                 return true;
             }
 
@@ -106,7 +106,7 @@ namespace WelsonJS
             {
                 hFile = FileMappingNative.CreateFileMapping((IntPtr)(-1), IntPtr.Zero, FileProtection.PAGE_READWRITE, 0u, 1024u, lpName);
                 hFileMappingObject = FileMappingNative.MapViewOfFile(hFile, FileMapAccess.FILE_MAP_ALL_ACCESS, 0u, 0u, 1024u);
-                memDict.Add(lpName, this);
+                memoryMap.Add(lpName, this);
             }
             catch
             {
