@@ -1,5 +1,5 @@
 ﻿/*
- * WelsonJS.Toolkit: WelsonJS dotNET native component
+ * WelsonJS.Toolkit: WelsonJS native component
  * 
  *     filename:
  *         Toolkit.cs

@@ -1,5 +1,5 @@
 ﻿/*
- * WelsonJS.Toolkit: WelsonJS native component
+ * WelsonJS.Toolkit.Experimental: WelsonJS experimental native testing component
  * 
  *     filename:
  *         NamedSharedMemory.cs
@@ -23,7 +23,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace WelsonJS
+namespace WelsonJS.Toolkit.Experimental
 {
     public class NamedSharedMemory
     {
