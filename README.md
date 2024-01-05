@@ -1,6 +1,8 @@
 # welsonjs
 WelsonJS - Build a Windows app on the Windows built-in JavaScript engine.
 
+![Image created by DALL-E](app/assets/img/overture.png)
+
 Now, You can build an Windows desktop app with JavaScript, TypeScript, ReScript, and HTML/CSS on Windows built-in ECMAScript engine.
 
 WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)*** + [Your contribution](FUNDING.yml)
