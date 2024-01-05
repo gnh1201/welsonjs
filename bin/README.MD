@@ -8,6 +8,7 @@
 ## Recommended packages
   * WelsonJS.Toolkit (WelsonJS native component)
     * [Download WelsonJS.Toolkit-20240104.zip (from Cloudflare R2)](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/WelsonJS.Toolkit-20240104.zip)
+    * [Download WelsonJS.Toolkit-20240104.7z (from Cloudflare R2)](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/WelsonJS.Toolkit-20240104.7z)
   * GTK+
     * [GTK+ for Windows Runtime Environment Installer](https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer) [2.24.33-2021-01-30]
     * [jopbrown/gtk-server](https://github.com/jopbrown/gtk-server) [gtk-server-2.4.5-gtk-2.24.32-win64]
