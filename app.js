@@ -33,15 +33,17 @@
 //    must define main = function(args) {}, which is called once the module is
 //    loaded.
 //
-//    Report abuse or security issue: abuse@catswords.net
+//    app.js
+//    Namhyeon Go <abuse@catswords.net>
 //    https://github.com/gnh1201/welsonjs
+//    If you find an abuse case or a security issue, please feel free to contact me.
 //
 
 var exit = function(status) {
     console.error("Exit", status, "caused");
 
     if (typeof WScript !== "undefined") {
-        WScript.quit(status);
+        WScript.Quit(status);
     } else if (typeof window !== "undefined") {
         window.close();
     }
@@ -63,7 +65,7 @@ var console = {
     _echoCallback: null,
     _wshEcho: function(message) {
         if (typeof WScript !== "undefined") {
-            WScript.echo("[*] " + message)
+            WScript.Echo("[*] " + message)
         }
     },
     _echo: function(args, type) {
@@ -187,7 +189,12 @@ if (typeof CreateObject === "undefined") {
     };
     CreateObject.make = function(p, s) {
         if (typeof WScript !== "undefined") {
-            return WScript.CreateObject(p, s);
+            if ("CreateObject" in WScript) {
+                return WScript.CreateObject(p, s);
+            } else {
+                console.warn("(Chakra) The standalone engine does not supported. Please use the built-in engine.");
+                console.warn("(Chakra) hint:", "cscript //NoLogo //E:{1b7cd997-e5ff-4932-a7a6-2a9e636da385} app.js <filename> <...arguments>");
+            }
         } else if (typeof ActiveXObject !== "undefined") {
             return new ActiveXObject(p);
         }
@@ -324,10 +331,16 @@ require.__getDirName__ = function(path) {
 };
 require.__getCurrentScriptDirectory__ = function() {
     if (typeof WScript !== "undefined") {
-        return require.__getDirName__(WScript.ScriptFullName);
+        if ("ScriptFullName" in WScript) {
+            return require.__getDirName__(WScript.ScriptFullName);
+        } else {
+            console.warn("Could not resolve an absolute path. Use the relative path.");
+            return ".";
+        }
     } else if (typeof document !== "undefined") {
         return require.__getDirName__(document.location.pathname);
     } else {
+        console.warn("Could not resolve an absolute path. Use the relative path.");
         return ".";
     }
 };
@@ -493,7 +506,9 @@ function initializeWindow(name, args, w, h) {
 }
 
 // JSON 2
-__include__("app/assets/js/json2");
+if (typeof JSON === "undefined") {
+    __include__("app/assets/js/json2");
+}
 
 // core-js (aka. babel-polyfill)
 require("app/assets/js/core-js-3.26.1.minified");
