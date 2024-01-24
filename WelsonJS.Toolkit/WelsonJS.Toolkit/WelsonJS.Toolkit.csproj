@@ -66,6 +66,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Compression\LZ77.cs" />
+    <Compile Include="Cryptography\HIGHT.cs" />
     <Compile Include="NamedSharedMemory.cs" />
     <Compile Include="ProcessTool.cs" />
     <Compile Include="Prompt.cs" />

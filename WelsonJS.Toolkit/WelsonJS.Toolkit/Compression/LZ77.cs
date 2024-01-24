@@ -1,12 +1,12 @@
 ﻿/*
- * WelsonJS.Toolkit: WelsonJS dotNET native component
+ * WelsonJS.Toolkit: WelsonJS native component
  * 
  *     filename:
  *         LZ77.cs
  * 
  *     description:
- *         WelsonJS - Build a Windows app on the Windows built-in JavaScript engine
- * 
+ *         MsCompress(LZ77) algorithm implementation for WelsonJS
+ *         
  *     website:
  *         - https://github.com/gnh1201/welsonjs
  *         - https://catswords.social/@catswords_oss
