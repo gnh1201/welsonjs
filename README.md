@@ -139,7 +139,6 @@ ended say()
 - [7418_blocks_color_modules_rgb_square_icon](https://www.iconfinder.com/icons/7418/blocks_color_modules_rgb_square_icon) (Icon File) - Sergio Sanchesz Lopez, Futurosoft
 
 ## Contact me
-If you have any inquiries about this project or if you are interested in becoming a partner, please feel free to contact us. By becoming an official partner, you can initiate exclusive (e.g. EULA) projects using WelsonJS. Explore the potential for achievements in various areas, such as website quality improvement and performance evaluation automation, with WelsonJS.
-
+- http://www.fiverr.com/s/AeR9GP (Paid technical support)
 - abuse@catswords.net
 - ActivityPub [@catswords_oss@catswords.social](https://catswords.social/@catswords_oss)
