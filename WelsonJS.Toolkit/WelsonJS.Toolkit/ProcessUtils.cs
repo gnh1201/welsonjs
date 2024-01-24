@@ -4,7 +4,7 @@ using System.Windows.Forms;
 
 namespace WelsonJS
 {
-    public class ProcessTool
+    public class ProcessUtils
     {
         public static List<int> ProcessIDs = new List<int>();
 

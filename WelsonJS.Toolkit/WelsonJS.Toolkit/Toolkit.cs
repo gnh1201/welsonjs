@@ -30,7 +30,9 @@
 
 using System;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Windows.Forms;
+using WelsonJS.Cryptography;
 
 namespace WelsonJS
 {
@@ -193,31 +195,51 @@ namespace WelsonJS
         [ComVisible(true)]
         public string GetFilePathFromDialog()
         {
-            return ProcessTool.OpenFileDialog();
+            return ProcessUtils.OpenFileDialog();
         }
 
         [ComVisible(true)]
         public int OpenProcess(string filepath)
         {
-            return ProcessTool.Open(filepath);
+            return ProcessUtils.Open(filepath);
         }
 
         [ComVisible(true)]
         public bool CloseProcess(int processID)
         {
-            return ProcessTool.Close(processID);
+            return ProcessUtils.Close(processID);
         }
 
         [ComVisible(true)]
-        public void CompressLZ77(string data)
+        public string CompressLZ77(string data)
         {
-            Compression.LZ77.Compress(data);
+            return Compression.LZ77.Compress(data);
         }
 
         [ComVisible(true)]
         public string DecompressLZ77(string compressedData)
         {
             return Compression.LZ77.Decompress(compressedData);
+        }
+
+        [ComVisible(true)]
+        public string EncryptStringHIGHT(string key, string data)
+        {
+            byte[] userKey = Encoding.ASCII.GetBytes(key);
+            byte[] dataIn = Encoding.UTF8.GetBytes(data);
+
+            HIGHT.ECB cipher = new HIGHT.ECB(userKey);
+            return Convert.ToBase64String(cipher.Encrypt(dataIn));
+        }
+
+        [ComVisible(true)]
+        public string DecryptStringHIGHT(string key, string encryptedData)
+        {
+            byte[] userKey = Encoding.ASCII.GetBytes(key);
+            byte[] dataIn = Convert.FromBase64String(encryptedData);
+
+            HIGHT.ECB cipher = new HIGHT.ECB(userKey);
+            return Encoding.UTF8.GetString(cipher.Decrypt(dataIn));
         }
     }
 }
