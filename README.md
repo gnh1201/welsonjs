@@ -139,6 +139,6 @@ ended say()
 - [7418_blocks_color_modules_rgb_square_icon](https://www.iconfinder.com/icons/7418/blocks_color_modules_rgb_square_icon) (Icon File) - Sergio Sanchesz Lopez, Futurosoft
 
 ## Contact me
-- https://www.fiverr.com/s/G42xRd (Paid technical support)
+- [Paid technical support on Fiverr](https://www.fiverr.com/s/G42xRd)
 - abuse@catswords.net
 - ActivityPub [@catswords_oss@catswords.social](https://catswords.social/@catswords_oss)
