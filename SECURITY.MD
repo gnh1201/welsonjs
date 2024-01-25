@@ -41,5 +41,6 @@ This program is also known by the following name. This name is used solely for t
 ## Report abuse
 If you discover any instances of this project being misused, please report them.
 
+  * [Paid technical support on Fiverr](https://www.fiverr.com/s/G42xRd)
   * abuse@catswords.net
   * ActivityPub [@catswords_oss@catswords.social](https://catswords.social/@catswords_oss)
