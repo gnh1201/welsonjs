@@ -294,12 +294,17 @@ function require(FN) {
 
         case ".enc":   // Encrypted
             T = (function(encryptedData) {
-                var toolkit = CreateObject("WelsonJS.Toolkit");
-                var userKey = '';
-                while (userKey.length == 0 || userKey.length > 16) {
-                    userKey = toolkit.Prompt("Enter the password:");
+                try {
+                    var toolkit = CreateObject("WelsonJS.Toolkit");
+                    var userKey = '';
+                    while (userKey.length == 0 || userKey.length > 16) {
+                        userKey = toolkit.Prompt("Enter the password:");
+                    }
+                    return toolkit.DecryptStringHIGHT(encryptedData);
+                } catch (e) {
+                    console.error("Failed to load the encrypted data:", e.message);
+                    return '';
                 }
-                return toolkit.DecryptStringHIGHT(encryptedData);
             })(T);
 
             break;
