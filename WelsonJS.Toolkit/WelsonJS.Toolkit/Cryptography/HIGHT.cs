@@ -128,6 +128,21 @@ namespace WelsonJS.Cryptography
             byte[] scheduleKey = new byte[136];
             public ECB(byte[] userKey)
             {
+                if (userKey.Length < 16)
+                {
+                    // Pad the key with 0x00 if its length is less than 16 bytes
+                    byte[] paddedKey = new byte[16];
+                    Array.Copy(userKey, 0, paddedKey, 0, userKey.Length);
+                    userKey = paddedKey;
+                }
+                else if (userKey.Length > 16)
+                {
+                    // If the key is longer than 16 bytes, truncate to 16 bytes
+                    byte[] truncatedKey = new byte[16];
+                    Array.Copy(userKey, truncatedKey, 16);
+                    userKey = truncatedKey;
+                }
+
                 KeySched(userKey);
             }
 
