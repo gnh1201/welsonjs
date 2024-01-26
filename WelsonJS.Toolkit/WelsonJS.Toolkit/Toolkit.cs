@@ -239,7 +239,7 @@ namespace WelsonJS
             byte[] dataIn = Convert.FromBase64String(encryptedData);
 
             HIGHT.ECB cipher = new HIGHT.ECB(userKey);
-            return Encoding.UTF8.GetString(cipher.Decrypt(dataIn));
+            return Encoding.UTF8.GetString(cipher.Decrypt(dataIn)).Trim('\0');
         }
     }
 }

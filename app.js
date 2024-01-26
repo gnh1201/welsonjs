@@ -307,20 +307,18 @@ function require(pathname) {
             break;
 
         case ".enc":   // HIGHT(ISO/IEC 18033-3) encrypted
-            T = (function(encryptedData) {
+            T = (function(encryptedData, ToolkitInterface) {
                 try {
-                    var toolkit = CreateObject("WelsonJS.Toolkit");
                     var userKey = '';
                     while (userKey.length == 0 || userKey.length > 16) {
-                        userKey = toolkit.Prompt("Enter the password:");
+                        userKey = ToolkitInterface.Prompt("This file has been encrypted. Please enter the password:");
                     }
-                    return toolkit.DecryptStringHIGHT(encryptedData);
+                    return ToolkitInterface.DecryptStringHIGHT(userKey, encryptedData);
                 } catch (e) {
                     console.error("Failed to load the encrypted data:", e.message);
                     return '';
                 }
-            })(T);
-
+            })(T, CreateObject("WelsonJS.Toolkit"));
             break;
     }
 
@@ -331,6 +329,8 @@ function require(pathname) {
         + "\n\nreturn module.exports})(module.exports,global.require,module,__filename__,__dirname__)})(require.__global__);\n\n////@ sourceURL="
         + FN
     ;
+	
+	if (suffix == ".enc") console.log(T);
 
     // execute
     try {
