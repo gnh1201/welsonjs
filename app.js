@@ -212,23 +212,29 @@ function __include__(FN) {
 /**
  * @FN {string} The name of the file.
  */
-function require(FN) {
+function require(pathname) {
     var cache = require.__cache__ = require.__cache__ || {};
-    var suffix = (function(pos) {
-        return pos < 0 ? '.' : FN.substr(pos);
-    })(FN.lastIndexOf('.'));
+    var suffix = (function(pos, s) {
+        return pos < 0 ? '.' : s.substr(pos);
+    })(pathname.lastIndexOf('.'), pathname);
+    var FN = pathname;
 
     if ('.js$.jse$.coffee$.ls$.ts$.re$.res$.enc$'.indexOf(suffix + '$') < 0) FN += ".js";
     if (cache[FN]) return cache[FN];
 
     // get file and directory name
-    var __filename__ = (function(getCurrentScriptDirectory, fileExists, path) {
-        var basepath = getCurrentScriptDirectory();
+    var __filename__ = (function(fileExists, path) {
         var filepaths = [
-            path.join(basepath, FN),    // WelsonJS base library 
-            path.join(basepath, "Scripts", FN),    // NuGet
-            path.join(basepath, "bower_components", FN),    // Bower
-            path.join(basepath, "node_modules", FN),    // NPM
+            FN,    // default
+            path.join(pathname, "index.js"),    // default
+            path.join(FN + '.enc'),    // default (encrypted)
+            path.join(pathname, 'index.js.enc'),    // default (encrypted)
+            path.join("Scripts", FN),    // NuGet
+            path.join("Scripts", pathname, "index.js"),    // NuGet
+            path.join("bower_components", FN),    // Bower
+            path.join("bower_components", pathname, "index.js"),    // Bower
+            path.join("node_modules", FN),    // NPM
+            path.join("node_modules", pathname, "index.js"),    // NPM
         ];
         var filename = filepaths[0];
 
@@ -242,7 +248,7 @@ function require(FN) {
         }
 
         return filename;
-    })(require.__getCurrentScriptDirectory__, function(filename) {
+    })(function(filename) {
         return CreateObject("Scripting.FileSystemObject").FileExists(filename);
     }, {
         join: function() {
@@ -253,8 +259,16 @@ function require(FN) {
             return result;
         }
     });
-    var __dirname__ = require.__getDirName__(__filename__);
-    var T = require.__load__(FN);
+    var __dirname__ = (function(dirname) { 
+        var currentScriptDirectory = require.__getCurrentScriptDirectory__();
+        return dirname.length > 0 ? currentScriptDirectory + "\\" + dirname : currentScriptDirectory;
+    })(require.__getDirName__(__filename__));
+    var T = require.__load__(__filename__);
+
+    // check the suffix again
+    suffix = (function(pos, s) {
+        return pos < 0 ? '.' : s.substr(pos);
+    })(__filename__.lastIndexOf('.'), __filename__);
 
     // transpile
     switch (suffix) {
@@ -292,7 +306,7 @@ function require(FN) {
             });
             break;
 
-        case ".enc":   // Encrypted
+        case ".enc":   // HIGHT(ISO/IEC 18033-3) encrypted
             T = (function(encryptedData) {
                 try {
                     var toolkit = CreateObject("WelsonJS.Toolkit");
