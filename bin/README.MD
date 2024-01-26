@@ -2,7 +2,7 @@
 * Project name: WelsonJS
 * Project description: Build a Windows app on the Windows built-in JavaScript engine
 * Project website: https://github.com/gnh1201/welsonjs
-* Last updated: 2023-12-22
+* Last updated: 2024-01-27
 * NOTE: The binaries listed here are for special purpose users, and regular users do not need them.
 
 ## Recommended packages
