@@ -291,6 +291,18 @@ function require(FN) {
                 return result.js_code;
             });
             break;
+
+        case ".enc":   // Encrypted
+            T = (function(encryptedData) {
+                var toolkit = CreateObject("WelsonJS.Toolkit");
+                var userKey = '';
+                while (userKey.length == 0 || userKey.length > 16) {
+                    userKey = toolkit.Prompt("Enter the password:");
+                }
+                return toolkit.DecryptStringHIGHT(encryptedData);
+            })(T);
+
+            break;
     }
 
     // compile
