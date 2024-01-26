@@ -329,8 +329,6 @@ function require(pathname) {
         + "\n\nreturn module.exports})(module.exports,global.require,module,__filename__,__dirname__)})(require.__global__);\n\n////@ sourceURL="
         + FN
     ;
-	
-	if (suffix == ".enc") console.log(T);
 
     // execute
     try {
