@@ -1,7 +1,6 @@
 # Additional binaries for WelsonJS
-* Project name: WelsonJS
-* Project description: Build a Windows app on the Windows built-in JavaScript engine
-* Project website: https://github.com/gnh1201/welsonjs
+* description: WelsonJS - Build a Windows app on the Windows built-in JavaScript engine
+* website: https://github.com/gnh1201/welsonjs
 * Last updated: 2024-01-27
 * NOTE: The binaries listed here are for special purpose users, and regular users do not need them.
 
@@ -12,7 +11,7 @@
   * GTK+
     * [GTK+ for Windows Runtime Environment Installer](https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer) [2.24.33-2021-01-30]
     * [jopbrown/gtk-server](https://github.com/jopbrown/gtk-server) [gtk-server-2.4.5-gtk-2.24.32-win64]
-    * "libffi-7.dll"
+    * Precompiled `libffi` for WelsonJS
       * [Download gtk-server-libffi-7.zip (from Cloudflare R2)](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/gtk-server-libffi-7.zip)
       * [Download gtk-server-libffi-7.7z (from Cloudflare R2)](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/gtk-server-libffi-7.7z)
   * Compression
@@ -20,7 +19,7 @@
     * LZ77 (aka. MsCompress) algorithm supports its own implementation within this project.
   * Embeddable Python
     * Python Windows embeddable package [3.10.2]
-      * "Preconfigured Python for WelsonJS"
+      * Preconfigured `Embedded Python` for WelsonJS
         * [Download welsonjs-preconfigured-python-3.10.2-embed.zip (from Cloudflare R2)](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/welsonjs-preconfigured-python-3.10.2-embed.zip)
         * [Download welsonjs-preconfigured-python-3.10.2-embed.7z (from Cloudflare R2)](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/welsonjs-preconfigured-python-3.10.2-embed.7z)
       * [64-bit](https://www.python.org/downloads/release/python-3102/)
@@ -47,5 +46,6 @@ shadowsocks-libev-win-build-20220118.7z (from Cloudflare R2)](https://pub-f926e1
     * [bytecodealliance/wasm-micro-runtime](https://github.com/bytecodealliance/wasm-micro-runtime) [44d75ce]
 
 ## Report abuse
+  * [Paid technical support on Fiverr](https://www.fiverr.com/s/G42xRd)
   * abuse@catswords.net
   * ActivityPub [@catswords_oss@catswords.social](https://catswords.social/@catswords_oss)
