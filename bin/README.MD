@@ -1,6 +1,6 @@
 # Additional binaries for WelsonJS
-* description: WelsonJS - Build a Windows app on the Windows built-in JavaScript engine
-* website: https://github.com/gnh1201/welsonjs
+* Description: WelsonJS - Build a Windows app on the Windows built-in JavaScript engine
+* Website: https://github.com/gnh1201/welsonjs
 * Last updated: 2024-01-27
 * NOTE: The binaries listed here are for special purpose users, and regular users do not need them.
 
