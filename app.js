@@ -309,10 +309,15 @@ function require(pathname) {
         case ".enc":   // HIGHT(ISO/IEC 18033-3) encrypted
             T = (function(encryptedData, ToolkitInterface) {
                 try {
-                    var userKey = '';
-                    while (userKey.length == 0 || userKey.length > 16) {
+                    var userKey = '', t = 0, k = 6;
+                    while (t < k && (userKey.length == 0 || userKey.length > 16)) {
+                        if (t > 0) {
+                            console.error("Invalid key length");
+                        }
                         userKey = ToolkitInterface.Prompt("This file has been encrypted. Please enter the password:");
+                        t++;
                     }
+                    if (t == k) return '';
                     return ToolkitInterface.DecryptStringHIGHT(userKey, encryptedData);
                 } catch (e) {
                     console.error("Failed to load the encrypted data:", e.message);
