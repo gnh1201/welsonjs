@@ -45,7 +45,6 @@
   "dependencies": {
     "core-js": "^3.21.1",
     "excanvas": "^2.0.0",
-    "html5media": "^1.2.1",
     "html5shiv": "^3.7.3",
     "jquery": "^3.6.0",
     "jquery-form": "^4.3.0",

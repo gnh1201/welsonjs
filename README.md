@@ -27,7 +27,6 @@ I presented this project in [the open-source contest in the Republic of Korea in
   - [github.com/scottjehl/Respond](https://github.com/scottjehl/Respond)
   - [github.com/keithclark/selectivizr](https://github.com/keithclark/selectivizr)
   - [github.com/arv/ExplorerCanvas](https://github.com/arv/ExplorerCanvas)
-  - [github.com/etianen/html5media](https://github.com/etianen/html5media)
   - [github.com/Modernizr/Modernizr](https://github.com/Modernizr/Modernizr)
 - Default CSS Framework
   - [github.com/jslegers/cascadeframework](https://github.com/jslegers/cascadeframework)
@@ -42,7 +41,7 @@ I presented this project in [the open-source contest in the Republic of Korea in
 - [Includes binaries](https://github.com/gnh1201/welsonjs/blob/master/bin/README.MD)
 - [module.exports](https://nodejs.org/en/knowledge/getting-started/what-is-require/), CommonJS, UMD compatibility
 - [NPM](https://www.npmjs.com/) compatibility
-- [gRPC](https://grpc.io/) protocol support (New feature in 2023) [see video demo](https://youtu.be/GqbU5JKuLac)
+- [gRPC](https://grpc.io/) protocol support
 
 ## Included libraries
 - lib/std (Standard library)
@@ -56,15 +55,15 @@ I presented this project in [the open-source contest in the Republic of Korea in
 - lib/shell (Windows Shell (Command Prompt) interface)
 - lib/powershell (Windows Powershell interface)
 - lib/service (Windows Service interface)
-- lib/oldbrowser (ES5, HTML5/CSS3 compatibility layer)
+- lib/browser (HTML5 and CSS3 compatibility layer)
 - lib/uri (URI scheme interface)
 - lib/winlibs (Windows DLL(Dynamic-link library) interface)
 - lib/autohotkey ([AutoHotkey](https://www.autohotkey.com/) interface)
 - lib/autoit ([AutoIt3/AutoItX](https://www.autoitscript.com/) interface)
-- lib/msoffice (Microsoft Office (e.g. Excel) interface)
-- lib/gtk (GTK/GladeXML server GUI interface)
-- lib/chrome (Chrome Web Browser Debugging interface)
-- lib/toolkit (`WelsonJS.Toolkit` native component)
+- lib/msoffice (Microsoft Office (e.g. Excel, PowerPoint, Word) interface)
+- lib/gtk (GTK-server and GladeXML supported GUI interface)
+- lib/chrome (Chrome and Chromium-based web browser testing interface)
+- lib/toolkit (`WelsonJS.Toolkit` native component. e.g. Virtualized Human Interface, Cryptography, ...)
 - lib/pipe-ipc (PIPE-based IPC(Inter-Process Communication) implementation)
 - lib/chatgpt ([ChatGPT](https://openai.com/chatgpt) integration)
 - Everything you can imagine. 
