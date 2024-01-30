@@ -17,11 +17,11 @@ function main(args) {
     while (userKey.length == 0 || userKey.length > 16) {
         userKey = Toolkit.prompt("Please enter the password for encryption:");
     }
-    var data = FILE.readFile(filename, "utf-8");
+    var data = FILE.readFile(filename, FILE.CdoCharset.CdoUTF_8);
     var encryptedData = Toolkit.encryptStringHIGHT(userKey, data);
 
     var dstfile = filename + ".enc";
-    FILE.writeFile(dstfile, encryptedData, "utf-8");
+    FILE.writeFile(dstfile, encryptedData, FILE.CdoCharset.CdoUTF_8);
     console.log("Saved to", dstfile);
 
     console.log("Done");
