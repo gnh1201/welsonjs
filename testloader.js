@@ -917,6 +917,23 @@ var test_implements = {
                 sleep(100);
             }
         }
+    },
+
+    "string_split": function() {
+        var a = "monkey:red:apple:delicious:banana:long:train:fast:airplane:high:everest:sharp:seringue:painful";
+        var b = a.split(':').join(':');
+        var c = "a=1=b=2=c=3";
+        var d = c.split('=').join('=');
+        
+        if (a == b && c == d) {
+            console.log("PASS");
+        } else {
+            console.log("FAILED");
+            console.log(a);
+            console.log(b);
+            console.log(c);
+            console.log(d);
+        }
     }
 };
 

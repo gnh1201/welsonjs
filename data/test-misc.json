@@ -68,6 +68,11 @@
             "id": "sharedmemory_listener",
             "description": "Read a text from the (named) shared memory, Repeatly",
             "tags": ["Windows System", "IPC(Inter-Process Communication)"]
+        },
+        {
+            "id": "string_split",
+            "description": "String.split test",
+            "tags": ["Assertion"]
         }
     ]
 }
