@@ -117,9 +117,7 @@ ended say()
 
 ## Thanks to
 <img src="app/assets/img/logo_oss.gif" height="55" alt="Open Software Portal, Korea National Industry Promotion Agency"/>
-
 <img src="app/assets/img/morioh.svg" height="55" alt="morioh.com"/>
-
 <img src="app/assets/img/CSDN_Logo.svg" height="55" alt="CSDN"/>
 
 ## Related projects
