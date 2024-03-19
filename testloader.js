@@ -885,7 +885,7 @@ var test_implements = {
         console.log("Closing the shared memory...");
 
         console.log("Done");
-    },    
+    },
 
     "sharedmemory_listener": function() {
         var Toolkit = require("lib/toolkit");

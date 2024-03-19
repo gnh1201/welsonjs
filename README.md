@@ -1,18 +1,16 @@
 # welsonjs
 WelsonJS - Build a Windows app on the Windows built-in JavaScript engine.
 
-![(Image) A man programming against a power plant facility, the screen that the man is watching shows the Windows logo](app/assets/img/overture.jpg)
+![(Cover Image) A man programming against a power plant facility, the screen that the man is watching shows the Windows logo](app/assets/img/overture.jpg)
 
-Now, You can build an Windows desktop app with JavaScript, TypeScript, ReScript, and HTML/CSS on Windows built-in ECMAScript engine.
+Now, You can build an Windows desktop app with JavaScript, TypeScript, CoffeeScript, ReScript, and HTML/CSS on Windows built-in ECMAScript engine.
 
 WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)*** + [Your contribution](FUNDING.yml)
 
 Dual license notice: The default license for this project is GPL 3.0. However, if the GPL 3.0 license is not compatible with Microsoft products, it is subject to the MS-RL license.
 
-I presented this project in [the open-source contest in the Republic of Korea in November 2023](https://www.slideshare.net/gnh1201/welsonjs-2023).
-
 ## Structure
-![Structure](app/assets/img/structure.png)
+![Structure Overview](app/assets/img/structure.png)
 
 ## Specifications
 - Built-in transpilers: [TypeScript](https://www.typescriptlang.org/), [Rescript](https://rescript-lang.org/), [CoffeeScript 2](https://coffeescript.org/), [LiveScript](https://livescript.net/)
@@ -111,17 +109,18 @@ ended say()
 - Please check `setup.iss` file it could be compile with [Inno Setup](https://jrsoftware.org/isinfo.php)
 
 ## Screenshots
-![Screenshot 1](app/assets/img/screenshot.png)
+![(Screenshot 1) GUI environment](app/assets/img/screenshot.png)
 
-![Screenshot 2](app/assets/img/screenshot2.png)
+![(Screenshot 2) Command-line environment](app/assets/img/screenshot2.png)
 
-![Screenshot 3](app/assets/img/screenshot3.png)
+![(Screenshot 3) WelsonJS with Microsoft Excel](app/assets/img/screenshot3.png)
 
-## Thanks!
-![Thanks 1](app/assets/img/thanks.png)
+## Thanks to
+![Open Software Portal, Korea National Industry Promotion Agency](app/assets/img/logo_oss.gif =x55)
 
-- https://www.facebook.com/javascript4u/posts/1484014618472735
-- https://python5.com/q/xtbsqjxb
+![morioh.com](app/assets/img/morioh.svg =x55)
+
+![CSDN](CSDN_Logo.svg =x55)
 
 ## Related projects
 - [gnh1201/wsh-js-gtk](https://github.com/gnh1201/wsh-js-gtk) - GTK GUI ported to Windows Scripting Host - Javascript (Microsoft JScript) (wsh-js)
@@ -138,6 +137,5 @@ ended say()
 - [7418_blocks_color_modules_rgb_square_icon](https://www.iconfinder.com/icons/7418/blocks_color_modules_rgb_square_icon) (Icon File) - Sergio Sanchesz Lopez, Futurosoft
 
 ## Contact me
-- [Paid technical support on Fiverr](https://www.fiverr.com/s/G42xRd)
 - abuse@catswords.net
 - ActivityPub [@catswords_oss@catswords.social](https://catswords.social/@catswords_oss)
