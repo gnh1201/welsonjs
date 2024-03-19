@@ -12,11 +12,18 @@ function main(args) {
         return 0;
     }
 
+    var dstfile = filename + ".enc";
+    if (FILE.fileExists(dstfile)) {
+        console.error(dstfile, "already exists. Please delete it.");
+        return 0;
+    }
+
     var filename = args[0];
     var userKey = '';
     while (userKey.length == 0 || userKey.length > 16) {
         userKey = Toolkit.prompt("Please enter the password for encryption:");
     }
+
     var data = FILE.readFile(filename, FILE.CdoCharset.CdoUTF_8);
     var encryptedData = Toolkit.encryptStringHIGHT(userKey, data);
 
