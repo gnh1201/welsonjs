@@ -121,6 +121,7 @@ ended say()
 - Wired communication network provider in Republic of Korea
 - <img src="app/assets/img/morioh.svg" height="30" alt=""/> morioh.com
 - <img src="app/assets/img/CSDN_Logo.svg" height="30" alt=""/> CSDN
+- <img src="app/assets/img/qiita-logo.png.svg" height="30" alt=""/> Qiita
 
 ## Related projects
 - [gnh1201/wsh-js-gtk](https://github.com/gnh1201/wsh-js-gtk) - GTK GUI ported to Windows Scripting Host - Javascript (Microsoft JScript) (wsh-js)
