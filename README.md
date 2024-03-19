@@ -116,9 +116,11 @@ ended say()
 ![(Screenshot 3) WelsonJS with Microsoft Excel](app/assets/img/screenshot3.png)
 
 ## Thanks to
-- <img src="app/assets/img/logo_oss.gif" height="30" alt="Open Software Portal, Korea National Industry Promotion Agency"/>
-- <img src="app/assets/img/morioh.svg" height="30" alt="morioh.com"/>
-- <img src="app/assets/img/CSDN_Logo.svg" height="30" alt="CSDN"/>
+- <img src="app/assets/img/logo_oss.gif" height="30" alt=""/> Open Software Portal, Korea National Industry Promotion Agency
+- Heavy-industry specialized CSP(Cloud Service Provider) in Republic of Korea
+- Wired communication network provider in Republic of Korea
+- <img src="app/assets/img/morioh.svg" height="30" alt=""/> morioh.com
+- <img src="app/assets/img/CSDN_Logo.svg" height="30" alt=""/> CSDN
 
 ## Related projects
 - [gnh1201/wsh-js-gtk](https://github.com/gnh1201/wsh-js-gtk) - GTK GUI ported to Windows Scripting Host - Javascript (Microsoft JScript) (wsh-js)
