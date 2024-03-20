@@ -1,7 +1,6 @@
 ////////////////////////////////////////////////////////////////////////
 // Webloader
 ////////////////////////////////////////////////////////////////////////
-var CONFIG = require("lib/config");
 var FILE = require("lib/file");
 var Browser = require("lib/browser");
 
@@ -39,7 +38,7 @@ global.console._echo = function(args, type) {
     }
 
     try {
-        if (typeof(window.jQuery.toast) !== "undefined") {
+        if (typeof window.jQuery.toast !== "undefined") {
             window.jQuery.toast({
                 heading: heading,
                 text: message,
@@ -127,24 +126,26 @@ exports.main = function(args) {
     Browser.start(function(el) {
         jQuery.support.cors = true;
 
-        Browser.addScript("app/assets/js/jquery.toast-1.3.2.min.js", function(el) {
-            var messages = global.console._messages;
-            if (messages.length > 0) {
-                // print messages
-                for (var i in messages) {
-                    console.log(messages[i]);
+        Browser.waitUntil(function(test, ttl) {
+            Browser.addScript("app/assets/js/jquery.toast-1.3.2.min.js", function(el) {
+                var messages = global.console._messages;
+                if (messages.length > 0) {
+                    // print messages
+                    for (var i in messages) {
+                        console.log(messages[i]);
+                    }
+
+                    // start the app
+                    Browser.addScript("app/assets/js/jquery.form-4.3.0.min.js");
+                    Browser.addScript("app/index.js");
+
+                    // hide loading image
+                    document.getElementById("loading").style.display = "none";
                 }
-
-                // start this app
-                Browser.addScript("app/assets/js/jquery.form-4.3.0.min.js");
-                Browser.addScript("app/index.js");
-
-                // hide loading image
-                document.getElementById("loading").style.display = "none";
-            }
+            }, test, ttl);
         }, function(el) {
             return window.jQuery.toast;
-        });
+        }, 30000);
     });
 
     // hook drag event
