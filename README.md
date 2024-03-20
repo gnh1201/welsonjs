@@ -116,13 +116,13 @@ ended say()
 ![(Screenshot 3) WelsonJS with Microsoft Excel](app/assets/img/screenshot3.png)
 
 ## Thanks to
-- <img src="app/assets/img/logo_oss.gif" height="30" alt=""/> Open Software Portal, Korea National Industry Promotion Agency
-- Heavy-industry specialized CSP(Cloud Service Provider) in Republic of Korea
-- Wired communication network provider in Republic of Korea
-- <img src="app/assets/img/morioh.svg" height="30" alt=""/> morioh.com
-- <img src="app/assets/img/CSDN_Logo.svg" height="30" alt=""/> CSDN
-- <img src="app/assets/img/qiita-logo.png" height="30" alt=""/> Qiita
-- <img src="app/assets/img/RedSky-logo-web.webp" height="30" alt=""/> Redsky Software
+- <img src="app/assets/img/logo_oss.gif" height="30" alt=""/> Open Software Portal, Korea National Industry Promotion Agency (Prize)
+- Heavy-industry specialized CSP(Cloud Service Provider) in Republic of Korea (Make the use case)
+- Live-commerce specialized online advertisement companies in Republic of Korea (Make the use case)
+- <img src="app/assets/img/morioh.svg" height="30" alt=""/> morioh.com (Mentioned)
+- <img src="app/assets/img/CSDN_Logo.svg" height="30" alt=""/> CSDN (Mentioned)
+- <img src="app/assets/img/qiita-logo.png" height="30" alt=""/> Qiita (Knowledge-base about WSH environment)
+- <img src="app/assets/img/RedSky-logo-web.webp" height="30" alt=""/> Redsky Software (PoC of the CommonJS on WSH environment)
 
 ## Related projects
 - [gnh1201/wsh-js-gtk](https://github.com/gnh1201/wsh-js-gtk) - GTK GUI ported to Windows Scripting Host - Javascript (Microsoft JScript) (wsh-js)
