@@ -124,8 +124,8 @@ ended say()
 - <img src="app/assets/img/CSDN_Logo.svg" height="30" alt=""/> CSDN - Mentioned
 - <img src="app/assets/img/qiita-logo.png" height="30" alt=""/> Qiita - Knowledge-base about WSH environment
 - <img src="app/assets/img/RedSky-logo-web.webp" height="30" alt=""/> Redsky Software - PoC(Proof of Concept) of the CommonJS on WSH environment
-- A hacker group that demonstrated the "SEO Poisoning" attack technique targeting Windows systems - Inspired system programming on the scripting engine
-- A unidentified developer of the Chromium-based variant browser - Provided an example of IPC implementation with Named Shared Memory
+- JavaScript-based payload created by an unidentified hacker group - Inspires to begin system programming using the scripting engine.
+- Implementation of a bridge between programs written in C++ and C# created by an unidentified developer (including Chromium source code) - Provides inspiration for IPC implementation using Named Shared Memory.
 
 ## Related projects
 - [gnh1201/wsh-js-gtk](https://github.com/gnh1201/wsh-js-gtk) - GTK GUI ported to Windows Scripting Host - Javascript (Microsoft JScript) (wsh-js)
