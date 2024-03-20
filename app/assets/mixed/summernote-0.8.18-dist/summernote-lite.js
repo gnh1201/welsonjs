@@ -5856,7 +5856,9 @@ var Editor_Editor = /*#__PURE__*/function () {
     value: function beforeCommand() {
       this.context.triggerEvent('before.command', this.$editable.html()); // Set styleWithCSS before run a command
 
-      document.execCommand('styleWithCSS', false, this.options.styleWithCSS); // keep focus on editable before command execution
+      try {
+        document.execCommand('styleWithCSS', false, this.options.styleWithCSS); // keep focus on editable before command execution
+      } catch (e) {}
 
       this.focus();
     }

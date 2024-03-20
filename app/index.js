@@ -79,29 +79,29 @@ Router.add('/test', function(render) {
 // nodepad
 Router.add('/notepad', function(render) {
     // load resources
-    Browser.addResources([
-        {
-            type: "javascript",
-            url: "app/assets/mixed/summernote-0.8.18-dist/summernote-lite.js"
-        },
-        {
-            type: "stylesheet",
-            url: "app/assets/mixed/summernote-0.8.18-dist/summernote-lite.css"
-        }
-    ]);
+    Browser.addStylesheet("app/assets/mixed/summernote-0.8.18-dist/summernote-lite.css");
+    Browser.waitUntil(function(test, ttl) {
+        Browser.addScript("app/assets/mixed/summernote-0.8.18-dist/summernote-lite.js", function(el) {
+            // set DOM id
+            var target_dom_id = "summernote";
 
-    // set DOM id
-    var target_dom_id = "summernote";
+            // load HTML
+            render("app/notepad.html", {
+                "target_dom_id": target_dom_id
+            });
 
-    // load HTML
-    render("app/notepad.html", {
-        "target_dom_id": target_dom_id
+            // load Summernote (wysiwyg editor)
+            $('#' + target_dom_id).summernote({
+                minHeight: 300
+            });
+
+        }, test, ttl);
+    }, function(el) {
+        alert(typeof $.summernote);
+        return $.summernote;
     });
 
-    // load Summernote (wysiwyg editor)
-    $('#' + target_dom_id).summernote({
-        minHeight: 300
-    });
+	document.getElementById("useragent").innerHTML = window.navigator.userAgent;
 });
 
 // go
