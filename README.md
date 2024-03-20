@@ -126,6 +126,7 @@ ended say()
 - <img src="app/assets/img/RedSky-logo-web.webp" height="30" alt=""/> Redsky Software - PoC(Proof of Concept) of the CommonJS on WSH environment
 - Inspired by a small-sized JavaScript payload demonstrated by a cybersecurity related group.
 - Inspired to implement memory-based IPC utilizing Named Shared Memory in the bridge implementation between applications written in C++ and C#.
+- <img src="app/assets/img/Fediverse_logo_proposal.svg" height="30" alt=""/> Fediverse - Mentioned
 
 ## Related projects
 - [gnh1201/wsh-js-gtk](https://github.com/gnh1201/wsh-js-gtk) - GTK GUI ported to Windows Scripting Host - Javascript (Microsoft JScript) (wsh-js)
