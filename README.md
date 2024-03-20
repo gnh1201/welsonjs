@@ -62,10 +62,12 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
 - lib/gtk (GTK-server and GladeXML supported GUI interface)
 - lib/chrome ([Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/) based Chrome/Chromium web browser testing interface)
 - lib/pipe-ipc (PIPE-based IPC(Inter-Process Communication) implementation)
-- lib/toolkit (`WelsonJS.Toolkit` native component
-  * Virtualized Human Interfaces
-  * Cryptography
-  * [Named Shared Memory](https://learn.microsoft.com/en-us/windows/win32/memory/creating-named-shared-memory) based IPC(Inter-Process Communication) implementation
+- lib/toolkit (`WelsonJS.Toolkit` native component)
+  - Find and attach a handle of the window
+  - alert(), prompt() implementation in console mode
+  - Virtualized Human Interfaces
+  - Cryptography
+  - [Named Shared Memory](https://learn.microsoft.com/en-us/windows/win32/memory/creating-named-shared-memory) based IPC(Inter-Process Communication) implementation
 - lib/chatgpt ([ChatGPT](https://openai.com/chatgpt) integration)
 - Everything you can imagine.
 
