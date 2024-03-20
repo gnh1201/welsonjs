@@ -39,32 +39,35 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
 - [Includes binaries](https://github.com/gnh1201/welsonjs/blob/master/bin/README.MD)
 - [module.exports](https://nodejs.org/en/knowledge/getting-started/what-is-require/), CommonJS, UMD compatibility
 - [NPM](https://www.npmjs.com/) compatibility
+- [Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/) support
 - [gRPC](https://grpc.io/) protocol support
 
-## Included libraries
+## Included modules
 - lib/std (Standard library)
 - lib/system (System interface)
 - lib/base64 (BASE64 encode and decode)
 - lib/file (File I/O interface)
-- lib/http (HTTP interface with MSXML and cURL)
-- lib/json (JSON library)
+- lib/http (HTTP client with MSXML/cURL)
 - lib/registry (Windows Registry interface)
 - lib/security (Windows Security Policy interface)
 - lib/shell (Windows Shell (Command Prompt) interface)
 - lib/powershell (Windows Powershell interface)
 - lib/service (Windows Service interface)
-- lib/browser (HTML5 and CSS3 compatibility layer)
+- lib/browser (Modern web compatibility layer)
 - lib/uri (URI scheme interface)
 - lib/winlibs (Windows DLL(Dynamic-link library) interface)
 - lib/autohotkey ([AutoHotkey](https://www.autohotkey.com/) interface)
 - lib/autoit ([AutoIt3/AutoItX](https://www.autoitscript.com/) interface)
 - lib/msoffice (Microsoft Office (e.g. Excel, PowerPoint, Word) interface)
 - lib/gtk (GTK-server and GladeXML supported GUI interface)
-- lib/chrome (Chrome and Chromium-based web browser testing interface)
-- lib/toolkit (`WelsonJS.Toolkit` native component. e.g. Virtualized Human Interface, Cryptography, ...)
+- lib/chrome ([Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/) based Chrome/Chromium web browser testing interface)
 - lib/pipe-ipc (PIPE-based IPC(Inter-Process Communication) implementation)
+- lib/toolkit (`WelsonJS.Toolkit` native component
+  * Virtualized Human Interfaces
+  * Cryptography
+  * [Named Shared Memory](https://learn.microsoft.com/en-us/windows/win32/memory/creating-named-shared-memory) based IPC(Inter-Process Communication) implementation
 - lib/chatgpt ([ChatGPT](https://openai.com/chatgpt) integration)
-- Everything you can imagine. 
+- Everything you can imagine.
 
 ## Make your own `sayhello` example
 
@@ -125,7 +128,7 @@ ended say()
 - <img src="app/assets/img/qiita-logo.png" height="30" alt=""/> Qiita - Knowledge-base about WSH environment
 - <img src="app/assets/img/RedSky-logo-web.webp" height="30" alt=""/> Redsky Software - PoC(Proof of Concept) of the CommonJS on WSH environment
 - Inspired by a small-sized JavaScript payload demonstrated by a cybersecurity related group.
-- Inspired to implement memory-based IPC utilizing Named Shared Memory in the bridge implementation between applications written in C++ and C#.
+- Inspired by the use of Named Shared Memory in an inter-language IPC implementation devised by an unidentified developer.
 - <img src="app/assets/img/Fediverse_logo_proposal.svg" height="30" alt=""/> Fediverse - Mentioned
 
 ## Related projects
