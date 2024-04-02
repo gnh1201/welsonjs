@@ -79,9 +79,9 @@ Router.add('/test', function(render) {
 // nodepad
 Router.add('/notepad', function(render) {
     // load resources
-    Browser.addStylesheet("app/assets/mixed/summernote-0.8.19-dist/summernote-lite.css");
+    Browser.addStylesheet("app/assets/mixed/summernote-0.8.21-proposal/summernote-lite.css");
     Browser.waitUntil(function(test, ttl) {
-        Browser.addScript("app/assets/mixed/summernote-0.8.19-dist/summernote-lite.js", function(el) {
+        Browser.addScript("app/assets/mixed/summernote-0.8.21-proposal/summernote-lite.js", function(el) {
             // set DOM id
             var target_dom_id = "summernote";
 
