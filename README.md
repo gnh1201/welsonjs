@@ -1,4 +1,7 @@
 # welsonjs
+
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs?ref=badge_shield)
+
 WelsonJS - Build a Windows app on the Windows built-in JavaScript engine.
 
 ![(Cover Image) A man programming against a power plant facility, the screen that the man is watching shows the Windows logo](app/assets/img/overture.jpg)
@@ -11,7 +14,6 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
 
 ## Structure
 ![Structure Overview](app/assets/img/structure.png)
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs?ref=badge_shield)
 
 ## Specifications
 - Built-in transpilers: [TypeScript](https://www.typescriptlang.org/), [Rescript](https://rescript-lang.org/), [CoffeeScript 2](https://coffeescript.org/), [LiveScript](https://livescript.net/)
