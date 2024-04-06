@@ -36,7 +36,7 @@
     "tests": [
         {
             "id": "gtkserver_test",
-            "description": "GTK Server를 이용한 GUI(그래픽 사용자 인터페이스) 구현 가능 여부 확인",
+            "description": "Graphical User Interface (GUI) test with GTK server",
             "tags": ["GTK", "GTK"]
         },
         {
@@ -71,8 +71,13 @@
         },
         {
             "id": "string_split",
-            "description": "String.split test",
+            "description": "String.split() test",
             "tags": ["Assertion"]
+        },
+        {
+            "id": "linqjs",
+            "description": "linq.js (LINQ for JavaScript) test",
+            "tags": ["Library"]
         }
     ]
 }

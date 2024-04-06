@@ -934,6 +934,23 @@ var test_implements = {
             console.log(c);
             console.log(d);
         }
+    },
+    
+    "linqjs": function() {
+        var a = Enumerable.range(1, 10)
+            .where(function(i) { return i % 3 == 0; })
+            .select(function(i) { return i * 10; })
+        ;
+        console.log(a.toArray().join(','));
+        
+        var array = "monkey:red:apple:delicious:banana:long:train:fast:airplane:high:everest:sharp:seringue:painful".split(':');
+        var b = Enumerable.from(array).select(function(val, i) { 
+            return {
+                value: val,
+                index: i
+            }
+        });
+        console.log(JSON.stringify(b.toArray()));
     }
 };
 

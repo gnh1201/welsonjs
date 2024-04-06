@@ -38,7 +38,8 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
   - [jQuery UI](https://jqueryui.com/)
   - [github.com/kamranahmedse/jquery-toast-plugin](https://github.com/kamranahmedse/jquery-toast-plugin)
   - [github.com/hiddentao/squel](https://github.com/hiddentao/squel)
-  - [github.com/BorisMoore/jsrender](https://github.com/BorisMoore/jsrender)
+  - [github.com/BorisMoore/jsrender](https://github.com/BorisMoore/jsrender) - Templating engine
+  - [github.com/mihaifm/linq](https://github.com/mihaifm/linq) - LINQ for JavaScript
 - [Includes binaries](https://github.com/gnh1201/welsonjs/blob/master/bin/README.MD)
 - [module.exports](https://nodejs.org/en/knowledge/getting-started/what-is-require/), CommonJS, UMD compatibility
 - [NPM](https://www.npmjs.com/) compatibility
