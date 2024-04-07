@@ -44,7 +44,9 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
 - [module.exports](https://nodejs.org/en/knowledge/getting-started/what-is-require/), CommonJS, UMD compatibility
 - [NPM](https://www.npmjs.com/) compatibility
 - [Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/) support
-- [gRPC](https://grpc.io/) protocol support
+- RPC(Remote Procedure Call) protocol support
+  - [gRPC](https://grpc.io/)
+  - [JSON-RPC 2.0](https://www.jsonrpc.org/specification)
 
 ## Included modules
 - lib/std (Standard library)
@@ -155,7 +157,6 @@ ended say()
 ## Report abuse
 - abuse@catswords.net
 - ActivityPub [@catswords_oss@catswords.social](https://catswords.social/@catswords_oss)
-
 
 ## License
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs?ref=badge_large)
