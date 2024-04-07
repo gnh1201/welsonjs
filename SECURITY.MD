@@ -41,5 +41,6 @@ This program is also known by the following name. This name is used solely for t
 ## Report abuse
 If you discover any instances of this project being misused, please report them.
 
-  * abuse@catswords.net
-  * ActivityPub [@catswords_oss@catswords.social](https://catswords.social/@catswords_oss)
+- abuse@catswords.net
+- ActivityPub [@catswords_oss@catswords.social](https://catswords.social/@catswords_oss)
+- [Voice of the Customer (VoC)](https://policy.catswords.social/voc_en.html)

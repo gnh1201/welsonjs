@@ -158,6 +158,7 @@ ended say()
 ## Report abuse
 - abuse@catswords.net
 - ActivityPub [@catswords_oss@catswords.social](https://catswords.social/@catswords_oss)
+- [Voice of the Customer (VoC)](https://policy.catswords.social/voc_en.html)
 
 ## License
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs?ref=badge_large)
