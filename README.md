@@ -44,6 +44,7 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
 - [module.exports](https://nodejs.org/en/knowledge/getting-started/what-is-require/), CommonJS, UMD compatibility
 - [NPM](https://www.npmjs.com/) compatibility
 - [Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/) support
+- [ADB(Android Debug Bridge)](https://source.android.com/docs/setup/build/adb) support
 - RPC(Remote Procedure Call) protocol support
   - [gRPC](https://grpc.io/)
   - [JSON-RPC 2.0](https://www.jsonrpc.org/specification)
