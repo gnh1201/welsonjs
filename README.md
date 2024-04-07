@@ -41,7 +41,7 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
   - [github.com/BorisMoore/jsrender](https://github.com/BorisMoore/jsrender) - Templating engine
   - [github.com/mihaifm/linq](https://github.com/mihaifm/linq) - LINQ for JavaScript
 - [Includes binaries](https://github.com/gnh1201/welsonjs/blob/master/bin/README.MD)
-- [module.exports](https://nodejs.org/en/knowledge/getting-started/what-is-require/), CommonJS, UMD compatibility
+- [module.exports](https://nodejs.org/api/modules.html#moduleexports), CommonJS, UMD compatibility
 - [NPM](https://www.npmjs.com/) compatibility
 - [Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/) support
 - [ADB(Android Debug Bridge)](https://source.android.com/docs/setup/build/adb) support
