@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // 제어됩니다. 어셈블리와 관련된 정보를 수정하려면
 // 이러한 특성 값을 변경하세요.
 [assembly: AssemblyTitle("WelsonJS.Toolkit")]
-[assembly: AssemblyDescription("WelsonJS dotNET native component")]
+[assembly: AssemblyDescription("Native component for WelsonJS framework")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Catswords Research, Co.")]
-[assembly: AssemblyProduct("WelsonJS.Toolkit")]
-[assembly: AssemblyCopyright("Catswords Research, Co. (Licensed under GPLv3 or MS-RL)")]
+[assembly: AssemblyCompany("Catswords Research")]
+[assembly: AssemblyProduct("WelsonJS")]
+[assembly: AssemblyCopyright("Catswords Research, C-2021-000237, GPLv3, MS-RL")]
 [assembly: AssemblyTrademark("WelsonJS")]
 [assembly: AssemblyCulture("")]
 
