@@ -241,5 +241,32 @@ namespace WelsonJS
             HIGHT.ECB cipher = new HIGHT.ECB(userKey);
             return Encoding.UTF8.GetString(cipher.Decrypt(dataIn)).Trim('\0');
         }
+
+        [ComVisible(true)]
+        public string GetImageSize(string srcfile)
+        {
+            int[] result = BitmapUtils.GetSize(srcfile);
+            int width = result[0];
+            int height = result[1];
+
+            return $"width={width}; height={height}";
+        }
+
+        [ComVisible(true)]
+        public string GetImagePixel(string srcfile)
+        {
+            int[] result = BitmapUtils.GetSize(srcfile);
+            int red = result[0];
+            int green = result[1];
+            int blue = result[2];
+
+            return $"red={red}; green={green}; blue={blue}";
+        }
+
+        [ComVisible(true)]
+        public void CropImage(string srcfile, string dstfile, int x, int y, int a, int b)
+        {
+            BitmapUtils.Crop(srcfile, dstfile, x, y, a, b);
+        }
     }
 }
