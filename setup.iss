@@ -75,7 +75,7 @@ AppName=WelsonJS
 
 [Code]
 const
-  UninstSiteURL = 'https://policy.catswords.social/voc_en.html';
+  UninstSiteURL = 'https://github.com/gnh1201/welsonjs';
 
 procedure SetElevationBit(Filename: string);
 var
@@ -109,5 +109,5 @@ var
   ErrorCode: Integer;
 begin
   if CurUninstallStep = usDone then
-    ShellExec('explorer', UninstSiteURL, '', '', SW_SHOW, ewNoWait, ErrorCode);
+    ShellExec('open', UninstSiteURL, '', '', SW_SHOW, ewNoWait, ErrorCode);
 end;
