@@ -47,6 +47,8 @@ namespace WelsonJS
             int width = bitmap.Width;
             int height = bitmap.Height;
 
+            bitmap.Dispose();
+
             return new int[] { width, height };
         }
 
