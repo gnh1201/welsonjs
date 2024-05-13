@@ -264,9 +264,17 @@ namespace WelsonJS
         }
 
         [ComVisible(true)]
+        public string GetImageBase64(string srcfile)
+        {
+            return BitmapUtils.GetBase64(srcfile);
+        }
+
+        [ComVisible(true)]
         public void CropImage(string srcfile, string dstfile, int x, int y, int a, int b)
         {
             BitmapUtils.Crop(srcfile, dstfile, x, y, a, b);
         }
+
+
     }
 }

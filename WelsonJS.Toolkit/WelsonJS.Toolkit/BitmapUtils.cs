@@ -19,7 +19,10 @@
  * 
  */
 
+using System;
 using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 
 namespace WelsonJS
 {
@@ -64,6 +67,47 @@ namespace WelsonJS
             bitmap.Dispose();
 
             return new int[] { red, green, blue };
+        }
+
+        public static string GetBase64(string srcfile)
+        {
+            Bitmap bitmap = Load(srcfile);
+            MemoryStream memoryStream = new MemoryStream();
+
+            ImageFormat imageFormat;
+            if (srcfile.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase))
+            {
+                imageFormat = ImageFormat.Bmp;
+            }
+            else if (srcfile.EndsWith(".jpg", StringComparison.OrdinalIgnoreCase) || srcfile.EndsWith(".jpeg", StringComparison.OrdinalIgnoreCase))
+            {
+                imageFormat = ImageFormat.Jpeg;
+            }
+            else if (srcfile.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+            {
+                imageFormat = ImageFormat.Png;
+            }
+            else if (srcfile.EndsWith(".tiff", StringComparison.OrdinalIgnoreCase))
+            {
+                imageFormat = ImageFormat.Tiff;
+            }
+            else if (srcfile.EndsWith(".gif", StringComparison.OrdinalIgnoreCase))
+            {
+                imageFormat = ImageFormat.Gif;
+            }
+            else
+            {
+                return "";
+            }
+
+            bitmap.Save(memoryStream, imageFormat);
+            byte[] imageBytes = memoryStream.ToArray();
+            string base64String = Convert.ToBase64String(imageBytes);
+
+            bitmap.Dispose();
+            memoryStream.Dispose();
+
+            return base64String;
         }
     }
 }
