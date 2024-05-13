@@ -1,5 +1,5 @@
 ; @created_on 2020-06-26
-; @updated_on 2023-09-11
+; @updated_on 2024-05-13
 ; @author Namhyeon Go <abuse@catswords.net>
 
 [Setup]
@@ -36,7 +36,9 @@ Source: "app.js"; DestDir: "{app}";
 Source: "app.hta"; DestDir: "{app}";
 Source: "Default_HTA.reg"; DestDir: "{app}";
 Source: "LICENSE"; DestDir: "{app}";
+Source: "LICENSE_MSRL"; DestDir: "{app}";
 Source: "*.md"; DestDir: "{app}";
+Source: "preconfigure.bat"; DestDir: "{app}";
 Source: "start.bat"; DestDir: "{app}";
 Source: "uriloader.js"; DestDir: "{app}";
 Source: "webloader.js"; DestDir: "{app}";
@@ -60,7 +62,7 @@ Name: "{group}\Uninstall {cm:AppName}"; Filename: "{uninstallexe}"; AfterInstall
 ; Filename: {app}\bin\gtk2-runtime-2.24.33-2021-01-30-ts-win64.exe;
 ; Filename: {app}\bin\nmap-7.92\VC_redist.x86.exe;
 ; Filename: {app}\bin\nmap-7.92\npcap-1.50.exe;
-Filename: {app}\IEMaxScriptStatements.bat;
+Filename: {app}\preconfigure.bat;
 Filename: {app}\start.bat;
 
 [UninstallRun]
@@ -72,6 +74,9 @@ Filename: {app}\start.bat;
 AppName=WelsonJS
 
 [Code]
+const
+  UninstSiteURL = 'https://policy.catswords.social/voc_en.html';
+
 procedure SetElevationBit(Filename: string);
 var
   Buffer: string;
@@ -97,4 +102,12 @@ function GetProgramFiles(Param: string): string;
 begin
   if IsWin64 then Result := ExpandConstant('{commonpf64}')
     else Result := ExpandConstant('{commonpf32}')
+end;
+
+procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
+var
+  ErrorCode: Integer;
+begin
+  if CurUninstallStep = usDone then
+    ShellExec('explorer', UninstSiteURL, '', '', SW_SHOW, ewNoWait, ErrorCode);
 end;

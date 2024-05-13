@@ -6,6 +6,9 @@ rem https://github.com/gnh1201/welsonjs
 pushd %~dp0
 echo [*] Starting WelsonJS pre-configure script...
 
+echo [*] Registering HTA file association...
+reg import Default_HTA.reg
+
 echo [*] Unlocking the performance limit of the GUI(MSHTML) environment...
 reg add "HKCU\Software\Microsoft\Internet Explorer\Styles" /f
 reg add "HKCU\Software\Microsoft\Internet Explorer\Styles" /v "MaxScriptStatements" /t REG_DWORD /d 0xFFFFFFFF /f
@@ -19,5 +22,3 @@ echo [*] Registering WelsonJS native component...
 %WINDIR%\Microsoft.NET\Framework64\v2.0.50727\RegAsm.exe /codebase bin\x64\WelsonJS.Toolkit.dll
 
 echo Done
-
-pause
