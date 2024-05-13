@@ -24,6 +24,7 @@ DisableReadyPage=true
 DisableWelcomePage=yes
 DisableDirPage=yes
 DisableProgramGroupPage=yes
+LicenseFile=SECURITY.MD
 
 ; [Registry]
 ; Root: HKCR; Subkey: "welsonjs"; ValueType: "string"; ValueData: "URL:{cm:AppName}"; Flags: uninsdeletekey
