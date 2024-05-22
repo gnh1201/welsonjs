@@ -150,10 +150,8 @@ ended say()
 - [johnjohnsp1/WindowsScriptHostExtension](https://github.com/johnjohnsp1/WindowsScriptHostExtension) - Inject DLL Prototype using Microsoft.Windows.ACTCTX COM Object
 - [kuntashov/jsunit](https://github.com/kuntashov/jsunit) - JSUnit port for Windows Scripting Host
 - [nickdoth/WSHHttpServer](https://github.com/nickdoth/WSHHttpServer) - HTTP server based on Windows Script Host
-- Check FOSSA report [HTML](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/fossa_report.html) [CSV](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/fossa_report.csv) [TXT](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/fossa_report.txt)
-
-## Image stocks
-- [7418_blocks_color_modules_rgb_square_icon](https://www.iconfinder.com/icons/7418/blocks_color_modules_rgb_square_icon) (Icon File) - Sergio Sanchesz Lopez, Futurosoft
+- FOSSA report [HTML](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/fossa_report.html) [CSV](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/fossa_report.csv) [TXT](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/fossa_report.txt)
+- [License attributions of a stock images](https://policy.catswords.social/stock_images.html)
 
 ## Report abuse
 - abuse@catswords.net
