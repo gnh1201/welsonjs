@@ -48,20 +48,13 @@ If you then still feel the need to ask a question and need clarification, we rec
 
 We will then take care of the issue as soon as possible.
 
-<!--
 You might want to create a separate issue tag for questions and include it in this description. People should then tag their issues accordingly.
 
-Depending on how large the project is, you may want to outsource the questioning, e.g. to Stack Overflow or Gitter. You may add additional contact and information possibilities:
-- IRC
-- Slack
-- Gitter
-- Stack Overflow tag
-- Blog
-- FAQ
-- Roadmap
+Depending on how large the project is, you may want to outsource the questioning, e.g. to Stack Overflow. You may add additional contact and information possibilities:
+
+- ActivityPub
+- Stack Overflow tag or Public Forums
 - E-Mail List
-- Forum
--->
 
 ## I Want To Contribute
 
@@ -117,7 +110,7 @@ This section guides you through submitting an enhancement suggestion for WelsonJ
 
 - Make sure that you are using the latest version.
 - Read the [documentation](https://catswords.social/@catswords_oss) carefully and find out if the functionality is already covered, maybe by an individual configuration.
-- Perform a [search](https://github.com/gnh1201/welsonjs//issues) to see if the enhancement has already been suggested. If it has, add a comment to the existing issue instead of opening a new one.
+- Perform a [search](https://github.com/gnh1201/welsonjs/issues) to see if the enhancement has already been suggested. If it has, add a comment to the existing issue instead of opening a new one.
 - Find out whether your idea fits with the scope and aims of the project. It's up to you to make a strong case to convince the project's developers of the merits of this feature. Keep in mind that we want features that will be useful to the majority of our users and not just a small subset. If you're just targeting a minority of users, consider writing an add-on/plugin library.
 
 <!-- omit in toc -->
@@ -134,26 +127,21 @@ Enhancement suggestions are tracked as [GitHub issues](https://github.com/gnh120
 <!-- You might want to create an issue template for enhancement suggestions that can be used as a guide and that defines the structure of the information to be included. If you do so, reference it here in the description. -->
 
 ### Your First Code Contribution
-<!-- TODO
-include Setup of env, IDE and typical getting started instructions?
 
--->
-
-### Improving The Documentation
-<!-- TODO
-Updating, improving and correcting the documentation
-
--->
+Just Notepad, in Windows machine.
 
 ## Styleguides
-### Commit Messages
-<!-- TODO
 
--->
+### Commit Messages
+
+Flexible. We will respect your style.
 
 ## Join The Project Team
-<!-- TODO -->
 
-<!-- omit in toc -->
+Contact us:
+
+* ActivityPub [@catswords_oss@catswords.social](https://catswords.social/@catswords_oss)
+* abuse@catswords.net
+
 ## Attribution
 This guide is based on the **contributing-gen**. [Make your own](https://github.com/bttger/contributing-gen)!
