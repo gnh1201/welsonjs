@@ -1,6 +1,7 @@
 # welsonjs
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs?ref=badge_shield)
+[![DOI](https://zenodo.org/badge/275600068.svg)](https://zenodo.org/doi/10.5281/zenodo.11382384)
 
 WelsonJS - Build a Windows app on the Windows built-in JavaScript engine.
 
