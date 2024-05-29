@@ -1,0 +1,11 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Go"
+  given-names: "Namhyeon"
+  orcid: "https://orcid.org/0009-0006-8421-0911"
+title: "WelsonJS"
+version: 0.2.7.12
+doi: 10.5281/zenodo.11382384
+date-released: 2024-05-28
+url: "https://github.com/gnh1201/welsonjs"
