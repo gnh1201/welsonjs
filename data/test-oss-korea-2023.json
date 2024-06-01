@@ -3,7 +3,7 @@
     "released": "2023-10-30",
     "dependencies": {
         "welsonjs": "0.2.7"
-    }
+    },
     "authors": [
         "Namhyeon Go <gnh1201@gmail.com>"
     ],
