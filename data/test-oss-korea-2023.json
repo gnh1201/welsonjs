@@ -1,13 +1,16 @@
 {
-    "description": "WelsonJS test profile for OSS contest 2023 in Republic of Korea",
-    "date": "2023-10-30",
-    "revision": "20231030r2",
+    "description": "2023 South Korea OSS Contest Test Profile for WelsonJS",
+    "released": "2023-10-30",
+    "dependencies": {
+        "welsonjs": "0.2.7"
+    }
     "authors": [
         "Namhyeon Go <gnh1201@gmail.com>"
     ],
-    "links": [
+    "references": [
         "https://github.com/gnh1201/welsonjs",
-        "https://catswords.social/@catswords_oss"
+        "https://catswords.social/@catswords_oss",
+        "https://www.oss.kr/dev_competition_activities/show/544723e6-850a-4956-9194-79640420c19a"
     ],
     "tags": [
         "javascript",
@@ -31,7 +34,7 @@
         "chatgpt"
     ],
     "schema": {
-        "version": "0.1"
+        "version": "0.2"
     },
     "tests": [
         {

@@ -1,11 +1,13 @@
 {
     "description": "WelsonJS test profile (test-misc.json)",
-    "date": "2024-01-04",
-    "revision": "HEAD",
+    "released": "2024-01-04",
+    "dependencies": {
+        "welsonjs": "0.2.7"
+    }
     "authors": [
         "Namhyeon Go <gnh1201@gmail.com>"
     ],
-    "links": [
+    "references": [
         "https://github.com/gnh1201/welsonjs",
         "https://catswords.social/@catswords_oss"
     ],
@@ -31,7 +33,7 @@
         "chatgpt"
     ],
     "schema": {
-        "version": "0.1"
+        "version": "0.2"
     },
     "tests": [
         {

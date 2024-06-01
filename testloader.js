@@ -7,7 +7,7 @@ var FILE = require("lib/file");
 
 // implement the tests
 var test_implements = {
-    // Ref 1: https://gist.github.com/CityRay/c56e4fa874af9370cc1a367bd43095b0
+    // https://gist.github.com/CityRay/c56e4fa874af9370cc1a367bd43095b0
     "es5_polyfills": function() {
         var parseIntIgnoresLeadingZeros = (function () {
             return parseInt('010', 10) === 10;
@@ -26,7 +26,7 @@ var test_implements = {
             "ECMAScript 5 수준의 런타임이 아닙니다. 필수 테스트 중 하나를 실패하였습니다.");
     },
 
-    // Ref 1: https://learn.microsoft.com/en-us/previous-versions/windows/desktop/regprov/stdregprov
+    // https://learn.microsoft.com/en-us/previous-versions/windows/desktop/regprov/stdregprov
     "registry_find_provider": function() {
         var REG = require("lib/registry");
 
@@ -763,7 +763,7 @@ var test_implements = {
         }
     },
     
-    // profile: data/test-misc-20231107.json
+    // profile: data/test-misc.json
     "toolkit_msedge_test": function() {
         var Chrome = require("lib/chrome");
         var Toolkit = require("lib/toolkit");
@@ -777,7 +777,7 @@ var test_implements = {
         Toolkit.sendClick("Google", 30, 30, 1);
     },
     
-    // profile: data/test-misc-20231107.json
+    // profile: data/test-misc.json
     "squel_sqlmap_test": function() {
         console.log(squel.select({ separator: "\n" })
             .from("students")
@@ -789,13 +789,21 @@ var test_implements = {
             .toString());
     },
     
-    // profile: data/test-msoffice-20231219.json
+    // profile: data/test-msoffice.json
     "open_excel_file": function() {
         var Office = require("lib/msoffice");
-        var excel = new Office.Excel();   // Create an Excel instance
-        excel.open("data\\example.xlsx");   // Open the Excel window
+
+        var excel = new Office.Excel();   // Create a Excel instance
+        excel.open("data\\example.xlsx");   // Open a Excel window
     },
-    
+
+	"open_excel_new": function() {
+        var Office = require("lib/msoffice");
+
+        var excel = new Office.Excel();   // Create a Excel instance
+        excel.open();   // Open a Excel window
+	},
+
     "open_excel_with_chatgpt": function() {
         // Load libraries
         var Office = require("lib/msoffice");
@@ -829,11 +837,19 @@ var test_implements = {
     },
     
     "open_powerpoint_file": function() {
-        var Office = require("lib/msoffice");   // Load libraries
+        var Office = require("lib/msoffice");
+
         var powerpoint = new Office.PowerPoint();   // Create a PowerPoint instance
-        powerpoint.open("data\\example.pptx");   // Open the PowerPoint window
+        powerpoint.open("data\\example.pptx");   // Open a PowerPoint window
     },
     
+	"open_powerpoint_new": function() {
+        var Office = require("lib/msoffice");
+
+        var powerpoint = new Office.PowerPoint();   // Create a PowerPoint instance
+        powerpoint.open();   // Open a PowerPoint window
+	},
+	
     "open_word_file": function() {
         var Office = require("lib/msoffice");    // Load libraries
         var word = new Office.Word();   // Create an Word instance

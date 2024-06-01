@@ -1,11 +1,13 @@
 {
     "description": "WelsonJS test profile for Microsoft Office",
-    "date": "2023-12-19",
-    "revision": "20231219r1",
+    "released": "2024-06-02",
+    "dependencies": {
+        "welsonjs": "0.2.7"
+    }
     "authors": [
         "Namhyeon Go <gnh1201@gmail.com>"
     ],
-    "links": [
+    "references": [
         "https://github.com/gnh1201/welsonjs",
         "https://catswords.social/@catswords_oss"
     ],
@@ -31,12 +33,17 @@
         "chatgpt"
     ],
     "schema": {
-        "version": "0.1"
+        "version": "0.2"
     },
     "tests": [
         {
             "id": "open_excel_file",
             "description": "마이크로소프트 엑셀 파일 열기 및 편집 가능 여부 확인",
+            "tags": ["Office", "Excel"]
+        },
+        {
+            "id": "open_excel_new",
+            "description": "마이크로소프트 엑셀 새로운 파일로 진행 가능 여부 확인",
             "tags": ["Office", "Excel"]
         },
         {
@@ -47,6 +54,11 @@
         {
             "id": "open_powerpoint_file",
             "description": "마이크로소프트 파워포인트 파일 열기 및 편집 가능 여부 확인",
+            "tags": ["Office", "PowerPoint"]
+        },
+        {
+            "id": "open_powerpoint_new",
+            "description": "마이크로소프트 파워포인트 새로운 파일로 진행 가능 여부 확인",
             "tags": ["Office", "PowerPoint"]
         },
         {
