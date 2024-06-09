@@ -80,6 +80,11 @@
             "id": "linqjs",
             "description": "linq.js (LINQ for JavaScript) test",
             "tags": ["Library"]
+        },
+        {
+            "id": "domparser_test",
+            "description": "DOMParser compatibility test",
+            "tags": ["Standards"]
         }
     ]
 }

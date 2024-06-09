@@ -967,6 +967,10 @@ var test_implements = {
             }
         });
         console.log(JSON.stringify(b.toArray()));
+    },
+
+    "domparser_test": function() {
+        console.log(typeof DOMParser);
     }
 };
 

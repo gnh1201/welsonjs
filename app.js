@@ -194,9 +194,12 @@ if (typeof CreateObject === "undefined") {
             } else {
                 console.warn("(Chakra) The standalone engine does not supported. Please use the built-in engine.");
                 console.warn("(Chakra) hint:", "cscript //NoLogo //E:{1b7cd997-e5ff-4932-a7a6-2a9e636da385} app.js <filename> <...arguments>");
+                throw new Error("Could not find a loader");
             }
         } else if (typeof ActiveXObject !== "undefined") {
             return new ActiveXObject(p);
+        } else {
+            throw new Error("Could not find a loader");
         }
     };
 }
@@ -497,9 +500,9 @@ function initializeConsole() {
         var app = require(name);
         if (app) {
             if (app.main) {
-                var exitStatus = app.main.call(this, args);
-                if (typeof exitStatus !== "undefined") {
-                    exit(exitStatus);
+                var status = app.main.call(this, args);
+                if (typeof status !== "undefined") {
+                    exit(status);
                 }
             } else {
                 console.error("Error, missing main entry point in", name);
@@ -512,7 +515,7 @@ function initializeConsole() {
 
 function initializeWindow(name, args, w, h) {
     if (typeof window === "undefined") {
-        console.error("Error, window is not defined");
+        console.error("This is not a window");
         exit(1);
     }
     var app = require(name);
@@ -530,11 +533,11 @@ function initializeWindow(name, args, w, h) {
                 exit(exitStatus);
             }
         } else {
-            console.error("Error, missing main entry point in", name + ".js");
+            console.error("Missing main entry point in", name + ".js");
             exit(1);
         }
     } else {
-        console.error("Error, cannot find", name + ".js");
+        console.error("Could not find", name + ".js");
         exit(1);
     }
 }
@@ -572,8 +575,11 @@ function __main__() {
     console.log("   \\ V  V /  __/ \\__ \\ (_) | | | | |_| |___) |");
     console.log("    \\_/\\_/ \\___|_|___/\\___/|_| |_|\\___/|____/ ");
     console.log("");
-    console.log("    WelsonJS - Build a Windows app on the Windows built-in JavaScript engine");
-    console.log("    https://github.com/gnh1201/welsonjs");
+    console.log("  WelsonJS - Build a Windows app on the Windows built-in JavaScript engine");
+    console.log("  C-2021-000237 (cros.or.kr)");
+	console.log("  10.5281/zenodo.11382385 (doi.org)");
+	console.log("  This software is distributed as open source under the GPL 3.0 or MS-RL licenses.");
+    console.log("  https://github.com/gnh1201/welsonjs");
     console.log("");
 
     if (typeof window === "undefined") {
