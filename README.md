@@ -140,6 +140,7 @@ ended say()
 - Inspired by a small-sized JavaScript payload demonstrated by a cybersecurity related group.
 - Inspired by the use of Named Shared Memory in an inter-language IPC implementation devised by an unidentified developer.
 - <img src="app/assets/img/Fediverse_logo_proposal.svg" height="30" alt=""/> Fediverse - Mentioned
+- [GitHub Sponsors](https://github.com/sponsors/gnh1201)
 
 ## Related projects
 - [gnh1201/wsh-js-gtk](https://github.com/gnh1201/wsh-js-gtk) - GTK GUI ported to Windows Scripting Host - Javascript (Microsoft JScript) (wsh-js)
