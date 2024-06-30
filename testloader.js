@@ -797,12 +797,12 @@ var test_implements = {
         excel.open("data\\example.xlsx");   // Open a Excel window
     },
 
-	"open_excel_new": function() {
+    "open_excel_new": function() {
         var Office = require("lib/msoffice");
 
         var excel = new Office.Excel();   // Create a Excel instance
         excel.open();   // Open a Excel window
-	},
+    },
 
     "open_excel_with_chatgpt": function() {
         // Load libraries
@@ -843,13 +843,13 @@ var test_implements = {
         powerpoint.open("data\\example.pptx");   // Open a PowerPoint window
     },
     
-	"open_powerpoint_new": function() {
+    "open_powerpoint_new": function() {
         var Office = require("lib/msoffice");
 
         var powerpoint = new Office.PowerPoint();   // Create a PowerPoint instance
         powerpoint.open();   // Open a PowerPoint window
-	},
-	
+    },
+    
     "open_word_file": function() {
         var Office = require("lib/msoffice");    // Load libraries
         var word = new Office.Word();   // Create an Word instance
@@ -971,6 +971,22 @@ var test_implements = {
 
     "domparser_test": function() {
         console.log(typeof DOMParser);
+    },
+
+    // https://github.com/gnh1201/caterpillar
+    "catproxy_test": function() {
+        var client = require('lib/catproxy');
+        
+        function main(args) {
+            var worker = client.create("http://locahost:5555");
+            worker.set_method("relay_mysql_query");
+            worker.set_env("mysql_username", "adminer");
+            worker.set_env("mysql_password", "changeme");
+            worker.set_env("mysql_database", "dummydb");
+
+            var result = worker.exec("select * from authors limit 3");
+            console.log(JSON.stringify(result));
+        }
     }
 };
 
