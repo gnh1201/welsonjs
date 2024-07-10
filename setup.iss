@@ -1,6 +1,6 @@
 ; @created_on 2020-06-26
-; @updated_on 2024-05-13
-; @author Namhyeon Go <abuse@catswords.net>
+; @updated_on 2024-07-10
+; @author Namhyeon Go (Catswords Research) <abuse@catswords.net>
 
 [Setup]
 AppName=WelsonJS
@@ -40,7 +40,7 @@ Source: "LICENSE"; DestDir: "{app}";
 Source: "LICENSE_MSRL"; DestDir: "{app}";
 Source: "*.md"; DestDir: "{app}";
 Source: "preconfigure.bat"; DestDir: "{app}";
-Source: "start.bat"; DestDir: "{app}";
+Source: "bootstrap.bat"; DestDir: "{app}";
 Source: "uriloader.js"; DestDir: "{app}";
 Source: "webloader.js"; DestDir: "{app}";
 Source: "bootstrap.js"; DestDir: "{app}";
@@ -56,7 +56,7 @@ Source: "data\*"; DestDir: "{app}/data"; Flags: ignoreversion recursesubdirs;
 Name: "{app}\tmp";
 
 [Icons]
-Name: "{group}\Start {cm:AppName}"; Filename: "{app}\start.bat"; AfterInstall: SetElevationBit('{group}\Start {cm:AppName}.lnk');
+Name: "{group}\Start {cm:AppName}"; Filename: "{app}\bootstrap.bat"; AfterInstall: SetElevationBit('{group}\Start {cm:AppName}.lnk');
 Name: "{group}\Uninstall {cm:AppName}"; Filename: "{uninstallexe}"; AfterInstall: SetElevationBit('{group}\Uninstall {cm:AppName}.lnk');
 
 [Run]
@@ -64,7 +64,7 @@ Name: "{group}\Uninstall {cm:AppName}"; Filename: "{uninstallexe}"; AfterInstall
 ; Filename: {app}\bin\nmap-7.92\VC_redist.x86.exe;
 ; Filename: {app}\bin\nmap-7.92\npcap-1.50.exe;
 Filename: {app}\preconfigure.bat;
-Filename: {app}\start.bat;
+Filename: {app}\bootstrap.bat;
 
 [UninstallRun]
 ; Filename: {code:GetProgramFiles}\GTK2-Runtime Win64\gtk2_runtime_uninst.exe;
