@@ -69,7 +69,7 @@ Router.add('/test', function(render) {
         alert("모든 메시지가 정상적으로 보였다면 테스트에 성공한 것입니다.");
     };
 
-    var content = FILE.readFile("data/test-oss-20231030.json", FILE.CdoCharset.CdoUTF_8);
+    var content = FILE.readFile("data/test-oss-korea-2023.json", FILE.CdoCharset.CdoUTF_8);
     var data = JSON.parse(content);
     render("app/test.html", {
         "data": data
