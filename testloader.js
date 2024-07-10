@@ -420,6 +420,13 @@ var test_implements = {
         console.log("응답 시간: " + SYS.ping("1.1.1.1") + "ms");
     },
 
+    "network_bitsadmin_test": function() {
+        var HTTP = require("lib/http");
+        var bits = HTTP.create("BITS");
+        var response = bits.open("GET", "https://httpbin.org/get").send().responseText;
+        console.log(response);
+    },
+
     "extramath_dtm": function() {
         var ExtraMath = require("lib/extramath");
         
@@ -991,7 +998,7 @@ var test_implements = {
 };
 
 function main(args) {
-    // EXAMPLE: cscript app.js testloader <es5_polyfills> <data\test-oss-20231030.json>
+    // EXAMPLE: cscript app.js testloader <es5_polyfills> <data\test-oss-korea-2023.json>
     if (args.length > 0) {
         var test_id = args[0];
         var profilefile = args[1];

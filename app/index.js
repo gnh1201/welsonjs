@@ -55,8 +55,10 @@ Router.add('/', function(render) {
 
 // test
 Router.add('/test', function(render) {
+    var test_profile_filepath = "data/test-oss-korea-2023.json";
+
     window.test_start = function(test_id) {
-        SHELL.show(["cscript", "app.js", "testloader", test_id]);
+        SHELL.show(["cscript", "app.js", "testloader", test_id, test_profile_filepath]);
     };
 
     window.gui_check = function() {
@@ -69,7 +71,7 @@ Router.add('/test', function(render) {
         alert("모든 메시지가 정상적으로 보였다면 테스트에 성공한 것입니다.");
     };
 
-    var content = FILE.readFile("data/test-oss-20231030.json", FILE.CdoCharset.CdoUTF_8);
+    var content = FILE.readFile(test_profile_filepath, FILE.CdoCharset.CdoUTF_8);
     var data = JSON.parse(content);
     render("app/test.html", {
         "data": data
@@ -100,7 +102,7 @@ Router.add('/notepad', function(render) {
         return $.summernote;
     });
 
-	document.getElementById("useragent").innerHTML = window.navigator.userAgent;
+    document.getElementById("useragent").innerHTML = window.navigator.userAgent;
 });
 
 // go
