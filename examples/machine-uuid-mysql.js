@@ -27,9 +27,14 @@ function register() {
 
 function main(args) {
     var result = register();
-    var last_id = result.last_id;
-    
-    console.log("LAST_ID: " + last_id);
+
+    var status = result.status;
+    if (status == 200) {
+        var last_id = result.last_id;
+        console.log("LAST_ID: " + last_id);
+    } else {
+        console.error("Error code: " + status);
+    }
 }
 
 exports.main = main;
