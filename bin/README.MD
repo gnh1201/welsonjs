@@ -15,7 +15,7 @@
     * I recommend using [PeaZip](https://peazip.github.io/) or [7-Zip](https://www.7-zip.org/). I will provide an update to work with these software soon.
     * LZ77 (aka. MsCompress) algorithm supports its own implementation within this project.
 * Embeddable Python
-    * Python Windows embeddable package [3.10.2] - ***NOTE***: This will soon be migrated to [Caterpillar Proxy](https://github.com/gnh1201/caterpillar))
+    * Python Windows embeddable package [3.10.2] (***NOTE***: This will soon be migrated to [Caterpillar Proxy](https://github.com/gnh1201/caterpillar))
         * Preconfigured `Embedded Python` for WelsonJS [zip](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/welsonjs-preconfigured-python-3.10.2-embed.zip) [7z](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/welsonjs-preconfigured-python-3.10.2-embed.7z)
         * [64-bit](https://www.python.org/downloads/release/python-3102/)
         * [32-bit](https://www.python.org/downloads/release/python-3102/)
