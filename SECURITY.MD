@@ -12,7 +12,7 @@ WelsonJS is typically used for the following purposes:
   * Building automation, CD/CI (Continuous Integration/Continuous Delivery), DevOps, and SecOps.
   * Asset evaluation (e.g. Get a purchase history from online shopping and delivery websites)
   * Online video streaming quality testing and improvement.
-  * Office Automation with AI(Artificial Intelligence) services.
+  * Office automation and integration with LLM based AI(e.g., ChatGPT) services.
 
 ## Notes
   1. If you plan to use WelsonJS for a purpose other than those mentioned above, please contact us beforehand.
@@ -34,6 +34,8 @@ WelsonJS is a project initiated by a cloud service provider in response to a req
 
 ## Alternative names
 This program is also known by the following name. This name is used solely for the purpose of identifying the work and does not impact the license:
+
+- DOI [10.5281/zenodo.11382384](https://zenodo.org/doi/10.5281/zenodo.11382384)
 - "A0562"(2023) (2023 Open-source Development Contest, NIPA National IT Industry Promotion Agency, Republic of Korea)
 - "C-2021-000237"(2021) (Copyright Registration Online System, Korea Copyright Commission, Republic of Korea)
 - "Codename Macadamia"(2020) (Heavy industry specialized CSP in the Republic of Korea)
@@ -43,4 +45,4 @@ If you discover any instances of this project being misused, please report them.
 
 - abuse@catswords.net
 - ActivityPub [@catswords_oss@catswords.social](https://catswords.social/@catswords_oss)
-- [Voice of the Customer (VoC)](https://policy.catswords.social/voc_en.html)
+- [Join Catswords on Microsoft Teams](https://teams.live.com/l/community/FEACHncAhq8ldnojAI)
