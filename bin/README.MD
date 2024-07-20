@@ -30,10 +30,7 @@
     * [CURL for Windows](https://curl.se/windows/) [7.81.0]
     * [basil00/Divert](https://github.com/basil00/Divert) [2.2.0]
     * [vi/websocat](https://github.com/vi/websocat) [v1.9.0]
-    * [DDoSolitary/shadowsocks-libev-win](https://github.com/DDoSolitary/shadowsocks-libev-win) [Build 2022-01-18]
-    * [Download shadowsocks-libev-win-build-20220118.zip (from Cloudflare R2)](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/shadowsocks-libev-win-build-20220118.zip)
-    * [Download 
-shadowsocks-libev-win-build-20220118.7z (from Cloudflare R2)](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/shadowsocks-libev-win-build-20220118.7z)
+    * [DDoSolitary/shadowsocks-libev-win](https://github.com/DDoSolitary/shadowsocks-libev-win) [Build 2022-01-18] [zip](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/shadowsocks-libev-win-build-20220118.zip) [7z](https://pub-f926e14287b340cd9eff33731bb25329.r2.dev/shadowsocks-libev-win-build-20220118.7z)
     * [NMAP for Windows](https://nmap.org/download.html) [7.92]
     * [THC Hydra for Windows](https://github.com/vanhauser-thc/thc-hydra) [v9.1]
 * SDK (Software Development Kit)
