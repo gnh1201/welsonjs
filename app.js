@@ -225,20 +225,33 @@ function require(pathname) {
     if ('.js$.jse$.coffee$.ls$.ts$.re$.res$.enc$'.indexOf(suffix + '$') < 0) FN += ".js";
     if (cache[FN]) return cache[FN];
 
-    var T = null, i = 0;
-    if (FN.indexOf('://') > -1 && require._scriptProviders.length > 0) {
-        // get a script from a custom provider (e.g., remote server)
-        while (T == null && i < require._scriptProviders.length) {
-            try {
-                T = require._scriptProviders[i](FN) || null;
-                break;
-            } catch (e) {
-                T = null;
-            }
-            i++;
+    var T = null;
+    var pos = FN.indexOf('://');
+
+    if (pos > -1) {    // from a remote server
+        if (["http", "https"].indexOf(FN.substring(0, pos)) > -1) {
+            require._addScriptProvider(function(url) {
+                try {
+                    return require("lib/http").get(url);
+                } catch (e) {
+                    return null;
+                }
+            });
         }
-    } else {
-        // get a script from the local
+
+        if (require._scriptProviders.length > 0) {
+            var i = 0;
+            while (T == null && i < require._scriptProviders.length) {
+                try {
+                    T = require._scriptProviders[i](FN) || null;
+                    break;
+                } catch (e) {
+                    T = null;
+                }
+                i++;
+            }
+        }
+    } else {    // from a local server
         var _filename = (function(fs, path) {
             var filepaths = [
                 FN,    // default
@@ -254,6 +267,7 @@ function require(pathname) {
             ];
             var filename = filepaths[0];
 
+            var i = 0;
             while (!fs.existsSync(filename) && i < filepaths.length) {
                 filename = filepaths[i];
                 i++;
