@@ -226,7 +226,7 @@ function require(pathname) {
     if (cache[FN]) return cache[FN];
 
     var T = '';
-    if (require._scriptProviders.length > 0) {
+    if (FN.indexOf('://') > -1 && require._scriptProviders.length > 0) {
         // get a script from a custom provider (e.g., remote server)
         var status = -1, i = 0;
         while (status < 0 && i < require._scriptProviders.length) {
@@ -234,7 +234,7 @@ function require(pathname) {
                 var result = require._scriptProviders[i](FN);
                 status = result.status;
                 if (status > -1) {
-                    T = result.data;
+                    T = result.responseText;
                 }
                 break;
             } catch (e) {
