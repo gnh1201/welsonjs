@@ -207,16 +207,16 @@ if (typeof CreateObject === "undefined") {
 /**
  * @FN {string} The name of the file.
  */
-function __include__(FN) {
+function __evalFile(FN) {
     if (FN.substr(FN.length - 3) !== '.js') FN += ".js";
-    return eval(require.__load__(FN));
+    return eval(require._load(FN));
 }
 
 /**
  * @FN {string} The name of the file.
  */
 function require(pathname) {
-    var cache = require.__cache__ = require.__cache__ || {};
+    var cache = require._cache = require._cache || {};
     var suffix = (function(pos, s) {
         return pos < 0 ? '.' : s.substr(pos);
     })(pathname.lastIndexOf('.'), pathname);
@@ -226,7 +226,7 @@ function require(pathname) {
     if (cache[FN]) return cache[FN];
 
     // get file and directory name
-    var __filename__ = (function(fileExists, path) {
+    var _filename = (function(fs, path) {
         var filepaths = [
             FN,    // default
             path.join(pathname, "index.js"),    // default
@@ -241,9 +241,9 @@ function require(pathname) {
         ];
         var filename = filepaths[0];
 
-        if (!fileExists(filename)) {
+        if (!fs.existsSync(filename)) {
             for (var i = 1; i < filepaths.length; i++) {
-                if (fileExists(filepaths[i])) {
+                if (fs.existsSync(filepaths[i])) {
                     filename = filepaths[i];
                     break;
                 }
@@ -251,8 +251,10 @@ function require(pathname) {
         }
 
         return filename;
-    })(function(filename) {
-        return CreateObject("Scripting.FileSystemObject").FileExists(filename);
+    })({
+        existsSync: function(filename) {
+            return CreateObject("Scripting.FileSystemObject").FileExists(filename);
+        }
     }, {
         join: function() {
             var result = arguments[0];
@@ -262,21 +264,21 @@ function require(pathname) {
             return result;
         }
     });
-    var __dirname__ = (function(dirname) { 
-        var currentScriptDirectory = require.__getCurrentScriptDirectory__();
+    var _dirname = (function(dirname) { 
+        var currentScriptDirectory = require._getCurrentScriptDirectory();
         return dirname.length > 0 ? currentScriptDirectory + "\\" + dirname : currentScriptDirectory;
-    })(require.__getDirName__(__filename__));
-    var T = require.__load__(__filename__);
+    })(require._getDirName(_filename));
+    var T = require._load(_filename);
 
     // check the suffix again
     suffix = (function(pos, s) {
         return pos < 0 ? '.' : s.substr(pos);
-    })(__filename__.lastIndexOf('.'), __filename__);
+    })(_filename.lastIndexOf('.'), _filename);
 
     // transpile
     switch (suffix) {
         case '.coffee':  // CoffeeScript 2
-            T = require.__msie9__("app/assets/js/coffeescript-legacy-2.7.0.min", [T], function(p, w, d, l) {
+            T = require._msie9("app/assets/js/coffeescript-legacy-2.7.0.min", [T], function(p, w, d, l) {
                 return w.CoffeeScript.compile(p[0], {
                     "header": true,
                     "sourceMap": false,
@@ -286,8 +288,8 @@ function require(pathname) {
             break;
 
         case ".ls":  // LiveScript
-            T = require.__msie9__("app/assets/js/livescript-1.6.1.min", [T, "app/assets/ls/prelude.ls"], function(p, w, d, l) {
-                return w.require("livescript").compile(require.__load__(p[1]) + "\n\n" + p[0], {
+            T = require._msie9("app/assets/js/livescript-1.6.1.min", [T, "app/assets/ls/prelude.ls"], function(p, w, d, l) {
+                return w.require("livescript").compile(require._load(p[1]) + "\n\n" + p[0], {
                     "header": true,
                     "bare": true
                 });
@@ -295,33 +297,33 @@ function require(pathname) {
             break;
 
         case ".ts":  // TypeScript
-            T = require.__modernie__("app/assets/js/typescript-4.9.4", [T], function(p, w, d, l) {
+            T = require._modernie("app/assets/js/typescript-4.9.4", [T], function(p, w, d, l) {
                 return w.ts.transpile(p[0]);
             });
             break;
 
         case ".re":  // Rescript (aka. BuckleScript, ReasonML)
         case ".res":
-            T = require.__modernie__("app/assets/js/rescript-compiler-10.1.2", [T], function(p, w, d, l) {
+            T = require._modernie("app/assets/js/rescript-compiler-10.1.2", [T], function(p, w, d, l) {
                 var compiler = w.rescript_compiler.make();
                 var result = compiler.rescript.compile(p[0]);
                 return result.js_code;
             });
             break;
 
-        case ".enc":   // HIGHT(ISO/IEC 18033-3) encrypted
-            T = (function(encryptedData, ToolkitInterface) {
+        case ".enc":   // protected script (HIGHT, ISO/IEC 18033-3)
+            T = (function(data, o) {
                 try {
-                    var userKey = '', t = 0, k = 6;
-                    while (t < k && (userKey.length == 0 || userKey.length > 16)) {
-                        if (t > 0) {
+                    var s = '', i = 0, k = 6;
+                    while (i < k && (s.length == 0 || s.length > 16)) {
+                        if (i > 0) {
                             console.error("Invalid key length");
                         }
-                        userKey = ToolkitInterface.Prompt("This file has been encrypted. Please enter the password:");
-                        t++;
+                        s = o.Prompt("This file has been encrypted. Please enter the password:");
+                        i++;
                     }
-                    if (t == k) return '';
-                    return ToolkitInterface.DecryptStringHIGHT(userKey, encryptedData);
+                    if (i == k) return '';
+                    return o.DecryptStringHIGHT(s, data);
                 } catch (e) {
                     console.error("Failed to load the encrypted data:", e.message);
                     return '';
@@ -331,10 +333,10 @@ function require(pathname) {
     }
 
     // compile
-    T = "(function(global){var module=new require.__ModulePrototype__();return(function(exports,require,module,__filename,__dirname){"
+    T = "(function(global){var module=new require.__Module__();return(function(exports,require,module,__filename,__dirname){"
         + '"use strict";'
         + T
-        + "\n\nreturn module.exports})(module.exports,global.require,module,__filename__,__dirname__)})(require.__global__);\n\n////@ sourceURL="
+        + "\n\nreturn module.exports})(module.exports,global.require,module,_filename,_dirname)})(require._global);\n\n////@ sourceURL="
         + FN
     ;
 
@@ -358,35 +360,35 @@ function require(pathname) {
 
     return cache[FN];
 }
-require.__global__ = this;
-require.__ModulePrototype__ = function() {
+require.__Module__ = function() {
     this.exports = {};
 };
-require.__getDirName__ = function(path) {
+require._global = this;
+require._getDirName = function(path) {
     var pos = Math.max.apply(null, [path.lastIndexOf("\\"), path.lastIndexOf("/")]);
     return (pos > -1 ? path.substring(0, pos) : "");
 };
-require.__getCurrentScriptDirectory__ = function() {
+require._getCurrentScriptDirectory = function() {
     if (typeof WScript !== "undefined") {
         if ("ScriptFullName" in WScript) {
-            return require.__getDirName__(WScript.ScriptFullName);
+            return require._getDirName(WScript.ScriptFullName);
         } else {
             console.warn("Could not resolve an absolute path. Use the relative path.");
             return ".";
         }
     } else if (typeof document !== "undefined") {
-        return require.__getDirName__(document.location.pathname);
+        return require._getDirName(document.location.pathname);
     } else {
         console.warn("Could not resolve an absolute path. Use the relative path.");
         return ".";
     }
 };
-require.__load__ = function(FN) {
+require._load = function(FN) {
     // if empty
     if (FN == '') return '';
 
     // get filename
-    var __filename__ = require.__getCurrentScriptDirectory__() + "\\" + FN;
+    var _filename = require._getCurrentScriptDirectory() + "\\" + FN;
 
     // load script file
     // use ADODB.Stream instead of Scripting.FileSystemObject, because of supporting UTF-8 (Unicode)
@@ -395,7 +397,7 @@ require.__load__ = function(FN) {
     try {
         objStream.charSet = "utf-8";
         objStream.open();
-        objStream.loadFromFile(__filename__);
+        objStream.loadFromFile(_filename);
         T = objStream.readText();
         objStream.close();
     } catch (e) {
@@ -405,16 +407,16 @@ require.__load__ = function(FN) {
 
     return T;
 };
-require.__msie9__ = function(FN, params, callback) {
+require._msie9 = function(FN, params, callback) {
     if (typeof FN !== "string" || FN == null) FN = '';
     else if (FN.substr(FN.length - 3) !== '.js') FN += ".js";
 
     var exports = null;
     try {
-        var T = require.__load__("app/assets/js/core-js-3.26.1.minified.js")
-            + "\n\n" + require.__load__("app/assets/js/html5shiv-printshiv-3.7.3.min.js")
-            + "\n\n" + require.__load__("app/assets/js/modernizr-2.8.3.min.js")
-            + "\n\n" + require.__load__(FN);
+        var T = require._load("app/assets/js/core-js-3.26.1.minified.js")
+            + "\n\n" + require._load("app/assets/js/html5shiv-printshiv-3.7.3.min.js")
+            + "\n\n" + require._load("app/assets/js/modernizr-2.8.3.min.js")
+            + "\n\n" + require._load(FN);
         var htmlfile = CreateObject("htmlfile");
         htmlfile.write('<meta http-equiv="X-UA-Compatible" content="IE=9">');
         htmlfile.write('<script type="text/javascript">//<!--<![CDATA[\n' + T + '\n//]]>--></script>');
@@ -423,7 +425,7 @@ require.__msie9__ = function(FN, params, callback) {
                 if (FN.indexOf('://') > -1) {
                     htmlfile.write('<script type="text/javascript" src="' + FN + '"></script>');
                 } else {
-                    htmlfile.write('<script type="text/javascript">//<!--<![CDATA[\n' + require.__load__(FN) + '\n//]]>--></script>');
+                    htmlfile.write('<script type="text/javascript">//<!--<![CDATA[\n' + require._load(FN) + '\n//]]>--></script>');
                 }
             };
             //console.log(htmlfile.parentWindow.navigator.userAgent);
@@ -436,7 +438,7 @@ require.__msie9__ = function(FN, params, callback) {
 
     return exports;
 };
-require.__modernie__ = function(FN, params, callback) {
+require._modernie = function(FN, params, callback) {
     if (typeof FN !== "string" || FN == null) FN = '';
     else if (FN.substr(FN.length - 3) !== '.js') FN += ".js";
 
@@ -445,19 +447,19 @@ require.__modernie__ = function(FN, params, callback) {
         var ua = '', T = '', htmlfile = CreateObject("htmlfile");
 
         htmlfile.write('<meta http-equiv="X-UA-Compatible" content="IE=edge">');
-        htmlfile.write('<script type="text/javascript">//<!--<![CDATA[\n\nfunction __getUserAgent__(){return window.navigator.userAgent}\n\n//]]>--></script>');
-        ua = htmlfile.parentWindow.__getUserAgent__();
+        htmlfile.write('<script type="text/javascript">//<!--<![CDATA[\n\nfunction __getUserAgent(){return window.navigator.userAgent}\n\n//]]>--></script>');
+        ua = htmlfile.parentWindow.__getUserAgent();
 
         if (ua.indexOf('Trident/ ')) {
-            T = require.__load__("app/assets/js/core-js-3.26.1.minified.js")
-                + "\n\n" + require.__load__("app/assets/js/modernizr-2.8.3.min.js")
-                + "\n\n" + require.__load__("app/assets/js/babel-standalone-7.20.6.min.js")
-                + "\n\n" + require.__load__(FN);
+            T = require._load("app/assets/js/core-js-3.26.1.minified.js")
+                + "\n\n" + require._load("app/assets/js/modernizr-2.8.3.min.js")
+                + "\n\n" + require._load("app/assets/js/babel-standalone-7.20.6.min.js")
+                + "\n\n" + require._load(FN);
         } else {
-            T = require.__load__("app/assets/js/core-js-3.26.1.minified.js")
-                + "\n\n" + require.__load__("app/assets/js/html5shiv-printshiv-3.7.3.min.js")
-                + "\n\n" + require.__load__("app/assets/js/modernizr-2.8.3.min.js")
-                + "\n\n" + require.__load__(FN);
+            T = require._load("app/assets/js/core-js-3.26.1.minified.js")
+                + "\n\n" + require._load("app/assets/js/html5shiv-printshiv-3.7.3.min.js")
+                + "\n\n" + require._load("app/assets/js/modernizr-2.8.3.min.js")
+                + "\n\n" + require._load(FN);
         }
         htmlfile.write('<script type="text/javascript">//<!--<![CDATA[\n' + T + '\n//]]>--></script>');
 
@@ -466,7 +468,7 @@ require.__modernie__ = function(FN, params, callback) {
                 if (src.indexOf('://') > -1) {
                     htmlfile.write('<script type="text/javascript" src="' + src + '"></script>');
                 } else {
-                    htmlfile.write('<script type="text/javascript">//<!--<![CDATA[\n' + require.__load__(src) + '\n//]]>--></script>');
+                    htmlfile.write('<script type="text/javascript">//<!--<![CDATA[\n' + require._load(src) + '\n//]]>--></script>');
                 }
             };
             //console.log(htmlfile.parentWindow.navigator.userAgent);
@@ -544,7 +546,7 @@ function initializeWindow(name, args, w, h) {
 
 // JSON 2
 if (typeof JSON === "undefined") {
-    __include__("app/assets/js/json2");
+    __evalFile("app/assets/js/json2");
 }
 
 // core-js (aka. babel-polyfill)
