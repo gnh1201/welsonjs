@@ -484,7 +484,7 @@ require._modernie = function(FN, params, callback) {
 
 function initializeConsole() {
     if (typeof WScript === "undefined") {
-        console.error("Error, WScript is not defined");
+        console.error("Microsoft JScript or Chakra runtime not detected");
         exit(1);
     }
 
