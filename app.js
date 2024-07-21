@@ -225,7 +225,7 @@ function require(pathname) {
     if ('.js$.jse$.coffee$.ls$.ts$.re$.res$.enc$'.indexOf(suffix + '$') < 0) FN += ".js";
     if (cache[FN]) return cache[FN];
 
-    var T = null;
+    var T = null, i = 0;
     if (FN.indexOf('://') > -1 && require._scriptProviders.length > 0) {
         // get a script from a custom provider (e.g., remote server)
         while (T == null && i < require._scriptProviders.length) {
