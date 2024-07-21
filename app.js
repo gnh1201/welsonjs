@@ -225,51 +225,71 @@ function require(pathname) {
     if ('.js$.jse$.coffee$.ls$.ts$.re$.res$.enc$'.indexOf(suffix + '$') < 0) FN += ".js";
     if (cache[FN]) return cache[FN];
 
-    // get file and directory name
-    var _filename = (function(fs, path) {
-        var filepaths = [
-            FN,    // default
-            path.join(pathname, "index.js"),    // default
-            path.join(FN + '.enc'),    // default (encrypted)
-            path.join(pathname, 'index.js.enc'),    // default (encrypted)
-            path.join("Scripts", FN),    // NuGet
-            path.join("Scripts", pathname, "index.js"),    // NuGet
-            path.join("bower_components", FN),    // Bower
-            path.join("bower_components", pathname, "index.js"),    // Bower
-            path.join("node_modules", FN),    // NPM
-            path.join("node_modules", pathname, "index.js"),    // NPM
-        ];
-        var filename = filepaths[0];
-
-        while (!fs.existsSync(filename) && i < filepaths.length) {
-            filename = filepaths[i];
+    var T = '';
+    if (require._scriptProviders.length > 0) {
+        // get a script from a custom provider (e.g., remote server)
+        var status = -1, i = 0;
+        while (status < 0 && i < require._scriptProviders.length) {
+            try {
+                var result = require._scriptProviders[i](FN);
+                status = result.status;
+                if (status > -1) {
+                    T = result.data;
+                }
+                break;
+            } catch (e) {
+                status = -1;
+                T = '';
+            }
             i++;
         }
+    } else {
+        // get a script from the local
+        var _filename = (function(fs, path) {
+            var filepaths = [
+                FN,    // default
+                path.join(pathname, "index.js"),    // default
+                path.join(FN + '.enc'),    // default (encrypted)
+                path.join(pathname, 'index.js.enc'),    // default (encrypted)
+                path.join("Scripts", FN),    // NuGet
+                path.join("Scripts", pathname, "index.js"),    // NuGet
+                path.join("bower_components", FN),    // Bower
+                path.join("bower_components", pathname, "index.js"),    // Bower
+                path.join("node_modules", FN),    // NPM
+                path.join("node_modules", pathname, "index.js"),    // NPM
+            ];
+            var filename = filepaths[0];
 
-        return filename;
-    })({
-        existsSync: function(filename) {
-            return CreateObject("Scripting.FileSystemObject").FileExists(filename);
-        }
-    }, {
-        join: function() {
-            var result = arguments[0];
-            for (var i = 1; i < arguments.length; i++) {
-                result += "\\" + arguments[i];
+            while (!fs.existsSync(filename) && i < filepaths.length) {
+                filename = filepaths[i];
+                i++;
             }
-            return result;
-        }
-    });
-    var _dirname = (function(dirname) { 
-        var currentScriptDirectory = require._getCurrentScriptDirectory();
-        return dirname.length > 0 ? currentScriptDirectory + "\\" + dirname : currentScriptDirectory;
-    })(require._getDirName(_filename));
-    var T = require._load(_filename);
 
-    // check the suffix again
-    suffix = (function(pos, s) {
-        return pos < 0 ? '.' : s.substr(pos);
-    })(_filename.lastIndexOf('.'), _filename);
+            return filename;
+        })({
+            existsSync: function(filename) {
+                return CreateObject("Scripting.FileSystemObject").FileExists(filename);
+            }
+        }, {
+            join: function() {
+                var result = arguments[0];
+                for (var i = 1; i < arguments.length; i++) {
+                    result += "\\" + arguments[i];
+                }
+                return result;
+            }
+        });
+        var _dirname = (function(dirname) { 
+            var currentScriptDirectory = require._getCurrentScriptDirectory();
+            return dirname.length > 0 ? currentScriptDirectory + "\\" + dirname : currentScriptDirectory;
+        })(require._getDirName(_filename));
+        T = require._load(_filename);
+
+        // check the suffix again
+        suffix = (function(pos, s) {
+            return pos < 0 ? '.' : s.substr(pos);
+        })(_filename.lastIndexOf('.'), _filename);
+    }
 
     // transpile
     switch (suffix) {
@@ -476,6 +496,14 @@ require._modernie = function(FN, params, callback) {
     }
 
     return exports;
+};
+require._scriptProviders = [];
+require._addScriptProvider = function(f) {
+    if (typeof f === "function") {
+        require._scriptProviders.push(f);
+    } else {
+        console.error("This is not an function");
+    }
 };
 
 /////////////////////////////////////////////////////////////////////////////////
