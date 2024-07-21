@@ -62,17 +62,17 @@ var console = {
         }
         return res;
     },
-    _echoCallback: null,
-    _wshEcho: function(message) {
+    _echoDefault: function(message) {
         if (typeof WScript !== "undefined") {
             WScript.Echo("[*] " + message)
         }
     },
+    _echoCallback: null,
     _echo: function(args, type) {
         var message = "";
         var params = {
             type: type,
-            channel: 'default',
+            scope: [],
             message: '',
             datetime: new Date().toISOString()
         };
@@ -85,7 +85,7 @@ var console = {
                 } else {
                     message += this._join(args);
                 }
-                this._wshEcho(message);
+                this._echoDefault(message);
                 this._messages.push(message);
                 params.message = message;
             } else if (typeof args[0] === "object") {
@@ -96,7 +96,7 @@ var console = {
                         message += args[0].message;
                     }
                 }
-                this._wshEcho(message);
+                this._echoDefault(message);
                 this._messages.push(args[0].message);
                 for (var k in args[0]) {
                     params[k] = args[0][k];
@@ -104,18 +104,18 @@ var console = {
             }
         }
 
-        if (params.channel != "default" && this._echoCallback != null) {
+        if (params.scope.length > 0 && this._echoCallback != null) {
             try {
                 this._echoCallback(params, type);
             } catch (e) {
-                this._wshEcho("Exception on _echoCallback: " + e.message);
+                this._echoDefault("Exception:" + e.message);
             }
         }
     },
     assert: function(assertion) {
         if (arguments.length > 1 && assertion === arguments[0]) {
             if(!assertion) {
-                this.error("Assertion failed: " + this._join(arguments.slice(1)));
+                this.error("Assertion failed:", this._join(arguments.slice(1)));
             }
         }
     },
@@ -576,9 +576,8 @@ function __main__() {
     console.log("    \\_/\\_/ \\___|_|___/\\___/|_| |_|\\___/|____/ ");
     console.log("");
     console.log("  WelsonJS - Build a Windows app on the Windows built-in JavaScript engine");
-    console.log("  C-2021-000237 (cros.or.kr)");
-	console.log("  10.5281/zenodo.11382385 (doi.org)");
-	console.log("  This software is distributed as open source under the GPL 3.0 or MS-RL licenses.");
+    console.log("  C-2021-000237 (cros.or.kr), 10.5281/zenodo.11382385 (doi.org), 2023-A0562 (oss.kr), Codename Macadamia");
+    console.log("  This software is distributed as open source under the GPL 3.0 or MS-RL licenses.");
     console.log("  https://github.com/gnh1201/welsonjs");
     console.log("");
 
