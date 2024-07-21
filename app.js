@@ -513,7 +513,7 @@ function initializeConsole() {
 
 function initializeWindow(name, args, w, h) {
     if (typeof window === "undefined") {
-        console.error("This is not a window");
+        console.error("This is not a GUI application");
         exit(1);
     }
     var app = require(name);
