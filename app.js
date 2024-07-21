@@ -241,13 +241,9 @@ function require(pathname) {
         ];
         var filename = filepaths[0];
 
-        if (!fs.existsSync(filename)) {
-            for (var i = 1; i < filepaths.length; i++) {
-                if (fs.existsSync(filepaths[i])) {
-                    filename = filepaths[i];
-                    break;
-                }
-            }
+        while (!fs.existsSync(filename) && i < filepaths.length) {
+            filename = filepaths[i];
+            i++;
         }
 
         return filename;
