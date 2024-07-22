@@ -66,6 +66,13 @@ namespace WelsonJS.Service
             }
             Directory.SetCurrentDirectory(workingDirectory);
 
+            // set script name
+            if (string.IsNullOrEmpty(scriptName))
+            {
+                scriptName = "helloworld";
+                Log("Script name not provided. Using default value: " + scriptName);
+            }
+
             // set path of the script
             scriptFilePath = Path.Combine(workingDirectory, "app.js");
 
@@ -90,7 +97,7 @@ namespace WelsonJS.Service
                 }
                 catch (Exception ex)
                 {
-                    Log("Exception. " + ex.Message);
+                    Log("Exception: " + ex.Message);
                 }
             }
             else
@@ -118,7 +125,7 @@ namespace WelsonJS.Service
             }
             catch (Exception ex)
             {
-                Log("Exception. " + ex.Message);
+                Log("Exception: " + ex.Message);
             }
             scriptControl = null;
 
@@ -133,7 +140,7 @@ namespace WelsonJS.Service
             }
             catch (Exception ex)
             {
-                Log("Exception. " + ex.Message);
+                Log("Exception: " + ex.Message);
             }
         }
 
