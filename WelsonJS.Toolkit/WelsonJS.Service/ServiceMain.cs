@@ -97,7 +97,7 @@ namespace WelsonJS.Service
                 }
                 catch (Exception ex)
                 {
-                    Log("Exception: " + ex.Message);
+                    Log("Exception when start: " + ex.Message);
                 }
             }
             else
@@ -121,11 +121,14 @@ namespace WelsonJS.Service
             try
             {
                 InvokeScriptMethod("initializeService", scriptName, "stop");
-                scriptControl.Reset();
+                if (scriptControl != null)
+                {
+                    scriptControl.Reset();
+                }
             }
             catch (Exception ex)
             {
-                Log("Exception: " + ex.Message);
+                Log("Exception when stop: " + ex.Message);
             }
             scriptControl = null;
 
@@ -140,13 +143,21 @@ namespace WelsonJS.Service
             }
             catch (Exception ex)
             {
-                Log("Exception: " + ex.Message);
+                Log("Exception when elapsed time: " + ex.Message);
             }
         }
 
         private string InvokeScriptMethod(string methodName, params object[] parameters)
         {
-            return scriptControl.Run(methodName, parameters).ToString();
+            if (scriptControl != null)
+            { 
+                return scriptControl.Run(methodName, parameters).ToString();
+            }
+            else
+            {
+                Log("InvokeScriptMethod Ignored: " + methodName);
+                return null;
+            }
         }
 
         private void Log(string message)
