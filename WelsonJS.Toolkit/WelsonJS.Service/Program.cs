@@ -10,14 +10,22 @@ namespace WelsonJS.Service
         /// <summary>
         /// 해당 애플리케이션의 주 진입점입니다.
         /// </summary>
-        static void Main()
+        static void Main(string[] args)
         {
-            ServiceBase[] ServicesToRun;
-            ServicesToRun = new ServiceBase[]
+            if (Environment.UserInteractive)
             {
-                new ServiceMain()
-            };
-            ServiceBase.Run(ServicesToRun);
+                ServiceMain svc = new ServiceMain();
+                svc.TestStartupAndStop(args);
+            }
+            else
+            {
+                ServiceBase[] ServicesToRun;
+                ServicesToRun = new ServiceBase[]
+                {
+                    new ServiceMain()
+                };
+                ServiceBase.Run(ServicesToRun);
+            }
         }
     }
 }

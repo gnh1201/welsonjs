@@ -4,7 +4,6 @@ using System.Timers;
 using MSScriptControl;
 using System.IO;
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace WelsonJS.Service
 {
@@ -24,7 +23,15 @@ namespace WelsonJS.Service
             InitializeComponent();
 
             // set the log file path
-            logFilePath = Path.Combine(Path.GetTempPath(), "WelsonJS.ServiceLog.txt");
+            logFilePath = Path.Combine(Path.GetTempPath(), "WelsonJS.Service.Log.txt");
+            Log(appName + " Service Loaded");
+        }
+
+        internal void TestStartupAndStop(string[] args)
+        {
+            this.OnStart(args);
+            Console.ReadLine();
+            this.OnStop();
         }
 
         protected override void OnStart(string[] args)
@@ -48,53 +55,86 @@ namespace WelsonJS.Service
             // set working directory
             if (string.IsNullOrEmpty(workingDirectory))
             {
-                workingDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), appName);
-                Log("Working directory not provided. Using default value.");
+                workingDirectory = Path.Combine(Path.GetTempPath(), appName);
+                Log("Working directory not provided. Using default value: " + workingDirectory);
+           
+                if (!Directory.Exists(workingDirectory))
+                {
+                    Directory.CreateDirectory(workingDirectory);
+                    Log("Directory created: " + workingDirectory);
+                }
             }
-            /*
             Directory.SetCurrentDirectory(workingDirectory);
 
-            // set script file path
+            // set path of the script
             scriptFilePath = Path.Combine(workingDirectory, "app.js");
 
-            // try load the script
+            // check the script file exists
             if (File.Exists(scriptFilePath))
             {
-                scriptText = File.ReadAllText(scriptFilePath);
-                scriptControl = new ScriptControl
+                Log($"Script file found: {scriptFilePath}");
+
+                try
                 {
-                    Language = "JScript",
-                    AllowUI = false
-                };
-                scriptControl.AddCode(scriptText);
+                    // load the script
+                    scriptText = File.ReadAllText(scriptFilePath);
+                    scriptControl = new ScriptControl
+                    {
+                        Language = "JScript",
+                        AllowUI = false
+                    };
+                    scriptControl.AddCode(scriptText);
+
+                    // initialize
+                    InvokeScriptMethod("initializeService", scriptName, "start");
+                }
+                catch (Exception ex)
+                {
+                    Log("Exception. " + ex.Message);
+                }
             }
             else
             {
                 Log($"Script file not found: {scriptFilePath}");
             }
 
-            // initialize
-            InvokeScriptMethod("initializeService", scriptName, "start");
-            */
-
             // set interval
             timer = new Timer();
             timer.Interval = 60000; // 1 minute
             timer.Elapsed += OnElapsedTime;
             timer.Start();
+
+            Log(appName + " Service Started");
         }
 
         protected override void OnStop()
         {
-            //InvokeScriptMethod("initializeService", scriptName, "stop");
             timer.Stop();
-            //scriptControl.Reset();
-            //scriptControl = null;
+
+            try
+            {
+                InvokeScriptMethod("initializeService", scriptName, "stop");
+                scriptControl.Reset();
+            }
+            catch (Exception ex)
+            {
+                Log("Exception. " + ex.Message);
+            }
+            scriptControl = null;
+
+            Log(appName + " Service Stopped");
         }
 
         private void OnElapsedTime(object source, ElapsedEventArgs e)
         {
-            //InvokeScriptMethod("initializeService", scriptName, "elapsedTime");
+            try
+            {
+                InvokeScriptMethod("initializeService", scriptName, "elapsedTime");
+            }
+            catch (Exception ex)
+            {
+                Log("Exception. " + ex.Message);
+            }
         }
 
         private string InvokeScriptMethod(string methodName, params object[] parameters)
