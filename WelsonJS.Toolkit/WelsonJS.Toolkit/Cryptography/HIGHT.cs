@@ -10,6 +10,7 @@
  *     website:
  *         - https://github.com/gnh1201/welsonjs
  *         - https://catswords.social/@catswords_oss
+ *         - https://teams.live.com/l/community/FEACHncAhq8ldnojAI
  * 
  *     author:
  *         - Namhyeon Go <abuse@catswords.net>
