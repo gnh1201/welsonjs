@@ -25,7 +25,7 @@ exports.main = function(args) {
 
     // Register HTA file association
     console.log("Registering HTA file association...");
-    REG.execFile("Default_HTA.reg");
+    REG.execFile("app\\assets\\reg\\Default_HTA.reg");
 
     // Register URI scheme
     if (!isDisabledRegisterURIScheme) {

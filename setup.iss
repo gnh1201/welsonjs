@@ -1,5 +1,5 @@
 ; @created_on 2020-06-26
-; @updated_on 2024-07-10
+; @updated_on 2024-07-23
 ; @author Namhyeon Go (Catswords Research) <abuse@catswords.net>
 
 [Setup]
@@ -39,7 +39,6 @@ Source: "Default_HTA.reg"; DestDir: "{app}";
 Source: "LICENSE"; DestDir: "{app}";
 Source: "LICENSE_MSRL"; DestDir: "{app}";
 Source: "*.md"; DestDir: "{app}";
-Source: "preconfigure.bat"; DestDir: "{app}";
 Source: "bootstrap.bat"; DestDir: "{app}";
 Source: "uriloader.js"; DestDir: "{app}";
 Source: "webloader.js"; DestDir: "{app}";
@@ -63,7 +62,6 @@ Name: "{group}\Uninstall {cm:AppName}"; Filename: "{uninstallexe}"; AfterInstall
 ; Filename: {app}\bin\gtk2-runtime-2.24.33-2021-01-30-ts-win64.exe;
 ; Filename: {app}\bin\nmap-7.92\VC_redist.x86.exe;
 ; Filename: {app}\bin\nmap-7.92\npcap-1.50.exe;
-Filename: {app}\preconfigure.bat;
 Filename: {app}\bootstrap.bat;
 
 [UninstallRun]

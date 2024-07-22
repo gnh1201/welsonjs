@@ -44,8 +44,6 @@
 //    loaded.
 //
 var exit = function(status) {
-    if (status == 0) return;
-
     console.error("Exit", status, "caused");
 
     if (typeof WScript !== "undefined") {
@@ -578,7 +576,7 @@ function initializeWindow(name, args, w, h) {
     if (app) {
         if (app.main) {
             var status = app.main.call(app, args);
-            if (status > -1) {
+            if (status > 0) {
                 exit(status);
             }
         } else {
