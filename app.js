@@ -554,22 +554,46 @@ function initializeWindow(name, args, w, h) {
     }
     var app = require(name);
 
-    // "set default size of window";
+    // set default size of window
     if (typeof w !== "undefined" && typeof h !== "undefined") {
         window.resizeTo(w, h);
     }
 
-    // "load app";
+    // load the application
     if (app) {
         if (app.main) {
-            var exitStatus = app.main.call(app, args);
-            if (exitStatus > 0) {
-                exit(exitStatus);
+            var status = app.main.call(app, args);
+            if (status > 0) {
+                exit(status);
             }
         } else {
             console.error("Missing main entry point in", name + ".js");
             exit(1);
         }
+    } else {
+        console.error("Could not find", name + ".js");
+        exit(1);
+    }
+}
+
+function initializeService(name, eventType) {
+    var app = require(name);
+
+    // load the service
+    if (app) {
+        (function(action) {
+            if (eventType in action) {
+                try {
+                    action[eventType]();
+                } catch (e) {
+                    console.error("Exception:", e.message);
+                }
+            }
+        })({
+            start: app.onServiceStart,
+            stop: app.onServicsStop,
+            elapsedTime: app.onServiceElapsedTime
+        });
     } else {
         console.error("Could not find", name + ".js");
         exit(1);
