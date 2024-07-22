@@ -1,12 +1,12 @@
 # Additional binaries for WelsonJS
-
 * Description: WelsonJS - Build a Windows app on the Windows built-in JavaScript engine
 * Website: https://github.com/gnh1201/welsonjs
-* Last updated: 2024-01-27
+* Last updated: 2024-07-23
 * ***NOTE***: The binaries listed here are for special purpose users, and regular users do not need them.
 
 ## Recommended packages
-* WelsonJS.Toolkit (WelsonJS native component) [x64](https://github.com/gnh1201/welsonjs/raw/master/bin/x64/WelsonJS.Toolkit.dll) [x86](https://github.com/gnh1201/welsonjs/raw/master/bin/x86/WelsonJS.Toolkit.dll)
+* WelsonJS.Toolkit (Toolkit for WelsonJS framework) [x64](https://github.com/gnh1201/welsonjs/raw/master/bin/x64/WelsonJS.Toolkit.dll) [x86](https://github.com/gnh1201/welsonjs/raw/master/bin/x86/WelsonJS.Toolkit.dll)
+* WelsonJS.Service (Service for WelsonJS framework) [x86](https://github.com/gnh1201/welsonjs/raw/master/bin/x86/WelsonJS.Service.exe)
 * GTK+
     * [GTK+ for Windows Runtime Environment Installer](https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer) [2.24.33-2021-01-30]
     * [jopbrown/gtk-server](https://github.com/jopbrown/gtk-server) [gtk-server-2.4.5-gtk-2.24.32-win64]
