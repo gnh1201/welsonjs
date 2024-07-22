@@ -4,22 +4,27 @@ using System.Timers;
 using MSScriptControl;
 using System.IO;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace WelsonJS.Service
 {
-    public partial class Service1 : ServiceBase
+    public partial class ServiceMain : ServiceBase
     {
         private Timer timer;
         private string workingDirectory;
         private string scriptFilePath;
         private string scriptText;
+        private string scriptName;
         private ScriptControl scriptControl;
-        private string appName;
-        private readonly string logFileName = "ServiceLog.txt";
+        private string logFilePath;
+        private readonly string appName = "WelsonJS";
 
-        public Service1()
+        public ServiceMain()
         {
             InitializeComponent();
+
+            // set the log file path
+            logFilePath = Path.Combine(Path.GetTempPath(), "WelsonJS.ServiceLog.txt");
         }
 
         protected override void OnStart(string[] args)
@@ -34,8 +39,8 @@ namespace WelsonJS.Service
                         workingDirectory = entry.Value;
                         break;
 
-                    case "app-name":
-                        appName = entry.Value;
+                    case "script-name":
+                        scriptName = entry.Value;
                         break;
                 }
             }
@@ -43,9 +48,10 @@ namespace WelsonJS.Service
             // set working directory
             if (string.IsNullOrEmpty(workingDirectory))
             {
-                workingDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "WelsonJS");
+                workingDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), appName);
                 Log("Working directory not provided. Using default value.");
             }
+            /*
             Directory.SetCurrentDirectory(workingDirectory);
 
             // set script file path
@@ -68,7 +74,8 @@ namespace WelsonJS.Service
             }
 
             // initialize
-            InvokeScriptMethod("initializeService", appName, "start");
+            InvokeScriptMethod("initializeService", scriptName, "start");
+            */
 
             // set interval
             timer = new Timer();
@@ -79,15 +86,15 @@ namespace WelsonJS.Service
 
         protected override void OnStop()
         {
-            InvokeScriptMethod("initializeService", appName, "stop");
+            //InvokeScriptMethod("initializeService", scriptName, "stop");
             timer.Stop();
-            scriptControl.Reset();
-            scriptControl = null;
+            //scriptControl.Reset();
+            //scriptControl = null;
         }
 
         private void OnElapsedTime(object source, ElapsedEventArgs e)
         {
-            InvokeScriptMethod("initializeService", appName, "elapsedTime");
+            //InvokeScriptMethod("initializeService", scriptName, "elapsedTime");
         }
 
         private string InvokeScriptMethod(string methodName, params object[] parameters)
@@ -97,7 +104,6 @@ namespace WelsonJS.Service
 
         private void Log(string message)
         {
-            string logFilePath = Path.Combine(workingDirectory, logFileName);
             using (StreamWriter writer = new StreamWriter(logFilePath, true))
             {
                 writer.WriteLine($"{DateTime.Now}: {message}");

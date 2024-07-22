@@ -1,6 +1,6 @@
 ﻿namespace WelsonJS.Service
 {
-    partial class Service1
+    partial class ServiceMain
     {
         /// <summary> 
         /// 필수 디자이너 변수입니다.

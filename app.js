@@ -589,7 +589,8 @@ function initializeService(name, eventType) {
         (function(action) {
             if (eventType in action) {
                 try {
-                    action[eventType]();
+                    var f = action[eventType];
+                    if (typeof f === "function") f();
                 } catch (e) {
                     console.error("Exception:", e.message);
                 }
