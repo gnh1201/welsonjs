@@ -1,4 +1,26 @@
-﻿using System;
+﻿/*
+ * WelsonJS.Service 
+ * 
+ *     filename:
+ *         ServiceMain.cs
+ * 
+ *     description:
+ *         WelsonJS - Build a Windows app on the Windows built-in JavaScript engine
+ * 
+ *     website:
+ *         - https://github.com/gnh1201/welsonjs
+ *         - https://catswords.social/@catswords_oss
+ * 
+ *     author:
+ *         Namhyeon Go <abuse@catswords.net>
+ *
+ *     license:
+ *         GPLv3 or MS-RL(Microsoft Reciprocal License)
+ * 
+ *     references:
+ *         - https://learn.microsoft.com/en-us/dotnet/framework/windows-services/how-to-debug-windows-service-applications
+ */
+using System;
 using System.ServiceProcess;
 using System.Timers;
 using MSScriptControl;
