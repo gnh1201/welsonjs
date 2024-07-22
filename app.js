@@ -43,15 +43,21 @@
 //    must define main = function(args) {}, which is called once the module is
 //    loaded.
 //
-
 var exit = function(status) {
+    if (status == 0) return;
+
     console.error("Exit", status, "caused");
 
     if (typeof WScript !== "undefined") {
         WScript.Quit(status);
+        return;
     } else if (typeof window !== "undefined") {
         window.close();
+        return;
     }
+
+    // to exit completely
+    throw new Error("Exit " + status + " caused");
 };
 
 var console = {
@@ -213,7 +219,7 @@ if (typeof CreateObject === "undefined") {
  * @FN {string} The name of the file.
  */
 function __evalFile(FN) {
-    if (FN.substr(FN.length - 3) !== '.js') FN += ".js";
+    if (FN.substring(FN.length - 3) !== '.js') FN += ".js";
     return eval(require._load(FN));
 }
 
@@ -223,7 +229,7 @@ function __evalFile(FN) {
 function require(pathname) {
     var cache = require._cache = require._cache || {};
     var suffix = (function(pos, s) {
-        return pos < 0 ? '.' : s.substr(pos);
+        return pos < 0 ? '.' : s.substring(pos);
     })(pathname.lastIndexOf('.'), pathname);
     var FN = pathname;
 
@@ -300,7 +306,7 @@ function require(pathname) {
 
         // check the suffix again
         suffix = (function(pos, s) {
-            return pos < 0 ? '.' : s.substr(pos);
+            return pos < 0 ? '.' : s.substring(pos);
         })(_filename.lastIndexOf('.'), _filename);
     }
 
@@ -398,19 +404,23 @@ require._getDirName = function(path) {
     return (pos > -1 ? path.substring(0, pos) : "");
 };
 require._getCurrentScriptDirectory = function() {
-    if (typeof WScript !== "undefined") {
-        if ("ScriptFullName" in WScript) {
-            return require._getDirName(WScript.ScriptFullName);
+    try {
+        if (typeof WScript !== "undefined") {
+            if ("ScriptFullName" in WScript) {
+                return require._getDirName(WScript.ScriptFullName);
+            } else {
+                throw new Error("No detected an absolute path.");
+            }
+        } else if (typeof document !== "undefined") {
+            return require._getDirName(document.location.pathname);
         } else {
-            console.warn("Could not resolve an absolute path. Use the relative path.");
-            return ".";
+            throw new Error("No detected an absolute path.");
         }
-    } else if (typeof document !== "undefined") {
-        return require._getDirName(document.location.pathname);
-    } else {
-        console.warn("Could not resolve an absolute path. Use the relative path.");
-        return ".";
+    } catch (e) {
+        console.warn(e.message, "Use the relative path.");
     }
+
+    return ".";
 };
 require._load = function(FN) {
     // if empty
@@ -469,7 +479,7 @@ require._msie9 = function(FN, params, callback) {
 };
 require._modernie = function(FN, params, callback) {
     if (typeof FN !== "string" || FN == null) FN = '';
-    else if (FN.substr(FN.length - 3) !== '.js') FN += ".js";
+    else if (FN.substring(FN.length - 3) !== '.js') FN += ".js";
 
     var exports = null;
     try {
@@ -525,8 +535,8 @@ require._addScriptProvider = function(f) {
 
 function initializeConsole() {
     if (typeof WScript === "undefined") {
-        console.error("Microsoft JScript or Chakra runtime not detected");
-        exit(1);
+        console.error("This is not a console application");
+        return;
     }
 
     var argl = WScript.arguments.length;
@@ -555,7 +565,7 @@ function initializeConsole() {
 function initializeWindow(name, args, w, h) {
     if (typeof window === "undefined") {
         console.error("This is not a GUI application");
-        exit(1);
+        return;
     }
     var app = require(name);
 
@@ -568,16 +578,16 @@ function initializeWindow(name, args, w, h) {
     if (app) {
         if (app.main) {
             var status = app.main.call(app, args);
-            if (status > 0) {
+            if (status > -1) {
                 exit(status);
             }
         } else {
             console.error("Missing main entry point in", name + ".js");
-            exit(1);
+            return;
         }
     } else {
         console.error("Could not find", name + ".js");
-        exit(1);
+        return;
     }
 }
 
@@ -586,24 +596,41 @@ function initializeService(name, eventType) {
 
     // load the service
     if (app) {
-        (function(action) {
+        return (function(action) {
             if (eventType in action) {
                 try {
                     var f = action[eventType];
-                    if (typeof f === "function") f();
+                    if (typeof f === "function") return f();
                 } catch (e) {
                     console.error("Exception:", e.message);
                 }
             }
         })({
             start: app.onServiceStart,
-            stop: app.onServicsStop,
+            stop: app.onServiceStop,
             elapsedTime: app.onServiceElapsedTime
         });
     } else {
         console.error("Could not find", name + ".js");
-        exit(1);
+        return;
     }
+}
+
+// Date.prototype.toISOString() polyfill for MSScriptControl.ScriptControl
+if (!Date.prototype.toISOString) {
+    Date.prototype.toISOString = function() {
+        var pad = function(number) {
+            return number < 10 ? ('0' + number) : number;
+        };
+        return this.getUTCFullYear() +
+            '-' + pad(this.getUTCMonth() + 1) +
+            '-' + pad(this.getUTCDate()) +
+            'T' + pad(this.getUTCHours()) +
+            ':' + pad(this.getUTCMinutes()) +
+            ':' + pad(this.getUTCSeconds()) +
+            '.' + (this.getUTCMilliseconds() / 1000).toFixed(3).slice(2, 5) +
+            'Z';
+    };
 }
 
 // JSON 2
