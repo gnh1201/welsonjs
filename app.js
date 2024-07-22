@@ -7,7 +7,17 @@
 //    cscript.js app.js <appname> <app arguments> ...
 //
 /////////////////////////////////////////////////////////////////////////////////
-//"use strict";
+"use strict";
+
+/////////////////////////////////////////////////////////////////////////////////
+//
+//    Author: Namhyeon Go <abuse@catswords.net>
+//    Repository: https://github.com/gnh1201/welsonjs
+//    Report abuse: abuse@catswords.net
+//    Latest news: ActivityPub @catswords_oss@catswords.social
+//    Join our team: https://teams.live.com/l/community/FEACHncAhq8ldnojAI
+//
+/////////////////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////////////////////////
 // Bootstrap code, basic module loading functionality
@@ -32,11 +42,6 @@
 //    The appname argument causes <appname>.js to be loaded. The interface returned
 //    must define main = function(args) {}, which is called once the module is
 //    loaded.
-//
-//    app.js
-//    Namhyeon Go <abuse@catswords.net>
-//    https://github.com/gnh1201/welsonjs
-//    If you find an abuse case or a security issue, please feel free to contact me.
 //
 
 var exit = function(status) {
@@ -433,7 +438,7 @@ require._load = function(FN) {
 };
 require._msie9 = function(FN, params, callback) {
     if (typeof FN !== "string" || FN == null) FN = '';
-    else if (FN.substr(FN.length - 3) !== '.js') FN += ".js";
+    else if (FN.substring(FN.length - 3) !== '.js') FN += ".js";
 
     var exports = null;
     try {
