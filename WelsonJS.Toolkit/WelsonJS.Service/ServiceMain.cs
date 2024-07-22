@@ -112,10 +112,11 @@ namespace WelsonJS.Service
                         Language = "JScript",
                         AllowUI = false
                     };
+                    scriptControl.Reset();
                     scriptControl.AddCode(scriptText);
 
                     // initialize
-                    InvokeScriptMethod("initializeService", scriptName, "start");
+                    Log(InvokeScriptMethod("initializeService", scriptName, "start"));
                 }
                 catch (Exception ex)
                 {
@@ -142,7 +143,7 @@ namespace WelsonJS.Service
 
             try
             {
-                InvokeScriptMethod("initializeService", scriptName, "stop");
+                Log(InvokeScriptMethod("initializeService", scriptName, "stop"));
                 if (scriptControl != null)
                 {
                     scriptControl.Reset();
@@ -161,7 +162,7 @@ namespace WelsonJS.Service
         {
             try
             {
-                InvokeScriptMethod("initializeService", scriptName, "elapsedTime");
+                Log(InvokeScriptMethod("initializeService", scriptName, "elapsedTime"));
             }
             catch (Exception ex)
             {
@@ -172,14 +173,15 @@ namespace WelsonJS.Service
         private string InvokeScriptMethod(string methodName, params object[] parameters)
         {
             if (scriptControl != null)
-            { 
-                return scriptControl.Run(methodName, parameters).ToString();
+            {
+                return scriptControl.Run(methodName, parameters)?.ToString() ?? "void";
             }
             else
             {
                 Log("InvokeScriptMethod Ignored: " + methodName);
-                return null;
             }
+
+            return "void";
         }
 
         private void Log(string message)
