@@ -1,5 +1,0 @@
-;!@Install@!UTF-8!
-Title="WelsonJS 0.2.7"
-;BeginPrompt="Do you want to install WelsonJS 0.2.7?"
-RunProgram="bootstrap.bat"
-;!@InstallEnd@!
