@@ -92,7 +92,7 @@ namespace WelsonJS.Service
             // set script name
             if (string.IsNullOrEmpty(scriptName))
             {
-                scriptName = "helloworld";
+                scriptName = "defaultService";
                 Log("Script name not provided. Using default value: " + scriptName);
             }
 

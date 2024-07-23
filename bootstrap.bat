@@ -1,4 +1,6 @@
 @echo off
+rem bootstrap.bat
+rem WelsonJS 0.2.7
 rem https://github.com/gnh1201/welsonjs
 
 pushd %~dp0
@@ -19,6 +21,9 @@ rem regsvr32 /s "%PROGRAMFILES(X86)%\AutoIt3\AutoItX\AutoItX3_x64.dll"
 echo [*] Registering WelsonJS Toolkit component...
 %WINDIR%\Microsoft.NET\Framework\v2.0.50727\RegAsm.exe /codebase bin\x86\WelsonJS.Toolkit.dll
 %WINDIR%\Microsoft.NET\Framework64\v2.0.50727\RegAsm.exe /codebase bin\x64\WelsonJS.Toolkit.dll
+
+rem echo [*] Registering WelsonJS Service component...
+rem %WINDIR%\Microsoft.NET\Framework\v4.0.30319\InstallUtil.exe bin\x86\WelsonJS.Service.exe
 
 echo [*] Done.
 
