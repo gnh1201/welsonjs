@@ -76,6 +76,7 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
   - Virtualized Human Interfaces
   - Cryptography
   - [Named Shared Memory](https://learn.microsoft.com/en-us/windows/win32/memory/creating-named-shared-memory) based IPC(Inter-Process Communication) implementation [#](https://qiita.com/gnh1201/items/4e70dccdb7adacf0ace5)
+- Can be write Windows Services application with JavaScript! (`WelsonJS.Service` component)
 - lib/chatgpt ([ChatGPT](https://openai.com/chatgpt) integration)
 - Everything you can imagine.
 
