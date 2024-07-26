@@ -117,7 +117,7 @@ namespace WelsonJS.Service
                     scriptControl.AddCode(scriptText);
 
                     // initialize
-                    Log(InvokeScriptMethod("initializeService", scriptName, "start"));
+                    Log(DispatchServiceEvent(scriptName, "start"));
                 }
                 catch (Exception ex)
                 {
@@ -144,7 +144,7 @@ namespace WelsonJS.Service
 
             try
             {
-                Log(InvokeScriptMethod("initializeService", scriptName, "stop"));
+                Log(DispatchServiceEvent(scriptName, "stop"));
                 if (scriptControl != null)
                 {
                     scriptControl.Reset();
@@ -163,12 +163,17 @@ namespace WelsonJS.Service
         {
             try
             {
-                Log(InvokeScriptMethod("initializeService", scriptName, "elapsedTime"));
+                Log(DispatchServiceEvent(scriptName, "elapsedTime"));
             }
             catch (Exception ex)
             {
                 Log("Exception when elapsed time: " + ex.Message);
             }
+        }
+
+        private string DispatchServiceEvent(string name, string eventType)
+        {
+            return InvokeScriptMethod("dispatchServiceEvent", name, eventType);
         }
 
         private string InvokeScriptMethod(string methodName, params object[] parameters)
@@ -184,6 +189,7 @@ namespace WelsonJS.Service
 
             return "void";
         }
+
 
         private void Log(string message)
         {

@@ -589,7 +589,7 @@ function initializeWindow(name, args, w, h) {
     }
 }
 
-function initializeService(name, eventType) {
+function dispatchServiceEvent(name, eventType) {
     var app = require(name);
 
     // load the service
