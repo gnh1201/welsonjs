@@ -15,6 +15,7 @@ set EXE_PATH=%CURRENT_DIR%\bin\x86\WelsonJS.Service.exe
 set INSTALL_UTIL_PATH=%SystemRoot%\Microsoft.NET\Framework\v4.0.30319\InstallUtil.exe
 
 REM Uninstall the service
+sc stop "%SERVICE_NAME%"
 "%INSTALL_UTIL_PATH%" /u "%EXE_PATH%"
 
 REM Install the service
@@ -28,4 +29,7 @@ REM Add parameters to the ImagePath registry key
 REG ADD "HKLM\SYSTEM\CurrentControlSet\Services\%SERVICE_NAME%" /v ImagePath /t REG_EXPAND_SZ /d "\"%EXE_PATH%\" --working-directory=%CURRENT_DIR% --script-name=defaultService" /f
 
 echo Service "%SERVICE_NAME%" installed and configured successfully.
+
+sc start "%SERVICE_NAME%"
+echo Service "%SERVICE_NAME%" started.
 pause
