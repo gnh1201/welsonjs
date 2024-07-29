@@ -114,7 +114,7 @@ namespace WelsonJS.Service
 
                 Timer screenTimer = new Timer
                 {
-                    Interval = 1000 // 1 second
+                    Interval = 10000 // 10 seconds
                 };
                 screenTimer.Elapsed += OnScreenTime;
                 timers.Add(screenTimer);
@@ -224,10 +224,9 @@ namespace WelsonJS.Service
                     Log(result.ScreenNumber.ToString());
                     Log(result.Location.ToString());
 
-                    Log(DispatchServiceEvent("screenTime", new object[]
+                    Log(DispatchServiceEvent("screenTime", new string[]
                     {
                         result.FileName,
-                        result.ScreenNumber.ToString(),
                         result.Location.X.ToString(),
                         result.Location.Y.ToString(),
                         result.MaxCorrelation.ToString()
@@ -240,9 +239,17 @@ namespace WelsonJS.Service
             }
         }
 
-        private string DispatchServiceEvent(string eventType, object[] args = null)
+        private string DispatchServiceEvent(string eventType, string[] args = null)
         {
-            return InvokeScriptMethod("dispatchServiceEvent", scriptName, eventType, args);
+            if (args == null)
+            {
+                return InvokeScriptMethod("dispatchServiceEvent", scriptName, eventType, "");
+            }
+            else
+            {
+                return InvokeScriptMethod("dispatchServiceEvent", scriptName, eventType, String.Join("; ", args));
+            }
+            
         }
 
         private string InvokeScriptMethod(string methodName, params object[] parameters)

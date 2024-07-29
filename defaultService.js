@@ -14,8 +14,8 @@ function onServiceElapsedTime() {
     return "onServiceElapsedTime recevied";
 }
 
-function onServiceScreenTime(filename, handle, title, x, y, maxCorrelation) {
-    return "onServiceScreenTime recevied. " + filename;
+function onServiceScreenTime(args) {
+    return "onServiceScreenTime recevied. " + args.join(', ');
 }
 
 exports.main = main;

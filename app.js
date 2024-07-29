@@ -589,8 +589,9 @@ function initializeWindow(name, args, w, h) {
     }
 }
 
-function dispatchServiceEvent(name, eventType, args) {
+function dispatchServiceEvent(name, eventType, _args) {
     var app = require(name);
+    var args = _args.split('; ');
 
     // load the service
     if (app) {
