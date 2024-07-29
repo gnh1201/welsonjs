@@ -220,17 +220,16 @@ namespace WelsonJS.Service
                 List<ScreenMatchResult> matchedResults = screenMatcher.CaptureAndMatchAllScreens();
                 matchedResults.ForEach(result =>
                 {
-                    Log(result.FileName);
-                    Log(result.ScreenNumber.ToString());
-                    Log(result.Location.ToString());
-
-                    Log(DispatchServiceEvent("screenTime", new string[]
-                    {
-                        result.FileName,
-                        result.Location.X.ToString(),
-                        result.Location.Y.ToString(),
-                        result.MaxCorrelation.ToString()
-                    }));
+                    if (result.MaxCorrelation > 0.0) {
+                        Log(DispatchServiceEvent("screenTime", new string[]
+                        {
+                            result.FileName,
+                            result.ScreenNumber.ToString(),
+                            result.Location.X.ToString(),
+                            result.Location.Y.ToString(),
+                            result.MaxCorrelation.ToString()
+                        }));
+                    }
                 });
             }
             catch (Exception ex)
