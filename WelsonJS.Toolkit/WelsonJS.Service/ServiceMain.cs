@@ -32,13 +32,13 @@ namespace WelsonJS.Service
 {
     public partial class ServiceMain : ServiceBase
     {
-        private static List<Timer> timers;
+        private Timer timer;
         private string workingDirectory;
-        private string scriptName;
         private string scriptFilePath;
         private string scriptText;
+        private string scriptName;
         private ScriptControl scriptControl;
-        private readonly string logFilePath = Path.Combine(Path.GetTempPath(), "WelsonJS.Service.Log.txt");
+        private string logFilePath;
         private readonly string appName = "WelsonJS";
 
         public ServiceMain()
@@ -46,18 +46,8 @@ namespace WelsonJS.Service
             InitializeComponent();
 
             // set the log file path
+            logFilePath = Path.Combine(Path.GetTempPath(), "WelsonJS.Service.Log.txt");
             Log(appName + " Service Loaded");
-
-            // set timers
-            timers = new List<Timer>();
-
-            // set default timer
-            Timer timer = new Timer
-            {
-                Interval = 60000 // 1 minute
-            };
-            timer.Elapsed += OnElapsedTime;
-            timers.Add(timer);
         }
 
         internal void TestStartupAndStop(string[] args)
@@ -138,22 +128,27 @@ namespace WelsonJS.Service
             {
                 Log($"Script file not found: {scriptFilePath}");
             }
-            
-            // Start timers
-            timers.ForEach(timer => timer.Start());
+
+            // set interval
+            timer = new Timer();
+            timer.Interval = 60000; // 1 minute
+            timer.Elapsed += OnElapsedTime;
+            timer.Start();
 
             Log(appName + " Service Started");
         }
 
         protected override void OnStop()
         {
-            // Stop timers
-            timers.ForEach(timer => timer.Stop());
+            timer.Stop();
 
             try
             {
                 Log(DispatchServiceEvent(scriptName, "stop"));
-                scriptControl?.Reset();
+                if (scriptControl != null)
+                {
+                    scriptControl.Reset();
+                }
             }
             catch (Exception ex)
             {
@@ -223,11 +218,6 @@ namespace WelsonJS.Service
             }
 
             return arguments;
-        }
-
-        public string GetWorkingDirectory()
-        {
-            return workingDirectory;
         }
     }
 }
