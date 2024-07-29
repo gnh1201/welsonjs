@@ -20,6 +20,8 @@
  * 
  *     references:
  *         - https://learn.microsoft.com/en-us/dotnet/framework/windows-services/how-to-debug-windows-service-applications
+ *         - https://stackoverflow.com/questions/6490979/how-to-pass-parameters-to-windows-service
+ *         - https://stackoverflow.com/questions/42812333/pass-an-argument-to-a-windows-service-at-automatic-startup
  */
 using System;
 using System.ServiceProcess;
@@ -39,28 +41,35 @@ namespace WelsonJS.Service
         private string scriptName;
         private ScriptControl scriptControl;
         private string logFilePath;
+        private string[] _args;
         private readonly string appName = "WelsonJS";
 
-        public ServiceMain()
+        public ServiceMain(string[] args)
         {
             InitializeComponent();
 
             // set the log file path
             logFilePath = Path.Combine(Path.GetTempPath(), "WelsonJS.Service.Log.txt");
             Log(appName + " Service Loaded");
+
+            // set service arguments
+            // An auto-start service application should receive arguments at the class.
+            _args = args;
         }
 
-        internal void TestStartupAndStop(string[] args)
+        internal void TestStartupAndStop()
         {
-            this.OnStart(args);
+            this.OnStart(_args);
             Console.ReadLine();
             this.OnStop();
         }
 
         protected override void OnStart(string[] args)
         {
+            base.OnStart(args);
+
             // mapping arguments to each variables
-            var arguments = ParseArguments(args);
+            var arguments = ParseArguments(_args);
             foreach (KeyValuePair<string, string> entry in arguments)
             {
                 switch (entry.Key)

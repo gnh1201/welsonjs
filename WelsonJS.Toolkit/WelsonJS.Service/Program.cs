@@ -14,15 +14,15 @@ namespace WelsonJS.Service
         {
             if (Environment.UserInteractive)
             {
-                ServiceMain svc = new ServiceMain();
-                svc.TestStartupAndStop(args);
+                ServiceMain svc = new ServiceMain(args);
+                svc.TestStartupAndStop();
             }
             else
             {
                 ServiceBase[] ServicesToRun;
                 ServicesToRun = new ServiceBase[]
                 {
-                    new ServiceMain()
+                    new ServiceMain(args)
                 };
                 ServiceBase.Run(ServicesToRun);
             }
