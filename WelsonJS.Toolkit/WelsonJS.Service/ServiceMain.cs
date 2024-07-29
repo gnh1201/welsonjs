@@ -34,39 +34,24 @@ namespace WelsonJS.Service
 {
     public partial class ServiceMain : ServiceBase
     {
-        private Timer timer;
+        private static List<Timer> timers;
         private string workingDirectory;
+        private string scriptName;
         private string scriptFilePath;
         private string scriptText;
-        private string scriptName;
         private ScriptControl scriptControl;
-        private string logFilePath;
-        private string[] _args;
+        private readonly string logFilePath = Path.Combine(Path.GetTempPath(), "WelsonJS.Service.Log.txt");
         private readonly string appName = "WelsonJS";
+        private string[] _args;
+        private bool disabledScreenTime = false;
+        private ScreenMatching screenMatcher;
 
         public ServiceMain(string[] args)
         {
             InitializeComponent();
 
-            // set the log file path
-            logFilePath = Path.Combine(Path.GetTempPath(), "WelsonJS.Service.Log.txt");
-            Log(appName + " Service Loaded");
-
             // set service arguments
-            // An auto-start service application should receive arguments at the class.
             _args = args;
-        }
-
-        internal void TestStartupAndStop()
-        {
-            this.OnStart(_args);
-            Console.ReadLine();
-            this.OnStop();
-        }
-
-        protected override void OnStart(string[] args)
-        {
-            base.OnStart(args);
 
             // mapping arguments to each variables
             var arguments = ParseArguments(_args);
@@ -81,15 +66,22 @@ namespace WelsonJS.Service
                     case "script-name":
                         scriptName = entry.Value;
                         break;
+
+                    case "disable-screen-time":
+                        disabledScreenTime = true;
+                        break;
                 }
             }
+
+            // set timers
+            timers = new List<Timer>();
 
             // set working directory
             if (string.IsNullOrEmpty(workingDirectory))
             {
                 workingDirectory = Path.Combine(Path.GetTempPath(), appName);
                 Log("Working directory not provided. Using default value: " + workingDirectory);
-           
+
                 if (!Directory.Exists(workingDirectory))
                 {
                     Directory.CreateDirectory(workingDirectory);
@@ -107,6 +99,51 @@ namespace WelsonJS.Service
 
             // set path of the script
             scriptFilePath = Path.Combine(workingDirectory, "app.js");
+
+            // set default timer
+            Timer defaultTimer = new Timer
+            {
+                Interval = 60000 // 1 minute
+            };
+            defaultTimer.Elapsed += OnElapsedTime;
+            timers.Add(defaultTimer);
+
+            // set screen timer
+            if (!disabledScreenTime && Environment.UserInteractive) {
+                screenMatcher = new ScreenMatching(workingDirectory);
+
+                Timer screenTimer = new Timer
+                {
+                    Interval = 1000 // 1 second
+                };
+                screenTimer.Elapsed += OnScreenTime;
+                timers.Add(screenTimer);
+
+                Log("Screen Time Event Enabled");
+            }
+            else
+            {
+                disabledScreenTime = true;
+
+                Log("Screen Time Event Disabled");
+            }
+
+            // set the log file path
+            logFilePath = Path.Combine(Path.GetTempPath(), "WelsonJS.Service.Log.txt");
+            Log(appName + " Service Loaded");
+        }
+
+        internal void TestStartupAndStop()
+        {
+            this.OnStart(_args);
+            Console.ReadLine();
+            this.OnStop();
+        }
+
+        protected override void OnStart(string[] args)
+        {
+            base.OnStart(args);
+
 
             // check the script file exists
             if (File.Exists(scriptFilePath))
@@ -126,7 +163,7 @@ namespace WelsonJS.Service
                     scriptControl.AddCode(scriptText);
 
                     // initialize
-                    Log(DispatchServiceEvent(scriptName, "start"));
+                    Log(DispatchServiceEvent("start"));
                 }
                 catch (Exception ex)
                 {
@@ -138,22 +175,18 @@ namespace WelsonJS.Service
                 Log($"Script file not found: {scriptFilePath}");
             }
 
-            // set interval
-            timer = new Timer();
-            timer.Interval = 60000; // 1 minute
-            timer.Elapsed += OnElapsedTime;
-            timer.Start();
+            timers.ForEach(timer => timer.Start()); // start
 
             Log(appName + " Service Started");
         }
 
         protected override void OnStop()
         {
-            timer.Stop();
+            timers.ForEach(timer => timer.Stop()); // stop
 
             try
             {
-                Log(DispatchServiceEvent(scriptName, "stop"));
+                Log(DispatchServiceEvent("stop"));
                 if (scriptControl != null)
                 {
                     scriptControl.Reset();
@@ -172,7 +205,7 @@ namespace WelsonJS.Service
         {
             try
             {
-                Log(DispatchServiceEvent(scriptName, "elapsedTime"));
+                Log(DispatchServiceEvent("elapsedTime"));
             }
             catch (Exception ex)
             {
@@ -180,9 +213,36 @@ namespace WelsonJS.Service
             }
         }
 
-        private string DispatchServiceEvent(string name, string eventType)
+        private void OnScreenTime(object source, ElapsedEventArgs e)
         {
-            return InvokeScriptMethod("dispatchServiceEvent", name, eventType);
+            try
+            {
+                List<ScreenMatchResult> matchedResults = screenMatcher.CaptureAndMatchAllScreens();
+                matchedResults.ForEach(result =>
+                {
+                    Log(result.FileName);
+                    Log(result.ScreenNumber.ToString());
+                    Log(result.Location.ToString());
+
+                    Log(DispatchServiceEvent("screenTime", new object[]
+                    {
+                        result.FileName,
+                        result.ScreenNumber.ToString(),
+                        result.Location.X.ToString(),
+                        result.Location.Y.ToString(),
+                        result.MaxCorrelation.ToString()
+                    }));
+                });
+            }
+            catch (Exception ex)
+            {
+                Log("Exception when screen time: " + ex.ToString());
+            }
+        }
+
+        private string DispatchServiceEvent(string eventType, object[] args = null)
+        {
+            return InvokeScriptMethod("dispatchServiceEvent", scriptName, eventType, args);
         }
 
         private string InvokeScriptMethod(string methodName, params object[] parameters)
@@ -202,9 +262,16 @@ namespace WelsonJS.Service
 
         private void Log(string message)
         {
+            string _message = $"{DateTime.Now}: {message}";
+
+            if (Environment.UserInteractive)
+            {
+                Console.WriteLine(_message);
+            }
+
             using (StreamWriter writer = new StreamWriter(logFilePath, true))
             {
-                writer.WriteLine($"{DateTime.Now}: {message}");
+                writer.WriteLine(_message);
             }
         }
 
@@ -222,6 +289,11 @@ namespace WelsonJS.Service
                         var key = arg.Substring(2, index - 2);
                         var value = arg.Substring(index + 1);
                         arguments[key] = value;
+                    }
+                    else
+                    {
+                        var key = arg.Substring(2, index - 2);
+                        arguments[key] = "";
                     }
                 }
             }

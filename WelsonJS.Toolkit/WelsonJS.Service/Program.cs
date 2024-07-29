@@ -14,6 +14,11 @@ namespace WelsonJS.Service
         {
             if (Environment.UserInteractive)
             {
+                Console.WriteLine("WelsonJS Service Application (User Interactive Mode)");
+                Console.WriteLine("https://github.com/gnh1201/welsonjs");
+                Console.WriteLine();
+                Console.WriteLine("Service is running...");
+
                 ServiceMain svc = new ServiceMain(args);
                 svc.TestStartupAndStop();
             }
