@@ -1,51 +1,85 @@
-﻿// this is prototype code
-// https://github.com/gnh1201/welsonjs
+﻿/*
+ * WelsonJS.Service 
+ * 
+ *     filename:
+ *         ScreenTimer.cs
+ * 
+ *     description:
+ *         WelsonJS - Build a Windows app on the Windows built-in JavaScript engine
+ * 
+ *     website:
+ *         - https://github.com/gnh1201/welsonjs
+ *         - https://catswords.social/@catswords_oss
+ *         - https://teams.live.com/l/community/FEACHncAhq8ldnojAI
+ * 
+ *     author:
+ *         Namhyeon Go <abuse@catswords.net>
+ *
+ *     license:
+ *         GPLv3 or MS-RL(Microsoft Reciprocal License)
+ */
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.ServiceProcess;
+using System.Timers;
 using System.Windows.Forms;
 using WelsonJS.Service;
 
-public class TemplateMatching
+public class ScreenTimer : System.Timers.Timer
 {
-    public void Test(string workingDirectory)
+    private static List<Bitmap> templateImages = new List<Bitmap>();
+    private string templateDirectory;
+
+    public string WorkingDirectory { get; set; }
+    public ServiceBase Parent { get; set; }
+
+    public class MatchedResult
     {
-        string templateFolderPath = Path.Combine(workingDirectory, "assets/img/templates");
+        public string FileName;
+        public int ScreenNumber;
+        public Point Location;
+        public double MaxCorrelation;
+    }
 
-        // Load all template images
-        List<Bitmap> templateImages = LoadTemplateImages(templateFolderPath);
+    public ScreenTimer()
+    {
+        Elapsed += OnTimeElapsed;
 
-        // try template matching
-        List<(string FileName, int ScreenNumber, Point Location, double MaxCorrelation)> results =
-            CaptureAndMatchAllScreens(templateImages);
+        templateDirectory = Path.Combine(WorkingDirectory, "assets/img/templates");
+        LoadTemplateImages();
+    }
 
-        // print results
-        foreach (var result in results)
+    private void OnTimeElapsed(object sender, ElapsedEventArgs e)
+    {
+        List<MatchedResult> matchedResults = CaptureAndMatchAllScreens();
+
+        ServiceMain svc = (ServiceMain)Parent;
+        matchedResults.ForEach(result =>
         {
-            Console.WriteLine($"Template: {result.FileName}, Screen: {result.ScreenNumber}, " +
-                              $"Location: (x: {result.Location.X}, y: {result.Location.Y}), " +
-                              $"Max Correlation: {result.MaxCorrelation}");
+            svc.Log(svc.DispatchServiceEvent("screenTime", new object[] {
+                result.FileName,
+                result.ScreenNumber,
+                result.Location.X,
+                result.Location.Y,
+                result.MaxCorrelation
+            }));
+        });
+    }
+
+    public void LoadTemplateImages()
+    {
+        string[] imageFiles = Directory.GetFiles(templateDirectory, "*.png");
+        foreach (string file in imageFiles)
+        {
+            templateImages.Add(new Bitmap(file));
         }
     }
 
-    public static List<Bitmap> LoadTemplateImages(string folderPath)
+    public List<MatchedResult> CaptureAndMatchAllScreens()
     {
-        var templates = new List<Bitmap>();
-        var files = Directory.GetFiles(folderPath, "*.png");
-
-        foreach (var file in files)
-        {
-            templates.Add(new Bitmap(file));
-        }
-
-        return templates;
-    }
-
-    public static List<(string FileName, int ScreenNumber, Point Location, double MaxCorrelation)>
-        CaptureAndMatchAllScreens(List<Bitmap> templateImages)
-    {
-        var results = new List<(string FileName, int ScreenNumber, Point Location, double MaxCorrelation)>();
+        var results = new List<MatchedResult>();
 
         for (int i = 0; i < Screen.AllScreens.Length; i++)
         {
@@ -57,14 +91,20 @@ public class TemplateMatching
                 Point matchLocation = FindTemplate(mainImage, templateImage, out double maxCorrelation);
                 string templateFileName = templateImage.Tag as string;
 
-                results.Add((templateFileName, i, matchLocation, maxCorrelation));
+                results.Add(new MatchedResult
+                {
+                    FileName = templateFileName,
+                    ScreenNumber = i,
+                    Location = matchLocation,
+                    MaxCorrelation = maxCorrelation
+                });
             }
         }
 
         return results;
     }
 
-    public static Bitmap CaptureScreen(Screen screen)
+    public Bitmap CaptureScreen(Screen screen)
     {
         Rectangle screenSize = screen.Bounds;
         Bitmap bitmap = new Bitmap(screenSize.Width, screenSize.Height);
@@ -77,7 +117,7 @@ public class TemplateMatching
         return bitmap;
     }
 
-    public static Point FindTemplate(Bitmap mainImage, Bitmap templateImage, out double maxCorrelation)
+    public Point FindTemplate(Bitmap mainImage, Bitmap templateImage, out double maxCorrelation)
     {
         int mainWidth = mainImage.Width;
         int mainHeight = mainImage.Height;
@@ -103,7 +143,7 @@ public class TemplateMatching
         return bestMatch;
     }
 
-    private static double CalculateCorrelation(Bitmap mainImage, Bitmap templateImage, int offsetX, int offsetY)
+    private double CalculateCorrelation(Bitmap mainImage, Bitmap templateImage, int offsetX, int offsetY)
     {
         int templateWidth = templateImage.Width;
         int templateHeight = templateImage.Height;

@@ -589,7 +589,7 @@ function initializeWindow(name, args, w, h) {
     }
 }
 
-function dispatchServiceEvent(name, eventType) {
+function dispatchServiceEvent(name, eventType, args) {
     var app = require(name);
 
     // load the service
@@ -597,8 +597,9 @@ function dispatchServiceEvent(name, eventType) {
         return (function(action) {
             if (eventType in action) {
                 try {
-                    var f = action[eventType];
-                    if (typeof f === "function") return f();
+                    return (function(f) {
+                        return (typeof f !== "function" ? null : f(args));
+                    })(action[eventType]);
                 } catch (e) {
                     console.error("Exception:", e.message);
                 }
@@ -606,7 +607,8 @@ function dispatchServiceEvent(name, eventType) {
         })({
             start: app.onServiceStart,
             stop: app.onServiceStop,
-            elapsedTime: app.onServiceElapsedTime
+            elapsedTime: app.onServiceElapsedTime,
+            screenTime: app.onServiceScreenTime
         });
     } else {
         console.error("Could not find", name + ".js");

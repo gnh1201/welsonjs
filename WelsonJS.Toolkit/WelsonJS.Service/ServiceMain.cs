@@ -35,6 +35,7 @@ namespace WelsonJS.Service
         private static List<Timer> timers;
         private string workingDirectory;
         private string scriptName;
+        private bool disabledScreenTimer = false;
         private string scriptFilePath;
         private string scriptText;
         private ScriptControl scriptControl;
@@ -52,12 +53,23 @@ namespace WelsonJS.Service
             timers = new List<Timer>();
 
             // set default timer
-            Timer timer = new Timer
+            Timer defaultTimer = new Timer
             {
                 Interval = 60000 // 1 minute
             };
-            timer.Elapsed += OnElapsedTime;
-            timers.Add(timer);
+            defaultTimer.Elapsed += OnElapsedTime;
+            timers.Add(defaultTimer);
+
+            // set screen timer
+            if (!disabledScreenTimer)
+            {
+                timers.Add(new ScreenTimer
+                {
+                    Parent = this,
+                    WorkingDirectory = workingDirectory,
+                    Interval = 1000 // 1 second
+                });
+            }
         }
 
         internal void TestStartupAndStop(string[] args)
@@ -81,6 +93,10 @@ namespace WelsonJS.Service
 
                     case "script-name":
                         scriptName = entry.Value;
+                        break;
+
+                    case "--disable-screen-timer":
+                        disabledScreenTimer = true;
                         break;
                 }
             }
@@ -127,7 +143,7 @@ namespace WelsonJS.Service
                     scriptControl.AddCode(scriptText);
 
                     // initialize
-                    Log(DispatchServiceEvent(scriptName, "start"));
+                    Log(DispatchServiceEvent("start"));
                 }
                 catch (Exception ex)
                 {
@@ -152,7 +168,7 @@ namespace WelsonJS.Service
 
             try
             {
-                Log(DispatchServiceEvent(scriptName, "stop"));
+                Log(DispatchServiceEvent("stop"));
                 scriptControl?.Reset();
             }
             catch (Exception ex)
@@ -168,17 +184,12 @@ namespace WelsonJS.Service
         {
             try
             {
-                Log(DispatchServiceEvent(scriptName, "elapsedTime"));
+                Log(DispatchServiceEvent("elapsedTime"));
             }
             catch (Exception ex)
             {
                 Log("Exception when elapsed time: " + ex.Message);
             }
-        }
-
-        private string DispatchServiceEvent(string name, string eventType)
-        {
-            return InvokeScriptMethod("dispatchServiceEvent", name, eventType);
         }
 
         private string InvokeScriptMethod(string methodName, params object[] parameters)
@@ -193,15 +204,6 @@ namespace WelsonJS.Service
             }
 
             return "void";
-        }
-
-
-        private void Log(string message)
-        {
-            using (StreamWriter writer = new StreamWriter(logFilePath, true))
-            {
-                writer.WriteLine($"{DateTime.Now}: {message}");
-            }
         }
 
         private Dictionary<string, string> ParseArguments(string[] args)
@@ -219,10 +221,28 @@ namespace WelsonJS.Service
                         var value = arg.Substring(index + 1);
                         arguments[key] = value;
                     }
+                    else
+                    {
+                        var key = arg.Substring(2);
+                        arguments[key] = "";
+                    }
                 }
             }
 
             return arguments;
+        }
+
+        public void Log(string message)
+        {
+            using (StreamWriter writer = new StreamWriter(logFilePath, true))
+            {
+                writer.WriteLine($"{DateTime.Now}: {message}");
+            }
+        }
+
+        public string DispatchServiceEvent(string eventType, object[] args = null)
+        {
+            return InvokeScriptMethod("dispatchServiceEvent", scriptName, eventType, args);
         }
 
         public string GetWorkingDirectory()
