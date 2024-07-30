@@ -5,7 +5,7 @@
 
 WelsonJS - Build a Windows app on the Windows built-in JavaScript engine.
 
-![(Cover Image) Windows in 1999](app/assets/img/cover.jpg)
+![(Cover Image) Windows in 1999](app/assets/img/cover.png)
 
 Now, You can build an Windows desktop app with JavaScript, TypeScript, CoffeeScript, ReScript, and HTML/CSS on Windows built-in ECMAScript engine.
 
