@@ -70,15 +70,15 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
 - lib/gtk (GTK-server and GladeXML supported GUI interface)
 - lib/chrome ([Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/) based Chrome/Chromium web browser testing interface)
 - lib/pipe-ipc (PIPE-based IPC(Inter-Process Communication) implementation)
-- lib/toolkit (`WelsonJS.Toolkit.dll` native component, .NET 2.x, 3.x (Windows XP SP3 or above) compatible)
+- lib/toolkit (`WelsonJS.Toolkit.dll` native component, .NET 2.x, 3.x (XP SP3 or above) compatible)
   - Find and attach a handle of the window
   - alert(), prompt() implementation in console mode
   - Virtualized Human Interfaces
   - Cryptography
   - [Named Shared Memory](https://learn.microsoft.com/en-us/windows/win32/memory/creating-named-shared-memory) based IPC(Inter-Process Communication) implementation [#](https://qiita.com/gnh1201/items/4e70dccdb7adacf0ace5)
-- Windows Service Application with JavaScript (`WelsonJS.Service.exe` native component, .NET 4.x (Windows 2008 SP2 or above) compatible)
+- Windows Service Application with JavaScript (`WelsonJS.Service.exe` native component, .NET 4.x (2008 SP2 or above) compatible)
   - Write a Windows Service with JavaScript
-  - Find an image on the computer screen 
+  - Find an image on the computer screen
 - lib/chatgpt ([ChatGPT](https://openai.com/chatgpt) integration)
 - Everything you can imagine.
 
