@@ -77,7 +77,7 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
   - [Named Shared Memory](https://learn.microsoft.com/en-us/windows/win32/memory/creating-named-shared-memory) based IPC(Inter-Process Communication) implementation [#](https://qiita.com/gnh1201/items/4e70dccdb7adacf0ace5)
 - Windows Service Application with JavaScript (Native component, NET 4.x (2008 SP2 or above) compatible)
   - Write a Windows Service with JavaScript
-  - Find an image on the computer screen
+  - Find an image position on the computer screens or windows
 - lib/chatgpt ([ChatGPT](https://openai.com/chatgpt) integration)
 - Everything you can imagine.
 
