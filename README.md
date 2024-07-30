@@ -70,7 +70,7 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
 - lib/gtk (GTK-server and GladeXML supported GUI interface)
 - lib/chrome ([Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/) based Chrome/Chromium web browser testing interface)
 - lib/pipe-ipc (PIPE-based IPC(Inter-Process Communication) implementation)
-- DLL Native Component, .NET 2.x, 3.x (Windows XP SP3 or above) compatible)
+- DLL/COM Native Component, .NET 2.x, 3.x (Windows XP SP3 or above) compatible)
   - User prompt methods (e.g., alert, confirm) implementation
   - Useful tools to control the windows and window handle (find, attach, trigger events (e.g., Virtual Human Interface), etc.)
   - Cryptography ([ISO/IEC 18033-3:2010](https://www.iso.org/standard/54531.html) aka. [HIGHT](https://seed.kisa.or.kr/kisa/algorithm/EgovHightInfo.do))
