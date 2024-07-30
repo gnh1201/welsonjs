@@ -70,12 +70,12 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
 - lib/gtk (GTK-server and GladeXML supported GUI interface)
 - lib/chrome ([Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/) based Chrome/Chromium web browser testing interface)
 - lib/pipe-ipc (PIPE-based IPC(Inter-Process Communication) implementation)
-- lib/toolkit (Native component, .NET 2.x, 3.x (XP SP3 or above) compatible)
+- DLL Native Component, .NET 2.x, 3.x (Windows XP SP3 or above) compatible)
   - User prompt methods (e.g., alert, confirm) implementation
   - Useful tools to control the windows and window handle (find, attach, trigger events (e.g., Virtual Human Interface), etc.)
   - Cryptography ([ISO/IEC 18033-3:2010](https://www.iso.org/standard/54531.html) aka. [HIGHT](https://seed.kisa.or.kr/kisa/algorithm/EgovHightInfo.do))
   - [Named Shared Memory](https://learn.microsoft.com/en-us/windows/win32/memory/creating-named-shared-memory) based IPC(Inter-Process Communication) implementation [#](https://qiita.com/gnh1201/items/4e70dccdb7adacf0ace5)
-- Windows Service Application with JavaScript (Native component, NET 4.x (2008 SP2 or above) compatible)
+- Windows Service Application (NET 4.x (Windows 2008 SP2 or above) compatible)
   - Write a Windows Service with JavaScript
   - Find an image position on the computer screens or windows
 - lib/chatgpt ([ChatGPT](https://openai.com/chatgpt) integration)
@@ -114,7 +114,7 @@ exports.main = main;
 
 ### 3. Execute file on the command prompt
 ```cmd
-C:\Users\oss\Documents\GitHub\welsonjs> cscript app.js sayhello
+C:\Users\knh94\Documents\GitHub\welsonjs> cscript app.js sayhello
 calling say()
 hello
 ended say()
@@ -132,6 +132,8 @@ ended say()
 
 ![(Screenshot 4) Write a Windows Services with JavaScript](app/assets/img/screenshot4.png)
 
+![(Screenshot 5) Template Matching on the computer screen](app/assets/img/screenshot5.png)
+
 ## Thanks to
 - <img src="app/assets/img/logo_oss.gif" height="30" alt=""/> Open Software Portal, Korea National Industry Promotion Agency - Awarded Prize
 - Heavy-industry specialized CSP(Cloud Service Provider) in Republic of Korea - Use case establishment
@@ -146,7 +148,7 @@ ended say()
 - <img src="app/assets/img/Fediverse_logo_proposal.svg" height="30" alt=""/> Fediverse - Mentioned
 - [GitHub Sponsors](https://github.com/sponsors/gnh1201)
 
-## Related projects
+## Related links
 - [gnh1201/wsh-js-gtk](https://github.com/gnh1201/wsh-js-gtk) - GTK GUI ported to Windows Scripting Host - Javascript (Microsoft JScript) (wsh-js)
 - [gnh1201/wsh-json](https://github.com/gnh1201/wsh-json) - JSON stringify/parse (encode/decode) for Windows Scripting Host
 - [redskyit/wsh-appjs](https://github.com/redskyit/wsh-appjs) - require-js and app framework for Windows Scripting Host JavaScript
