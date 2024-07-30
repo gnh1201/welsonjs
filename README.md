@@ -70,7 +70,7 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
 - lib/gtk (GTK-server and GladeXML supported GUI interface)
 - lib/chrome ([Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/) based Chrome/Chromium web browser testing interface)
 - lib/pipe-ipc (PIPE-based IPC(Inter-Process Communication) implementation)
-- lib/toolkit (`WelsonJS.Toolkit.dll` native component, .NET 2.x, 3.x (Windows XP or above) compatible)
+- lib/toolkit (`WelsonJS.Toolkit.dll` native component, .NET 2.x, 3.x (Windows XP SP3 or above) compatible)
   - Find and attach a handle of the window
   - alert(), prompt() implementation in console mode
   - Virtualized Human Interfaces
