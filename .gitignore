@@ -105,3 +105,4 @@ dist
 
 # ChatGPT API Key
 data/chatgpt-apikey.txt
+/bin/installer

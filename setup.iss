@@ -35,7 +35,6 @@ LicenseFile=SECURITY.MD
 [Files]
 Source: "app.js"; DestDir: "{app}";
 Source: "app.hta"; DestDir: "{app}";
-Source: "Default_HTA.reg"; DestDir: "{app}";
 Source: "LICENSE"; DestDir: "{app}";
 Source: "LICENSE_MSRL"; DestDir: "{app}";
 Source: "*.md"; DestDir: "{app}";
