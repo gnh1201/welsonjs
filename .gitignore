@@ -105,4 +105,7 @@ dist
 
 # ChatGPT API Key
 data/chatgpt-apikey.txt
-/bin/installer
+
+# private assets
+bin/installer
+app/assets/img/_templates/*.*
