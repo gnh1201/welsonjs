@@ -181,10 +181,7 @@ namespace WelsonJS.Service
             try
             {
                 Log(DispatchServiceEvent("stop"));
-                if (scriptControl != null)
-                {
-                    scriptControl.Reset();
-                }
+                scriptControl?.Reset();
             }
             catch (Exception ex)
             {
