@@ -22,10 +22,12 @@
  *         - https://learn.microsoft.com/en-us/dotnet/framework/windows-services/how-to-debug-windows-service-applications
  *         - https://stackoverflow.com/questions/6490979/how-to-pass-parameters-to-windows-service
  *         - https://stackoverflow.com/questions/42812333/pass-an-argument-to-a-windows-service-at-automatic-startup
+ *         - https://learn.microsoft.com/ko-kr/windows/win32/api/winuser/nf-winuser-getsystemmetrics
  */
 using System;
 using System.ServiceProcess;
 using System.Timers;
+using System.Runtime.InteropServices;
 using MSScriptControl;
 using System.IO;
 using System.Collections.Generic;
@@ -45,6 +47,10 @@ namespace WelsonJS.Service
         private string[] _args;
         private bool disabledScreenTime = false;
         private ScreenMatching screenMatcher;
+
+        [DllImport("user32.dll")]
+        public static extern int GetSystemMetrics(int nIndex);
+        public static int SM_REMOTESESSION = 0x1000;
 
         public ServiceMain(string[] args)
         {
@@ -108,24 +114,13 @@ namespace WelsonJS.Service
             defaultTimer.Elapsed += OnElapsedTime;
             timers.Add(defaultTimer);
 
-            // set screen timer
-            if (!disabledScreenTime && Environment.UserInteractive) {
-                screenMatcher = new ScreenMatching(workingDirectory);
-
-                Timer screenTimer = new Timer
-                {
-                    Interval = 10000 // 10 seconds
-                };
-                screenTimer.Elapsed += OnScreenTime;
-                timers.Add(screenTimer);
-
-                Log("Screen Time Event Enabled");
+            // check this session is the user interactive mode
+            if (Environment.UserInteractive) {
+                this.OnUserInteractiveEnvironment();
             }
             else
             {
-                disabledScreenTime = true;
-
-                Log("Screen Time Event Disabled");
+                Log("Disabled the User Interactive Mode. (e.g., OnScreenTime)");
             }
 
             // set the log file path
@@ -143,7 +138,6 @@ namespace WelsonJS.Service
         protected override void OnStart(string[] args)
         {
             base.OnStart(args);
-
 
             // check the script file exists
             if (File.Exists(scriptFilePath))
@@ -199,6 +193,37 @@ namespace WelsonJS.Service
             scriptControl = null;
 
             Log(appName + " Service Stopped");
+        }
+
+        private void OnUserInteractiveEnvironment()
+        {
+            // check is it a remote desktop session
+            if (GetSystemMetrics(SM_REMOTESESSION) > 0)
+            {
+                disabledScreenTime = true;
+                Log("This application may not work correctly in a remote desktop session");
+            }
+
+            // set screen timer
+            if (!disabledScreenTime)
+            {
+                screenMatcher = new ScreenMatching(workingDirectory);
+
+                Timer screenTimer = new Timer
+                {
+                    Interval = 10000 // 10 seconds
+                };
+                screenTimer.Elapsed += OnScreenTime;
+                timers.Add(screenTimer);
+
+                Log("Screen Time Event Enabled");
+            }
+            else
+            {
+                disabledScreenTime = true;
+
+                Log("Screen Time Event Disabled");
+            }
         }
 
         private void OnElapsedTime(object source, ElapsedEventArgs e)
