@@ -1,5 +1,8 @@
 # Security Note for WelsonJS
 
+## License
+The WelsonJS project is available under either the GPLv3 or MS-RL opensource licenses. If the GPLv3 license is not compatible with Microsoft products, the MS-RL license applies; otherwise, the GPLv3 license is used. Under these licenses, if you distribute modified versions of this project's source code to third parties, you may be required to disclose the source code. For more details, please refer to the `LICENSE` and `LICENSE_MSRL` files.
+
 ## Caution
 This repository contains information on accessing Windows APIs and functions in the JavaScript runtime, along with recent case studies. While this can provide a flexible development environment for anyone, it can also be misused for malicious purposes. Please be aware that using this project to create abuse tools, such as for DoS attacks, may result in legal consequences in your country. We encourage you to use this project only for creating web technology-based applications, like Electron, or legally permitted testing tools.
 
