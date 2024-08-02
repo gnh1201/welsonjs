@@ -108,4 +108,4 @@ data/chatgpt-apikey.txt
 
 # private assets
 bin/installer
-app/assets/img/_templates/*.*
+app/assets/img/_templates
