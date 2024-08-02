@@ -86,7 +86,7 @@ public class ScreenMatching
             Bitmap mainImage = CaptureScreen(screen);
 
             Bitmap image = templateImages[currentTemplateIndex];
-            parent.Log($"Matching template {image.Tag as string} on the screen {i}...");
+            parent.Log($"Trying match the template {image.Tag as string} on the screen {i}...");
 
             Point matchLocation = FindTemplate(mainImage, (Bitmap)image.Clone(), out double maxCorrelation);
             results.Add(new ScreenMatchResult
