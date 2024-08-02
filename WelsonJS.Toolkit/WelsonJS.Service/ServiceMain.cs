@@ -31,6 +31,7 @@ using System.Runtime.InteropServices;
 using MSScriptControl;
 using System.IO;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace WelsonJS.Service
 {
@@ -204,11 +205,11 @@ namespace WelsonJS.Service
             // set screen timer
             if (!disabledScreenTime)
             {
-                screenMatcher = new ScreenMatching(workingDirectory);
+                screenMatcher = new ScreenMatching(this, workingDirectory);
 
                 Timer screenTimer = new Timer
                 {
-                    Interval = 10000 // 10 seconds
+                    Interval = 5000 // 5 seconds
                 };
                 screenTimer.Elapsed += OnScreenTime;
                 timers.Add(screenTimer);
@@ -287,22 +288,6 @@ namespace WelsonJS.Service
             return "void";
         }
 
-
-        private void Log(string message)
-        {
-            string _message = $"{DateTime.Now}: {message}";
-
-            if (Environment.UserInteractive)
-            {
-                Console.WriteLine(_message);
-            }
-
-            using (StreamWriter writer = new StreamWriter(logFilePath, true))
-            {
-                writer.WriteLine(_message);
-            }
-        }
-
         private Dictionary<string, string> ParseArguments(string[] args)
         {
             var arguments = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -327,6 +312,21 @@ namespace WelsonJS.Service
             }
 
             return arguments;
+        }
+
+        public void Log(string message)
+        {
+            string _message = $"{DateTime.Now}: {message}";
+
+            if (Environment.UserInteractive)
+            {
+                Console.WriteLine(_message);
+            }
+
+            using (StreamWriter writer = new StreamWriter(logFilePath, true))
+            {
+                writer.WriteLine(_message);
+            }
         }
     }
 }

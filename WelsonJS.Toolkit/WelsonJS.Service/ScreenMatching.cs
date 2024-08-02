@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.ServiceProcess;
 using System.Text;
 using System.Windows.Forms;
 using WelsonJS.Service;
@@ -48,11 +49,15 @@ public class ScreenMatching
         public int Bottom;
     }
 
+    ServiceMain parent;
     public List<Bitmap> templateImages;
     string templateFolderPath;
+    int currentTemplateIndex = 0;
 
-    public ScreenMatching(string workingDirectory)
+    public ScreenMatching(ServiceBase _parent, string workingDirectory)
     {
+        parent = (ServiceMain)_parent;
+
         templateFolderPath = Path.Combine(workingDirectory, "app/assets/img/_templates");
         templateImages = new List<Bitmap>();
         LoadTemplateImages();
@@ -80,19 +85,20 @@ public class ScreenMatching
             Screen screen = Screen.AllScreens[i];
             Bitmap mainImage = CaptureScreen(screen);
 
-            foreach (Bitmap templateImage in templateImages)
-            {
-                Point matchLocation = FindTemplate(mainImage, (Bitmap)templateImage.Clone(), out double maxCorrelation);
+            Bitmap image = templateImages[currentTemplateIndex];
+            parent.Log($"Matching template {image.Tag as string} on the screen {i}...");
 
-                results.Add(new ScreenMatchResult
-                {
-                    FileName = templateImage.Tag.ToString(),
-                    ScreenNumber = i,
-                    Location = matchLocation,
-                    MaxCorrelation = maxCorrelation
-                });
-            }
+            Point matchLocation = FindTemplate(mainImage, (Bitmap)image.Clone(), out double maxCorrelation);
+            results.Add(new ScreenMatchResult
+            {
+                FileName = image.Tag.ToString(),
+                ScreenNumber = i,
+                Location = matchLocation,
+                MaxCorrelation = maxCorrelation
+            });
         }
+
+        currentTemplateIndex = ++currentTemplateIndex % templateImages.Count;
 
         return results;
     }
@@ -126,27 +132,27 @@ public class ScreenMatching
                     Bitmap windowImage = CaptureWindow(hWnd);
                     if (windowImage != null)
                     {
-                        foreach (var templateImage in templateImages)
-                        {
-                            Point matchLocation = FindTemplate(windowImage, templateImage, out double maxCorrelation);
-                            string templateFileName = templateImage.Tag as string;
+                        Bitmap image = templateImages[currentTemplateIndex];
+                        Point matchLocation = FindTemplate(windowImage, image, out double maxCorrelation);
+                        string templateFileName = image.Tag as string;
 
-                            var result = new ScreenMatchResult
-                            {
-                                FileName = templateFileName,
-                                WindowHandle = hWnd,
-                                WindowTitle = windowTitle,
-                                Location = matchLocation,
-                                MaxCorrelation = maxCorrelation
-                            };
-                            results.Add(result);
-                        }
+                        var result = new ScreenMatchResult
+                        {
+                            FileName = templateFileName,
+                            WindowHandle = hWnd,
+                            WindowTitle = windowTitle,
+                            Location = matchLocation,
+                            MaxCorrelation = maxCorrelation
+                        };
+                        results.Add(result);
                     }
                 }
                 catch { }
             }
             return true;
         }, IntPtr.Zero);
+
+        currentTemplateIndex = ++currentTemplateIndex % templateImages.Count;
 
         return results;
     }
@@ -194,10 +200,10 @@ public class ScreenMatching
         {
             for (int y = 0; y <= mainHeight - templateHeight; y++)
             {
-                if (IsTemplateMatch(mainImage, templateImage, x, y))
+                if (IsTemplateMatch(mainImage, templateImage, x, y, 0.8))   // matched 80% or above
                 {
                     bestMatch = new Point(x, y);
-                    maxCorrelation = 1; // 완전 일치
+                    maxCorrelation = 1;
                     return bestMatch;
                 }
             }
@@ -206,20 +212,27 @@ public class ScreenMatching
         return bestMatch;
     }
 
-    private bool IsTemplateMatch(Bitmap mainImage, Bitmap templateImage, int offsetX, int offsetY)
+    private bool IsTemplateMatch(Bitmap mainImage, Bitmap templateImage, int offsetX, int offsetY, double threshold = 1.0)
     {
         int templateWidth = templateImage.Width;
         int templateHeight = templateImage.Height;
+        int totalPixels = templateWidth * templateHeight;
+        int requiredMatches = (int)(totalPixels * threshold);
+        int matchedCount = 0;
+        Random rand = new Random();
 
-        for (int x = 0; x < templateWidth; x++)
+        while (matchedCount < requiredMatches)
         {
-            for (int y = 0; y < templateHeight; y++)
+            int x = rand.Next(templateWidth);
+            int y = rand.Next(templateHeight);
+            Point point = new Point(x, y);
+
+            if (mainImage.GetPixel(x + offsetX, y + offsetY) != templateImage.GetPixel(x, y))
             {
-                if (mainImage.GetPixel(x + offsetX, y + offsetY) != templateImage.GetPixel(x, y))
-                {
-                    return false;
-                }
+                return false;
             }
+
+            matchedCount++;
         }
 
         return true;
