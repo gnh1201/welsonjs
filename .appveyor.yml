@@ -14,11 +14,11 @@ build_script:
   - msbuild "C:\projects\welsonjs\WelsonJS.Toolkit\WelsonJS.Toolkit.sln" /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" /p:Configuration=%CONFIGURATION% /p:Platform="x64"
 
 artifacts:
-  - path: C:\projects\welsonjs\WelsonJS.Toolkit\WelsonJS.Toolkit\bin\x86\WelsonJS.Toolkit.x86.dll
+  - path: WelsonJS.Toolkit\WelsonJS.Toolkit\bin\x86\WelsonJS.Toolkit.dll
     name: WelsonJS.Toolkit.x86
-  - path: C:\projects\welsonjs\WelsonJS.Toolkit\WelsonJS.Toolkit\bin\x86\WelsonJS.Toolkit.x64.dll
+  - path: WelsonJS.Toolkit\WelsonJS.Toolkit\bin\x64\WelsonJS.Toolkit.dll
     name: WelsonJS.Toolkit.x64
-  - path: C:\projects\welsonjs\WelsonJS.Toolkit\WelsonJS.Service\bin\x86\WelsonJS.Service.exe
+  - path: WelsonJS.Toolkit\WelsonJS.Service\bin\x86\WelsonJS.Service.exe
     name: WelsonJS.Service
 
 notifications:
