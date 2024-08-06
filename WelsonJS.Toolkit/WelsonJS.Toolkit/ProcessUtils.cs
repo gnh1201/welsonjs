@@ -27,7 +27,7 @@ namespace WelsonJS
 {
     public class ProcessUtils
     {
-        public static List<int> ProcessIDs = new List<int>();
+        public static List<Process> ProcessList = new List<Process>();
 
         public static string OpenFileDialog()
         {
@@ -48,12 +48,14 @@ namespace WelsonJS
 
         public static int Open(string filepath)
         {
+            int processId = -1;
+
             if (string.IsNullOrEmpty(filepath))
             {
                 filepath = OpenFileDialog();
                 if (string.IsNullOrEmpty(filepath))
                 {
-                    return -1;
+                    return processId;
                 }
             }
 
@@ -62,16 +64,13 @@ namespace WelsonJS
                 Process process = new Process();
                 process.StartInfo.FileName = filepath;
                 process.Start();
-
-                int processId = process.Id;
-                ProcessIDs.Add(processId);
-
-                return processId;
+                ProcessList.Add(process);
             }
-            catch
-            {
-                return -1;
+            catch {
+                processId = -1;
             }
+
+            return processId;
         }
 
         public static bool Close(int processId)
@@ -79,12 +78,13 @@ namespace WelsonJS
             try
             {
                 Process.GetProcessById(processId).CloseMainWindow();
-                return true;
             }
             catch
             {
                 return false;
             }
+
+            return true;
         }
     }
 }

@@ -34,6 +34,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Windows.Forms;
 using WelsonJS.Cryptography;
+using WelsonJS.Serialization;
 
 namespace WelsonJS
 {
@@ -247,21 +248,25 @@ namespace WelsonJS
         public string GetImageSize(string srcfile)
         {
             int[] result = BitmapUtils.GetSize(srcfile);
-            int width = result[0];
-            int height = result[1];
 
-            return $"width={width}; height={height}";
+            var serializer = new KVSerializer();
+            serializer.Add("width", result[0].ToString());
+            serializer.Add("height", result[1].ToString());
+
+            return serializer.ToString();
         }
 
         [ComVisible(true)]
         public string GetImagePixel(string srcfile)
         {
             int[] result = BitmapUtils.GetSize(srcfile);
-            int red = result[0];
-            int green = result[1];
-            int blue = result[2];
 
-            return $"red={red}; green={green}; blue={blue}";
+            var serializer = new KVSerializer();
+            serializer.Add("red", result[0].ToString());
+            serializer.Add("green", result[1].ToString());
+            serializer.Add("blue", result[2].ToString());
+
+            return serializer.ToString();
         }
 
         [ComVisible(true)]
@@ -275,7 +280,5 @@ namespace WelsonJS
         {
             BitmapUtils.Crop(srcfile, dstfile, x, y, a, b);
         }
-
-
     }
 }
