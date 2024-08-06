@@ -1,0 +1,27 @@
+version: 0.2.7.{build}
+
+image: Visual Studio 2019
+
+clone_folder: C:\projects\welsonjs
+
+environment:
+  matrix:
+    - configuration: Debug
+    - configuration: Release
+
+build_script:
+  - ps: msbuild "C:\projects\welsonjs\WelsonJS.Toolkit\WelsonJS.Toolkit.sln" /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" /p:Configuration=%configuration%
+
+artifacts:
+  - path: C:\projects\welsonjs\WelsonJS.Toolkit\WelsonJS.Toolkit\bin\%configuration%\WelsonJS.Toolkit.dll
+    name: WelsonJS.Toolkit
+  - path: C:\projects\welsonjs\WelsonJS.Toolkit\WelsonJS.Service\bin\%configuration%\WelsonJS.Service.exe
+    name: WelsonJS.Service
+
+notifications:
+  - provider: Email
+    to:
+      - abuse@catswords.net
+    subject: 'Build #{build} {status}'
+    on_build_success: true
+    on_build_failure: true
