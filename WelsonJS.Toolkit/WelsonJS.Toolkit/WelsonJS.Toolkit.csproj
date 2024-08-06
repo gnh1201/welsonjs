@@ -89,6 +89,7 @@
     <Compile Include="NamedSharedMemory.cs" />
     <Compile Include="ProcessUtils.cs" />
     <Compile Include="Prompt.cs" />
+    <Compile Include="Serialization\KVSerializer.cs" />
     <Compile Include="Toolkit.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Window.cs" />
@@ -96,5 +97,6 @@
   <ItemGroup>
     <None Include="welsonjs.snk" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
