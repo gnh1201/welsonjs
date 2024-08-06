@@ -1,4 +1,4 @@
-version: 0.2.7.{build}
+version: 0.2.7.build{build}
 
 image: Visual Studio 2019
 
@@ -12,9 +12,6 @@ environment:
 build_script:
   - msbuild "C:\projects\welsonjs\WelsonJS.Toolkit\WelsonJS.Toolkit.sln" /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" /p:Configuration=%CONFIGURATION% /p:Platform="x86"
   - msbuild "C:\projects\welsonjs\WelsonJS.Toolkit\WelsonJS.Toolkit.sln" /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" /p:Configuration=%CONFIGURATION% /p:Platform="x64"
-
-test_script:
-  - ps: .\path\to\test\runner
 
 artifacts:
   - path: C:\projects\welsonjs\WelsonJS.Toolkit\WelsonJS.Toolkit\bin\x86\WelsonJS.Toolkit.x86.dll
