@@ -6,16 +6,22 @@ clone_folder: C:\projects\welsonjs
 
 environment:
   matrix:
-    - configuration: Debug
-    - configuration: Release
+    - CONFIGURATION: Debug
+    - CONFIGURATION: Release
 
 build_script:
-  - ps: msbuild "C:\projects\welsonjs\WelsonJS.Toolkit\WelsonJS.Toolkit.sln" /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" /p:Configuration=%configuration%
+  - msbuild "C:\projects\welsonjs\WelsonJS.Toolkit\WelsonJS.Toolkit.sln" /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" /p:Configuration=%CONFIGURATION% /p:Platform="x86"
+  - msbuild "C:\projects\welsonjs\WelsonJS.Toolkit\WelsonJS.Toolkit.sln" /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" /p:Configuration=%CONFIGURATION% /p:Platform="x64"
+
+test_script:
+  - ps: .\path\to\test\runner
 
 artifacts:
-  - path: C:\projects\welsonjs\WelsonJS.Toolkit\WelsonJS.Toolkit\bin\%configuration%\WelsonJS.Toolkit.dll
-    name: WelsonJS.Toolkit
-  - path: C:\projects\welsonjs\WelsonJS.Toolkit\WelsonJS.Service\bin\%configuration%\WelsonJS.Service.exe
+  - path: C:\projects\welsonjs\WelsonJS.Toolkit\WelsonJS.Toolkit\bin\x86\WelsonJS.Toolkit.x86.dll
+    name: WelsonJS.Toolkit.x86
+  - path: C:\projects\welsonjs\WelsonJS.Toolkit\WelsonJS.Toolkit\bin\x86\WelsonJS.Toolkit.x64.dll
+    name: WelsonJS.Toolkit.x64
+  - path: C:\projects\welsonjs\WelsonJS.Toolkit\WelsonJS.Service\bin\x86\WelsonJS.Service.exe
     name: WelsonJS.Service
 
 notifications:
