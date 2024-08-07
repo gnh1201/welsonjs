@@ -103,9 +103,7 @@ dist
 # TernJS port file
 .tern-port
 
-# ChatGPT API Key
+# Private assets
+bin
 data/chatgpt-apikey.txt
-
-# private assets
-bin/installer
 app/assets/img/_templates
