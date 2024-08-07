@@ -17,9 +17,9 @@ rem echo [*] Registering AutoItX component...
 rem regsvr32 /s "%PROGRAMFILES(X86)%\AutoIt3\AutoItX\AutoItX3.dll"
 rem regsvr32 /s "%PROGRAMFILES(X86)%\AutoIt3\AutoItX\AutoItX3_x64.dll"
 
-echo [*] Registering WelsonJS Toolkit component...
-%WINDIR%\Microsoft.NET\Framework\v2.0.50727\RegAsm.exe /codebase bin\x86\WelsonJS.Toolkit.dll
-%WINDIR%\Microsoft.NET\Framework64\v2.0.50727\RegAsm.exe /codebase bin\x64\WelsonJS.Toolkit.dll
+REM echo [*] Registering WelsonJS Toolkit component...
+REM %WINDIR%\Microsoft.NET\Framework\v2.0.50727\RegAsm.exe /codebase bin\x86\WelsonJS.Toolkit.dll
+REM %WINDIR%\Microsoft.NET\Framework64\v2.0.50727\RegAsm.exe /codebase bin\x64\WelsonJS.Toolkit.dll
 
 echo [*] Done.
 
