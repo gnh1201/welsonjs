@@ -102,8 +102,15 @@ namespace WelsonJS.Service
         {
             if (eventLogWatcher != null)
             {
-                eventLogWatcher.Dispose();
-                eventLogWatcher = null;
+                try
+                {
+                    eventLogWatcher.Dispose();
+                    eventLogWatcher = null;
+                }
+                catch (Exception)
+                {
+                    eventLogWatcher = null;
+                }
             }
 
             Dispose();
@@ -173,8 +180,15 @@ namespace WelsonJS.Service
         {
             if (rules != null)
             {
-                rules.Dispose();
-                rules = null;
+                try
+                {
+                    //rules.Dispose();
+                    rules = null;
+                }
+                catch (Exception)
+                {
+                    rules = null;
+                }
             }
         }
     }
