@@ -128,6 +128,10 @@ namespace WelsonJS.Service
 
                 Log("File Event Monitor started.");
             }
+            else
+            {
+                Log("Disabled the File Event Monitor (Sysinternals Sysmon based file event monitor)");
+            }
 
             // check this session is the user interactive mode
             if (Environment.UserInteractive) {
