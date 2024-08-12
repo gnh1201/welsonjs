@@ -263,7 +263,7 @@ namespace WelsonJS.Service
         {
             try
             {
-                List<ScreenMatchResult> matchedResults = screenMatcher.CaptureAndMatchAllScreens();
+                List<ScreenMatchResult> matchedResults = screenMatcher.CaptureAndMatch();
                 matchedResults.ForEach(result =>
                 {
                     if (result.MaxCorrelation > 0.0) {

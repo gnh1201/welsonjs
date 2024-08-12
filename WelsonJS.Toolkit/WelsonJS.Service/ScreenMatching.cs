@@ -51,10 +51,11 @@ public class ScreenMatching
         public int Bottom;
     }
 
+    private ServiceMain parent;
     private List<Bitmap> templateImages;
     private string templateFolderPath;
     private int currentTemplateIndex = 0;
-    private ServiceMain parent;
+    private string captureMode;
 
     public ScreenMatching(ServiceBase parent, string workingDirectory)
     {
@@ -62,7 +63,13 @@ public class ScreenMatching
         templateFolderPath = Path.Combine(workingDirectory, "app/assets/img/_templates");
         templateImages = new List<Bitmap>();
 
+        SetCaptureMode("screen");
         LoadTemplateImages();
+    }
+
+    public void SetCaptureMode(string captureMode)
+    {
+        this.captureMode = captureMode;
     }
 
     public void LoadTemplateImages()
@@ -85,6 +92,21 @@ public class ScreenMatching
             bitmap.Tag = Path.GetFileName(file);
             templateImages.Add(bitmap);
         }
+    }
+
+    // 캡쳐 및 템플릿 매칭 진행
+    public List<ScreenMatchResult> CaptureAndMatch()
+    {
+        switch(captureMode)
+        {
+            case "screen":    // 화면 기준
+                return CaptureAndMatchAllScreens();
+
+            case "windows":    // 윈도우 핸들 기준
+                return CaptureAndMatchAllWindows();
+        }
+
+        return new List<ScreenMatchResult>();
     }
 
     // 화면을 기준으로 찾기
