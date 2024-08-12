@@ -55,7 +55,7 @@ public class ScreenMatching
     private List<Bitmap> templateImages;
     private string templateDirectoryPath;
     private int templateCurrentIndex = 0;
-    private double threshold = 0.97;
+    private double threshold = 0.5;
     private string captureMode;
 
     public ScreenMatching(ServiceBase parent, string workingDirectory)
