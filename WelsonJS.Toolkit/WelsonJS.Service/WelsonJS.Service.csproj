@@ -131,6 +131,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FileEventMonitor.cs" />
+    <Compile Include="Model\FileRuleMatched.cs" />
     <Compile Include="ServiceMain.cs">
       <SubType>Component</SubType>
     </Compile>
