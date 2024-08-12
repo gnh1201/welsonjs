@@ -595,6 +595,15 @@ function dispatchServiceEvent(name, eventType, _args) {
 
     // load the service
     if (app) {
+        var bind = function(eventType) {
+            var event_callback_name = "on" + eventType;
+
+            if (event_callback_name in app && typeof app[event_callback_name] === "function")
+                return app[event_callback_name];
+
+            return null;
+        };
+
         return (function(action) {
             if (eventType in action) {
                 try {
@@ -606,10 +615,12 @@ function dispatchServiceEvent(name, eventType, _args) {
                 }
             }
         })({
-            start: app.onServiceStart,
-            stop: app.onServiceStop,
-            elapsedTime: app.onServiceElapsedTime,
-            screenTime: app.onServiceScreenTime
+            start: bind("ServiceStart"),
+            stop: bind("ServiceStop"),
+            elapsedTime: bind("ServiceElapsedTime"),
+            screenTime: bind("ServiceScreenTime"),
+            fileCreated: bind("FileCreated"),
+            fileRuleMatched: bind("FileRuleMatched")
         });
     } else {
         console.error("Could not find", name + ".js");

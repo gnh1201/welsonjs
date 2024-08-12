@@ -31,7 +31,6 @@ using System.Runtime.InteropServices;
 using MSScriptControl;
 using System.IO;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace WelsonJS.Service
 {
@@ -47,7 +46,9 @@ namespace WelsonJS.Service
         private readonly string appName = "WelsonJS";
         private string[] _args;
         private bool disabledScreenTime = false;
+        private bool disabledFileMonitor = false;
         private ScreenMatching screenMatcher;
+        private FileEventMonitor fileEventMonitor;
 
         [DllImport("user32.dll")]
         public static extern int GetSystemMetrics(int nIndex);
@@ -76,6 +77,10 @@ namespace WelsonJS.Service
 
                     case "disable-screen-time":
                         disabledScreenTime = true;
+                        break;
+
+                    case "disable-file-monitor":
+                        disabledFileMonitor = true;
                         break;
                 }
             }
@@ -114,6 +119,15 @@ namespace WelsonJS.Service
             };
             defaultTimer.Elapsed += OnElapsedTime;
             timers.Add(defaultTimer);
+
+            // Trace an event of file creation
+            if (!disabledFileMonitor)
+            {
+                fileEventMonitor = new FileEventMonitor(this, workingDirectory);
+                fileEventMonitor.Start();
+
+                Log("File Event Monitor started.");
+            }
 
             // check this session is the user interactive mode
             if (Environment.UserInteractive) {
@@ -170,15 +184,20 @@ namespace WelsonJS.Service
                 Log($"Script file not found: {scriptFilePath}");
             }
 
-            timers.ForEach(timer => timer.Start()); // start
+            timers.ForEach(timer => timer?.Start()); // start
 
             Log(appName + " Service Started");
         }
 
         protected override void OnStop()
         {
-            timers.ForEach(timer => timer.Stop()); // stop
+            // stop timers
+            timers.ForEach(timer => timer?.Stop());
 
+            // stop the File Event Monitor
+            fileEventMonitor?.Stop();
+
+            // dispatch stop callback
             try
             {
                 Log(DispatchServiceEvent("stop"));
@@ -261,19 +280,6 @@ namespace WelsonJS.Service
             }
         }
 
-        private string DispatchServiceEvent(string eventType, string[] args = null)
-        {
-            if (args == null)
-            {
-                return InvokeScriptMethod("dispatchServiceEvent", scriptName, eventType, "");
-            }
-            else
-            {
-                return InvokeScriptMethod("dispatchServiceEvent", scriptName, eventType, String.Join("; ", args));
-            }
-            
-        }
-
         private string InvokeScriptMethod(string methodName, params object[] parameters)
         {
             if (scriptControl != null)
@@ -312,6 +318,19 @@ namespace WelsonJS.Service
             }
 
             return arguments;
+        }
+
+        public string DispatchServiceEvent(string eventType, string[] args = null)
+        {
+            if (args == null)
+            {
+                return InvokeScriptMethod("dispatchServiceEvent", scriptName, eventType, "");
+            }
+            else
+            {
+                return InvokeScriptMethod("dispatchServiceEvent", scriptName, eventType, String.Join("; ", args));
+            }
+
         }
 
         public void Log(string message)

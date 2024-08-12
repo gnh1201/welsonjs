@@ -1,4 +1,6 @@
-﻿using System;
+﻿// ScreenMatching.cs
+// https://github.com/gnh1201/welsonjs
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
@@ -49,17 +51,17 @@ public class ScreenMatching
         public int Bottom;
     }
 
-    ServiceMain parent;
-    public List<Bitmap> templateImages;
-    string templateFolderPath;
-    int currentTemplateIndex = 0;
+    private List<Bitmap> templateImages;
+    private string templateFolderPath;
+    private int currentTemplateIndex = 0;
+    private ServiceMain parent;
 
-    public ScreenMatching(ServiceBase _parent, string workingDirectory)
+    public ScreenMatching(ServiceBase parent, string workingDirectory)
     {
-        parent = (ServiceMain)_parent;
+        this.parent = (ServiceMain)parent;
+        this.templateFolderPath = Path.Combine(workingDirectory, "app/assets/img/_templates");
+        this.templateImages = new List<Bitmap>();
 
-        templateFolderPath = Path.Combine(workingDirectory, "app/assets/img/_templates");
-        templateImages = new List<Bitmap>();
         LoadTemplateImages();
     }
 
