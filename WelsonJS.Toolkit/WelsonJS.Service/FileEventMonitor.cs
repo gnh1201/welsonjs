@@ -6,6 +6,7 @@ using System.IO;
 using libyaraNET;
 using System.Collections.Generic;
 using System.ServiceProcess;
+using WelsonJS.Service.Model;
 
 namespace WelsonJS.Service
 {
@@ -169,6 +170,14 @@ namespace WelsonJS.Service
                             {
                                 parent.Log($"YARA rule matched: {ruleName}, {filePath}, Offset {x.Offset}");
                                 parent.DispatchServiceEvent("fileRuleMatched", new string[] { ruleName, filePath, x.Offset.ToString() });
+
+                                IndexMatched(new FileRuleMatched
+                                {
+                                    FilePath = filePath,
+                                    Offset = x.Offset,
+                                    RuleName = ruleName,
+                                    LastChecked = DateTime.Now
+                                });
                             });
                         }
                     }
@@ -178,6 +187,11 @@ namespace WelsonJS.Service
                     parent.Log($"No YARA match found in file {filePath}.");
                 }
             }
+        }
+
+        private void IndexMatched(FileRuleMatched match)
+        {
+            // todo (save result to the search engine)
         }
 
         private void Dispose()
