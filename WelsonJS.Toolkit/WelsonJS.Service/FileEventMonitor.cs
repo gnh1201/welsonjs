@@ -15,16 +15,16 @@ namespace WelsonJS.Service
         private Rules rules;
         private EventLogWatcher eventLogWatcher;
         private ServiceMain parent;
-        private string ruleFolderPath;
+        private string ruleDirectoryPath;
 
         public FileEventMonitor(ServiceBase parent, string workingDirectory)
         {
             this.parent = (ServiceMain)parent;
-            ruleFolderPath = Path.Combine(workingDirectory, "app/assets/yar");
+            ruleDirectoryPath = Path.Combine(workingDirectory, "app/assets/yar");
 
             try
             {
-                AddYaraRules(new List<string>(Directory.GetFiles(ruleFolderPath, "*.yar")));
+                AddYaraRules(new List<string>(Directory.GetFiles(ruleDirectoryPath, "*.yar")));
             }
             catch (Exception ex)
             {
