@@ -59,20 +59,30 @@ public class ScreenMatching
     public ScreenMatching(ServiceBase parent, string workingDirectory)
     {
         this.parent = (ServiceMain)parent;
-        this.templateFolderPath = Path.Combine(workingDirectory, "app/assets/img/_templates");
-        this.templateImages = new List<Bitmap>();
+        templateFolderPath = Path.Combine(workingDirectory, "app/assets/img/_templates");
+        templateImages = new List<Bitmap>();
 
         LoadTemplateImages();
     }
 
     public void LoadTemplateImages()
     {
-        var files = System.IO.Directory.GetFiles(templateFolderPath, "*.png");
+        string[] files;
+
+        try
+        {
+            files = Directory.GetFiles(templateFolderPath, "*.png");
+        }
+        catch (Exception ex)
+        {
+            files = new string[] { };
+            parent.Log($"Exception (ScreenMatching): {ex.Message}");
+        }
 
         foreach (var file in files)
         {
             Bitmap bitmap = new Bitmap(file);
-            bitmap.Tag = System.IO.Path.GetFileName(file);
+            bitmap.Tag = Path.GetFileName(file);
             templateImages.Add(bitmap);
         }
     }

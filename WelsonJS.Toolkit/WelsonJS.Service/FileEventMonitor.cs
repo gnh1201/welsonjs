@@ -19,9 +19,16 @@ namespace WelsonJS.Service
         public FileEventMonitor(ServiceBase parent, string workingDirectory)
         {
             this.parent = (ServiceMain)parent;
-            this.ruleFolderPath = Path.Combine(workingDirectory, "app/assets/yar");
+            ruleFolderPath = Path.Combine(workingDirectory, "app/assets/yar");
 
-            AddYaraRules(new List<string>(Directory.GetFiles(this.ruleFolderPath, "*.yar")));
+            try
+            {
+                AddYaraRules(new List<string>(Directory.GetFiles(ruleFolderPath, "*.yar")));
+            }
+            catch (Exception ex)
+            {
+                this.parent.Log($"Exception (FileEventMonitor): {ex.Message}");
+            }
         }
 
         public void AddYaraRulesFromDirectory(string directoryPath)
@@ -71,17 +78,25 @@ namespace WelsonJS.Service
 
         public void Start()
         {
-            string query = @"<QueryList>
-                                <Query Id='0' Path='Microsoft-Windows-Sysmon/Operational'>
-                                    <Select Path='Microsoft-Windows-Sysmon/Operational'>*[System/EventID=11]</Select>
-                                </Query>
-                             </QueryList>";
+            try
+            {
+                string query = @"<QueryList>
+                                    <Query Id='0' Path='Microsoft-Windows-Sysmon/Operational'>
+                                        <Select Path='Microsoft-Windows-Sysmon/Operational'>*[System/EventID=11]</Select>
+                                    </Query>
+                                 </QueryList>";
 
-            EventLogQuery eventLogQuery = new EventLogQuery("Microsoft-Windows-Sysmon/Operational", PathType.LogName, query);
-            eventLogWatcher = new EventLogWatcher(eventLogQuery);
+                EventLogQuery eventLogQuery = new EventLogQuery("Microsoft-Windows-Sysmon/Operational", PathType.LogName, query);
+                eventLogWatcher = new EventLogWatcher(eventLogQuery);
 
-            eventLogWatcher.EventRecordWritten += new EventHandler<EventRecordWrittenEventArgs>(OnEventRecordWritten);
-            eventLogWatcher.Enabled = true;
+                eventLogWatcher.EventRecordWritten += new EventHandler<EventRecordWrittenEventArgs>(OnEventRecordWritten);
+                eventLogWatcher.Enabled = true;
+            }
+            catch (Exception ex)
+            {
+                parent.Log($"Exception (FileEventMonitor): {ex.Message}");
+                Stop();
+            }
         }
 
         public void Stop()
