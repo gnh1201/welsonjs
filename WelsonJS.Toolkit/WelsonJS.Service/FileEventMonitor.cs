@@ -167,8 +167,8 @@ namespace WelsonJS.Service
                             List<Match> ruleMatches = match.Value;
                             ruleMatches.ForEach((x) =>
                             {
-                                parent.Log($"YARA rule matched: {ruleName}, {filePath}");
-                                parent.DispatchServiceEvent("fileRuleMatched", new string[] { ruleName, filePath });
+                                parent.Log($"YARA rule matched: {ruleName}, {filePath}, Offset {x.Offset}");
+                                parent.DispatchServiceEvent("fileRuleMatched", new string[] { ruleName, filePath, x.Offset.ToString() });
                             });
                         }
                     }
