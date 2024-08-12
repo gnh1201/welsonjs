@@ -28,12 +28,14 @@ artifacts:
   - path: WelsonJS.Toolkit\WelsonJS.Service\bin\x86\Debug\WelsonJS.Service.exe
     name: WelsonJS.Service.Debug
   - path: WelsonJS.Toolkit\WelsonJS.Service\bin\x86\Release\WelsonJS.Service.exe
-    name: WelsonJS.Service
+    name: WelsonJS.Service.x86
+  - path: WelsonJS.Toolkit\WelsonJS.Service\bin\x86\Release\libyara.NET.dll
+    name: libyara.NET.x86
 
 notifications:
   - provider: Email
     to:
       - abuse@catswords.net
     subject: 'Build #{build} {status}'
-    on_build_success: true
+    on_build_success: false
     on_build_failure: true
