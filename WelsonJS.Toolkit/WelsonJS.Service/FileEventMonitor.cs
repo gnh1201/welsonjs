@@ -95,7 +95,6 @@ namespace WelsonJS.Service
             catch (Exception ex)
             {
                 parent.Log($"Exception (FileEventMonitor): {ex.Message}");
-                Stop();
             }
         }
 
