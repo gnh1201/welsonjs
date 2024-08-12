@@ -29,8 +29,6 @@ artifacts:
     name: WelsonJS.Service.Debug.x86
   - path: WelsonJS.Toolkit\WelsonJS.Service\bin\x86\Release\WelsonJS.Service.exe
     name: WelsonJS.Service.x86
-  - path: WelsonJS.Toolkit\WelsonJS.Service\bin\x86\Release\libyara.NET.dll
-    name: libyara.NET.x86
 
 notifications:
   - provider: Email
