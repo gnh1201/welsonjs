@@ -160,12 +160,16 @@ namespace WelsonJS.Service
 
                     foreach (var result in results)
                     {
-                        var matches = result.Matches;
-                        foreach (var match in matches)
+                        Dictionary<string, List<Match>> matches = result.Matches;
+                        foreach (KeyValuePair<string, List<Match>> match in matches)
                         {
-                            parent.Log($"YARA matched: {match.ToString()}");
-
-                            parent.DispatchServiceEvent("fileRuleMatched", new string[] { filePath, match.ToString() });
+                            string ruleName = match.Key;
+                            List<Match> ruleMatches = match.Value;
+                            ruleMatches.ForEach((x) =>
+                            {
+                                parent.Log($"YARA rule matched: {ruleName}, {filePath}");
+                                parent.DispatchServiceEvent("fileRuleMatched", new string[] { ruleName, filePath });
+                            });
                         }
                     }
                 }
