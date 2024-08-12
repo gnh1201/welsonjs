@@ -26,7 +26,7 @@ artifacts:
   - path: WelsonJS.Toolkit\WelsonJS.Toolkit\bin\x64\Release\WelsonJS.Toolkit.dll
     name: WelsonJS.Toolkit.x64
   - path: WelsonJS.Toolkit\WelsonJS.Service\bin\x86\Debug\WelsonJS.Service.exe
-    name: WelsonJS.Service.Debug
+    name: WelsonJS.Service.Debug.x86
   - path: WelsonJS.Toolkit\WelsonJS.Service\bin\x86\Release\WelsonJS.Service.exe
     name: WelsonJS.Service.x86
   - path: WelsonJS.Toolkit\WelsonJS.Service\bin\x86\Release\libyara.NET.dll
