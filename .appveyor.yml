@@ -23,11 +23,11 @@ after_build:
 
 artifacts:
   - path: WelsonJS.Toolkit.x86.zip
-  - name: WelsonJS.Toolkit.x86
+    name: WelsonJS.Toolkit.x86
   - path: WelsonJS.Toolkit.x64.zip
-  - name: WelsonJS.Toolkit.x64
+    name: WelsonJS.Toolkit.x64
   - path: WelsonJS.Service.x86.zip
-  - name: WelsonJS.Service.x86
+    name: WelsonJS.Service.x86
 
 notifications:
   - provider: Email
