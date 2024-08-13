@@ -31,6 +31,7 @@ using System.Runtime.InteropServices;
 using MSScriptControl;
 using System.IO;
 using System.Collections.Generic;
+using System.Text;
 
 namespace WelsonJS.Service
 {
@@ -44,7 +45,7 @@ namespace WelsonJS.Service
         private ScriptControl scriptControl;
         private readonly string logFilePath = Path.Combine(Path.GetTempPath(), "WelsonJS.Service.Log.txt");
         private readonly string appName = "WelsonJS";
-        private string[] _args;
+        private string[] args;
         private bool disabledScreenTime = false;
         private bool disabledFileMonitor = false;
         private ScreenMatching screenMatcher;
@@ -52,17 +53,25 @@ namespace WelsonJS.Service
 
         [DllImport("user32.dll")]
         public static extern int GetSystemMetrics(int nIndex);
-        public static int SM_REMOTESESSION = 0x1000;
+
+        [DllImport("kernel32.dll")]
+        private static extern long WritePrivateProfileString(string section, string key, string val, string filePath);
+
+        [DllImport("kernel32.dll")]
+        private static extern int GetPrivateProfileString(string section, string key, string def, StringBuilder retVal, int size, string filePath);
+
+
+        private static int SM_REMOTESESSION = 0x1000;
 
         public ServiceMain(string[] args)
         {
             InitializeComponent();
 
             // set service arguments
-            _args = args;
+            this.args = args;
 
             // mapping arguments to each variables
-            var arguments = ParseArguments(_args);
+            var arguments = ParseArguments(this.args);
             foreach (KeyValuePair<string, string> entry in arguments)
             {
                 switch (entry.Key)
