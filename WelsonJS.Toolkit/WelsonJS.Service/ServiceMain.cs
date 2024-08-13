@@ -52,14 +52,13 @@ namespace WelsonJS.Service
         private FileEventMonitor fileEventMonitor;
 
         [DllImport("user32.dll")]
-        public static extern int GetSystemMetrics(int nIndex);
+        private static extern int GetSystemMetrics(int nIndex);
 
         [DllImport("kernel32.dll")]
         private static extern long WritePrivateProfileString(string section, string key, string val, string filePath);
 
         [DllImport("kernel32.dll")]
         private static extern int GetPrivateProfileString(string section, string key, string def, StringBuilder retVal, int size, string filePath);
-
 
         private static int SM_REMOTESESSION = 0x1000;
 
@@ -158,7 +157,7 @@ namespace WelsonJS.Service
 
         internal void TestStartupAndStop()
         {
-            this.OnStart(_args);
+            this.OnStart(this.args);
             Console.ReadLine();
             this.OnStop();
         }
