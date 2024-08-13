@@ -19,7 +19,7 @@ build_script:
 after_build:
   - cmd: 7z a WelsonJS.Toolkit.x86.zip WelsonJS.Toolkit\WelsonJS.Toolkit\bin\x86\%CONFIGURATION%\*
   - cmd: 7z a WelsonJS.Toolkit.x64.zip WelsonJS.Toolkit\WelsonJS.Toolkit\bin\x64\%CONFIGURATION%\*
-  - cmd: 7z a WelsonJS.Service.x86.zip WelsonJS.Service\WelsonJS.Service\bin\x86\%CONFIGURATION%\*
+  - cmd: 7z a WelsonJS.Service.x86.zip WelsonJS.Toolkit\WelsonJS.Service\bin\x86\%CONFIGURATION%\*
 
 artifacts:
   - path: WelsonJS.Toolkit.x86.zip
