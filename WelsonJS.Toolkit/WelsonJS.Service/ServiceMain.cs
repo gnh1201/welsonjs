@@ -31,7 +31,7 @@ using System.Runtime.InteropServices;
 using MSScriptControl;
 using System.IO;
 using System.Collections.Generic;
-using System.Text;
+using WelsonJS.Service.TinyINIController;
 
 namespace WelsonJS.Service
 {
@@ -50,15 +50,10 @@ namespace WelsonJS.Service
         private bool disabledFileMonitor = false;
         private ScreenMatching screenMatcher;
         private FileEventMonitor fileEventMonitor;
+        private IniFile settingsController;
 
         [DllImport("user32.dll")]
         private static extern int GetSystemMetrics(int nIndex);
-
-        [DllImport("kernel32.dll")]
-        private static extern long WritePrivateProfileString(string section, string key, string val, string filePath);
-
-        [DllImport("kernel32.dll")]
-        private static extern int GetPrivateProfileString(string section, string key, string def, StringBuilder retVal, int size, string filePath);
 
         private static int SM_REMOTESESSION = 0x1000;
 
@@ -109,6 +104,20 @@ namespace WelsonJS.Service
                 }
             }
             Directory.SetCurrentDirectory(workingDirectory);
+
+            // read settings.ini
+            string settingsFilePath = Path.Combine(workingDirectory, "settings.ini");
+            if (File.Exists(settingsFilePath))
+            {
+                try
+                {
+                    settingsController = new IniFile(settingsFilePath);
+                }
+                catch (Exception)
+                {
+                    settingsController = null;
+                }
+            }
 
             // set script name
             if (string.IsNullOrEmpty(scriptName))
