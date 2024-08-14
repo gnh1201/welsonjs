@@ -216,9 +216,12 @@ if (typeof CreateObject === "undefined") {
 /**
  * @FN {string} The name of the file.
  */
-function __evalFile(FN) {
-    if (FN.substring(FN.length - 3) !== '.js') FN += ".js";
-    return eval(require._load(FN));
+function __evalFile__(FN) {
+    try {
+        return eval(require._load(FN));
+    } catch (e) {
+        console.error(e.message);
+    }
 }
 
 /**
@@ -647,7 +650,7 @@ if (!Date.prototype.toISOString) {
 
 // JSON 2
 if (typeof JSON === "undefined") {
-    __evalFile("app/assets/js/json2");
+    __evalFile__("app/assets/js/json2.js");
 }
 
 // core-js (aka. babel-polyfill)
