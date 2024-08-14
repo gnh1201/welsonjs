@@ -653,8 +653,8 @@ if (typeof JSON === "undefined") {
     __evalFile__("app/assets/js/json2.js");
 }
 
-// core-js (aka. babel-polyfill)
-require("app/assets/js/core-js-3.26.1.minified");
+// core-js (formerly, babel-polyfill)
+require("app/assets/js/core-js-3.38.0.minified");
 
 // Squel.js SQL query string builder for Javascript
 var squel = require("app/assets/js/squel-basic-5.13.0.hiddentao-afa1cb5.wsh");
