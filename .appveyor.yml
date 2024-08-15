@@ -14,20 +14,16 @@ before_build:
 
 build_script:
   - msbuild "C:\projects\welsonjs\WelsonJS.Toolkit\WelsonJS.Toolkit.sln" /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" /p:Configuration=%CONFIGURATION% /p:Platform="x86"
-  - msbuild "C:\projects\welsonjs\WelsonJS.Toolkit\WelsonJS.Toolkit.sln" /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" /p:Configuration=%CONFIGURATION% /p:Platform="x64"
 
 after_build:
-  - cmd: 7z a WelsonJS.Toolkit.x86.zip WelsonJS.Toolkit\WelsonJS.Toolkit\bin\x86\%CONFIGURATION%\*
-  - cmd: 7z a WelsonJS.Toolkit.x64.zip WelsonJS.Toolkit\WelsonJS.Toolkit\bin\x64\%CONFIGURATION%\*
-  - cmd: 7z a WelsonJS.Service.x86.zip WelsonJS.Toolkit\WelsonJS.Service\bin\x86\%CONFIGURATION%\*
+  - cmd: 7z a WelsonJS.Toolkit.zip WelsonJS.Toolkit\WelsonJS.Toolkit\bin\x86\%CONFIGURATION%\*
+  - cmd: 7z a WelsonJS.Service.zip WelsonJS.Toolkit\WelsonJS.Service\bin\x86\%CONFIGURATION%\*
 
 artifacts:
-  - path: WelsonJS.Toolkit.x86.zip
-    name: WelsonJS.Toolkit.x86
-  - path: WelsonJS.Toolkit.x64.zip
-    name: WelsonJS.Toolkit.x64
-  - path: WelsonJS.Service.x86.zip
-    name: WelsonJS.Service.x86
+  - path: WelsonJS.Toolkit.zip
+    name: WelsonJS.Toolkit
+  - path: WelsonJS.Service.zip
+    name: WelsonJS.Service
 
 notifications:
   - provider: Email

@@ -5,14 +5,14 @@ using System.Runtime.InteropServices;
 using System.Text;
 
 // https://github.com/niklyadov/tiny-ini-file-class
-namespace WelsonJS.Service.TinyINIController
+namespace WelsonJS.TinyINIController
 {
-    class IniFile
+    public class IniFile
     {
-        [DllImport("kernel32", CharSet = CharSet.Unicode)]
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
         static extern long WritePrivateProfileString(string section, string key, string value, string FilePath);
 
-        [DllImport("kernel32", CharSet = CharSet.Unicode)]
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
         static extern int GetPrivateProfileString(string section, string key, string Default, StringBuilder RetVal, int Size, string FilePath);
 
         private readonly FileInfo FileInfo;

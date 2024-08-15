@@ -144,7 +144,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScreenMatching.cs" />
     <Compile Include="ScreenMatchResult.cs" />
-    <Compile Include="TinyINIController\IniFile.cs" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="MSScriptControl">
@@ -166,6 +165,12 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WelsonJS.Toolkit\WelsonJS.Toolkit.csproj">
+      <Project>{d6007282-b4f7-4694-ac67-bb838d91b77a}</Project>
+      <Name>WelsonJS.Toolkit</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

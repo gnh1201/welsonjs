@@ -31,7 +31,7 @@ using System.Runtime.InteropServices;
 using MSScriptControl;
 using System.IO;
 using System.Collections.Generic;
-using WelsonJS.Service.TinyINIController;
+using WelsonJS.TinyINIController;
 
 namespace WelsonJS.Service
 {
