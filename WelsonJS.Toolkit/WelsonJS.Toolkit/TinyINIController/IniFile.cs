@@ -4,7 +4,9 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 
-// https://github.com/niklyadov/tiny-ini-file-class
+// TinyINIController
+// Original source code: https://github.com/niklyadov/tiny-ini-file-class
+
 namespace WelsonJS.TinyINIController
 {
     public class IniFile
@@ -17,14 +19,15 @@ namespace WelsonJS.TinyINIController
 
         private readonly FileInfo FileInfo;
 
-        private readonly string exe = Assembly.GetExecutingAssembly().GetName().Name;
+        //private readonly string exe = Assembly.GetExecutingAssembly().GetName().Name;
+        private readonly string defaultSection = "Default";
 
         private readonly FileAccess fileAccess;
 
         public IniFile(string path = null, FileAccess access = FileAccess.ReadWrite)
         {
             fileAccess = access;
-            FileInfo = new FileInfo(path ?? exe);
+            FileInfo = new FileInfo(path ?? defaultSection);
         }
 
         public string Read(string key, string section = null)
@@ -33,7 +36,7 @@ namespace WelsonJS.TinyINIController
 
             if (fileAccess != FileAccess.Write)
             {
-                GetPrivateProfileString(section ?? exe, key, "", RetVal, 65025, FileInfo.FullName);
+                GetPrivateProfileString(section ?? defaultSection, key, "", RetVal, 65025, FileInfo.FullName);
             }
             else
             {
@@ -46,7 +49,7 @@ namespace WelsonJS.TinyINIController
         {
             if (fileAccess != FileAccess.Read)
             {
-                WritePrivateProfileString(section ?? exe, key, value, FileInfo.FullName);
+                WritePrivateProfileString(section ?? defaultSection, key, value, FileInfo.FullName);
             }
             else
             {
@@ -56,12 +59,12 @@ namespace WelsonJS.TinyINIController
 
         public void DeleteKey(string key, string section = null)
         {
-            Write(key, null, section ?? exe);
+            Write(key, null, section ?? defaultSection);
         }
 
         public void DeleteSection(string section = null)
         {
-            Write(null, null, section ?? exe);
+            Write(null, null, section ?? defaultSection);
         }
 
         public bool KeyExists(string key, string section = null)

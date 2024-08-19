@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+option csharp_namespace = "WelsonJS.GrpcService";
+
+service MessageController {
+  rpc SendMessageStream (MessageRequest) returns (stream MessageReply);
+}
+
+message MessageRequest {
+  string clientId = 1;
+}
+
+message MessageReply {
+  string message = 1;
+}

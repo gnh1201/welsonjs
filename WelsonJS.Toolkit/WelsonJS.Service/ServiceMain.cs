@@ -50,7 +50,7 @@ namespace WelsonJS.Service
         private bool disabledFileMonitor = false;
         private ScreenMatching screenMatcher;
         private FileEventMonitor fileEventMonitor;
-        private IniFile settingsController;
+        private IniFile settingsFileHandler;
 
         [DllImport("user32.dll")]
         private static extern int GetSystemMetrics(int nIndex);
@@ -111,11 +111,11 @@ namespace WelsonJS.Service
             {
                 try
                 {
-                    settingsController = new IniFile(settingsFilePath);
+                    settingsFileHandler = new IniFile(settingsFilePath);
                 }
                 catch (Exception)
                 {
-                    settingsController = null;
+                    settingsFileHandler = null;
                 }
             }
 
@@ -137,19 +137,6 @@ namespace WelsonJS.Service
             defaultTimer.Elapsed += OnElapsedTime;
             timers.Add(defaultTimer);
 
-            // Trace an event of file creation
-            if (!disabledFileMonitor)
-            {
-                fileEventMonitor = new FileEventMonitor(this, workingDirectory);
-                fileEventMonitor.Start();
-
-                Log("File Event Monitor started.");
-            }
-            else
-            {
-                Log("Disabled the File Event Monitor (Sysinternals Sysmon based file event monitor)");
-            }
-
             // check this session is the user interactive mode
             if (Environment.UserInteractive) {
                 this.OnUserInteractiveEnvironment();
@@ -164,6 +151,11 @@ namespace WelsonJS.Service
             Log(appName + " Service Loaded");
         }
 
+        public IniFile GetSettingsFileHandler()
+        {
+            return settingsFileHandler;
+        }
+
         internal void TestStartupAndStop()
         {
             this.OnStart(this.args);
@@ -175,7 +167,7 @@ namespace WelsonJS.Service
         {
             base.OnStart(args);
 
-            // check the script file exists
+            // Check exists the entry script file
             if (File.Exists(scriptFilePath))
             {
                 Log($"Script file found: {scriptFilePath}");
@@ -205,7 +197,25 @@ namespace WelsonJS.Service
                 Log($"Script file not found: {scriptFilePath}");
             }
 
-            timers.ForEach(timer => timer?.Start()); // start
+            // Trace a Sysmon file events (If Sysinternals Sysmon installed)
+            if (!disabledFileMonitor)
+            {
+                fileEventMonitor = new FileEventMonitor(this, workingDirectory);
+                fileEventMonitor.Start();
+
+                Log("Trace a Sysmon file events (If Sysinternals Sysmon installed) started.");
+            }
+            else
+            {
+                Log("Trace a Sysmon file events (If Sysinternals Sysmon installed) is disabled");
+            }
+
+            // Start GRPC based message receiver
+            MessageReceiver receiver = new MessageReceiver(this, workingDirectory);
+            receiver.Start();
+
+            // Start all the registered timers
+            timers.ForEach(timer => timer?.Start()); 
 
             Log(appName + " Service Started");
         }
