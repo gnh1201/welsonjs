@@ -23,17 +23,26 @@ namespace WelsonJS.Service
 
             // Read the device ID on this computer
             deviceId = GetSystemUUID();
-            this.parent.Log($"Resolved the device ID: {deviceId}");
 
             // Read configuration from settings.ini
-            try
+            if (!String.IsNullOrEmpty(deviceId))
             {
-                serverAddress = this.parent.GetSettingsFileHandler().Read("GRPC_HOST", "Service");
+                this.parent.Log($"Resolved the device ID: {deviceId}");
+
+                try
+                {
+                    serverAddress = this.parent.GetSettingsFileHandler().Read("GRPC_HOST", "Service");
+                }
+                catch (Exception ex)
+                {
+                    serverAddress = null;
+                    this.parent.Log($"Failed to read the server address: {ex.Message}");
+                }
             }
-            catch (Exception ex)
+            else
             {
                 serverAddress = null;
-                this.parent.Log($"Failed to read the server address: {ex.Message}");
+                this.parent.Log($"Failed to resolve the device ID");
             }
 
             // Set the GRPC channel
@@ -61,7 +70,7 @@ namespace WelsonJS.Service
             }
             else
             {
-                parent.Log("Not Initializd GRPC channel");
+                parent.Log("Failed to initalize the GRPC channel");
             }
         }
 
@@ -110,7 +119,7 @@ namespace WelsonJS.Service
                 parent.Log($"An error occurred while retrieving the system UUID: {ex.Message}");
             }
 
-            return string.Empty;
+            return null;
         }
     }
 }
