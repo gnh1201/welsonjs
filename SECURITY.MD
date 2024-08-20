@@ -29,6 +29,9 @@ We are aware of cases where WelsonJS has been used to access the websites of onl
 ### Use for Online Video Streaming Quality Testing and Improvement
 We are aware of cases where WelsonJS is used for video streaming quality testing and improvement. It should be used solely for expert-level streaming quality testing, often referred to by terms like 4K, 8K, HD, FHD, UHD, 720p, 1080p, etc. For such purposes, it is recommended to use videos provided by television manufacturers (e.g., LG, Samsung) or graphics card manufacturers (e.g., NVIDIA, AMD) specifically for testing purposes. It is essential to avoid using videos that contain content not legally permitted in your region. The WelsonJS developers and maintainers take no responsibility for the use of videos containing illegal content.
 
+### Use for Heavy Industry, Chemical Handling Facilities, and Biological Research Facilities
+WelsonJS is designed for flexible industrial facility control (commonly referred to as Industrial Scripting) in environments where modifying compiled binaries is restricted. Although it may be rare, parts or all of this project's source code might be found in use within heavy industry, chemical handling facilities, or biological research facilities. In such cases, appropriate safety measures tailored to the specific application area may be required. If support is needed for these applications, please do not hesitate to contact us.
+
 ### Use for Security Testing
 We are aware of instances where WelsonJS has been used by legitimate cybersecurity firms to discover and test vulnerabilities (such as credential stuffing) in IoT devices. If you intend to use WelsonJS as a security testing tool, it should be done in a controlled environment that complies with legal regulations.
 
