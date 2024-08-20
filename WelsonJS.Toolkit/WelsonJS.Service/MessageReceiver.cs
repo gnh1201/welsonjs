@@ -29,7 +29,7 @@ namespace WelsonJS.Service
             try
             {
                 // Get the GRPC server URL from settings
-                string grpcServerAddress = this.parent.GetSettingsFileHandler().Read("GRPC_SERVER_ADDRESS");
+                string grpcServerAddress = this.parent.GetSettingsFileHandler().Read("GRPC_HOST", "Service");
 
                 // Set the GRPC channel
                 channel = GrpcChannel.ForAddress(grpcServerAddress);
