@@ -48,6 +48,7 @@ namespace WelsonJS.Service
         private string[] args;
         private bool disabledScreenTime = false;
         private bool disabledFileMonitor = false;
+        private bool disabledMessageReceiver = false;
         private ScreenMatching screenMatcher;
         private FileEventMonitor fileEventMonitor;
         private IniFile settingsFileHandler;
@@ -76,6 +77,10 @@ namespace WelsonJS.Service
 
                     case "script-name":
                         scriptName = entry.Value;
+                        break;
+
+                    case "disable-message-receiver":
+                        disabledMessageReceiver = true;
                         break;
 
                     case "disable-screen-time":
@@ -203,16 +208,24 @@ namespace WelsonJS.Service
                 fileEventMonitor = new FileEventMonitor(this, workingDirectory);
                 fileEventMonitor.Start();
 
-                Log("Trace a Sysmon file events (If Sysinternals Sysmon installed) started.");
+                Log("File Event Monitor Started");
             }
             else
             {
-                Log("Trace a Sysmon file events (If Sysinternals Sysmon installed) is disabled");
+                Log("File Event Monitor is Disabled");
             }
 
             // Start GRPC based message receiver
-            MessageReceiver receiver = new MessageReceiver(this, workingDirectory);
-            receiver.Start();
+            if (!disabledMessageReceiver) {
+                MessageReceiver receiver = new MessageReceiver(this, workingDirectory);
+                receiver.Start();
+
+                Log("GRPC Message Receiver Started");
+            }
+            else
+            {
+                Log("GRPC Message Reciver is Disabled");
+            }
 
             // Start all the registered timers
             timers.ForEach(timer => timer?.Start()); 

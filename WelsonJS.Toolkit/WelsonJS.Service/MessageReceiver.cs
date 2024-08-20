@@ -68,7 +68,7 @@ namespace WelsonJS.Service
                 while (await call.ResponseStream.MoveNext())
                 {
                     var response = call.ResponseStream.Current;
-                    parent.Log($"Received: {response.Message}");
+                    parent.Log($"Message received: {response.Message}");
 
                     // dispatch to the script runtime
                     parent.DispatchServiceEvent("messageReceived", new string[] { response.Message });
