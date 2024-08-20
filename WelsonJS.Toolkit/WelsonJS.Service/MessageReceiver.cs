@@ -1,9 +1,9 @@
 ﻿// MessageReceiver.cs
 // https://github.com/gnh1201/welsonjs
-using DeviceId;
 using Grpc.Core;
 using Grpc.Net.Client;
 using System;
+using System.Management;
 using System.ServiceProcess;
 using System.Threading.Tasks;
 using WelsonJS.GrpcService;
@@ -15,29 +15,39 @@ namespace WelsonJS.Service
         private GrpcChannel channel;
         private ServiceMain parent;
         private string deviceId;
+        private string serverAddress;
 
         public MessageReceiver(ServiceBase parent, string workingDirectory)
         {
             this.parent = (ServiceMain)parent;
 
             // Read the device ID on this computer
-            deviceId = new DeviceIdBuilder()
-                .OnWindows(windows => windows.AddWindowsDeviceId())
-                .ToString();
+            deviceId = GetSystemUUID();
 
             // Read configuration from settings.ini
             try
             {
-                // Get the GRPC server URL from settings
-                string grpcServerAddress = this.parent.GetSettingsFileHandler().Read("GRPC_HOST", "Service");
-
-                // Set the GRPC channel
-                channel = GrpcChannel.ForAddress(grpcServerAddress);
+                serverAddress = this.parent.GetSettingsFileHandler().Read("GRPC_HOST", "Service");
             }
             catch (Exception ex)
             {
-                this.parent.Log(ex.Message);
-                channel = null;
+                serverAddress = null;
+                this.parent.Log($"Failed to read the server address: {ex.Message}");
+            }
+
+            // Set the GRPC channel
+            if (serverAddress != null)
+            {
+                try
+                {
+                    this.parent.Log($"Use the remote address: {serverAddress}");
+                    channel = GrpcChannel.ForAddress(serverAddress);
+                }
+                catch (Exception ex)
+                {
+                    channel = null;
+                    this.parent.Log($"Failed to initialize the GRPC channel: {ex.Message}");
+                }
             }
         }
         
@@ -46,16 +56,18 @@ namespace WelsonJS.Service
             if (channel != null)
             {
                 Task.Run(() => GetTask());
+                parent.Log("GRPC Message Receiver Started");
             }
             else
             {
                 parent.Log("Not Initializd GRPC channel");
             }
-            
         }
 
         private async Task GetTask()
         {
+            parent.Log("Use the device ID: " + deviceId);
+
             try
             {
                 var client = new MessageController.MessageControllerClient(channel);
@@ -78,6 +90,26 @@ namespace WelsonJS.Service
             {
                 channel?.Dispose();
             }
+        }
+
+        private string GetSystemUUID()
+        {
+            try
+            {
+                using (var searcher = new ManagementObjectSearcher("SELECT UUID FROM Win32_ComputerSystemProduct"))
+                {
+                    foreach (var mo in searcher.Get())
+                    {
+                        return mo["UUID"].ToString();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                parent.Log($"An error occurred while retrieving the system UUID: {ex.Message}");
+            }
+
+            return string.Empty;
         }
     }
 }

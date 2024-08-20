@@ -1,5 +1,11 @@
+var SYS = require("lib/system");
+
 function main(args) {
     console.log("WelsonJS.Service required.");
+}
+
+function getDeviceID() {
+    return SYS.getUUID();
 }
 
 function onServiceStart() {
@@ -12,6 +18,10 @@ function onServiceStop() {
 
 function onServiceElapsedTime() {
     return "onServiceElapsedTime recevied";
+}
+
+function onMessageReceived() {
+	return "onMessageReceived recevied. " + args.join(', ');
 }
 
 function onServiceScreenTime(args) {
@@ -27,6 +37,7 @@ function onFileRuleMatched(args) {
 }
 
 exports.main = main;
+exports.getDeviceID = getDeviceID;
 exports.onServiceStart = onServiceStart;
 exports.onServiceStop = onServiceStop;
 exports.onServiceElapsedTime = onServiceElapsedTime;

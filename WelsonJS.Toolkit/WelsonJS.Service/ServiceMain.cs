@@ -123,12 +123,16 @@ namespace WelsonJS.Service
                     settingsFileHandler = null;
                 }
             }
+            else
+            {
+                Log($"Configuration file not found: {settingsFilePath}");
+            }
 
             // set script name
             if (string.IsNullOrEmpty(scriptName))
             {
                 scriptName = "defaultService";
-                Log("Script name not provided. Using default value: " + scriptName);
+                Log($"Script name not provided. Using default value: {scriptName}");
             }
 
             // set path of the script
@@ -215,16 +219,14 @@ namespace WelsonJS.Service
                 Log("File Event Monitor is Disabled");
             }
 
-            // Start GRPC based message receiver
+            // Start GRPC Message Receiver
             if (!disabledMessageReceiver) {
                 MessageReceiver receiver = new MessageReceiver(this, workingDirectory);
                 receiver.Start();
-
-                Log("GRPC Message Receiver Started");
             }
             else
             {
-                Log("GRPC Message Reciver is Disabled");
+                Log("GRPC Message Receiver is Disabled");
             }
 
             // Start all the registered timers
