@@ -23,6 +23,7 @@ namespace WelsonJS.Service
 
             // Read the device ID on this computer
             deviceId = GetSystemUUID();
+            this.parent.Log($"Resolved the device ID: {deviceId}");
 
             // Read configuration from settings.ini
             try
