@@ -621,6 +621,7 @@ function dispatchServiceEvent(name, eventType, _args) {
             start: bind("ServiceStart"),
             stop: bind("ServiceStop"),
             elapsedTime: bind("ServiceElapsedTime"),
+            messageReceived: bind("MessageReceived"),
             screenTime: bind("ServiceScreenTime"),
             fileCreated: bind("FileCreated"),
             fileRuleMatched: bind("FileRuleMatched")

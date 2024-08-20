@@ -3,6 +3,7 @@
 using DeviceId;
 using Grpc.Core;
 using Grpc.Net.Client;
+using System;
 using System.ServiceProcess;
 using System.Threading.Tasks;
 using WelsonJS.GrpcService;
@@ -33,8 +34,9 @@ namespace WelsonJS.Service
                 // Set the GRPC channel
                 channel = GrpcChannel.ForAddress(grpcServerAddress);
             }
-            catch
+            catch (Exception ex)
             {
+                this.parent.Log(ex.Message);
                 channel = null;
             }
         }
@@ -67,6 +69,9 @@ namespace WelsonJS.Service
                 {
                     var response = call.ResponseStream.Current;
                     parent.Log($"Received: {response.Message}");
+
+                    // dispatch to the script runtime
+                    parent.DispatchServiceEvent("messageReceived", new string[] { response.Message });
                 }
             }
             finally
