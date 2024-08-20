@@ -35,8 +35,8 @@ namespace WelsonJS.Service
                 }
                 catch (Exception ex)
                 {
-                    serverAddress = null;
-                    this.parent.Log($"Failed to read the server address: {ex.Message}");
+                    serverAddress = "http://localhost:50051";
+                    this.parent.Log($"Failed to read the server address. {ex.Message} Use default value: {serverAddress}");
                 }
             }
             else
