@@ -108,3 +108,6 @@ bin
 data/chatgpt-apikey.txt
 app/assets/img/_templates
 settings.ini
+
+# comming soon...
+WelsonJS.Toolkit/WelsonJS.Launcher
