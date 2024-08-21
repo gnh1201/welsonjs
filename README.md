@@ -135,6 +135,8 @@ ended say()
 
 ![(Screenshot 5) Template Matching on the computer screen](app/assets/img/screenshot5.png)
 
+![(Screenshot 6) The Launcher for WelsonJS Application Packages](app/assets/img/screenshot6.png)
+
 ## Thanks to
 - <img src="app/assets/img/logo_oss.gif" height="30" alt=""/> Open Software Portal, Korea National Industry Promotion Agency - Awarded Prize
 - Heavy-industry specialized CSP(Cloud Service Provider) in Republic of Korea - Use case establishment
