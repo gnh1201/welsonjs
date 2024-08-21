@@ -18,12 +18,15 @@ build_script:
 after_build:
   - cmd: 7z a WelsonJS.Toolkit.zip WelsonJS.Toolkit\WelsonJS.Toolkit\bin\x86\%CONFIGURATION%\*
   - cmd: 7z a WelsonJS.Service.zip WelsonJS.Toolkit\WelsonJS.Service\bin\x86\%CONFIGURATION%\*
+  - cmd: 7z a WelsonJS.Launcher.zip WelsonJS.Toolkit\WelsonJS.Launcher\bin\x86\%CONFIGURATION%\*
 
 artifacts:
   - path: WelsonJS.Toolkit.zip
     name: WelsonJS.Toolkit
   - path: WelsonJS.Service.zip
     name: WelsonJS.Service
+  - path: WelsonJS.Launcher.zip
+    name: WelsonJS.Launcher
 
 notifications:
   - provider: Email
