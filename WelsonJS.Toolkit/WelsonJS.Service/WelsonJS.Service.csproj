@@ -83,12 +83,6 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DeviceId, Version=6.7.0.0, Culture=neutral, PublicKeyToken=f755c371b5c59c52, processorArchitecture=MSIL">
-      <HintPath>..\packages\DeviceId.6.7.0\lib\net40\DeviceId.dll</HintPath>
-    </Reference>
-    <Reference Include="DeviceId.Windows, Version=6.6.0.0, Culture=neutral, PublicKeyToken=f755c371b5c59c52, processorArchitecture=MSIL">
-      <HintPath>..\packages\DeviceId.Windows.6.6.0\lib\net40\DeviceId.Windows.dll</HintPath>
-    </Reference>
     <Reference Include="Google.Protobuf, Version=3.27.3.0, Culture=neutral, PublicKeyToken=a7d26565bac4d604, processorArchitecture=MSIL">
       <HintPath>..\packages\Google.Protobuf.3.27.3\lib\net45\Google.Protobuf.dll</HintPath>
     </Reference>
