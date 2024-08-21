@@ -12,7 +12,6 @@ namespace WelsonJS.Launcher
     {
         private string workingDirectory;
         private string appName;
-        private bool waiting = false;
 
         public MainForm()
         {
@@ -66,7 +65,6 @@ namespace WelsonJS.Launcher
         {
             appName = Path.GetFileNameWithoutExtension(filePath);
             workingDirectory = Path.Combine(Path.GetTempPath(), appName);
-            waiting = true;
 
             Task.Run(() =>
             {
@@ -86,21 +84,19 @@ namespace WelsonJS.Launcher
 
                     // Run the appliction
                     RunCommandPrompt();
-					
-					waiting = false;
                 }
                 catch (Exception ex)
                 {
                     ShowMessageBox(ex.Message);
                 }
+
+                // Enable UI
+                label1.Invoke((MethodInvoker)delegate {
+                    EnableUI();
+                });
             });
 
             DisableUI();
-            while (waiting)
-            {
-                Thread.Sleep(1000);
-            }
-            EnableUI();
         }
 
         private void RunCommandPrompt()
@@ -113,7 +109,7 @@ namespace WelsonJS.Launcher
                 {
                     UseShellExecute = false,
                     RedirectStandardInput = true,
-                    RedirectStandardOutput = false,
+                    RedirectStandardOutput = true,
                     CreateNoWindow = true,
                     Arguments = "/k",
                 }
@@ -122,17 +118,22 @@ namespace WelsonJS.Launcher
 
             process.StandardInput.WriteLine("pushd " + workingDirectory);
             process.StandardInput.WriteLine();
+            process.StandardInput.Flush();
+            process.StandardOutput.ReadLine();
             if (!isConsoleApplication)
             {
                 process.StandardInput.WriteLine("bootstrap.bat");
                 process.StandardInput.WriteLine();
+                process.StandardInput.Flush();
+                process.StandardOutput.ReadLine();
             }
             else
             {
                 process.StandardInput.WriteLine("start cmd /c cscript app.js " + textBox1.Text);
                 process.StandardInput.WriteLine();
+                process.StandardInput.Flush();
+                process.StandardOutput.ReadLine();
             }
-            process.StandardInput.Flush();
             process.StandardInput.Close();
             process.WaitForExit();
         }
