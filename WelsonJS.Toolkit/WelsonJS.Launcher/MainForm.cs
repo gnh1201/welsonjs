@@ -2,9 +2,9 @@
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Linq;
 
 namespace WelsonJS.Launcher
 {
@@ -12,6 +12,8 @@ namespace WelsonJS.Launcher
     {
         private string workingDirectory;
         private string appName;
+        private readonly string entrypointFileName = "bootstrap.bat";
+        private string scriptName;
 
         public MainForm()
         {
@@ -65,6 +67,7 @@ namespace WelsonJS.Launcher
         {
             appName = Path.GetFileNameWithoutExtension(filePath);
             workingDirectory = Path.Combine(Path.GetTempPath(), appName);
+            scriptName = textBox1.Text;
 
             Task.Run(() =>
             {
@@ -103,6 +106,21 @@ namespace WelsonJS.Launcher
         {
             bool isConsoleApplication = checkBox1.Checked;
 
+            if (!isConsoleApplication)
+            {
+                if (!File.Exists(Path.Combine(workingDirectory, entrypointFileName)))
+                {
+                    throw new Exception("Not Found: " + entrypointFileName);
+                }
+            }
+            else
+            {
+                if (!Directory.EnumerateFiles(workingDirectory, scriptName + ".*").Any())
+                {
+                    throw new Exception("Not found matches file: " + scriptName);
+                }
+            }
+
             Process process = new Process
             {
                 StartInfo = new ProcessStartInfo("cmd")
@@ -122,14 +140,14 @@ namespace WelsonJS.Launcher
             process.StandardOutput.ReadLine();
             if (!isConsoleApplication)
             {
-                process.StandardInput.WriteLine("bootstrap.bat");
+                process.StandardInput.WriteLine(entrypointFileName);
                 process.StandardInput.WriteLine();
                 process.StandardInput.Flush();
                 process.StandardOutput.ReadLine();
             }
             else
             {
-                process.StandardInput.WriteLine("start cmd /c cscript app.js " + textBox1.Text);
+                process.StandardInput.WriteLine("start cmd /c cscript app.js " + scriptName);
                 process.StandardInput.WriteLine();
                 process.StandardInput.Flush();
                 process.StandardOutput.ReadLine();
