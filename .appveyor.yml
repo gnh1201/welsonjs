@@ -30,7 +30,7 @@ artifacts:
 
 deploy:
 - provider: Webhook
-  url: https://app.signpath.io/API/v1/8ee5ec82-36dc-4619-ac33-5bc1117428fe/Integrations/AppVeyor?ProjectSlug=welsonjs&SigningPolicySlug=test-signing
+  url: https://app.signpath.io/API/v1/8ee5ec82-36dc-4619-ac33-5bc1117428fe/Integrations/AppVeyor?ProjectSlug=welsonjs&SigningPolicySlug=test-signing&ArtifactConfigurationSlug=initial
   authorization:
     secure: by2X9neYZeOvbUaYelVQhWLj0qOOt3ddhz8DnDJd4brsQVwKobUCmVqxqNaeljzwL4EUZKykkacz/6VmhuU2nA==
 
