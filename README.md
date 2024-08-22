@@ -71,9 +71,9 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
 - lib/gtk (GTK-server and GladeXML supported GUI interface)
 - lib/chrome ([Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/) based Chrome/Chromium web browser testing interface)
 - lib/pipe-ipc (PIPE (e.g., File IO, Standard IO) based IPC(Inter-Process Communication) implementation)
-- [WelsonJS.Toolkit](https://github.com/gnh1201/welsonjs/wiki/Awesome-binaries) (DLL/COM native component written on .NET 2.0, For all Windows based systems)
+- [WelsonJS.Toolkit](https://github.com/gnh1201/welsonjs/wiki/Awesome-binaries) (DLL/COM component with .NET 2.0, For all Windows based systems)
   - User prompt methods (e.g., alert, confirm) implementation
-  - Useful tools to control the windows and window handle (find, attach, trigger events (e.g., Virtual Human Interface), etc.)
+  - Useful tools to control the windows and window handle (find, attach, trigger events. e.g., Virtual Human Interface
   - Cryptography ([ISO/IEC 18033-3:2010](https://www.iso.org/standard/54531.html) aka. [HIGHT](https://seed.kisa.or.kr/kisa/algorithm/EgovHightInfo.do))
   - [Named Shared Memory](https://learn.microsoft.com/en-us/windows/win32/memory/creating-named-shared-memory) based IPC(Inter-Process Communication) implementation [#](https://qiita.com/gnh1201/items/4e70dccdb7adacf0ace5)
 - [WelsonJS.Service](https://github.com/gnh1201/welsonjs/wiki/Awesome-binaries) (Windows Service Application, For recent Windows based systems)
