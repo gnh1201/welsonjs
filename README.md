@@ -126,9 +126,9 @@ ended say()
 ### Method 1. Compress to Zip, and Use `WelsonJS.Launcher`
 There have been various attempts at EXE packaging for WelsonJS, and I've reviewed as much feedback as possible. This includes not only usability but also whether the process is relatively secure.
 
-I have tentatively concluded that a launcher method, where a ZIP file is distributed separately and then executed, would be effective. Therefore, I have begun distributing the [WelsonJS.Launcher](https://github.com/gnh1201/welsonjs/wiki/Awesome-binaries) artifact, which you may want to take note of.
+I have tentatively concluded that a launcher method, where a ZIP file is distributed and then executed, would be effective. Therefore, I have begun distributing the [WelsonJS.Launcher](https://github.com/gnh1201/welsonjs/wiki/Awesome-binaries) artifact.
 
-You can download and run the release or upstream source code of this project directly from GitHub in ZIP file format.
+You can download and run the release or upstream source code of this project from GitHub in ZIP file format.
 
 ### Method 2. Build a setup file with `Inno Setup` 
 Please check `setup.iss` file it could be compile with [Inno Setup](https://jrsoftware.org/isinfo.php)
