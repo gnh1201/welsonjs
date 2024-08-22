@@ -32,7 +32,7 @@ namespace WelsonJS.Service
                 try
                 {
                     serverAddress = this.parent.GetSettingsFileHandler().Read("GRPC_HOST", "Service");
-                    if (!String.IsNullOrEmpty(serverAddress))
+                    if (String.IsNullOrEmpty(serverAddress))
                     {
                         throw new Exception("The server addresss is empty.");
                     }
