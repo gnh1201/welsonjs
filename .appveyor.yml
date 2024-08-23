@@ -30,7 +30,7 @@ artifacts:
     name: WelsonJS.Toolkit
   - path: WelsonJS.Toolkit\WelsonJS.Service\bin\x86\%CONFIGURATION%\WelsonJS.Service.exe
     name: WelsonJS.Service
-  - path: WelsonJS.Toolkit\WelsonJS.Launcher\bin\x86\%CONFIGURATION%\WelsonJS.Launcher.dll
+  - path: WelsonJS.Toolkit\WelsonJS.Launcher\bin\x86\%CONFIGURATION%\WelsonJS.Launcher.exe
     name: WelsonJS.Launcher
 
 deploy:
