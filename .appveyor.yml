@@ -12,7 +12,8 @@ environment:
     - CONFIGURATION: Debug
       SIGNING_POLICY_SLUG: test-signing
     - CONFIGURATION: Release
-      SIGNING_POLICY_SLUG: release-signing
+      #SIGNING_POLICY_SLUG: release-signing
+      SIGNING_POLICY_SLUG: test-signing
 
 before_build:
   - nuget restore WelsonJS.Toolkit
@@ -22,7 +23,7 @@ build_script:
 
 after_build:
    - cmd: mkdir artifacts
-#   - cmd: xcopy /s /y WelsonJS.Toolkit\WelsonJS.Toolkit\bin\x86\%CONFIGURATION%\* artifacts\
+   #- cmd: xcopy /s /y WelsonJS.Toolkit\WelsonJS.Toolkit\bin\x86\%CONFIGURATION%\* artifacts\
    - cmd: xcopy /s /y WelsonJS.Toolkit\WelsonJS.Service\bin\x86\%CONFIGURATION%\* artifacts\
    - cmd: xcopy /s /y WelsonJS.Toolkit\WelsonJS.Launcher\bin\x86\%CONFIGURATION%\* artifacts\
    - cmd: 7z a artifacts.zip artifacts\*
