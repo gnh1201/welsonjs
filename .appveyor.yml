@@ -25,13 +25,12 @@ build_script:
 #  - cmd: 7z a WelsonJS.Service.zip WelsonJS.Toolkit\WelsonJS.Service\bin\x86\%CONFIGURATION%\*
 #  - cmd: 7z a WelsonJS.Launcher.zip WelsonJS.Toolkit\WelsonJS.Launcher\bin\x86\%CONFIGURATION%\*
 
+after_build:
+  - cmd: 7z a WelsonJS.Toolkit.zip WelsonJS.Toolkit\WelsonJS.Service\bin\x86\%CONFIGURATION%\* WelsonJS.Toolkit\WelsonJS.Launcher\bin\x86\%CONFIGURATION%\*
+
 artifacts:
-  - path: WelsonJS.Toolkit\WelsonJS.Toolkit\bin\x86\%CONFIGURATION%\WelsonJS.Toolkit.dll
+  - path: WelsonJS.Toolkit.zip
     name: WelsonJS.Toolkit
-  - path: WelsonJS.Toolkit\WelsonJS.Service\bin\x86\%CONFIGURATION%\WelsonJS.Service.exe
-    name: WelsonJS.Service
-  - path: WelsonJS.Toolkit\WelsonJS.Launcher\bin\x86\%CONFIGURATION%\WelsonJS.Launcher.exe
-    name: WelsonJS.Launcher
 
 deploy:
 - provider: Webhook
