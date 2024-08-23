@@ -9,7 +9,6 @@ environment:
   PROJECT_SLUG: welsonjs
   SIGNING_POLICY_SLUG: test-signing
   ARTIFACT_CONFIGURATION_SLUG: initial
-  ENCRYPTED_SIGNPATH_API_TOKEN: QFoVIYbkJCRnFrvSC1anTqXIsF32ulGlAmFtlgGCpqA9Fe1viuAcnej0lcBhMYsp5LN1FyworTFcWjE7AmHrWA==
   matrix:
     - CONFIGURATION: Debug
     - CONFIGURATION: Release
@@ -37,7 +36,7 @@ deploy:
 - provider: Webhook
   url: https://app.signpath.io/API/v1/%ORGANIZATION_ID%/Integrations/AppVeyor?ProjectSlug=%PROJECT_SLUG%&SigningPolicySlug=%SIGNING_POLICY_SLUG%&ArtifactConfigurationSlug=%ARTIFACT_CONFIGURATION_SLUG%
   authorization:
-    secure: "%ENCRYPTED_SIGNPATH_API_TOKEN%"
+    secure: nABfe+lksIRfS7lVnkq3EdIYNH8KOka+5ZFTUJqUW2nckBubhrlAXarbCPJHLp9FWWf3zxAWhNwT0It+qyqPRQ==
 
 notifications:
   - provider: Email
