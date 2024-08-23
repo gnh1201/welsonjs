@@ -20,16 +20,15 @@ before_build:
 build_script:
   - msbuild "C:\projects\welsonjs\WelsonJS.Toolkit\WelsonJS.Toolkit.sln" /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" /p:Configuration=%CONFIGURATION% /p:Platform="x86"
 
-#after_build:
-#  - cmd: 7z a WelsonJS.Toolkit.zip WelsonJS.Toolkit\WelsonJS.Toolkit\bin\x86\%CONFIGURATION%\*
-#  - cmd: 7z a WelsonJS.Service.zip WelsonJS.Toolkit\WelsonJS.Service\bin\x86\%CONFIGURATION%\*
-#  - cmd: 7z a WelsonJS.Launcher.zip WelsonJS.Toolkit\WelsonJS.Launcher\bin\x86\%CONFIGURATION%\*
-
 after_build:
-  - cmd: 7z a WelsonJS.Toolkit.zip WelsonJS.Toolkit\WelsonJS.Service\bin\x86\%CONFIGURATION%\* WelsonJS.Toolkit\WelsonJS.Launcher\bin\x86\%CONFIGURATION%\*
+   - cmd: mkdir artifacts
+#   - cmd: xcopy /s /y WelsonJS.Toolkit\WelsonJS.Toolkit\bin\x86\%CONFIGURATION%\* artifacts\
+   - cmd: xcopy /s /y WelsonJS.Toolkit\WelsonJS.Service\bin\x86\%CONFIGURATION%\* artifacts\
+   - cmd: xcopy /s /y WelsonJS.Toolkit\WelsonJS.Launcher\bin\x86\%CONFIGURATION%\* artifacts\
+   - cmd: 7z a artifacts.zip artifacts\*
 
 artifacts:
-  - path: WelsonJS.Toolkit.zip
+  - path: artifacts.zip
     name: WelsonJS.Toolkit
 
 deploy:
