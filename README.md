@@ -163,6 +163,7 @@ This is so cool and so simple.
 - Inspired by a small-sized JavaScript payload demonstrated by a cybersecurity related group.
 - Inspired by the use of Named Shared Memory in an inter-language IPC implementation devised by an unidentified developer.
 - <img src="app/assets/img/Fediverse_logo_proposal.svg" height="30" alt=""/> Fediverse - Mentioned
+- <img src="app/assets/img/Hackernews_logo.png" height="30" alt=""/> Hacker News - Mentioned
 - [GitHub Sponsors](https://github.com/sponsors/gnh1201)
 
 ## Related links
