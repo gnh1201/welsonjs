@@ -5,6 +5,11 @@ image: Visual Studio 2019
 clone_folder: C:\projects\welsonjs
 
 environment:
+  ORGANIZATION_ID: 8ee5ec82-36dc-4619-ac33-5bc1117428fe
+  PROJECT_SLUG: welsonjs
+  SIGNING_POLICY_SLUG: test-signing
+  ARTIFACT_CONFIGURATION_SLUG: initial
+  ENCRYPTED_SIGNPATH_API_TOKEN: QFoVIYbkJCRnFrvSC1anTqXIsF32ulGlAmFtlgGCpqA9Fe1viuAcnej0lcBhMYsp5LN1FyworTFcWjE7AmHrWA==
   matrix:
     - CONFIGURATION: Debug
     - CONFIGURATION: Release
@@ -30,9 +35,9 @@ artifacts:
 
 deploy:
 - provider: Webhook
-  url: https://app.signpath.io/API/v1/8ee5ec82-36dc-4619-ac33-5bc1117428fe/Integrations/AppVeyor?ProjectSlug=welsonjs&SigningPolicySlug=test-signing&ArtifactConfigurationSlug=initial
+  url: https://app.signpath.io/API/v1/$ORGANIZATION_ID/Integrations/AppVeyor?ProjectSlug=$PROJECT_SLUG&SigningPolicySlug=$SIGNING_POLICY_SLUG&ArtifactConfigurationSlug=$ARTIFACT_CONFIGURATION_SLUG
   authorization:
-    secure: QFoVIYbkJCRnFrvSC1anTqXIsF32ulGlAmFtlgGCpqA9Fe1viuAcnej0lcBhMYsp5LN1FyworTFcWjE7AmHrWA==
+    secure: $ENCRYPTED_SIGNPATH_API_TOKEN
 
 notifications:
   - provider: Email
