@@ -7,11 +7,12 @@ clone_folder: C:\projects\welsonjs
 environment:
   ORGANIZATION_ID: 8ee5ec82-36dc-4619-ac33-5bc1117428fe
   PROJECT_SLUG: welsonjs
-  SIGNING_POLICY_SLUG: test-signing
   ARTIFACT_CONFIGURATION_SLUG: initial
   matrix:
     - CONFIGURATION: Debug
+      SIGNING_POLICY_SLUG: test-signing
     - CONFIGURATION: Release
+      SIGNING_POLICY_SLUG: release-signing
 
 before_build:
   - nuget restore WelsonJS.Toolkit
@@ -19,18 +20,14 @@ before_build:
 build_script:
   - msbuild "C:\projects\welsonjs\WelsonJS.Toolkit\WelsonJS.Toolkit.sln" /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" /p:Configuration=%CONFIGURATION% /p:Platform="x86"
 
-after_build:
-  - cmd: 7z a WelsonJS.Toolkit.zip WelsonJS.Toolkit\WelsonJS.Toolkit\bin\x86\%CONFIGURATION%\*
-  - cmd: 7z a WelsonJS.Service.zip WelsonJS.Toolkit\WelsonJS.Service\bin\x86\%CONFIGURATION%\*
-  - cmd: 7z a WelsonJS.Launcher.zip WelsonJS.Toolkit\WelsonJS.Launcher\bin\x86\%CONFIGURATION%\*
+#after_build:
+#  - cmd: 7z a WelsonJS.Toolkit.zip WelsonJS.Toolkit\WelsonJS.Toolkit\bin\x86\%CONFIGURATION%\*
+#  - cmd: 7z a WelsonJS.Service.zip WelsonJS.Toolkit\WelsonJS.Service\bin\x86\%CONFIGURATION%\*
+#  - cmd: 7z a WelsonJS.Launcher.zip WelsonJS.Toolkit\WelsonJS.Launcher\bin\x86\%CONFIGURATION%\*
 
 artifacts:
-  - path: WelsonJS.Toolkit.zip
+  - path: WelsonJS.Toolkit\WelsonJS.Toolkit\bin\x86\%CONFIGURATION%\WelsonJS.Toolkit.dll
     name: WelsonJS.Toolkit
-  - path: WelsonJS.Service.zip
-    name: WelsonJS.Service
-  - path: WelsonJS.Launcher.zip
-    name: WelsonJS.Launcher
 
 deploy:
 - provider: Webhook
