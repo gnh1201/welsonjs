@@ -67,20 +67,20 @@ public class ScreenMatching
         templateImages = new List<Bitmap>();
 
         // Read values from configration file
-        string mode;
-        string _params;
+        string _mode = null;
+        string __params = null;
         try
         {
-            mode = this.parent.GetSettingsFileHandler().Read("SCREEN_TIME_MODE", "Service");
-            _params = this.parent.GetSettingsFileHandler().Read("SCREEN_TIME_PARAMS", "Service");
+            _mode = this.parent.GetSettingsFileHandler().Read("SCREEN_TIME_MODE", "Service");
+            __params = this.parent.GetSettingsFileHandler().Read("SCREEN_TIME_PARAMS", "Service");
         }
         catch (Exception ex)
         {
             this.parent.Log($"Failed to read from configration file: {ex.Message}");
         }
 
-        SetMode(mode);
-        SetParams(_params);
+        SetMode(_mode);
+        SetParams(__params);
         LoadTemplateImages();
     }
 
