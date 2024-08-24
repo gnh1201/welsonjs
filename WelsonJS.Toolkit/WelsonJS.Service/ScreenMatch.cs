@@ -2,6 +2,7 @@
 // https://github.com/gnh1201/welsonjs
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -36,6 +37,9 @@ public class ScreenMatch
 
     [DllImport("gdi32.dll")]
     private static extern bool BitBlt(IntPtr hDestDC, int x, int y, int nWidth, int nHeight, IntPtr hSrcDC, int xSrc, int ySrc, int dwRop);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
 
     private const int SRCCOPY = 0x00CC0020;
 
@@ -169,12 +173,12 @@ public class ScreenMatch
             Bitmap image = templateImages[templateCurrentIndex];
             parent.Log($"Trying match the template {image.Tag as string} on the screen {i}...");
 
-            Point matchLocation = FindTemplate(mainImage, (Bitmap)image.Clone(), out double maxCorrelation);
+            Point matchPosition = FindTemplate(mainImage, (Bitmap)image.Clone(), out double maxCorrelation);
             results.Add(new ScreenMatchResult
             {
                 FileName = image.Tag.ToString(),
                 ScreenNumber = i,
-                Location = matchLocation,
+                Position = matchPosition,
                 MaxCorrelation = maxCorrelation
             });
         }
@@ -210,11 +214,15 @@ public class ScreenMatch
                 try
                 {
                     string windowTitle = GetWindowTitle(hWnd);
+                    string processName = GetProcessName(hWnd);
+                    GetWindowRect(hWnd, out RECT windowRect);
+                    Point windowPosition = new Point(windowRect.Left, windowRect.Top); // 창 위치 계산
                     Bitmap windowImage = CaptureWindow(hWnd);
+
                     if (windowImage != null)
                     {
                         Bitmap image = templateImages[templateCurrentIndex];
-                        Point matchLocation = FindTemplate(windowImage, image, out double maxCorrelation);
+                        Point matchPosition = FindTemplate(windowImage, image, out double maxCorrelation);
                         string templateFileName = image.Tag as string;
 
                         var result = new ScreenMatchResult
@@ -222,7 +230,9 @@ public class ScreenMatch
                             FileName = templateFileName,
                             WindowHandle = hWnd,
                             WindowTitle = windowTitle,
-                            Location = matchLocation,
+                            ProcessName = processName,
+                            WindowPosition = windowPosition,
+                            Position = matchPosition,
                             MaxCorrelation = maxCorrelation
                         };
                         results.Add(result);
@@ -244,6 +254,14 @@ public class ScreenMatch
         StringBuilder sb = new StringBuilder(length + 1);
         GetWindowText(hWnd, sb, sb.Capacity);
         return sb.ToString();
+    }
+
+    public string GetProcessName(IntPtr hWnd)
+    {
+        uint processId;
+        GetWindowThreadProcessId(hWnd, out processId);
+        Process process = Process.GetProcessById((int)processId);
+        return process.ProcessName;
     }
 
     public Bitmap CaptureWindow(IntPtr hWnd)
