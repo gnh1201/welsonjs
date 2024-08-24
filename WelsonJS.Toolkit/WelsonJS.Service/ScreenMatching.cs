@@ -58,7 +58,7 @@ public class ScreenMatching
     private int templateCurrentIndex = 0;
     private double threshold = 0.4;
     private string mode;
-    private List<string> _params;
+    private List<string> _params = new List<string>();
 
     public ScreenMatching(ServiceBase parent, string workingDirectory)
     {
