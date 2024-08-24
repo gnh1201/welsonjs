@@ -57,7 +57,7 @@ public class ScreenMatching
     private string templateDirectoryPath;
     private int templateCurrentIndex = 0;
     private double threshold = 0.5;
-    private string captureMode;
+    private string mode = "screen";
 
     public ScreenMatching(ServiceBase parent, string workingDirectory)
     {
@@ -65,18 +65,23 @@ public class ScreenMatching
         templateDirectoryPath = Path.Combine(workingDirectory, "app/assets/img/_templates");
         templateImages = new List<Bitmap>();
 
-        SetCaptureMode("screen");
+        SetMode("screen");
         LoadTemplateImages();
     }
 
-    public void SetCaptureMode(string captureMode)
+    public void SetMode(string mode)
     {
-        this.captureMode = captureMode;
+        this.mode = mode;
+    }
+
+    public void SetThreshold(double threshold)
+    {
+        this.threshold = threshold;
     }
 
     public void LoadTemplateImages()
     {
-        string[] files;
+        string[] files = [];
 
         try
         {
@@ -84,14 +89,15 @@ public class ScreenMatching
         }
         catch (Exception ex)
         {
-            files = new string[] { };
-            parent.Log($"Exception (ScreenMatching): {ex.Message}");
+            parent.Log($"Failed to read the directory structure: {ex.Message}");
         }
 
         foreach (var file in files)
         {
-            Bitmap bitmap = new Bitmap(file);
-            bitmap.Tag = Path.GetFileName(file);
+            Bitmap bitmap = new Bitmap(file)
+            {
+                Tag = Path.GetFileName(file)
+            };
             templateImages.Add(bitmap);
         }
     }
@@ -99,13 +105,16 @@ public class ScreenMatching
     // 캡쳐 및 템플릿 매칭 진행
     public List<ScreenMatchResult> CaptureAndMatch()
     {
-        switch(captureMode)
+        switch (mode)
         {
             case "screen":    // 화면 기준
                 return CaptureAndMatchAllScreens();
 
-            case "windows":    // 윈도우 핸들 기준
+            case "window":    // 윈도우 핸들 기준
                 return CaptureAndMatchAllWindows();
+
+            default:
+                break;
         }
 
         return new List<ScreenMatchResult>();
@@ -239,7 +248,8 @@ public class ScreenMatching
                 if (IsTemplateMatch(mainImage, templateImage, x, y, threshold))
                 {
                     bestMatch = new Point(x, y);
-                    maxCorrelation = 1;
+                    maxCorrelation = 1.0;
+
                     return bestMatch;
                 }
             }
