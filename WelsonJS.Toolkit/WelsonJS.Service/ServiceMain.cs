@@ -313,8 +313,8 @@ namespace WelsonJS.Service
                         {
                             result.FileName,
                             result.ScreenNumber.ToString(),
-                            result.Location.X.ToString(),
-                            result.Location.Y.ToString(),
+                            result.Position.X.ToString(),
+                            result.Position.Y.ToString(),
                             result.MaxCorrelation.ToString()
                         }));
                     }
