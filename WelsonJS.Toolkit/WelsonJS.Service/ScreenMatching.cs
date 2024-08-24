@@ -104,7 +104,7 @@ public class ScreenMatching
         }
     }
 
-    public void AddParams(string _param)
+    public void AddParam(string _param)
     {
         _params.Add(_param);
     }
