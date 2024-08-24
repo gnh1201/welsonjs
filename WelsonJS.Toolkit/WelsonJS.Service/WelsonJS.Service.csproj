@@ -156,7 +156,7 @@
   <ItemGroup>
     <Compile Include="FileEventMonitor.cs" />
     <Compile Include="MessageReceiver.cs" />
-    <Compile Include="Model\FileRuleMatched.cs" />
+    <Compile Include="Model\FileMatchResult.cs" />
     <Compile Include="ServiceMain.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -171,8 +171,8 @@
       <DependentUpon>ProjectInstaller.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ScreenMatching.cs" />
-    <Compile Include="ScreenMatchResult.cs" />
+    <Compile Include="ScreenMatch.cs" />
+    <Compile Include="Model\ScreenMatchResult.cs" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="MSScriptControl">

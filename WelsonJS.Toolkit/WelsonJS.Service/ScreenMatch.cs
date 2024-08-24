@@ -10,7 +10,7 @@ using System.Text;
 using System.Windows.Forms;
 using WelsonJS.Service;
 
-public class ScreenMatching
+public class ScreenMatch
 {
     // User32.dll API 함수 선언
     [DllImport("user32.dll")]
@@ -60,7 +60,7 @@ public class ScreenMatching
     private string mode;
     private List<string> _params = new List<string>();
 
-    public ScreenMatching(ServiceBase parent, string workingDirectory)
+    public ScreenMatch(ServiceBase parent, string workingDirectory)
     {
         this.parent = (ServiceMain)parent;
         templateDirectoryPath = Path.Combine(workingDirectory, "app/assets/img/_templates");

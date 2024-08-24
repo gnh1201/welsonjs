@@ -2,7 +2,7 @@
 
 namespace WelsonJS.Service.Model
 {
-    public class FileRuleMatched
+    public class FileMatchResult
     {
         public string Id { get; set; }
         public string FilePath { get; set; }

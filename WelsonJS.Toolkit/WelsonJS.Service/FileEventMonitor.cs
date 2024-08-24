@@ -171,7 +171,7 @@ namespace WelsonJS.Service
                                 parent.Log($"YARA rule matched: {ruleName}, {filePath}, Offset {x.Offset}");
                                 parent.DispatchServiceEvent("fileRuleMatched", new string[] { ruleName, filePath, x.Offset.ToString() });
 
-                                IndexFileRuleMatched(new FileRuleMatched
+                                IndexFileRuleMatched(new FileMatchResult
                                 {
                                     FilePath = filePath,
                                     Offset = x.Offset,
@@ -189,7 +189,7 @@ namespace WelsonJS.Service
             }
         }
 
-        private void IndexFileRuleMatched(FileRuleMatched match)
+        private void IndexFileRuleMatched(FileMatchResult match)
         {
             // todo (save result to the search engine)
         }

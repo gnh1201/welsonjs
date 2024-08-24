@@ -49,7 +49,7 @@ namespace WelsonJS.Service
         private bool disabledScreenTime = false;
         private bool disabledFileMonitor = false;
         private bool disabledMessageReceiver = false;
-        private ScreenMatching screenMatcher;
+        private ScreenMatch screenMatcher;
         private FileEventMonitor fileEventMonitor;
         private IniFile settingsFileHandler;
 
@@ -270,7 +270,7 @@ namespace WelsonJS.Service
             // set screen timer
             if (!disabledScreenTime)
             {
-                screenMatcher = new ScreenMatching(this, workingDirectory);
+                screenMatcher = new ScreenMatch(this, workingDirectory);
 
                 Timer screenTimer = new Timer
                 {
