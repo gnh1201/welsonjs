@@ -115,7 +115,7 @@ public class ScreenMatching
 
     public void LoadTemplateImages()
     {
-        string[] files = [];
+        string[] files;
 
         try
         {
@@ -123,6 +123,7 @@ public class ScreenMatching
         }
         catch (Exception ex)
         {
+            files = new string[]{};
             parent.Log($"Failed to read the directory structure: {ex.Message}");
         }
 
