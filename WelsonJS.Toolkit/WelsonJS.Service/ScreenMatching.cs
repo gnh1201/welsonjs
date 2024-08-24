@@ -58,7 +58,7 @@ public class ScreenMatching
     private int templateCurrentIndex = 0;
     private double threshold = 0.4;
     private string mode;
-    private string[] _params;
+    private List<string> _params;
 
     public ScreenMatching(ServiceBase parent, string workingDirectory)
     {
@@ -67,20 +67,28 @@ public class ScreenMatching
         templateImages = new List<Bitmap>();
 
         // Read values from configration file
-        string _mode = null;
-        string __params = null;
+        string _mode;
+        string _raw_params;
         try
         {
             _mode = this.parent.GetSettingsFileHandler().Read("SCREEN_TIME_MODE", "Service");
-            __params = this.parent.GetSettingsFileHandler().Read("SCREEN_TIME_PARAMS", "Service");
+            _raw_params = this.parent.GetSettingsFileHandler().Read("SCREEN_TIME_PARAMS", "Service");
         }
         catch (Exception ex)
         {
+            _mode = null;
+            _raw_params = null;
             this.parent.Log($"Failed to read from configration file: {ex.Message}");
         }
 
+        if (! String.IsNullOrEmpty(_raw_params))
+        {
+            string[] ss =  _raw_params.Split(',');
+            foreach (string s in ss) {
+                AddParam(s);
+            }
+        }
         SetMode(_mode);
-        SetParams(__params);
         LoadTemplateImages();
     }
 
@@ -96,16 +104,9 @@ public class ScreenMatching
         }
     }
 
-    public void SetParams(string[] _params)
+    public void AddParams(string _param)
     {
-        if (!String.IsNullOrEmpty(mode))
-        {
-            this._params = _params;
-        }
-        else
-        {
-            this._params = null;
-        }
+        _params.Add(_param);
     }
 
     public void SetThreshold(double threshold)
