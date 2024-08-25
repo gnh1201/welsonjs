@@ -107,5 +107,5 @@ dist
 bin
 data/chatgpt-apikey.txt
 app/assets/img/_templates
+app/assets/img/_captured
 settings.ini
-
