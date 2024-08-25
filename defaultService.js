@@ -25,7 +25,7 @@ function onMessageReceived() {
 }
 
 function onServiceScreenTime(args) {
-    return "onServiceScreenTime recevied. " + args.join(', ');
+	return "onServiceScreenTime recevied. " + args(0);
 }
 
 function onFileCreated(args) {

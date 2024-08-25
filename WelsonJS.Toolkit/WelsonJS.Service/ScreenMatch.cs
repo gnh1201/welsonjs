@@ -71,28 +71,28 @@ public class ScreenMatch
         templateImages = new List<Bitmap>();
 
         // Read values from configration file
-        string _mode;
-        string _raw_params;
+        string screen_time_mode;
+        string screen_time_params;
         try
         {
-            _mode = this.parent.GetSettingsFileHandler().Read("SCREEN_TIME_MODE", "Service");
-            _raw_params = this.parent.GetSettingsFileHandler().Read("SCREEN_TIME_PARAMS", "Service");
+            screen_time_mode = this.parent.GetSettingsFileHandler().Read("SCREEN_TIME_MODE", "Service");
+            screen_time_params = this.parent.GetSettingsFileHandler().Read("SCREEN_TIME_PARAMS", "Service");
         }
         catch (Exception ex)
         {
-            _mode = null;
-            _raw_params = null;
+            screen_time_mode = null;
+            screen_time_params = null;
             this.parent.Log($"Failed to read from configration file: {ex.Message}");
         }
 
-        if (! String.IsNullOrEmpty(_raw_params))
+        if (!String.IsNullOrEmpty(screen_time_params))
         {
-            string[] ss =  _raw_params.Split(',');
+            string[] ss = screen_time_params.Split(',');
             foreach (string s in ss) {
                 AddParam(s);
             }
         }
-        SetMode(_mode);
+        SetMode(screen_time_mode);
         LoadTemplateImages();
     }
 
@@ -154,6 +154,7 @@ public class ScreenMatch
                 return CaptureAndMatchAllWindows();
 
             default:
+                parent.Log($"Unknown capture mode: {mode}");
                 break;
         }
 

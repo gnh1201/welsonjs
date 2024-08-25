@@ -32,6 +32,7 @@ using MSScriptControl;
 using System.IO;
 using System.Collections.Generic;
 using WelsonJS.TinyINIController;
+using System.Collections;
 
 namespace WelsonJS.Service
 {
@@ -326,10 +327,17 @@ namespace WelsonJS.Service
             }
         }
 
-        private string InvokeScriptMethod(string methodName, params object[] parameters)
+        private string InvokeScriptMethod(string methodName, string scriptName, string eventType, string[] args)
         {
             if (scriptControl != null)
             {
+                object[] parameters = new object[] {
+                    scriptName,
+                    eventType,
+                    new ArrayList(args)
+                };
+                //scriptControl.AddObject("extern_arguments", new ArrayList(args), true);
+
                 return scriptControl.Run(methodName, parameters)?.ToString() ?? "void";
             }
             else
@@ -370,11 +378,11 @@ namespace WelsonJS.Service
         {
             if (args == null)
             {
-                return InvokeScriptMethod("dispatchServiceEvent", scriptName, eventType, "");
+                return InvokeScriptMethod("dispatchServiceEvent", scriptName, eventType, new string[] { });
             }
             else
             {
-                return InvokeScriptMethod("dispatchServiceEvent", scriptName, eventType, String.Join("; ", args));
+                return InvokeScriptMethod("dispatchServiceEvent", scriptName, eventType, args);
             }
 
         }
