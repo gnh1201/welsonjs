@@ -296,15 +296,24 @@ public class ScreenMatch
         Point bestMatch = Point.Empty;
         maxCorrelation = 0;
 
-        for (int x = 0; x <= mainWidth - templateWidth; x++)
+        bool searchFromEnd = _params.Contains("backward");
+
+        int startX = searchFromEnd ? mainWidth - templateWidth : 0;
+        int endX = searchFromEnd ? -1 : mainWidth - templateWidth + 1;
+        int stepX = searchFromEnd ? -1 : 1;
+
+        int startY = searchFromEnd ? mainHeight - templateHeight : 0;
+        int endY = searchFromEnd ? -1 : mainHeight - templateHeight + 1;
+        int stepY = searchFromEnd ? -1 : 1;
+
+        for (int x = startX; x != endX; x += stepX)
         {
-            for (int y = 0; y <= mainHeight - templateHeight; y++)
+            for (int y = startY; y != endY; y += stepY)
             {
                 if (IsTemplateMatch(mainImage, templateImage, x, y, threshold))
                 {
                     bestMatch = new Point(x, y);
                     maxCorrelation = 1.0;
-
                     return bestMatch;
                 }
             }
