@@ -59,7 +59,7 @@ namespace WelsonJS.Service
                             if (File.Exists(ruleFile))
                             {
                                 compiler.AddRuleFile(ruleFile);
-                                parent.Log($"Loaded the rule from {ruleFile}");
+                                parent.Log($"Rule loaded from {ruleFile}");
                             }
                             else
                             {
