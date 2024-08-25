@@ -39,7 +39,50 @@ public class ScreenMatch
     private static extern bool BitBlt(IntPtr hDestDC, int x, int y, int nWidth, int nHeight, IntPtr hSrcDC, int xSrc, int ySrc, int dwRop);
 
     [DllImport("user32.dll", SetLastError = true)]
-    static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+    private static extern uint GetWindowThreadProcessId(IntPtr hWnd, out uint lpdwProcessId);
+
+    [DllImport("user32.dll")]
+    private static extern bool EnumDisplaySettings(string lpszDeviceName, int iModeNum, ref DEVMODE lpDevMode);
+
+    // https://stackoverflow.com/questions/60872044/how-to-get-scaling-factor-for-each-monitor-e-g-1-1-25-1-5
+    [StructLayout(LayoutKind.Sequential)]
+    private struct DEVMODE
+    {
+        private const int CCHDEVICENAME = 0x20;
+        private const int CCHFORMNAME = 0x20;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x20)]
+        public string dmDeviceName;
+        public short dmSpecVersion;
+        public short dmDriverVersion;
+        public short dmSize;
+        public short dmDriverExtra;
+        public int dmFields;
+        public int dmPositionX;
+        public int dmPositionY;
+        public ScreenOrientation dmDisplayOrientation;
+        public int dmDisplayFixedOutput;
+        public short dmColor;
+        public short dmDuplex;
+        public short dmYResolution;
+        public short dmTTOption;
+        public short dmCollate;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 0x20)]
+        public string dmFormName;
+        public short dmLogPixels;
+        public int dmBitsPerPel;
+        public int dmPelsWidth;
+        public int dmPelsHeight;
+        public int dmDisplayFlags;
+        public int dmDisplayFrequency;
+        public int dmICMMethod;
+        public int dmICMIntent;
+        public int dmMediaType;
+        public int dmDitherType;
+        public int dmReserved1;
+        public int dmReserved2;
+        public int dmPanningWidth;
+        public int dmPanningHeight;
+    }
 
     private const int SRCCOPY = 0x00CC0020;
 
@@ -59,6 +102,7 @@ public class ScreenMatch
     private ServiceMain parent;
     private List<Bitmap> templateImages;
     private string templateDirectoryPath;
+    private string outputDirectoryPath;
     private int templateCurrentIndex = 0;
     private double threshold = 0.4;
     private string mode;
@@ -69,6 +113,7 @@ public class ScreenMatch
     {
         this.parent = (ServiceMain)parent;
         templateDirectoryPath = Path.Combine(workingDirectory, "app/assets/img/_templates");
+        outputDirectoryPath = Path.Combine(workingDirectory, "app/assets/img/_captured");
         templateImages = new List<Bitmap>();
 
         // Read values from configration file
@@ -178,6 +223,13 @@ public class ScreenMatch
             Screen screen = Screen.AllScreens[i];
             Bitmap mainImage = CaptureScreen(screen);
 
+            if (_params.Contains("save"))
+            {
+                string outputFilePath = Path.Combine(outputDirectoryPath, $"{DateTime.Now.ToString("yyyy MM dd hh mm ss")}.png");
+                mainImage.Save(outputFilePath);
+                parent.Log($"Screenshot saved: {outputFilePath}");
+            }
+
             Bitmap image = templateImages[templateCurrentIndex];
             parent.Log($"Trying match the template {image.Tag as string} on the screen {i}...");
 
@@ -199,11 +251,19 @@ public class ScreenMatch
     public static Bitmap CaptureScreen(Screen screen)
     {
         Rectangle screenSize = screen.Bounds;
-        Bitmap bitmap = new Bitmap(screenSize.Width, screenSize.Height);
 
-        using (Graphics g = Graphics.FromImage(bitmap))
+        DEVMODE dm = new DEVMODE();
+        dm.dmSize = (short)Marshal.SizeOf(typeof(DEVMODE));
+        EnumDisplaySettings(screen.DeviceName, -1, ref dm);
+
+        var scalingFactor = Math.Round(Decimal.Divide(dm.dmPelsWidth, screen.Bounds.Width), 2);
+        int adjustedWidth = (int)(screenSize.Width * scalingFactor);
+        int adjustedHeight = (int)(screenSize.Height * scalingFactor);
+
+        Bitmap bitmap = new Bitmap(adjustedWidth, adjustedHeight);
+        using (Graphics bitmapGraphics = Graphics.FromImage(bitmap))
         {
-            g.CopyFromScreen(screenSize.Left, screenSize.Top, 0, 0, screenSize.Size);
+            bitmapGraphics.CopyFromScreen(screenSize.Left, screenSize.Top, 0, 0, new Size(adjustedWidth, adjustedHeight));
         }
 
         return bitmap;
