@@ -63,6 +63,7 @@ public class ScreenMatch
     private double threshold = 0.4;
     private string mode;
     private List<string> _params = new List<string>();
+    private bool searchFromEnd = false;
 
     public ScreenMatch(ServiceBase parent, string workingDirectory)
     {
@@ -94,6 +95,12 @@ public class ScreenMatch
         }
         SetMode(screen_time_mode);
         LoadTemplateImages();
+
+        if (_params.Contains("backward"))
+        {
+            searchFromEnd = true;
+            this.parent.Log("Use the backward search when screen time");
+        }
     }
 
     public void SetMode(string mode)
@@ -295,8 +302,6 @@ public class ScreenMatch
 
         Point bestMatch = Point.Empty;
         maxCorrelation = 0;
-
-        bool searchFromEnd = _params.Contains("backward");
 
         int startX = searchFromEnd ? mainWidth - templateWidth : 0;
         int endX = searchFromEnd ? -1 : mainWidth - templateWidth + 1;
