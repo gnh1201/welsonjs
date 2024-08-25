@@ -592,8 +592,14 @@ function initializeWindow(name, args, w, h) {
     }
 }
 
-function dispatchServiceEvent(name, eventType, w_args) {
+function dispatchServiceEvent(name, eventType, w_args, argl) {
     var app = require(name);
+    var args = [];
+    
+    // convert the arguments to Array
+    for (var i = 0; i < argl; i++) {
+        args.push(w_args(i));
+    }
 
     // load the service
     if (app) {
@@ -610,7 +616,7 @@ function dispatchServiceEvent(name, eventType, w_args) {
             if (eventType in action) {
                 try {
                     return (function(f) {
-                        return (typeof f !== "function" ? null : f(w_args));
+                        return (typeof f !== "function" ? null : f(args));
                     })(action[eventType]);
                 } catch (e) {
                     console.error("Exception:", e.message);

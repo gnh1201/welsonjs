@@ -21,11 +21,11 @@ function onServiceElapsedTime() {
 }
 
 function onMessageReceived() {
-	return "onMessageReceived recevied. " + args.join(', ');
+    return "onMessageReceived recevied. " + args.join(', ');
 }
 
 function onServiceScreenTime(args) {
-	return "onServiceScreenTime recevied. " + args(0);
+    return "onServiceScreenTime recevied. " + args.join(', ');
 }
 
 function onFileCreated(args) {

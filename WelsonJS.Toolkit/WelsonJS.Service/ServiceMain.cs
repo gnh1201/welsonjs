@@ -334,7 +334,8 @@ namespace WelsonJS.Service
                 object[] parameters = new object[] {
                     scriptName,
                     eventType,
-                    new ArrayList(args)
+                    new ArrayList(args),
+                    args.Length
                 };
                 //scriptControl.AddObject("extern_arguments", new ArrayList(args), true);
 
