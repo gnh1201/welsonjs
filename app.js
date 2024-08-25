@@ -626,10 +626,10 @@ function dispatchServiceEvent(name, eventType, w_args, argl) {
             start: bind("ServiceStart"),
             stop: bind("ServiceStop"),
             elapsedTime: bind("ServiceElapsedTime"),
-            messageReceived: bind("ServiceMessageReceived"),
+            messageReceived: bind("MessageReceived"),
             screenTime: bind("ServiceScreenTime"),
-            fileCreated: bind("ServiceFileCreated"),
-            fileRuleMatched: bind("ServiceFileRuleMatched")
+            fileCreated: bind("FileCreated"),
+            fileRuleMatched: bind("FileRuleMatched")
         });
     } else {
         console.error("Could not find", name + ".js");
