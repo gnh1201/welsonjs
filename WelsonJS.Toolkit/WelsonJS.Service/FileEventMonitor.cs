@@ -95,7 +95,7 @@ namespace WelsonJS.Service
             }
             catch (Exception ex)
             {
-                parent.Log($"Exception (FileEventMonitor): {ex.Message}");
+                parent.Log($"Failed to connect the event log server: {ex.Message}");
             }
         }
 

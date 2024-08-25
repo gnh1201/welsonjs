@@ -107,7 +107,10 @@ public class ScreenMatch
     private double threshold = 0.4;
     private string mode;
     private List<string> _params = new List<string>();
-    private bool searchFromEnd = false;
+    private bool isSearchFromEnd = false;
+    private bool isConvertToBinary = false;
+    private byte thresholdConvertToBinary = 255;
+    private bool isSaveToFile = false;
 
     public ScreenMatch(ServiceBase parent, string workingDirectory)
     {
@@ -138,14 +141,27 @@ public class ScreenMatch
                 AddParam(s);
             }
         }
-        SetMode(screen_time_mode);
-        LoadTemplateImages();
-
+        
         if (_params.Contains("backward"))
         {
-            searchFromEnd = true;
+            isSearchFromEnd = true;
             this.parent.Log("Use the backward search when screen time");
         }
+
+        if (_params.Contains("binary"))
+        {
+            isConvertToBinary = true;
+            this.parent.Log("Use the convert to binary when screen time");
+        }
+
+        if (_params.Contains("save"))
+        {
+            isSaveToFile = true;
+            this.parent.Log("Will be save an image file when capture the screens");
+        }
+
+        SetMode(screen_time_mode);
+        LoadTemplateImages();
     }
 
     public void SetMode(string mode)
@@ -190,7 +206,8 @@ public class ScreenMatch
             {
                 Tag = Path.GetFileName(file)
             };
-            templateImages.Add(bitmap);
+            templateImages.Add(!isConvertToBinary ?
+                bitmap : ConvertToBinary(bitmap, thresholdConvertToBinary));
         }
     }
 
@@ -248,7 +265,7 @@ public class ScreenMatch
         return results;
     }
 
-    public static Bitmap CaptureScreen(Screen screen)
+    public Bitmap CaptureScreen(Screen screen)
     {
         Rectangle screenSize = screen.Bounds;
 
@@ -266,7 +283,8 @@ public class ScreenMatch
             bitmapGraphics.CopyFromScreen(screenSize.Left, screenSize.Top, 0, 0, new Size(adjustedWidth, adjustedHeight));
         }
 
-        return bitmap;
+        return !isConvertToBinary ?
+            bitmap : ConvertToBinary(bitmap, thresholdConvertToBinary);
     }
 
     // 윈도우 핸들을 기준으로 찾기
@@ -363,13 +381,13 @@ public class ScreenMatch
         Point bestMatch = Point.Empty;
         maxCorrelation = 0;
 
-        int startX = searchFromEnd ? mainWidth - templateWidth : 0;
-        int endX = searchFromEnd ? -1 : mainWidth - templateWidth + 1;
-        int stepX = searchFromEnd ? -1 : 1;
+        int startX = isSearchFromEnd ? mainWidth - templateWidth : 0;
+        int endX = isSearchFromEnd ? -1 : mainWidth - templateWidth + 1;
+        int stepX = isSearchFromEnd ? -1 : 1;
 
-        int startY = searchFromEnd ? mainHeight - templateHeight : 0;
-        int endY = searchFromEnd ? -1 : mainHeight - templateHeight + 1;
-        int stepY = searchFromEnd ? -1 : 1;
+        int startY = isSearchFromEnd ? mainHeight - templateHeight : 0;
+        int endY = isSearchFromEnd ? -1 : mainHeight - templateHeight + 1;
+        int stepY = isSearchFromEnd ? -1 : 1;
 
         for (int x = startX; x != endX; x += stepX)
         {
@@ -411,5 +429,27 @@ public class ScreenMatch
         }
 
         return true;
+    }
+
+    private Bitmap ConvertToBinary(Bitmap image, byte threshold)
+    {
+        Bitmap binaryImage = new Bitmap(image.Width, image.Height);
+        binaryImage.Tag = image.Tag;
+
+        for (int y = 0; y < image.Height; y++)
+        {
+            for (int x = 0; x < image.Width; x++)
+            {
+                // Convert the pixel to grayscale
+                Color pixelColor = image.GetPixel(x, y);
+                byte grayValue = (byte)((pixelColor.R + pixelColor.G + pixelColor.B) / 3);
+
+                // Apply threshold to convert to binary
+                Color binaryColor = grayValue < threshold ? Color.Black : Color.White;
+                binaryImage.SetPixel(x, y, binaryColor);
+            }
+        }
+
+        return binaryImage;
     }
 }
