@@ -28,7 +28,7 @@ namespace WelsonJS.Service
             }
             catch (Exception ex)
             {
-                this.parent.Log($"Exception (FileEventMonitor): {ex.Message}");
+                this.parent.Log($"Failed to read the rule files: {ex.Message}");
             }
         }
 
@@ -59,7 +59,7 @@ namespace WelsonJS.Service
                             if (File.Exists(ruleFile))
                             {
                                 compiler.AddRuleFile(ruleFile);
-                                parent.Log($"Loaded YARA rule from {ruleFile}");
+                                parent.Log($"Loaded the rule from {ruleFile}");
                             }
                             else
                             {
@@ -72,7 +72,7 @@ namespace WelsonJS.Service
                 }
                 catch (Exception ex)
                 {
-                    parent.Log($"Error loading YARA rules: {ex.Message}");
+                    parent.Log($"Error loading the rules: {ex.Message}");
                 }
             }
         }
@@ -146,7 +146,7 @@ namespace WelsonJS.Service
         {
             if (rules == null)
             {
-                parent.Log("No YARA rules loaded. Skipping file scan.");
+                parent.Log("No rules loaded. Skipping file scan.");
                 return;
             }
 
@@ -168,7 +168,7 @@ namespace WelsonJS.Service
                             List<Match> ruleMatches = match.Value;
                             ruleMatches.ForEach((x) =>
                             {
-                                parent.Log($"YARA rule matched: {ruleName}, {filePath}, Offset {x.Offset}");
+                                parent.Log($"Rule matched: {ruleName}, {filePath}, Offset {x.Offset}");
                                 parent.DispatchServiceEvent("fileRuleMatched", new string[] { ruleName, filePath, x.Offset.ToString() });
 
                                 IndexFileRuleMatched(new FileMatchResult
@@ -184,14 +184,14 @@ namespace WelsonJS.Service
                 }
                 else
                 {
-                    parent.Log($"No YARA match found in file {filePath}.");
+                    parent.Log($"No match found in file {filePath}.");
                 }
             }
         }
 
         private void IndexFileRuleMatched(FileMatchResult match)
         {
-            // todo (save result to the search engine)
+            // TODO (Save a result to the document indexer)
         }
 
         private void Dispose()
