@@ -105,6 +105,7 @@ namespace WelsonJS.Launcher
         private void RunCommandPrompt()
         {
             bool isConsoleApplication = checkBox1.Checked;
+            bool isInteractiveServiceAapplication = checkBox2.Checked;
 
             if (!isConsoleApplication)
             {
@@ -145,9 +146,16 @@ namespace WelsonJS.Launcher
                 process.StandardInput.Flush();
                 process.StandardOutput.ReadLine();
             }
+            else if (isInteractiveServiceAapplication)
+            {
+                process.StandardInput.WriteLine($"start cmd /c bin\\x86\\WelsonJS.Service.exe --working-directory={workingDirectory} --script-name={scriptName}");
+                process.StandardInput.WriteLine();
+                process.StandardInput.Flush();
+                process.StandardOutput.ReadLine();
+            }
             else
             {
-                process.StandardInput.WriteLine("start cmd /c cscript app.js " + scriptName);
+                process.StandardInput.WriteLine($"start cmd /c cscript app.js {scriptName}");
                 process.StandardInput.WriteLine();
                 process.StandardInput.Flush();
                 process.StandardOutput.ReadLine();

@@ -34,14 +34,16 @@
             this.linkLabel1 = new System.Windows.Forms.LinkLabel();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.textBox1 = new System.Windows.Forms.TextBox();
+            this.checkBox2 = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // button1
             // 
             this.button1.Image = global::WelsonJS.Launcher.Properties.Resources.icon_zip_128;
-            this.button1.Location = new System.Drawing.Point(24, 49);
+            this.button1.Location = new System.Drawing.Point(34, 74);
+            this.button1.Margin = new System.Windows.Forms.Padding(4);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(200, 200);
+            this.button1.Size = new System.Drawing.Size(286, 300);
             this.button1.TabIndex = 0;
             this.button1.Text = "From ZIP file...";
             this.button1.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
@@ -51,9 +53,10 @@
             // button2
             // 
             this.button2.Image = global::WelsonJS.Launcher.Properties.Resources.icon_link_128;
-            this.button2.Location = new System.Drawing.Point(230, 49);
+            this.button2.Location = new System.Drawing.Point(329, 74);
+            this.button2.Margin = new System.Windows.Forms.Padding(4);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(200, 200);
+            this.button2.Size = new System.Drawing.Size(286, 300);
             this.button2.TabIndex = 1;
             this.button2.Text = "From external link...";
             this.button2.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
@@ -63,18 +66,20 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(24, 23);
+            this.label1.Location = new System.Drawing.Point(34, 34);
+            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(312, 12);
+            this.label1.Size = new System.Drawing.Size(450, 18);
             this.label1.TabIndex = 2;
             this.label1.Text = "Choose the location of WelsonJS application package.";
             // 
             // linkLabel1
             // 
             this.linkLabel1.AutoSize = true;
-            this.linkLabel1.Location = new System.Drawing.Point(24, 309);
+            this.linkLabel1.Location = new System.Drawing.Point(34, 490);
+            this.linkLabel1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.linkLabel1.Name = "linkLabel1";
-            this.linkLabel1.Size = new System.Drawing.Size(219, 12);
+            this.linkLabel1.Size = new System.Drawing.Size(318, 18);
             this.linkLabel1.TabIndex = 3;
             this.linkLabel1.TabStop = true;
             this.linkLabel1.Text = "https://github.com/gnh1201/welsonjs";
@@ -83,9 +88,10 @@
             // checkBox1
             // 
             this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(26, 263);
+            this.checkBox1.Location = new System.Drawing.Point(37, 394);
+            this.checkBox1.Margin = new System.Windows.Forms.Padding(4);
             this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(184, 16);
+            this.checkBox1.Size = new System.Drawing.Size(263, 22);
             this.checkBox1.TabIndex = 4;
             this.checkBox1.Text = "I want to use specific script ";
             this.checkBox1.UseVisualStyleBackColor = true;
@@ -94,16 +100,29 @@
             // textBox1
             // 
             this.textBox1.Enabled = false;
-            this.textBox1.Location = new System.Drawing.Point(214, 260);
+            this.textBox1.Location = new System.Drawing.Point(306, 390);
+            this.textBox1.Margin = new System.Windows.Forms.Padding(4);
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(110, 21);
+            this.textBox1.Size = new System.Drawing.Size(155, 28);
             this.textBox1.TabIndex = 5;
+            // 
+            // checkBox2
+            // 
+            this.checkBox2.AutoSize = true;
+            this.checkBox2.Location = new System.Drawing.Point(37, 430);
+            this.checkBox2.Margin = new System.Windows.Forms.Padding(4);
+            this.checkBox2.Name = "checkBox2";
+            this.checkBox2.Size = new System.Drawing.Size(359, 22);
+            this.checkBox2.TabIndex = 6;
+            this.checkBox2.Text = "This is an Interactive Service Application";
+            this.checkBox2.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 18F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(461, 345);
+            this.ClientSize = new System.Drawing.Size(659, 543);
+            this.Controls.Add(this.checkBox2);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.linkLabel1);
@@ -111,6 +130,7 @@
             this.Controls.Add(this.button2);
             this.Controls.Add(this.button1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.MaximizeBox = false;
             this.Name = "MainForm";
             this.Text = "WelsonJS.Launcher";
@@ -127,6 +147,7 @@
         private System.Windows.Forms.LinkLabel linkLabel1;
         private System.Windows.Forms.CheckBox checkBox1;
         private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.CheckBox checkBox2;
     }
 }
 
