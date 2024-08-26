@@ -1,8 +1,7 @@
-//////////////////////////////////////////////////////////////////////////////////
-//
-//    uriloader.js
-//
-/////////////////////////////////////////////////////////////////////////////////
+// uriloader.js
+// URI scheme loader for WelsonJS framework
+// Namhyeon Go <abuse@catswords.net>
+// https;//github.com/gnh1201/welsonjs
 var SYS = require("lib/system");
 var SHELL = require("lib/shell");
 var URI = require("lib/uri");
@@ -68,39 +67,9 @@ function main(args) {
                 ]);
                 break;
 
-            case "ldmultiplayer":
-                commands.push([
-                    "%SYSTEMDRIVE%\\LDPlayer\LDPlayer3.0\\dnmultiplayer.exe"
-                ]);
-                break;
-
-            case "noxmultiplayer":
-                commands.push([
-                    "%PROGRAMFILES(X86)%\\Nox\\bin\\MultiPlayerManager.exe"
-                ]);
-                break;
-
-            case "codingschool":
-                commands.push([
-                    "%PROGRAMFILES(X86)\\CodingSchool3\\CodingSchool3.exe"
-                ]);
-                break;
-
             case "arduino":
                 commands.push([
                     "%PROGRAMFILES(X86)%\\Arduino\\arduino.exe"
-                ]);
-                break;
-
-            case "opentyping":
-                commands.push([
-                    SYS.getCurrentScriptDirectory() + "\\bin\\OpenTyping\\OpenTyping.exe"
-                ]);
-                break;
-
-            case "hnctt80":
-                commands.push([
-                    "%PROGRAMFILES(X86)%\\HNC\\HncTT80\\HncTT.exe"
                 ]);
                 break;
 
