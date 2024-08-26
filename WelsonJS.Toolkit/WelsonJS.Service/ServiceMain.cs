@@ -129,6 +129,47 @@ namespace WelsonJS.Service
                 Log($"Configuration file not found: {settingsFilePath}");
             }
 
+            // read configrations from settings.ini
+            if (settingsFileHandler != null)
+            {
+                string[] configNames = new string[]
+                {
+                    "DISABLE_SCREEN_TIME",
+                    "DISABLE_FILE_MONITOR",
+                    "DISABLE_MESSAGE_RECEIVER"
+                };
+                foreach (string configName in configNames)
+                {
+                    try
+                    {
+                        if ("true" == GetSettingsFileHandler().Read(configName, "Service"))
+                        {
+                            switch (configName)
+                            {
+                                case "DISABLE_SCREEN_TIME":
+                                    disabledScreenTime = true;
+                                    break;
+
+                                case "DISABLE_FILE_MONITOR":
+                                    disabledFileMonitor = true;
+                                    break;
+
+                                case "DISABLE_MESSAGE_RECEIVER":
+                                    disabledMessageReceiver = true;
+                                    break;
+
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Log($"{configName} is ignored: {ex.Message}");
+                    }
+                }
+            }
+
             // set script name
             if (string.IsNullOrEmpty(scriptName))
             {
