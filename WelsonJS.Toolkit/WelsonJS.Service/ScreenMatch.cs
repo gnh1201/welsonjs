@@ -257,7 +257,7 @@ public class ScreenMatch
 
             if (isSaveToFile)
             {
-                string outputFilePath = Path.Combine(outputDirectoryPath, $"{DateTime.Now.ToString("yyyy MM dd hh mm ss")}.png");
+                string outputFilePath = Path.Combine(outputDirectoryPath, $"{DateTime.Now.ToString("yyyy-MM-dd hh mm ss")}.png");
                 ((Bitmap)mainImage.Clone()).Save(outputFilePath);
                 parent.Log($"Screenshot saved: {outputFilePath}");
             }
