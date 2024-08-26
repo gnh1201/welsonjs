@@ -1,4 +1,5 @@
 ﻿// FileEventMonitor.cs
+// Namhyeon Go <abuse@catswords.net>
 // https://github.com/gnh1201/welsonjs
 using System;
 using System.Diagnostics.Eventing.Reader;
@@ -59,7 +60,7 @@ namespace WelsonJS.Service
                             if (File.Exists(ruleFile))
                             {
                                 compiler.AddRuleFile(ruleFile);
-                                parent.Log($"Rule loaded from {ruleFile}");
+                                parent.Log($"Loaded file: {ruleFile}");
                             }
                             else
                             {
@@ -95,7 +96,7 @@ namespace WelsonJS.Service
             }
             catch (Exception ex)
             {
-                parent.Log($"Failed to connect the event log server: {ex.Message}");
+                parent.Log($"Failed to connect the Windows EventLog Service: {ex.Message}");
             }
         }
 
@@ -157,7 +158,7 @@ namespace WelsonJS.Service
 
                 if (results.Count > 0)
                 {
-                    parent.Log($"YARA match found in file {filePath}:");
+                    parent.Log($"Match Found: {filePath}");
 
                     foreach (var result in results)
                     {
@@ -168,7 +169,7 @@ namespace WelsonJS.Service
                             List<Match> ruleMatches = match.Value;
                             ruleMatches.ForEach((x) =>
                             {
-                                parent.Log($"Rule matched: {ruleName}, {filePath}, Offset {x.Offset}");
+                                parent.Log($"Matched {ruleName}: {filePath}, Offset {x.Offset}");
                                 parent.DispatchServiceEvent("fileRuleMatched", new string[] { ruleName, filePath, x.Offset.ToString() });
 
                                 IndexFileRuleMatched(new FileMatchResult
@@ -184,7 +185,7 @@ namespace WelsonJS.Service
                 }
                 else
                 {
-                    parent.Log($"No match found in file {filePath}.");
+                    parent.Log($"No match found in {filePath}.");
                 }
             }
         }
