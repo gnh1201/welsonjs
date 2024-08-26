@@ -4,6 +4,7 @@ using Grpc.Core;
 using Grpc.Net.Client;
 using System;
 using System.Management;
+using System.Net.Http;
 using System.ServiceProcess;
 using System.Threading.Tasks;
 using WelsonJS.GrpcService;
@@ -54,8 +55,13 @@ namespace WelsonJS.Service
             {
                 try
                 {
+                    HttpClientHandler httpHandler = new HttpClientHandler();
+
                     this.parent.Log($"Use the remote address: {serverAddress}");
-                    channel = GrpcChannel.ForAddress(serverAddress);
+                    channel = GrpcChannel.ForAddress(serverAddress, new GrpcChannelOptions
+                    {
+                        HttpHandler = httpHandler   // use HTTP/1.1
+                    });
                 }
                 catch (Exception ex)
                 {
