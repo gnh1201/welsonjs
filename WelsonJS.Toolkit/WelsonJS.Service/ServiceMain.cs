@@ -323,7 +323,7 @@ namespace WelsonJS.Service
             }
             catch (Exception ex)
             {
-                Log("Exception when screen time: " + ex.ToString());
+                Log($"Waiting a next screen time: {ex.Message}");
             }
         }
 

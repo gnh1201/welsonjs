@@ -108,9 +108,9 @@ public class ScreenMatch
     private string mode;
     private List<string> _params = new List<string>();
     private bool isSearchFromEnd = false;
-    private bool isConvertToBinary = false;
     private byte thresholdConvertToBinary = 255;
     private bool isSaveToFile = false;
+    private bool isMatching = false;
 
     public ScreenMatch(ServiceBase parent, string workingDirectory)
     {
@@ -146,12 +146,6 @@ public class ScreenMatch
         {
             isSearchFromEnd = true;
             this.parent.Log("Use the backward search when screen time");
-        }
-
-        if (_params.Contains("binary"))
-        {
-            isConvertToBinary = true;
-            this.parent.Log("Use the convert to binary when screen time");
         }
 
         if (_params.Contains("save"))
@@ -202,32 +196,53 @@ public class ScreenMatch
 
         foreach (var file in files)
         {
+            string filename = Path.GetFileName(file);
             Bitmap bitmap = new Bitmap(file)
             {
-                Tag = Path.GetFileName(file)
+                Tag = filename
             };
-            templateImages.Add(!isConvertToBinary ?
-                bitmap : ConvertToBinary(bitmap, thresholdConvertToBinary));
+
+            if (filename.StartsWith("binary_"))
+            {
+                templateImages.Add(ConvertToBinary(bitmap, thresholdConvertToBinary));
+            }
+            else
+            {
+                templateImages.Add(bitmap);
+            }
         }
     }
 
     // 캡쳐 및 템플릿 매칭 진행
     public List<ScreenMatchResult> CaptureAndMatch()
     {
+        List<ScreenMatchResult> results = new List<ScreenMatchResult>();
+
+        if (isMatching)
+        {
+            throw new Exception("Waiting done a previous job...");
+        }
+
+        toggleIsMatching();
+
         switch (mode)
         {
             case "screen":    // 화면 기준
-                return CaptureAndMatchAllScreens();
+                results = CaptureAndMatchAllScreens();
+                toggleIsMatching();
+                break;
 
             case "window":    // 윈도우 핸들 기준
-                return CaptureAndMatchAllWindows();
+                results = CaptureAndMatchAllWindows();
+                toggleIsMatching();
+                break;
 
             default:
-                parent.Log($"Unknown capture mode: {mode}");
-                break;
+                toggleIsMatching();
+                throw new Exception($"Unknown capture mode {mode}");
         }
 
-        return new List<ScreenMatchResult>();
+        return results;
     }
 
     // 화면을 기준으로 찾기
@@ -240,24 +255,38 @@ public class ScreenMatch
             Screen screen = Screen.AllScreens[i];
             Bitmap mainImage = CaptureScreen(screen);
 
-            if (_params.Contains("save"))
+            if (isSaveToFile)
             {
                 string outputFilePath = Path.Combine(outputDirectoryPath, $"{DateTime.Now.ToString("yyyy MM dd hh mm ss")}.png");
-                mainImage.Save(outputFilePath);
+                ((Bitmap)mainImage.Clone()).Save(outputFilePath);
                 parent.Log($"Screenshot saved: {outputFilePath}");
             }
 
             Bitmap image = templateImages[templateCurrentIndex];
             parent.Log($"Trying match the template {image.Tag as string} on the screen {i}...");
 
-            Point matchPosition = FindTemplate(mainImage, (Bitmap)image.Clone(), out double maxCorrelation);
-            results.Add(new ScreenMatchResult
+            string filename = image.Tag as string;
+            if (filename.StartsWith("binary_"))
             {
-                FileName = image.Tag.ToString(),
-                ScreenNumber = i,
-                Position = matchPosition,
-                MaxCorrelation = maxCorrelation
-            });
+                mainImage = ConvertToBinary((Bitmap)mainImage.Clone(), thresholdConvertToBinary);
+            }
+
+            Point matchPosition = FindTemplate(mainImage, (Bitmap)image.Clone(), out double maxCorrelation);
+            if (matchPosition != Point.Empty)
+            {
+                results.Add(new ScreenMatchResult
+                {
+                    FileName = image.Tag.ToString(),
+                    ScreenNumber = i,
+                    Position = matchPosition,
+                    MaxCorrelation = maxCorrelation
+                });
+            }
+        }
+
+        if (results.Count == 0)
+        {
+            parent.Log($"No match found");
         }
 
         templateCurrentIndex = ++templateCurrentIndex % templateImages.Count;
@@ -274,6 +303,8 @@ public class ScreenMatch
         EnumDisplaySettings(screen.DeviceName, -1, ref dm);
 
         var scalingFactor = Math.Round(Decimal.Divide(dm.dmPelsWidth, screen.Bounds.Width), 2);
+        parent.Log($"Resolved the screen scale: {scalingFactor}");
+
         int adjustedWidth = (int)(screenSize.Width * scalingFactor);
         int adjustedHeight = (int)(screenSize.Height * scalingFactor);
 
@@ -283,8 +314,7 @@ public class ScreenMatch
             bitmapGraphics.CopyFromScreen(screenSize.Left, screenSize.Top, 0, 0, new Size(adjustedWidth, adjustedHeight));
         }
 
-        return !isConvertToBinary ?
-            bitmap : ConvertToBinary(bitmap, thresholdConvertToBinary);
+        return bitmap;
     }
 
     // 윈도우 핸들을 기준으로 찾기
@@ -405,6 +435,11 @@ public class ScreenMatch
         return bestMatch;
     }
 
+    private void toggleIsMatching()
+    {
+        isMatching = !isMatching;
+    }
+
     private bool IsTemplateMatch(Bitmap mainImage, Bitmap templateImage, int offsetX, int offsetY, double threshold)
     {
         int templateWidth = templateImage.Width;
@@ -434,7 +469,10 @@ public class ScreenMatch
     private Bitmap ConvertToBinary(Bitmap image, byte threshold)
     {
         Bitmap binaryImage = new Bitmap(image.Width, image.Height);
-        binaryImage.Tag = image.Tag;
+        if (image.Tag != null)
+        {
+            binaryImage.Tag = image.Tag;
+        }
 
         for (int y = 0; y < image.Height; y++)
         {
@@ -445,7 +483,7 @@ public class ScreenMatch
                 byte grayValue = (byte)((pixelColor.R + pixelColor.G + pixelColor.B) / 3);
 
                 // Apply threshold to convert to binary
-                Color binaryColor = grayValue < threshold ? Color.Black : Color.White;
+                Color binaryColor = grayValue >= threshold ? Color.White : Color.Black;
                 binaryImage.SetPixel(x, y, binaryColor);
             }
         }
