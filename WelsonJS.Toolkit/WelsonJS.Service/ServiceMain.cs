@@ -397,9 +397,16 @@ namespace WelsonJS.Service
                 Console.WriteLine(_message);
             }
 
-            using (StreamWriter writer = new StreamWriter(logFilePath, true))
+            try
             {
-                writer.WriteLine(_message);
+                using (StreamWriter writer = new StreamWriter(logFilePath, true))
+                {
+                    writer.WriteLine(_message);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to write log: {ex.Message}");
             }
         }
     }
