@@ -275,7 +275,7 @@ namespace WelsonJS.Service
 
                 Timer screenTimer = new Timer
                 {
-                    Interval = 5000 // 5 seconds
+                    Interval = 1000 // 1 seconds
                 };
                 screenTimer.Elapsed += OnScreenTime;
                 timers.Add(screenTimer);
@@ -323,7 +323,7 @@ namespace WelsonJS.Service
             }
             catch (Exception ex)
             {
-                Log($"Waiting a next screen time: {ex.Message}");
+                Log($"Waiting a next screen time... {ex.Message}");
             }
         }
 

@@ -284,7 +284,11 @@ public class ScreenMatch
             }
         }
 
-        if (results.Count == 0)
+        if (results.Count > 0)
+        {
+            parent.Log("Match found");
+        }
+        else
         {
             parent.Log($"No match found");
         }
