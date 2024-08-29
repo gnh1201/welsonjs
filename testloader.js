@@ -976,6 +976,7 @@ var test_implements = {
         console.log(JSON.stringify(b.toArray()));
     },
 
+    // https://stackoverflow.com/questions/33417367/example-of-how-to-use-peg-js
     "pegjs": {
         var syntax = FILE.readFile("app/assets/pegjs/test.pegjs", FILE.CdoCharset.CdoUTF_8);
         var parser = PEG.generate(syntax);
