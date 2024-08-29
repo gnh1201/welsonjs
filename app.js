@@ -676,7 +676,10 @@ var is = require("app/assets/js/is-0.9.0.min");
 //console.log(new Intl.NumberFormat().format(1234567890.123456));
 
 // linq.js - LINQ for JavaScript
-var Enumerable = require("app/assets/js/linq-4.0.2.wsh.js")._default;
+var Enumerable = require("app/assets/js/linq-4.0.2.wsh")._default;
+
+// PEG.js: Parser generator for JavaScript
+var PEG = require("app/assets/js/peg-0.10.0");
 
 // Dive into entrypoint 
 function __main__() {
