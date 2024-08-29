@@ -1,0 +1,1 @@
+start = expression;expression = text + number;text = a: [a-z]+{return a.join("");};number = b:[0-9]+{return b.join("");}

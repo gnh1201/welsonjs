@@ -1,6 +1,6 @@
 {
     "description": "WelsonJS test profile (test-misc.json)",
-    "released": "2024-01-04",
+    "released": "2024-08-29",
     "dependencies": {
         "welsonjs": "0.2.7"
     },
@@ -79,6 +79,11 @@
         {
             "id": "linqjs",
             "description": "linq.js (LINQ for JavaScript) test",
+            "tags": ["Library"]
+        },
+        {
+            "id": "pegjs",
+            "description": "PEG.js (Parser generator for JavaScript) test",
             "tags": ["Library"]
         },
         {

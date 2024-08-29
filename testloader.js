@@ -976,6 +976,12 @@ var test_implements = {
         console.log(JSON.stringify(b.toArray()));
     },
 
+    "pegjs": {
+        var syntax = FILE.readFile("app/assets/pegjs/test.pegjs", FILE.CdoCharset.CdoUTF_8);
+        var parser = PEG.generate(syntax);
+        console.log(JSON.stringify(parser.parse("test123"));
+    },
+
     "domparser_test": function() {
         console.log(typeof DOMParser);
     },
