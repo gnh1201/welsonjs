@@ -49,7 +49,6 @@ namespace WelsonJS.Service
         private string[] args;
         private bool disabledScreenTime = false;
         private bool disabledFileMonitor = false;
-        private bool disabledMessageReceiver = false;
         private ScreenMatch screenMatcher;
         private FileEventMonitor fileEventMonitor;
         private IniFile settingsFileHandler;
@@ -78,10 +77,6 @@ namespace WelsonJS.Service
 
                     case "script-name":
                         scriptName = entry.Value;
-                        break;
-
-                    case "disable-message-receiver":
-                        disabledMessageReceiver = true;
                         break;
 
                     case "disable-screen-time":
@@ -152,10 +147,6 @@ namespace WelsonJS.Service
 
                                 case "DISABLE_FILE_MONITOR":
                                     disabledFileMonitor = true;
-                                    break;
-
-                                case "DISABLE_MESSAGE_RECEIVER":
-                                    disabledMessageReceiver = true;
                                     break;
 
                                 default:
