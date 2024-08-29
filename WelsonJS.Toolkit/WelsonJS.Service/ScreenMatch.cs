@@ -223,23 +223,26 @@ public class ScreenMatch
             throw new Exception("Waiting done a previous job...");
         }
 
-        toggleIsMatching();
-
-        switch (mode)
+        if (templateImages.Count > 0)
         {
-            case "screen":    // 화면 기준
-                results = CaptureAndMatchAllScreens();
-                toggleIsMatching();
-                break;
+            toggleIsMatching();
 
-            case "window":    // 윈도우 핸들 기준
-                results = CaptureAndMatchAllWindows();
-                toggleIsMatching();
-                break;
+            switch (mode)
+            {
+                case "screen":    // 화면 기준
+                    results = CaptureAndMatchAllScreens();
+                    toggleIsMatching();
+                    break;
 
-            default:
-                toggleIsMatching();
-                throw new Exception($"Unknown capture mode {mode}");
+                case "window":    // 윈도우 핸들 기준
+                    results = CaptureAndMatchAllWindows();
+                    toggleIsMatching();
+                    break;
+
+                default:
+                    toggleIsMatching();
+                    throw new Exception($"Unknown capture mode {mode}");
+            }
         }
 
         return results;

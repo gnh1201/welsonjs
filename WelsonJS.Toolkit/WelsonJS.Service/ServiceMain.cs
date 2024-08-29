@@ -33,6 +33,7 @@ using System.IO;
 using System.Collections.Generic;
 using WelsonJS.TinyINIController;
 using System.Collections;
+using System.Threading.Tasks;
 
 namespace WelsonJS.Service
 {
@@ -47,6 +48,7 @@ namespace WelsonJS.Service
         private readonly string logFilePath = Path.Combine(Path.GetTempPath(), "WelsonJS.Service.Log.txt");
         private readonly string appName = "WelsonJS";
         private string[] args;
+        private bool disabledHeartbeat = false;
         private bool disabledScreenTime = false;
         private bool disabledFileMonitor = false;
         private ScreenMatch screenMatcher;
@@ -77,6 +79,10 @@ namespace WelsonJS.Service
 
                     case "script-name":
                         scriptName = entry.Value;
+                        break;
+
+                    case "disable-heartbeat":
+                        disabledHeartbeat = true;
                         break;
 
                     case "disable-screen-time":
@@ -129,9 +135,9 @@ namespace WelsonJS.Service
             {
                 string[] configNames = new string[]
                 {
+                    "DISABLE_HEARTBEAT",
                     "DISABLE_SCREEN_TIME",
-                    "DISABLE_FILE_MONITOR",
-                    "DISABLE_MESSAGE_RECEIVER"
+                    "DISABLE_FILE_MONITOR"
                 };
                 foreach (string configName in configNames)
                 {
@@ -141,6 +147,10 @@ namespace WelsonJS.Service
                         {
                             switch (configName)
                             {
+                                case "DISABLE_HEARTBEAT":
+                                    disabledHeartbeat = true;
+                                    break;
+
                                 case "DISABLE_SCREEN_TIME":
                                     disabledScreenTime = true;
                                     break;
@@ -170,6 +180,14 @@ namespace WelsonJS.Service
 
             // set path of the script
             scriptFilePath = Path.Combine(workingDirectory, "app.js");
+
+            // start the heartbeat
+            if (!disabledHeartbeat)
+            {
+                HeartbeatClient heartbeatClient = new HeartbeatClient(this);
+                Task.Run(heartbeatClient.StartHeartbeatAsync);
+                Task.Run(heartbeatClient.StartEventListenerAsync);
+            }
 
             // set default timer
             Timer defaultTimer = new Timer
