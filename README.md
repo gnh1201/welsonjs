@@ -42,6 +42,7 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
   - [github.com/hiddentao/squel](https://github.com/hiddentao/squel)
   - [github.com/BorisMoore/jsrender](https://github.com/BorisMoore/jsrender) - Templating engine
   - [github.com/mihaifm/linq](https://github.com/mihaifm/linq) - LINQ for JavaScript
+  - [github.com/pegjs/pegjs](https://github.com/pegjs/pegjs) - PEG.js: Parser generator for JavaScript
 - [Includes binaries](https://github.com/gnh1201/welsonjs/blob/master/bin/README.MD)
 - [module.exports](https://nodejs.org/api/modules.html#moduleexports), CommonJS, UMD compatibility
 - [NPM](https://www.npmjs.com/) compatibility
