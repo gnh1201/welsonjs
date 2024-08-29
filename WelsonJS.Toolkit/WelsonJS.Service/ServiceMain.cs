@@ -261,16 +261,6 @@ namespace WelsonJS.Service
                 Log("File Event Monitor is Disabled");
             }
 
-            // Start GRPC Message Receiver
-            if (!disabledMessageReceiver) {
-                MessageReceiver receiver = new MessageReceiver(this, workingDirectory);
-                receiver.Start();
-            }
-            else
-            {
-                Log("GRPC Message Receiver is Disabled");
-            }
-
             // Start all the registered timers
             timers.ForEach(timer => timer?.Start()); 
 
