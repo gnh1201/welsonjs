@@ -39,7 +39,7 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
   - [jQuery](https://jquery.com/)
   - [jQuery UI](https://jqueryui.com/)
   - [github.com/kamranahmedse/jquery-toast-plugin](https://github.com/kamranahmedse/jquery-toast-plugin)
-  - [github.com/hiddentao/squel](https://github.com/hiddentao/squel)
+  - [github.com/hiddentao/squel](https://github.com/hiddentao/squel) - SQL query string builder for Javascript
   - [github.com/BorisMoore/jsrender](https://github.com/BorisMoore/jsrender) - Templating engine
   - [github.com/mihaifm/linq](https://github.com/mihaifm/linq) - LINQ for JavaScript
   - [github.com/pegjs/pegjs](https://github.com/pegjs/pegjs) - PEG.js: Parser generator for JavaScript
