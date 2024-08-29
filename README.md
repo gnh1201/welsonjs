@@ -38,9 +38,9 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
 - Included libraries
   - [jQuery](https://jquery.com/)
   - [jQuery UI](https://jqueryui.com/)
-  - [github.com/kamranahmedse/jquery-toast-plugin](https://github.com/kamranahmedse/jquery-toast-plugin)
+  - [github.com/kamranahmedse/jquery-toast-plugin](https://github.com/kamranahmedse/jquery-toast-plugin) - Highly customizable jquery plugin to show toast messages
   - [github.com/hiddentao/squel](https://github.com/hiddentao/squel) - SQL query string builder for Javascript
-  - [github.com/BorisMoore/jsrender](https://github.com/BorisMoore/jsrender) - Templating engine
+  - [github.com/BorisMoore/jsrender](https://github.com/BorisMoore/jsrender) - A lightweight, powerful and highly extensible templating engine. In the browser or on Node.js, with or without jQuery.
   - [github.com/mihaifm/linq](https://github.com/mihaifm/linq) - LINQ for JavaScript
   - [github.com/pegjs/pegjs](https://github.com/pegjs/pegjs) - PEG.js: Parser generator for JavaScript
 - [Includes binaries](https://github.com/gnh1201/welsonjs/blob/master/bin/README.MD)
