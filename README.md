@@ -79,7 +79,7 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
   - [Named Shared Memory](https://learn.microsoft.com/en-us/windows/win32/memory/creating-named-shared-memory) based IPC(Inter-Process Communication) implementation [#](https://qiita.com/gnh1201/items/4e70dccdb7adacf0ace5)
 - [WelsonJS.Service](https://github.com/gnh1201/welsonjs/wiki/Awesome-binaries) (Windows Service Application, For recent Windows based systems)
   - Write a Windows Service Application with JavaScript
-  - Find an image position on the computer screens or windows
+  - [Screen Time Feature](https://github.com/gnh1201/welsonjs/wiki/Screen-Time-Feature): Find an image position on the computer screens or windows
 - [WelsonJS.Launcher](https://github.com/gnh1201/welsonjs/wiki/Awesome-binaries) (Launcher Application, For recent Windows based systems)
   - This is a launcher app designed to easily distribute WelsonJS application packages (based on ZIP compression files).
 - lib/chatgpt ([ChatGPT](https://openai.com/chatgpt) integration)
