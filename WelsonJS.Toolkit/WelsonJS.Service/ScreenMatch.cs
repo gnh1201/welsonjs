@@ -283,6 +283,8 @@ public class ScreenMatch
             parent.Log($"Trying match the template {image.Tag as string} on the screen {i}...");
 
             string filename = image.Tag as string;
+            int imageWidth = image.Width;
+            int imageHeight = image.Height;
 
             Bitmap _mainImage;
             if (filename.StartsWith("binary_"))
@@ -300,7 +302,7 @@ public class ScreenMatch
                 string text;
                 if (isOCR128)
                 {
-                    text = OCR((Bitmap)mainImage.Clone(), matchPosition.X, matchPosition.Y, 128, 128);
+                    text = OCR((Bitmap)mainImage.Clone(), matchPosition.X, matchPosition.Y, imageWidth, imageHeight, 128, 128);
                 }
                 else
                 {
@@ -332,18 +334,30 @@ public class ScreenMatch
         return results;
     }
 
-    public string OCR(Bitmap bitmap, int x, int y, int w, int h)
+    public string OCR(Bitmap bitmap, int x, int y, int a, int b, int w, int h)
     {
+        if (bitmap == null)
+        {
+            throw new ArgumentNullException(nameof(bitmap), "Bitmap cannot be null.");
+        }
+
         string text = "";
 
+        // Adjust coordinates 
+        x = x + (a / 2);
+        y = y + (b / 2);
+
+        // Set range of crop image
         int cropX = Math.Max(x - w / 2, 0);
         int cropY = Math.Max(y - h / 2, 0);
         int cropWidth = Math.Min(w, bitmap.Width - cropX);
         int cropHeight = Math.Min(h, bitmap.Height - cropY);
-
         Rectangle cropArea = new Rectangle(cropX, cropY, cropWidth, cropHeight);
+
+        // Crop image
         Bitmap croppedBitmap = bitmap.Clone(cropArea, bitmap.PixelFormat);
 
+        // OCR
         using (var engine = new TesseractEngine(tesseractDataPath, tesseractLanguage, EngineMode.Default))
         {
             using (var img = PixConverter.ToPix(croppedBitmap))
