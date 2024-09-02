@@ -299,14 +299,19 @@ public class ScreenMatch
             Point matchPosition = FindTemplate(_mainImage, (Bitmap)image.Clone(), out double maxCorrelation);
             if (matchPosition != Point.Empty)
             {
-                string text;
+                string text = "";
                 if (isOCR128)
                 {
-                    text = OCR((Bitmap)mainImage.Clone(), matchPosition.X, matchPosition.Y, imageWidth, imageHeight, 128, 128);
-                }
-                else
-                {
-                    text = "";
+                    parent.Log("Trying OCR...");
+                    
+                    try {
+                        text = OCR((Bitmap)mainImage.Clone(), matchPosition.X, matchPosition.Y, imageWidth, imageHeight, 128, 128);
+                        parent.Log("Done OCR.");
+                    }
+                    catch (Exception ex)
+                    {
+                        parent.Log($"Error in OCR: {ex.Message}");
+                    }
                 }
 
                 results.Add(new ScreenMatchResult
