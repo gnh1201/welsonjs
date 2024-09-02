@@ -13,6 +13,7 @@ namespace WelsonJS.Service
         public Point WindowPosition { get; set; }
         public Point Position { get; set; }
         public double MaxCorrelation { get; set; }
+        public string Text { get; set; }
 
         public override string ToString()
         {

@@ -1,5 +1,6 @@
 ﻿// ScreenMatching.cs
 // https://github.com/gnh1201/welsonjs
+// https://github.com/gnh1201/welsonjs/wiki/Screen-Time-Feature
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -9,6 +10,8 @@ using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Text;
 using System.Windows.Forms;
+using Tesseract;
+using WelsonJS.Cryptography;
 using WelsonJS.Service;
 
 public class ScreenMatch
@@ -111,6 +114,9 @@ public class ScreenMatch
     private byte thresholdConvertToBinary = 255;
     private bool isSaveToFile = false;
     private bool isMatching = false;
+    private bool isOCR128 = false;
+    private string tesseractDataPath = @"./tessdata";
+    private string tesseractLanguage = "eng";
 
     public ScreenMatch(ServiceBase parent, string workingDirectory)
     {
@@ -152,6 +158,12 @@ public class ScreenMatch
         {
             isSaveToFile = true;
             this.parent.Log("Will be save an image file when capture the screens");
+        }
+
+        if (_params.Contains("ocr128"))
+        {
+            isOCR128 = true;
+            this.parent.Log("Use OCR within a 128x128 pixel range around specific coordinates.");
         }
 
         SetMode(screen_time_mode);
@@ -269,20 +281,37 @@ public class ScreenMatch
             parent.Log($"Trying match the template {image.Tag as string} on the screen {i}...");
 
             string filename = image.Tag as string;
+
+            Bitmap _mainImage;
             if (filename.StartsWith("binary_"))
             {
-                mainImage = ConvertToBinary((Bitmap)mainImage.Clone(), thresholdConvertToBinary);
+                _mainImage = ConvertToBinary((Bitmap)mainImage.Clone(), thresholdConvertToBinary);
+            }
+            else
+            {
+                _mainImage = mainImage;
             }
 
-            Point matchPosition = FindTemplate(mainImage, (Bitmap)image.Clone(), out double maxCorrelation);
+            Point matchPosition = FindTemplate(_mainImage, (Bitmap)image.Clone(), out double maxCorrelation);
             if (matchPosition != Point.Empty)
             {
+                string text;
+                if (isOCR128)
+                {
+                    text = OCR((Bitmap)mainImage.Clone(), matchPosition.X, matchPosition.Y, 128, 128);
+                }
+                else
+                {
+                    text = "";
+                }
+
                 results.Add(new ScreenMatchResult
                 {
                     FileName = image.Tag.ToString(),
                     ScreenNumber = i,
                     Position = matchPosition,
-                    MaxCorrelation = maxCorrelation
+                    MaxCorrelation = maxCorrelation,
+                    Text = text
                 });
             }
         }
@@ -299,6 +328,35 @@ public class ScreenMatch
         templateCurrentIndex = ++templateCurrentIndex % templateImages.Count;
 
         return results;
+    }
+
+    public string OCR(Bitmap bitmap, int x, int y, int w, int h)
+    {
+        string text = "";
+
+        int cropX = Math.Max(x - w / 2, 0);
+        int cropY = Math.Max(y - h / 2, 0);
+        int cropWidth = Math.Min(w, bitmap.Width - cropX);
+        int cropHeight = Math.Min(h, bitmap.Height - cropY);
+
+        Rectangle cropArea = new Rectangle(cropX, cropY, cropWidth, cropHeight);
+        Bitmap croppedBitmap = bitmap.Clone(cropArea, bitmap.PixelFormat);
+
+        using (var engine = new TesseractEngine(tesseractDataPath, tesseractLanguage, EngineMode.Default))
+        {
+            using (var img = PixConverter.ToPix(croppedBitmap))
+            {
+                using (var page = engine.Process(img))
+                {
+                    text = page.GetText();
+
+                    parent.Log($"Mean confidence: {page.GetMeanConfidence()}");
+                    parent.Log($"Text (GetText): {text}");
+                }
+            }
+        }
+
+        return text;
     }
 
     public Bitmap CaptureScreen(Screen screen)
