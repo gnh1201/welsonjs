@@ -115,8 +115,8 @@ public class ScreenMatch
     private bool isSaveToFile = false;
     private bool isMatching = false;
     private bool isOCR128 = false;
-    private string tesseractDataPath = @"./tessdata";
-    private string tesseractLanguage = "eng";
+    private string tesseractDataPath;
+    private string tesseractLanguage;
 
     public ScreenMatch(ServiceBase parent, string workingDirectory)
     {
@@ -162,6 +162,8 @@ public class ScreenMatch
 
         if (_params.Contains("ocr128"))
         {
+            tesseractDataPath = Path.Combine(workingDirectory, "assets/tessdata");
+            tesseractLanguage = "eng";
             isOCR128 = true;
             this.parent.Log("Use OCR within a 128x128 pixel range around specific coordinates.");
         }
