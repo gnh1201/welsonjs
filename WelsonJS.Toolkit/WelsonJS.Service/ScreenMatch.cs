@@ -111,7 +111,7 @@ public class ScreenMatch
     private string mode;
     private List<string> _params = new List<string>();
     private bool isSearchFromEnd = false;
-    private byte thresholdConvertToBinary = 255;
+    private byte thresholdConvertToBinary = 191;
     private bool isSaveToFile = false;
     private bool isMatching = false;
     private bool isOCR128 = false;
@@ -162,7 +162,7 @@ public class ScreenMatch
 
         if (_params.Contains("ocr128"))
         {
-            tesseractDataPath = Path.Combine(workingDirectory, "assets/tessdata");
+            tesseractDataPath = Path.Combine(workingDirectory, "app/assets/tessdata_best");
             tesseractLanguage = "eng";
             isOCR128 = true;
             this.parent.Log("Use OCR within a 128x128 pixel range around specific coordinates.");
@@ -360,20 +360,17 @@ public class ScreenMatch
         Rectangle cropArea = new Rectangle(cropX, cropY, cropWidth, cropHeight);
 
         // Crop image
-        Bitmap croppedBitmap = bitmap.Clone(cropArea, bitmap.PixelFormat);
+        Bitmap croppedBitmap = ConvertToBinary(bitmap.Clone(cropArea, bitmap.PixelFormat), thresholdConvertToBinary);
 
         // OCR
         using (var engine = new TesseractEngine(tesseractDataPath, tesseractLanguage, EngineMode.Default))
         {
-            using (var img = PixConverter.ToPix(croppedBitmap))
+            using (var page = engine.Process(croppedBitmap))
             {
-                using (var page = engine.Process(img))
-                {
-                    text = page.GetText();
+                text = page.GetText();
 
-                    parent.Log($"Mean confidence: {page.GetMeanConfidence()}");
-                    parent.Log($"Text (GetText): {text}");
-                }
+                parent.Log($"Mean confidence: {page.GetMeanConfidence()}");
+                parent.Log($"Text (GetText): {text}");
             }
         }
 

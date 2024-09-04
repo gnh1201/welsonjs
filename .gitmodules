@@ -1,3 +1,9 @@
 [submodule "app/assets/tessdata"]
 	path = app/assets/tessdata
 	url = https://github.com/tesseract-ocr/tessdata
+[submodule "app/assets/tessdata_best"]
+	path = app/assets/tessdata_best
+	url = https://github.com/tesseract-ocr/tessdata_best
+[submodule "app/assets/tessdata_fast"]
+	path = app/assets/tessdata_fast
+	url = https://github.com/tesseract-ocr/tessdata_fast
