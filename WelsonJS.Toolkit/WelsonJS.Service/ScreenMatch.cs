@@ -9,6 +9,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 using Tesseract;
 using WelsonJS.Service;
@@ -357,15 +358,20 @@ public class ScreenMatch
         // if use Clipboard
         if (isUseSampleClipboard)
         {
-            try
+            Thread th = new Thread(new ThreadStart(() =>
             {
-                Clipboard.SetImage(croppedBitmap);
-                parent.Log($"Copied to the clipboard");
-            }
-            catch (Exception ex)
-            {
-                parent.Log($"Error in Clipboard: {ex.Message}");
-            }
+                try
+                {
+                    Clipboard.SetImage(croppedBitmap);
+                    parent.Log($"Copied the image to Clipboard");
+                }
+                catch (Exception ex)
+                {
+                    parent.Log($"Error in Clipboard: {ex.Message}");
+                }
+            }));
+            th.SetApartmentState(ApartmentState.STA);
+            th.Start();
         }
 
         // if use OCR
