@@ -362,7 +362,7 @@ public class ScreenMatch
             {
                 try
                 {
-                    Clipboard.SetImage(croppedBitmap);
+                    Clipboard.SetImage((Bitmap)croppedBitmap.Clone());
                     parent.Log($"Copied the image to Clipboard");
                 }
                 catch (Exception ex)
