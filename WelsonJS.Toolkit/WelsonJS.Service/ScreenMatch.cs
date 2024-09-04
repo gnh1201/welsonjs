@@ -11,7 +11,6 @@ using System.ServiceProcess;
 using System.Text;
 using System.Windows.Forms;
 using Tesseract;
-using WelsonJS.Cryptography;
 using WelsonJS.Service;
 
 public class ScreenMatch
@@ -109,12 +108,13 @@ public class ScreenMatch
     private int templateCurrentIndex = 0;
     private double threshold = 0.4;
     private string mode;
+    private bool busy = false;
     private List<string> _params = new List<string>();
     private bool isSearchFromEnd = false;
     private byte thresholdConvertToBinary = 191;
     private bool isSaveToFile = false;
-    private bool isMatching = false;
-    private bool isOCR128 = false;
+    private bool isUseSampleClipboard = false;
+    private bool isUseSampleOCR = false;
     private string tesseractDataPath;
     private string tesseractLanguage;
 
@@ -160,11 +160,17 @@ public class ScreenMatch
             this.parent.Log("Will be save an image file when capture the screens");
         }
 
-        if (_params.Contains("ocr128"))
+        if (_params.Contains("sample_clipboard"))
+        {
+            isUseSampleClipboard = true;
+            this.parent.Log("Use Clipboard within a 128x128 pixel range around specific coordinates.");
+        }
+
+        if (_params.Contains("sample_ocr"))
         {
             tesseractDataPath = Path.Combine(workingDirectory, "app/assets/tessdata_best");
             tesseractLanguage = "eng";
-            isOCR128 = true;
+            isUseSampleOCR = true;
             this.parent.Log("Use OCR within a 128x128 pixel range around specific coordinates.");
         }
 
@@ -232,29 +238,29 @@ public class ScreenMatch
     {
         List<ScreenMatchResult> results = new List<ScreenMatchResult>();
 
-        if (isMatching)
+        if (busy)
         {
             throw new Exception("Waiting done a previous job...");
         }
 
         if (templateImages.Count > 0)
         {
-            toggleIsMatching();
+            toggleBusy();
 
             switch (mode)
             {
                 case "screen":    // 화면 기준
                     results = CaptureAndMatchAllScreens();
-                    toggleIsMatching();
+                    toggleBusy();
                     break;
 
                 case "window":    // 윈도우 핸들 기준
                     results = CaptureAndMatchAllWindows();
-                    toggleIsMatching();
+                    toggleBusy();
                     break;
 
                 default:
-                    toggleIsMatching();
+                    toggleBusy();
                     throw new Exception($"Unknown capture mode {mode}");
             }
         }
@@ -299,28 +305,13 @@ public class ScreenMatch
             Point matchPosition = FindTemplate(_mainImage, (Bitmap)image.Clone(), out double maxCorrelation);
             if (matchPosition != Point.Empty)
             {
-                string text = "";
-                if (isOCR128)
-                {
-                    parent.Log("Trying OCR...");
-                    
-                    try {
-                        text = OCR((Bitmap)mainImage.Clone(), matchPosition.X, matchPosition.Y, imageWidth, imageHeight, 128, 128);
-                        parent.Log("Done OCR.");
-                    }
-                    catch (Exception ex)
-                    {
-                        parent.Log($"Error in OCR: {ex.Message}");
-                    }
-                }
-
                 results.Add(new ScreenMatchResult
                 {
                     FileName = image.Tag.ToString(),
                     ScreenNumber = i,
                     Position = matchPosition,
                     MaxCorrelation = maxCorrelation,
-                    Text = text
+                    Text = InspectSample((Bitmap)mainImage.Clone(), matchPosition.X, matchPosition.Y, imageWidth, imageHeight, 128, 128)
                 });
             }
         }
@@ -339,13 +330,14 @@ public class ScreenMatch
         return results;
     }
 
-    public string OCR(Bitmap bitmap, int x, int y, int a, int b, int w, int h)
+    public string InspectSample(Bitmap bitmap, int x, int y, int a, int b, int w, int h)
     {
         if (bitmap == null)
         {
             throw new ArgumentNullException(nameof(bitmap), "Bitmap cannot be null.");
         }
 
+        // initial text
         string text = "";
 
         // Adjust coordinates 
@@ -360,17 +352,41 @@ public class ScreenMatch
         Rectangle cropArea = new Rectangle(cropX, cropY, cropWidth, cropHeight);
 
         // Crop image
-        Bitmap croppedBitmap = ConvertToBinary(bitmap.Clone(cropArea, bitmap.PixelFormat), thresholdConvertToBinary);
+        Bitmap croppedBitmap = bitmap.Clone(cropArea, bitmap.PixelFormat);
 
-        // OCR
-        using (var engine = new TesseractEngine(tesseractDataPath, tesseractLanguage, EngineMode.Default))
+        // if use Clipboard
+        if (isUseSampleClipboard)
         {
-            using (var page = engine.Process(croppedBitmap))
+            try
             {
-                text = page.GetText();
+                Clipboard.SetImage(croppedBitmap);
+                parent.Log($"Copied to the clipboard");
+            }
+            catch (Exception ex)
+            {
+                parent.Log($"Error in Clipboard: {ex.Message}");
+            }
+        }
 
-                parent.Log($"Mean confidence: {page.GetMeanConfidence()}");
-                parent.Log($"Text (GetText): {text}");
+        // if use OCR
+        if (isUseSampleOCR)
+        {
+            try
+            {
+                using (var engine = new TesseractEngine(tesseractDataPath, tesseractLanguage, EngineMode.Default))
+                {
+                    using (var page = engine.Process(croppedBitmap))
+                    {
+                        text = page.GetText();
+
+                        parent.Log($"Mean confidence: {page.GetMeanConfidence()}");
+                        parent.Log($"Text (GetText): {text}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                parent.Log($"Error in OCR: {ex.Message}");
             }
         }
 
@@ -518,9 +534,9 @@ public class ScreenMatch
         return bestMatch;
     }
 
-    private void toggleIsMatching()
+    private void toggleBusy()
     {
-        isMatching = !isMatching;
+        busy = !busy;
     }
 
     private bool IsTemplateMatch(Bitmap mainImage, Bitmap templateImage, int offsetX, int offsetY, double threshold)
