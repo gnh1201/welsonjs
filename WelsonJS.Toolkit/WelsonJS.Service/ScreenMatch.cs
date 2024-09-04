@@ -551,14 +551,30 @@ public class ScreenMatch
         int templateHeight = templateImage.Height;
         int totalPixels = templateWidth * templateHeight;
         int requiredMatches = (int)(totalPixels * threshold);
+
+        // When the square root of the canvas size of the image to be matched is less than 10, a complete match is applied.
+        if (Math.Sqrt(templateWidth * templateHeight) < 10.0)
+        {
+            for (int y = 0; y < templateHeight; y++)
+            {
+                for (int x = 0; x < templateWidth; x++)
+                {
+                    if (mainImage.GetPixel(x + offsetX, y + offsetY) != templateImage.GetPixel(x, y))
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        // Otherwise, randomness is used.
         int matchedCount = 0;
         Random rand = new Random();
-
         while (matchedCount < requiredMatches)
         {
             int x = rand.Next(templateWidth);
             int y = rand.Next(templateHeight);
-            Point point = new Point(x, y);
 
             if (mainImage.GetPixel(x + offsetX, y + offsetY) != templateImage.GetPixel(x, y))
             {
