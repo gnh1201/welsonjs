@@ -197,7 +197,7 @@ public class ScreenMatch
                         case "sample_clipboard":
                             {
                                 isUseSampleClipboard = true;
-                                this.parent.Log($"Use Clipboard within a 128x128 pixel range around specific coordinates.");
+                                this.parent.Log($"Use Clipboard within a {sampleWidth}x{sampleHeight} pixel range around specific coordinates.");
                                 break;
                             }
 
@@ -206,7 +206,7 @@ public class ScreenMatch
                                 tesseractDataPath = Path.Combine(workingDirectory, "app/assets/tessdata_best");
                                 tesseractLanguage = "eng";
                                 isUseSampleOCR = true;
-                                this.parent.Log($"Use OCR within a 128x128 pixel range around specific coordinates.");
+                                this.parent.Log($"Use OCR within a {sampleWidth}x{sampleHeight} pixel range around specific coordinates.");
                                 break;
                             }
 
