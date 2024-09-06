@@ -157,69 +157,89 @@ public class ScreenMatch
                     parts => parts.Length > 1 ? parts[1] : parts[0]
                 );
 
-            foreach (var config in screen_time_configs)
+            var config_keys = new string[]
             {
-                switch (config.Key)
+                "process_name",
+                "sample_width",
+                "sample_height",
+                "sample_adjust_x",
+                "sample_adjust_y",
+                "sample_only",
+                "backward",
+                "save",
+                "sample_clipboard",
+                "sample_ocr"
+            };
+
+            foreach (var config_key in config_keys)
+            {
+                string config_value;
+                screen_time_configs.TryGetValue(config_key, out config_value);
+
+                if (config_value != null)
                 {
-                    case "backward":
-                        {
-                            isSearchFromEnd = true;
-                            this.parent.Log("Use the backward search when screen time");
-                            break;
-                        }
+                    switch (config_key)
+                    {
+                        case "backward":
+                            {
+                                isSearchFromEnd = true;
+                                this.parent.Log("Use the backward search when screen time");
+                                break;
+                            }
 
-                    case "save":
-                        {
-                            isSaveToFile = true;
-                            this.parent.Log("Will be save an image file when capture the screens");
-                            break;
-                        }
+                        case "save":
+                            {
+                                isSaveToFile = true;
+                                this.parent.Log("Will be save an image file when capture the screens");
+                                break;
+                            }
 
-                    case "sample_clipboard":
-                        {
-                            isUseSampleClipboard = true;
-                            this.parent.Log("Use Clipboard within a 128x128 pixel range around specific coordinates.");
-                            break;
-                        }
+                        case "sample_clipboard":
+                            {
+                                isUseSampleClipboard = true;
+                                this.parent.Log($"Use Clipboard within a 128x128 pixel range around specific coordinates.");
+                                break;
+                            }
 
-                    case "sample_ocr":
-                        {
-                            tesseractDataPath = Path.Combine(workingDirectory, "app/assets/tessdata_best");
-                            tesseractLanguage = "eng";
-                            isUseSampleOCR = true;
-                            this.parent.Log("Use OCR within a 128x128 pixel range around specific coordinates.");
-                            break;
-                        }
+                        case "sample_ocr":
+                            {
+                                tesseractDataPath = Path.Combine(workingDirectory, "app/assets/tessdata_best");
+                                tesseractLanguage = "eng";
+                                isUseSampleOCR = true;
+                                this.parent.Log($"Use OCR within a 128x128 pixel range around specific coordinates.");
+                                break;
+                            }
 
-                    case "sample_width":
-                        {
-                            int.TryParse(config.Value, out sampleWidth);
-                            break;
-                        }
+                        case "sample_width":
+                            {
+                                int.TryParse(config_value, out sampleWidth);
+                                break;
+                            }
 
-                    case "sample_height":
-                        {
-                            int.TryParse(config.Value, out sampleHeight);
-                            break;
-                        }
+                        case "sample_height":
+                            {
+                                int.TryParse(config_value, out sampleHeight);
+                                break;
+                            }
 
-                    case "sample_adjust_x":
-                        {
-                            int.TryParse(config.Value, out sampleAdjustX);
-                            break;
-                        }
+                        case "sample_adjust_x":
+                            {
+                                int.TryParse(config_value, out sampleAdjustX);
+                                break;
+                            }
 
-                    case "sample_adjust_y":
-                        {
-                            int.TryParse(config.Value, out sampleAdjustY);
-                            break;
-                        }
+                        case "sample_adjust_y":
+                            {
+                                int.TryParse(config_value, out sampleAdjustY);
+                                break;
+                            }
 
-                    case "sample_only":
-                        {
-                            sampleOnly = config.Value;
-                            break;
-                        }
+                        case "sample_only":
+                            {
+                                sampleOnly = config_value;
+                                break;
+                            }
+                    }
                 }
             }
         }
