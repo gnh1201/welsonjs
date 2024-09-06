@@ -11,6 +11,7 @@ using System.ServiceProcess;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using System.Linq;
 using Tesseract;
 using WelsonJS.Service;
 
@@ -112,10 +113,15 @@ public class ScreenMatch
     private bool busy = false;
     private List<string> _params = new List<string>();
     private bool isSearchFromEnd = false;
-    private byte thresholdConvertToBinary = 191;
     private bool isSaveToFile = false;
     private bool isUseSampleClipboard = false;
     private bool isUseSampleOCR = false;
+    private int sampleWidth = 128;
+    private int sampleHeight = 128;
+    private int sampleAdjustX = 0;
+    private int sampleAdjustY = 0;
+    private string sampleOnly = "";
+    private byte thresholdConvertToBinary = 191;
     private string tesseractDataPath;
     private string tesseractLanguage;
 
@@ -143,36 +149,79 @@ public class ScreenMatch
 
         if (!String.IsNullOrEmpty(screen_time_params))
         {
-            string[] ss = screen_time_params.Split(',');
-            foreach (string s in ss) {
-                AddParam(s);
+            var screen_time_configs = screen_time_params
+                .Split(',')
+                .Select(pair => pair.Split('='))
+                .ToDictionary(
+                    parts => parts[0],
+                    parts => parts.Length > 1 ? parts[1] : parts[0]
+                );
+
+            foreach (var config in screen_time_configs)
+            {
+                switch (config.Key)
+                {
+                    case "backward":
+                        {
+                            isSearchFromEnd = true;
+                            this.parent.Log("Use the backward search when screen time");
+                            break;
+                        }
+
+                    case "save":
+                        {
+                            isSaveToFile = true;
+                            this.parent.Log("Will be save an image file when capture the screens");
+                            break;
+                        }
+
+                    case "sample_clipboard":
+                        {
+                            isUseSampleClipboard = true;
+                            this.parent.Log("Use Clipboard within a 128x128 pixel range around specific coordinates.");
+                            break;
+                        }
+
+                    case "sample_ocr":
+                        {
+                            tesseractDataPath = Path.Combine(workingDirectory, "app/assets/tessdata_best");
+                            tesseractLanguage = "eng";
+                            isUseSampleOCR = true;
+                            this.parent.Log("Use OCR within a 128x128 pixel range around specific coordinates.");
+                            break;
+                        }
+
+                    case "sample_width":
+                        {
+                            int.TryParse(config.Value, out sampleWidth);
+                            break;
+                        }
+
+                    case "sample_height":
+                        {
+                            int.TryParse(config.Value, out sampleHeight);
+                            break;
+                        }
+
+                    case "sample_adjust_x":
+                        {
+                            int.TryParse(config.Value, out sampleAdjustX);
+                            break;
+                        }
+
+                    case "sample_adjust_y":
+                        {
+                            int.TryParse(config.Value, out sampleAdjustY);
+                            break;
+                        }
+
+                    case "sample_only":
+                        {
+                            sampleOnly = config.Value;
+                            break;
+                        }
+                }
             }
-        }
-        
-        if (_params.Contains("backward"))
-        {
-            isSearchFromEnd = true;
-            this.parent.Log("Use the backward search when screen time");
-        }
-
-        if (_params.Contains("save"))
-        {
-            isSaveToFile = true;
-            this.parent.Log("Will be save an image file when capture the screens");
-        }
-
-        if (_params.Contains("sample_clipboard"))
-        {
-            isUseSampleClipboard = true;
-            this.parent.Log("Use Clipboard within a 128x128 pixel range around specific coordinates.");
-        }
-
-        if (_params.Contains("sample_ocr"))
-        {
-            tesseractDataPath = Path.Combine(workingDirectory, "app/assets/tessdata_best");
-            tesseractLanguage = "eng";
-            isUseSampleOCR = true;
-            this.parent.Log("Use OCR within a 128x128 pixel range around specific coordinates.");
         }
 
         SetMode(screen_time_mode);
@@ -189,11 +238,6 @@ public class ScreenMatch
         {
             this.mode = "screen";
         }
-    }
-
-    public void AddParam(string _param)
-    {
-        _params.Add(_param);
     }
 
     public void SetThreshold(double threshold)
@@ -304,6 +348,13 @@ public class ScreenMatch
             }
 
             Point matchPosition = FindTemplate(_mainImage, (Bitmap)image.Clone(), out double maxCorrelation);
+            string text = "";
+
+            if (String.IsNullOrEmpty(sampleOnly) || (!String.IsNullOrEmpty(sampleOnly) && sampleOnly == filename))
+            {
+                text = InspectSample((Bitmap)mainImage.Clone(), matchPosition.X, matchPosition.Y, imageWidth, imageHeight, sampleWidth, sampleHeight);
+            }
+
             if (matchPosition != Point.Empty)
             {
                 results.Add(new ScreenMatchResult
@@ -312,7 +363,7 @@ public class ScreenMatch
                     ScreenNumber = i,
                     Position = matchPosition,
                     MaxCorrelation = maxCorrelation,
-                    Text = InspectSample((Bitmap)mainImage.Clone(), matchPosition.X, matchPosition.Y, imageWidth, imageHeight, 128, 128)
+                    Text = text
                 });
             }
         }
@@ -346,8 +397,8 @@ public class ScreenMatch
         y = y + (b / 2);
 
         // Set range of crop image
-        int cropX = Math.Max(x - w / 2, 0);
-        int cropY = Math.Max(y - h / 2, 0);
+        int cropX = Math.Max(x - w / 2, 0) + sampleAdjustX;
+        int cropY = Math.Max(y - h / 2, 0) + sampleAdjustY;
         int cropWidth = Math.Min(w, bitmap.Width - cropX);
         int cropHeight = Math.Min(h, bitmap.Height - cropY);
         Rectangle cropArea = new Rectangle(cropX, cropY, cropWidth, cropHeight);
