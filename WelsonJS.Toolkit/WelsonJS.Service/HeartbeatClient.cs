@@ -9,6 +9,7 @@ using System.ServiceProcess;
 using Grpc.Net.Client;
 using Grpc.Net.Client.Web;
 using System.Net.Http;
+using System.Threading;
 
 namespace WelsonJS.Service
 {
@@ -54,47 +55,77 @@ namespace WelsonJS.Service
 
         public async Task StartHeartbeatAsync()
         {
-            var call = _client.CheckHeartbeat();
-            try
+            while (true)
             {
-                while (true)
+                var call = _client.CheckHeartbeat();
+                try
                 {
-                    var request = new HeartbeatRequest {
+
+                    var request = new HeartbeatRequest
+                    {
                         IsAlive = true
                     };
+
                     await call.RequestStream.WriteAsync(request);
+                    await call.RequestStream.CompleteAsync();
                     _parent.Log("Sent heartbeat");
 
-                    if (await call.ResponseStream.MoveNext())
+                    await Task.Delay(HeartbeatInterval); // HeartbeatInterval 동안 대기
+
+                }
+                catch (Exception ex)
+                {
+                    _parent.Log("Heartbeat request stream failed: " + ex.Message);
+                }
+
+                // 서버 응답을 수신하는 작업
+                try
+                {
+                    while (await call.ResponseStream.MoveNext())
                     {
                         var response = call.ResponseStream.Current;
                         _parent.Log("Heartbeat response received: " + response.IsAlive);
                     }
-
-                    await Task.Delay(HeartbeatInterval);
                 }
-            }
-            finally
-            {
-                await call.RequestStream.CompleteAsync();
+                catch (RpcException ex)
+                {
+                    _parent.Log($"gRPC error: {ex.Status.Detail}");
+                }
+                catch (Exception ex)
+                {
+                    _parent.Log($"Unexpected error: {ex.Message}");
+                }
+                finally
+                {
+                    // 잠시 대기 후 재연결
+                    await Task.Delay(TimeSpan.FromMilliseconds(HeartbeatInterval));
+                }
             }
         }
 
         public async Task StartEventListenerAsync()
         {
-            var eventRequest = new FetchEventsRequest {
+            var eventRequest = new FetchEventsRequest
+            {
                 ClientId = clientId
             };
-            var eventCall = _client.FetchPendingEvents(eventRequest);
-            try
+            while (true)
             {
-                while (await eventCall.ResponseStream.MoveNext())
+                var eventCall = _client.FetchPendingEvents(eventRequest);
+                try
                 {
-                    var response = eventCall.ResponseStream.Current;
-                    _parent.Log($"Received event from server: {response.EventType} with args: {string.Join(", ", response.Args)}");
+                    while (await eventCall.ResponseStream.MoveNext())
+                    {
+                        var response = eventCall.ResponseStream.Current;
+                        _parent.Log($"Received event from server: {response.EventType} with args: {string.Join(", ", response.Args)}");
+                    }
+                }
+                finally
+                {
+                    await Task.Delay(TimeSpan.FromMilliseconds(HeartbeatInterval));
                 }
             }
-            finally {}
+
         }
 
         public async Task ShutdownAsync()
