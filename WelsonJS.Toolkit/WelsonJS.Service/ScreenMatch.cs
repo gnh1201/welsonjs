@@ -397,8 +397,8 @@ public class ScreenMatch
         y = y + (b / 2);
 
         // Set range of crop image
-        int cropX = Math.Max(x - w / 2, 0) + sampleAdjustX;
-        int cropY = Math.Max(y - h / 2, 0) + sampleAdjustY;
+        int cropX = Math.Max((x - w / 2) + sampleAdjustX, 0);
+        int cropY = Math.Max((y - h / 2) + sampleAdjustY, 0);
         int cropWidth = Math.Min(w, bitmap.Width - cropX);
         int cropHeight = Math.Min(h, bitmap.Height - cropY);
         Rectangle cropArea = new Rectangle(cropX, cropY, cropWidth, cropHeight);
