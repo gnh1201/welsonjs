@@ -36,6 +36,11 @@ function onNetworkConnected(args) {
     return "onNetworkConnected recevied. " + args.join(', ');
 }
 
+function onRegistryModified(args) {
+    return "onRegistryModified recevied. " + args.join(', ');
+}
+
+
 exports.main = main;
 exports.getDeviceID = getDeviceID;
 exports.onServiceStart = onServiceStart;
@@ -44,3 +49,4 @@ exports.onServiceElapsedTime = onServiceElapsedTime;
 exports.onServiceScreenTime = onServiceScreenTime;
 exports.onFileCreated = onFileCreated;
 exports.onNetworkConnected = onNetworkConnected;
+exports.onRegistryModified = onRegistryModified;

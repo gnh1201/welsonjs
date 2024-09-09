@@ -628,7 +628,8 @@ function dispatchServiceEvent(name, eventType, w_args, argl) {
             elapsedTime: bind("ServiceElapsedTime"),
             screenTime: bind("ServiceScreenTime"),
             fileCreated: bind("FileCreated"),
-            networkConnected: bind("NetworkConnected")
+            networkConnected: bind("NetworkConnected"),
+            registryModified: bind("RegistryModified")
         });
     } else {
         console.error("Could not find", name + ".js");

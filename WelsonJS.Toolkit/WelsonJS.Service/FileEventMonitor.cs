@@ -15,7 +15,10 @@ namespace WelsonJS.Service
         private enum EventType: int
         {
             FileCreate = 11,
-            NetworkConnection = 3
+            NetworkConnection = 3,
+            RegistryEvent_1 = 12,
+            RegistryEvent_2 = 13,
+            RegistryEvent_3 = 14
         };
         private enum FileCreateEvent: int {
             RuleName,
@@ -48,6 +51,18 @@ namespace WelsonJS.Service
             DestinationPort,
             DestinationPortName,
         };
+        private enum RegistryEvent: int
+        {
+            RuleName,
+            EventType,
+            UtcTime,
+            ProcessGuid,
+            ProcessId,
+            Image,
+            TargetObject,
+            Details,
+            User
+        }
 
         public FileEventMonitor(ServiceBase parent, string workingDirectory)
         {
@@ -100,50 +115,71 @@ namespace WelsonJS.Service
 
                 try
                 {
-                    if (eventId == (int)EventType.FileCreate)
+                    switch (eventId)
                     {
-                        string ruleName = e.EventRecord.Properties[(int)FileCreateEvent.RuleName]?.Value?.ToString();
-                        string processId = e.EventRecord.Properties[(int)FileCreateEvent.ProcessId]?.Value?.ToString();
-                        string image = e.EventRecord.Properties[(int)FileCreateEvent.Image]?.Value?.ToString();
-                        string fileName = e.EventRecord.Properties[(int)FileCreateEvent.TargetFilename]?.Value?.ToString();
+                        case (int)EventType.FileCreate:
+                            {
+                                string ruleName = e.EventRecord.Properties[(int)FileCreateEvent.RuleName]?.Value?.ToString();
+                                string processId = e.EventRecord.Properties[(int)FileCreateEvent.ProcessId]?.Value?.ToString();
+                                string image = e.EventRecord.Properties[(int)FileCreateEvent.Image]?.Value?.ToString();
+                                string fileName = e.EventRecord.Properties[(int)FileCreateEvent.TargetFilename]?.Value?.ToString();
 
-                        if (string.IsNullOrEmpty(fileName))
-                        {
-                            throw new ArgumentException("Could not read the target filename.");
-                        }
+                                parent.Log($"> Detected the file creation: {fileName}");
+                                parent.Log(parent.DispatchServiceEvent("fileCreated", new string[] {
+                                    ruleName,
+                                    processId,
+                                    image,
+                                    fileName
+                                }));
 
-                        if (File.Exists(fileName))
-                        {
-                            parent.Log($"> Detected the file creation: {fileName}");
-                            parent.Log(parent.DispatchServiceEvent("fileCreated", new string[] {
-                                ruleName,
-                                processId,
-                                image,
-                                fileName
-                            }));
-                        }
-                        else
-                        {
-                            throw new FileNotFoundException($"{fileName} file not found.");
-                        }
-                    }
-                    else if (eventId == (int)EventType.NetworkConnection)
-                    {
-                        string ruleName = e.EventRecord.Properties[(int)NetworkConnectionEvent.RuleName]?.Value?.ToString();
-                        string processId = e.EventRecord.Properties[(int)NetworkConnectionEvent.ProcessId]?.Value?.ToString();
-                        string image = e.EventRecord.Properties[(int)NetworkConnectionEvent.Image]?.Value?.ToString();
-                        string protocol = e.EventRecord.Properties[(int)NetworkConnectionEvent.Protocol]?.Value?.ToString();
-                        string destinationIp = e.EventRecord.Properties[(int)NetworkConnectionEvent.DestinationIp]?.Value?.ToString();
-                        string desinationPort = e.EventRecord.Properties[(int)NetworkConnectionEvent.DestinationPort]?.Value?.ToString();
-                        string dstinationAddress = $"{protocol}://{destinationIp}:{desinationPort}";
+                                break;
+                            }
 
-                        parent.Log($"> Detected the network connection: {dstinationAddress}");
-                        parent.Log(parent.DispatchServiceEvent("networkConnected", new string[] {
-                            ruleName,
-                            processId,
-                            image,
-                            dstinationAddress
-                        }));
+                        case (int)EventType.NetworkConnection:
+                            {
+                                string ruleName = e.EventRecord.Properties[(int)NetworkConnectionEvent.RuleName]?.Value?.ToString();
+                                string processId = e.EventRecord.Properties[(int)NetworkConnectionEvent.ProcessId]?.Value?.ToString();
+                                string image = e.EventRecord.Properties[(int)NetworkConnectionEvent.Image]?.Value?.ToString();
+                                string protocol = e.EventRecord.Properties[(int)NetworkConnectionEvent.Protocol]?.Value?.ToString();
+                                string destinationIp = e.EventRecord.Properties[(int)NetworkConnectionEvent.DestinationIp]?.Value?.ToString();
+                                string desinationPort = e.EventRecord.Properties[(int)NetworkConnectionEvent.DestinationPort]?.Value?.ToString();
+                                string dstinationAddress = $"{protocol}://{destinationIp}:{desinationPort}";
+
+                                parent.Log($"> Detected the network connection: {dstinationAddress}");
+                                parent.Log(parent.DispatchServiceEvent("networkConnected", new string[] {
+                                    ruleName,
+                                    processId,
+                                    image,
+                                    dstinationAddress
+                                }));
+
+                                break;
+                            }
+
+                        case (int)EventType.RegistryEvent_1:
+                        case (int)EventType.RegistryEvent_2:
+                        case (int)EventType.RegistryEvent_3:
+                            {
+                                string ruleName = e.EventRecord.Properties[(int)RegistryEvent.RuleName]?.Value?.ToString();
+                                string processId = e.EventRecord.Properties[(int)RegistryEvent.ProcessId]?.Value?.ToString();
+                                string image = e.EventRecord.Properties[(int)RegistryEvent.Image]?.Value?.ToString();
+                                string eventType = e.EventRecord.Properties[(int)RegistryEvent.EventType]?.Value?.ToString();
+                                string targetObject = e.EventRecord.Properties[(int)RegistryEvent.TargetObject]?.Value?.ToString();
+
+                                parent.Log($"> Detected the registry modification: {targetObject}");
+                                parent.Log(parent.DispatchServiceEvent("registryModified", new string[] {
+                                    ruleName,
+                                    processId,
+                                    image,
+                                    eventType,
+                                    targetObject
+                                }));
+
+                                break;
+                            }
+
+                        default:
+                            throw new ArgumentException("Not supported event type");
                     }
                 }
                 catch (Exception ex)
