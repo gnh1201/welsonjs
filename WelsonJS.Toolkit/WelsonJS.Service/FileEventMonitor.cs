@@ -75,7 +75,7 @@ namespace WelsonJS.Service
             {
                 string query = @"<QueryList>
                                     <Query Id='0' Path='Microsoft-Windows-Sysmon/Operational'>
-                                        <Select Path='Microsoft-Windows-Sysmon/Operational'>*[System/EventID=11 or System/EventID=3]</Select>
+                                        <Select Path='Microsoft-Windows-Sysmon/Operational'>*[System/EventID=11 or System/EventID=3 or System/EventID=12 or System/EventID=13 or System/EventID=14]</Select>
                                     </Query>
                                  </QueryList>";
 
