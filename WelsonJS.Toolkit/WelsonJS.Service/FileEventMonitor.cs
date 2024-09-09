@@ -4,23 +4,20 @@
 using System;
 using System.Diagnostics.Eventing.Reader;
 using System.IO;
-using libyaraNET;
-using System.Collections.Generic;
 using System.ServiceProcess;
-using WelsonJS.Service.Model;
-using System.Threading.Tasks;
-using System.Runtime.ExceptionServices;
-using System.Security;
 
 namespace WelsonJS.Service
 {
     public class FileEventMonitor
     {
-        private Rules rules;
         private EventLogWatcher eventLogWatcher;
         private ServiceMain parent;
-        private string ruleDirectoryPath;
-        private enum EventType11: int {
+        private enum EventType: int
+        {
+            FileCreate = 11,
+            NetworkConnection = 3
+        };
+        private enum FileCreateEvent: int {
             RuleName,
             UtcTime,
             ProcessGuid,
@@ -30,64 +27,31 @@ namespace WelsonJS.Service
             CreationUtcTime,
             User
         };
+        private enum NetworkConnectionEvent: int
+        {
+            RuleName,
+            UtcTime,
+            ProcessGuid,
+            ProcessId,
+            Image,
+            User,
+            Protocol,
+            Initiated,
+            SourceIsIpv6,
+            SourceIp,
+            SourceHostname,
+            SourcePort,
+            SourcePortName,
+            DestinationIsIpv6,
+            DestinationIp,
+            DestinationHostname,
+            DestinationPort,
+            DestinationPortName,
+        };
 
         public FileEventMonitor(ServiceBase parent, string workingDirectory)
         {
             this.parent = (ServiceMain)parent;
-            ruleDirectoryPath = Path.Combine(workingDirectory, "app/assets/yar");
-
-            try
-            {
-                AddYaraRulesFromDirectory(ruleDirectoryPath);
-            }
-            catch (Exception ex)
-            {
-                this.parent.Log($"Failed to read the rules: {ex.Message}");
-            }
-        }
-
-        public void AddYaraRulesFromDirectory(string directoryPath)
-        {
-            if (!Directory.Exists(directoryPath))
-            {
-                throw new FileNotFoundException($"{directoryPath} directory not found.");
-            }
-
-            var ruleFiles = Directory.GetFiles(directoryPath, "*.yar");
-            AddYaraRules(new List<string>(ruleFiles));
-        }
-
-        public void AddYaraRules(List<string> ruleFiles)
-        {
-            Dispose();
-
-            using (var ctx = new YaraContext())
-            {
-                try
-                {
-                    using (var compiler = new Compiler())
-                    {
-                        foreach (var ruleFile in ruleFiles)
-                        {
-                            if (File.Exists(ruleFile))
-                            {
-                                compiler.AddRuleFile(ruleFile);
-                                parent.Log($"Added the rule: {ruleFile}");
-                            }
-                            else
-                            {
-                                throw new FileNotFoundException($"{ruleFile} file not found.");
-                            }
-                        }
-
-                        rules = compiler.GetRules();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    parent.Log($"Error adding the rules: {ex.Message}");
-                }
-            }
         }
 
         public void Start()
@@ -96,7 +60,7 @@ namespace WelsonJS.Service
             {
                 string query = @"<QueryList>
                                     <Query Id='0' Path='Microsoft-Windows-Sysmon/Operational'>
-                                        <Select Path='Microsoft-Windows-Sysmon/Operational'>*[System/EventID=11]</Select>
+                                        <Select Path='Microsoft-Windows-Sysmon/Operational'>*[System/EventID=11 or System/EventID=3]</Select>
                                     </Query>
                                  </QueryList>";
 
@@ -126,31 +90,58 @@ namespace WelsonJS.Service
                     eventLogWatcher = null;
                 }
             }
-
-            Dispose();
         }
 
         private void OnEventRecordWritten(object sender, EventRecordWrittenEventArgs e)
         {
             if (e.EventRecord != null)
             {
+                int eventId = e.EventRecord.Id;
+
                 try
                 {
-                    string fileName = e.EventRecord.Properties[(int)EventType11.TargetFilename]?.Value?.ToString();
+                    if (eventId == (int)EventType.FileCreate)
+                    {
+                        string ruleName = e.EventRecord.Properties[(int)FileCreateEvent.RuleName]?.Value?.ToString();
+                        string processId = e.EventRecord.Properties[(int)FileCreateEvent.ProcessId]?.Value?.ToString();
+                        string image = e.EventRecord.Properties[(int)FileCreateEvent.Image]?.Value?.ToString();
+                        string fileName = e.EventRecord.Properties[(int)FileCreateEvent.TargetFilename]?.Value?.ToString();
 
-                    if (string.IsNullOrEmpty(fileName))
-                    {
-                        throw new ArgumentException("Could not read the target filename.");
-                    }
+                        if (string.IsNullOrEmpty(fileName))
+                        {
+                            throw new ArgumentException("Could not read the target filename.");
+                        }
 
-                    if (File.Exists(fileName))
-                    {
-                        parent.Log($"File created: {fileName}");
-                        parent.DispatchServiceEvent("fileCreated", new string[] { fileName });
+                        if (File.Exists(fileName))
+                        {
+                            parent.Log($"File created: {fileName}");
+                            parent.DispatchServiceEvent("fileCreated", new string[] {
+                                ruleName,
+                                processId,
+                                image,
+                                fileName
+                            });
+                        }
+                        else
+                        {
+                            throw new FileNotFoundException($"{fileName} file not found.");
+                        }
                     }
-                    else
+                    else if (eventId == (int)EventType.NetworkConnection)
                     {
-                        throw new FileNotFoundException($"{fileName} file not found.");
+                        string ruleName = e.EventRecord.Properties[(int)NetworkConnectionEvent.RuleName]?.Value?.ToString();
+                        string processId = e.EventRecord.Properties[(int)NetworkConnectionEvent.ProcessId]?.Value?.ToString();
+                        string image = e.EventRecord.Properties[(int)NetworkConnectionEvent.Image]?.Value?.ToString();
+                        string protocol = e.EventRecord.Properties[(int)NetworkConnectionEvent.Protocol]?.Value?.ToString();
+                        string destinationIp = e.EventRecord.Properties[(int)NetworkConnectionEvent.DestinationIp]?.Value?.ToString();
+                        string desinationPort = e.EventRecord.Properties[(int)NetworkConnectionEvent.DestinationPort]?.Value?.ToString();
+
+                        parent.DispatchServiceEvent("networkConnected", new string[] {
+                            ruleName,
+                            processId,
+                            image,
+                            $"{protocol}://{destinationIp}:{desinationPort}"
+                        });
                     }
                 }
                 catch (Exception ex)
@@ -161,73 +152,6 @@ namespace WelsonJS.Service
             else
             {
                 parent.Log("The event instance was null.");
-            }
-        }
-
-        private void CheckFile(string filePath)
-        {
-            if (rules == null)
-            {
-                throw new ArgumentNullException("No rules added. Skipping check the file.");
-            }
-
-            using (var ctx = new YaraContext())
-            {
-                var scanner = new Scanner();
-                var results = scanner.ScanFile(filePath, rules);
-
-                if (results.Count > 0)
-                {
-                    parent.Log($"Match Found: {filePath}");
-
-                    foreach (var result in results)
-                    {
-                        Dictionary<string, List<Match>> matches = result.Matches;
-                        foreach (KeyValuePair<string, List<Match>> match in matches)
-                        {
-                            string ruleName = match.Key;
-                            List<Match> ruleMatches = match.Value;
-                            ruleMatches.ForEach((x) =>
-                            {
-                                parent.Log($"Matched {ruleName}: {filePath}, Offset {x.Offset}");
-                                parent.DispatchServiceEvent("fileRuleMatched", new string[] { ruleName, filePath, x.Offset.ToString() });
-
-                                IndexFileRuleMatched(new FileMatchResult
-                                {
-                                    FilePath = filePath,
-                                    Offset = x.Offset,
-                                    RuleName = ruleName,
-                                    LastChecked = DateTime.Now
-                                });
-                            });
-                        }
-                    }
-                }
-                else
-                {
-                    parent.Log($"No match found in {filePath}.");
-                }
-            }
-        }
-
-        private void IndexFileRuleMatched(FileMatchResult match)
-        {
-            // TODO (Save a result to the document indexer)
-        }
-
-        private void Dispose()
-        {
-            if (rules != null)
-            {
-                try
-                {
-                    //rules.Dispose();
-                    rules = null;
-                }
-                catch (Exception)
-                {
-                    rules = null;
-                }
             }
         }
     }
