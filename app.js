@@ -629,7 +629,7 @@ function dispatchServiceEvent(name, eventType, w_args, argl) {
             messageReceived: bind("MessageReceived"),
             screenTime: bind("ServiceScreenTime"),
             fileCreated: bind("FileCreated"),
-            networkConnected: bind("NetworkConnected");
+            fileRuleMatched: bind("FileRuleMatched")
         });
     } else {
         console.error("Could not find", name + ".js");
