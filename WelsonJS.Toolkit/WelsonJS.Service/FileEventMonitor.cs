@@ -3,7 +3,6 @@
 // https://github.com/gnh1201/welsonjs
 using System;
 using System.Diagnostics.Eventing.Reader;
-using System.IO;
 using System.ServiceProcess;
 
 namespace WelsonJS.Service
