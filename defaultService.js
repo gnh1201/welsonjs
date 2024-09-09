@@ -1,13 +1,6 @@
-var SYS = require("lib/system");
-
 function main(args) {
     console.log("WelsonJS.Service required.");
 }
-
-function getDeviceID() {
-    return SYS.getUUID();
-}
-
 function onServiceStart() {
     return "onServiceStart recevied";
 }
@@ -32,15 +25,16 @@ function onFileCreated(args) {
     return "onFileCreated recevied. " + args.join(', ');
 }
 
-function onFileRuleMatched(args) {
-    return "onFileCreated recevied. " + args.join(', ');
+function onNetworkConnected(args) {
+    return "onNetworkConnected recevied. " + args.join(', ');
 }
 
 exports.main = main;
+
 exports.getDeviceID = getDeviceID;
 exports.onServiceStart = onServiceStart;
 exports.onServiceStop = onServiceStop;
 exports.onServiceElapsedTime = onServiceElapsedTime;
 exports.onServiceScreenTime = onServiceScreenTime;
 exports.onFileCreated = onFileCreated;
-exports.onFileRuleMatched = onFileRuleMatched;
+exports.onNetworkConnected = onNetworkConnected;
