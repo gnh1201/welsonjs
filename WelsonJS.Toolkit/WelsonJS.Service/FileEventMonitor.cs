@@ -114,13 +114,13 @@ namespace WelsonJS.Service
 
                         if (File.Exists(fileName))
                         {
-                            parent.Log($"File created: {fileName}");
-                            parent.DispatchServiceEvent("fileCreated", new string[] {
+                            parent.Log($"> Detected the file creation: {fileName}");
+                            parent.Log(parent.DispatchServiceEvent("fileCreated", new string[] {
                                 ruleName,
                                 processId,
                                 image,
                                 fileName
-                            });
+                            }));
                         }
                         else
                         {
@@ -135,13 +135,15 @@ namespace WelsonJS.Service
                         string protocol = e.EventRecord.Properties[(int)NetworkConnectionEvent.Protocol]?.Value?.ToString();
                         string destinationIp = e.EventRecord.Properties[(int)NetworkConnectionEvent.DestinationIp]?.Value?.ToString();
                         string desinationPort = e.EventRecord.Properties[(int)NetworkConnectionEvent.DestinationPort]?.Value?.ToString();
+                        string dstinationAddress = $"{protocol}://{destinationIp}:{desinationPort}";
 
-                        parent.DispatchServiceEvent("networkConnected", new string[] {
+                        parent.Log($"> Detected the network connection: {dstinationAddress}");
+                        parent.Log(parent.DispatchServiceEvent("networkConnected", new string[] {
                             ruleName,
                             processId,
                             image,
-                            $"{protocol}://{destinationIp}:{desinationPort}"
-                        });
+                            dstinationAddress
+                        }));
                     }
                 }
                 catch (Exception ex)

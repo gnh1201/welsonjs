@@ -9,7 +9,6 @@ using System.ServiceProcess;
 using Grpc.Net.Client;
 using Grpc.Net.Client.Web;
 using System.Net.Http;
-using System.Threading;
 
 namespace WelsonJS.Service
 {

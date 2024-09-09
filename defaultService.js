@@ -32,8 +32,8 @@ function onFileCreated(args) {
     return "onFileCreated recevied. " + args.join(', ');
 }
 
-function onFileRuleMatched(args) {
-    return "onFileCreated recevied. " + args.join(', ');
+function onNetworkConnected(args) {
+    return "onNetworkConnected recevied. " + args.join(', ');
 }
 
 exports.main = main;
@@ -43,4 +43,4 @@ exports.onServiceStop = onServiceStop;
 exports.onServiceElapsedTime = onServiceElapsedTime;
 exports.onServiceScreenTime = onServiceScreenTime;
 exports.onFileCreated = onFileCreated;
-exports.onFileRuleMatched = onFileRuleMatched;
+exports.onNetworkConnected = onNetworkConnected;
