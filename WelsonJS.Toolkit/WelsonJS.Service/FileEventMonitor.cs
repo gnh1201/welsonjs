@@ -8,6 +8,9 @@ using libyaraNET;
 using System.Collections.Generic;
 using System.ServiceProcess;
 using WelsonJS.Service.Model;
+using System.Threading.Tasks;
+using System.Runtime.ExceptionServices;
+using System.Security;
 
 namespace WelsonJS.Service
 {
@@ -17,6 +20,16 @@ namespace WelsonJS.Service
         private EventLogWatcher eventLogWatcher;
         private ServiceMain parent;
         private string ruleDirectoryPath;
+        private enum EventType11: int {
+            RuleName,
+            UtcTime,
+            ProcessGuid,
+            ProcessId,
+            Image,
+            TargetFilename,
+            CreationUtcTime,
+            User
+        };
 
         public FileEventMonitor(ServiceBase parent, string workingDirectory)
         {
@@ -25,11 +38,11 @@ namespace WelsonJS.Service
 
             try
             {
-                AddYaraRules(new List<string>(Directory.GetFiles(ruleDirectoryPath, "*.yar")));
+                AddYaraRulesFromDirectory(ruleDirectoryPath);
             }
             catch (Exception ex)
             {
-                this.parent.Log($"Failed to read the rule files: {ex.Message}");
+                this.parent.Log($"Failed to read the rules: {ex.Message}");
             }
         }
 
@@ -37,12 +50,11 @@ namespace WelsonJS.Service
         {
             if (!Directory.Exists(directoryPath))
             {
-                Console.WriteLine($"Directory not found: {directoryPath}");
-                return;
+                throw new FileNotFoundException($"{directoryPath} directory not found.");
             }
 
-            var yarFiles = Directory.GetFiles(directoryPath, "*.yar");
-            AddYaraRules(new List<string>(yarFiles));
+            var ruleFiles = Directory.GetFiles(directoryPath, "*.yar");
+            AddYaraRules(new List<string>(ruleFiles));
         }
 
         public void AddYaraRules(List<string> ruleFiles)
@@ -60,11 +72,11 @@ namespace WelsonJS.Service
                             if (File.Exists(ruleFile))
                             {
                                 compiler.AddRuleFile(ruleFile);
-                                parent.Log($"Loaded file: {ruleFile}");
+                                parent.Log($"Added the rule: {ruleFile}");
                             }
                             else
                             {
-                                parent.Log($"File not found: {ruleFile}");
+                                throw new FileNotFoundException($"{ruleFile} file not found.");
                             }
                         }
 
@@ -73,7 +85,7 @@ namespace WelsonJS.Service
                 }
                 catch (Exception ex)
                 {
-                    parent.Log($"Error loading the rules: {ex.Message}");
+                    parent.Log($"Error adding the rules: {ex.Message}");
                 }
             }
         }
@@ -124,12 +136,21 @@ namespace WelsonJS.Service
             {
                 try
                 {
-                    string fileName = e.EventRecord.Properties[7]?.Value?.ToString();
-                    if (!string.IsNullOrEmpty(fileName) && File.Exists(fileName))
+                    string fileName = e.EventRecord.Properties[(int)EventType11.TargetFilename]?.Value?.ToString();
+
+                    if (string.IsNullOrEmpty(fileName))
+                    {
+                        throw new ArgumentException("Could not read the target filename.");
+                    }
+
+                    if (File.Exists(fileName))
                     {
                         parent.Log($"File created: {fileName}");
                         parent.DispatchServiceEvent("fileCreated", new string[] { fileName });
-                        ScanFileWithYara(fileName);
+                    }
+                    else
+                    {
+                        throw new FileNotFoundException($"{fileName} file not found.");
                     }
                 }
                 catch (Exception ex)
@@ -143,12 +164,11 @@ namespace WelsonJS.Service
             }
         }
 
-        private void ScanFileWithYara(string filePath)
+        private void CheckFile(string filePath)
         {
             if (rules == null)
             {
-                parent.Log("No rules loaded. Skipping file scan.");
-                return;
+                throw new ArgumentNullException("No rules added. Skipping check the file.");
             }
 
             using (var ctx = new YaraContext())
