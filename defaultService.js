@@ -40,6 +40,9 @@ function onRegistryModified(args) {
     return "onRegistryModified recevied. " + args.join(', ');
 }
 
+function onAvScanResult(args) {
+    return "onAvScanResult recevied. " + args.join(', ');
+}
 
 exports.main = main;
 exports.getDeviceID = getDeviceID;
@@ -50,3 +53,4 @@ exports.onServiceScreenTime = onServiceScreenTime;
 exports.onFileCreated = onFileCreated;
 exports.onNetworkConnected = onNetworkConnected;
 exports.onRegistryModified = onRegistryModified;
+exports.onAvScanResult = onAvScanResult;
