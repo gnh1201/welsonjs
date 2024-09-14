@@ -1,9 +1,13 @@
 ﻿// FileEventMonitor.cs
 // Namhyeon Go <abuse@catswords.net>
 // https://github.com/gnh1201/welsonjs
+using ClamAV.Net.Client;
+using ClamAV.Net.Client.Results;
 using System;
 using System.Diagnostics.Eventing.Reader;
+using System.Runtime.CompilerServices;
 using System.ServiceProcess;
+using System.Threading.Tasks;
 
 namespace WelsonJS.Service
 {
@@ -62,10 +66,22 @@ namespace WelsonJS.Service
             Details,
             User
         }
+        private string clamAvConenctionString;
+        private IClamAvClient clamAvClient;
 
         public FileEventMonitor(ServiceBase parent, string workingDirectory)
         {
             this.parent = (ServiceMain)parent;
+
+            try
+            {
+                clamAvConenctionString = this.parent.GetSettingsFileHandler().Read("CLAMAV_HOST", "Service");
+            }
+            catch (Exception)
+            {
+                clamAvConenctionString = "tcp://127.0.0.1:3310";
+            }
+            Task.Run(ConnectToClamAv);
         }
 
         public void Start()
@@ -86,7 +102,7 @@ namespace WelsonJS.Service
             }
             catch (Exception ex)
             {
-                parent.Log($"Failed to connect the Windows EventLog Service: {ex.Message}");
+                parent.Log($"Could not reach to the Sysmon service: {ex.Message}");
             }
         }
 
@@ -130,6 +146,15 @@ namespace WelsonJS.Service
                                     image,
                                     fileName
                                 }));
+
+                                if (clamAvClient != null)
+                                {
+                                    parent.Log($"> Starting the ClamAV scan: {fileName}");
+                                    Task.Run(async () =>
+                                    {
+                                        await ScanWithClamAv(fileName);
+                                    });
+                                }
 
                                 break;
                             }
@@ -190,6 +215,38 @@ namespace WelsonJS.Service
             {
                 parent.Log("The event instance was null.");
             }
+        }
+
+        private async Task ConnectToClamAv()
+        {
+            try {
+                // Create a client
+                clamAvClient = ClamAvClient.Create(new Uri(clamAvConenctionString));
+
+                // Send PING command to ClamAV
+                await clamAvClient.PingAsync().ConfigureAwait(false);
+
+                // Get ClamAV engine and virus database version
+                VersionResult result = await clamAvClient.GetVersionAsync().ConfigureAwait(false);
+
+                parent.Log($"ClamAV version - {result.ProgramVersion} , virus database version {result.VirusDbVersion}");
+            }
+            catch (Exception ex)
+            {
+                parent.Log($"Could not reach to ClamAV service: {clamAvConenctionString}, {ex.Message}");
+                clamAvClient = null;
+            }
+        }
+
+        private async Task ScanWithClamAv(string remotePath)
+        {
+            ScanResult res = await clamAvClient.ScanRemotePathAsync(remotePath).ConfigureAwait(false);
+
+            parent.Log($"> Scan result: Infected={res.Infected}, VirusName={res.VirusName}");
+            parent.Log(parent.DispatchServiceEvent("avScanResult", new string[] {
+                res.Infected.ToString(),
+                res.VirusName
+            }));
         }
     }
 }
