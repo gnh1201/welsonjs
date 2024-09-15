@@ -49,6 +49,7 @@ This program is also known by the following names. These names are used solely f
 ## Report Abuse
 If you discover any instances of this project being misused, please report them.
 
+- [GitHub Security Advisories](https://github.com/gnh1201/welsonjs/security)
 - abuse@catswords.net
 - ActivityPub: [@catswords_oss@catswords.social](https://catswords.social/@catswords_oss)
 - [Join Catswords on Microsoft Teams](https://teams.live.com/l/community/FEACHncAhq8ldnojAI)
