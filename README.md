@@ -182,6 +182,7 @@ This is so cool and so simple.
 - [License attributions of a stock images](https://policy.catswords.social/stock_images.html)
 
 ## Report abuse
+- [GitHub Security Advisories](https://github.com/gnh1201/welsonjs/security)
 - abuse@catswords.net
 - ActivityPub [@catswords_oss@catswords.social](https://catswords.social/@catswords_oss)
 - [Join Catswords on Microsoft Teams](https://teams.live.com/l/community/FEACHncAhq8ldnojAI)
