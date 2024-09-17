@@ -368,15 +368,19 @@ public class ScreenMatch
             }
 
             Point matchPosition = FindTemplate(_mainImage, (Bitmap)image.Clone(), out double maxCorrelation);
-            string text = "";
-
-            if (String.IsNullOrEmpty(sampleOnly) || (!String.IsNullOrEmpty(sampleOnly) && sampleOnly == filename))
-            {
-                text = InspectSample((Bitmap)mainImage.Clone(), matchPosition.X, matchPosition.Y, imageWidth, imageHeight, sampleWidth, sampleHeight);
-            }
-
             if (matchPosition != Point.Empty)
             {
+                string text = "";
+
+                if (String.IsNullOrEmpty(sampleOnly) || (!String.IsNullOrEmpty(sampleOnly) && sampleOnly == filename))
+                {
+                    text = InspectSample((Bitmap)mainImage.Clone(), matchPosition, imageWidth, imageHeight, sampleWidth, sampleHeight);
+                }
+                else
+                {
+                    parent.Log("Skipped inspect the image sample.");
+                }
+
                 results.Add(new ScreenMatchResult
                 {
                     FileName = image.Tag.ToString(),
@@ -402,19 +406,24 @@ public class ScreenMatch
         return results;
     }
 
-    public string InspectSample(Bitmap bitmap, int x, int y, int a, int b, int w, int h)
+    public string InspectSample(Bitmap bitmap, Point matchPosition, int a, int b, int w, int h)
     {
         if (bitmap == null)
         {
             throw new ArgumentNullException(nameof(bitmap), "Bitmap cannot be null.");
         }
 
+        if (matchPosition == null || matchPosition == Point.Empty)
+        {
+            throw new ArgumentNullException("matchPosition cannot be empty.");
+        }
+
         // initial text
         string text = "";
 
-        // Adjust coordinates 
-        x = x + (a / 2);
-        y = y + (b / 2);
+        // Adjust coordinates
+        int x = matchPosition.X + (a / 2);
+        int y = matchPosition.Y + (b / 2);
 
         // Set range of crop image
         int cropX = Math.Max((x - w / 2) + sampleAdjustX, 0);

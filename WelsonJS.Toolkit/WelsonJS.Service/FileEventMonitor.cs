@@ -77,11 +77,12 @@ namespace WelsonJS.Service
             {
                 clamAvConenctionString = this.parent.GetSettingsFileHandler().Read("CLAMAV_HOST", "Service");
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 clamAvConenctionString = "tcp://127.0.0.1:3310";
+                this.parent.Log($"Failed to read the address because of {ex.Message}. Set default: {clamAvConenctionString}");
             }
-            Task.Run(ConnectToClamAv);
+            ConnectToClamAv().Start();
         }
 
         public void Start()
@@ -208,7 +209,7 @@ namespace WelsonJS.Service
                 }
                 catch (Exception ex)
                 {
-                    parent.Log($"Error processing event: {ex.Message}");
+                    parent.Log($"Failed to process the event bacause of {ex.Message}.");
                 }
             }
             else
@@ -229,11 +230,11 @@ namespace WelsonJS.Service
                 // Get ClamAV engine and virus database version
                 VersionResult result = await clamAvClient.GetVersionAsync().ConfigureAwait(false);
 
-                parent.Log($"ClamAV version - {result.ProgramVersion} , virus database version {result.VirusDbVersion}");
+                parent.Log($"ClamAV version {result.ProgramVersion}, Virus database version {result.VirusDbVersion}");
             }
             catch (Exception ex)
             {
-                parent.Log($"Could not reach to ClamAV service: {clamAvConenctionString}, {ex.Message}");
+                parent.Log($"Failed to read the address because of {ex.Message}. {clamAvConenctionString}");
                 clamAvClient = null;
             }
         }
