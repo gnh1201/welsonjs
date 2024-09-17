@@ -103,9 +103,10 @@ dist
 # TernJS port file
 .tern-port
 
-# external assets
+# user defined assets
 bin
 data/chatgpt-apikey.txt
 app/assets/img/_templates
 app/assets/img/_captured
 settings.ini
+defaultService.js
