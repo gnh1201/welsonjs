@@ -369,14 +369,14 @@ public class ScreenMatch
             }
 
             Bitmap image = templateImages[templateCurrentIndex];
-            parent.Log($"Trying match the template {image.Tag as string} on the screen {i}...");
-
             string templateName = image.Tag as string;
             Size templateSize = new Size
             {
                 Width = image.Width,
                 Height = image.Height
             };
+
+            parent.Log($"Trying match the template {templateName} on the screen {i}...");
 
             Bitmap _mainImage;
             if (templateName.StartsWith("binary_"))
@@ -398,7 +398,7 @@ public class ScreenMatch
 
                     results.Add(new ScreenMatchResult
                     {
-                        FileName = image.Tag.ToString(),
+                        FileName = templateName,
                         ScreenNumber = i,
                         Position = matchPosition,
                         Text = text
@@ -559,19 +559,36 @@ public class ScreenMatch
                     if (windowImage != null)
                     {
                         Bitmap image = templateImages[templateCurrentIndex];
+                        string templateName = image.Tag as string;
+                        Size templateSize = new Size
+                        {
+                            Width = image.Width,
+                            Height = image.Height
+                        };
+
                         List<Point> matchPositions = FindTemplate(windowImage, image);
                         matchPositions.ForEach((matchPosition) =>
                         {
-                            string templateName = image.Tag as string;
-                            results.Add(new ScreenMatchResult
+                            try
                             {
-                                FileName = templateName,
-                                WindowHandle = hWnd,
-                                WindowTitle = windowTitle,
-                                ProcessName = processName,
-                                WindowPosition = windowPosition,
-                                Position = matchPosition
-                            });
+                                string text = sampleAny.Contains(templateName) ?
+                                    InspectSample((Bitmap)windowImage.Clone(), matchPosition, templateSize, templateName, sampleSize) : string.Empty;
+
+                                results.Add(new ScreenMatchResult
+                                {
+                                    FileName = templateName,
+                                    WindowHandle = hWnd,
+                                    WindowTitle = windowTitle,
+                                    ProcessName = processName,
+                                    WindowPosition = windowPosition,
+                                    Position = matchPosition,
+                                    Text = text
+                                });
+                            }
+                            catch (Exception ex)
+                            {
+                                parent.Log($"Ignore the match. {ex.Message}");
+                            }
                         });
                     }
                 }
