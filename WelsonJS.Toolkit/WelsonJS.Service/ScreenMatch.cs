@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.IO.Hashing;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Text;
@@ -14,6 +15,7 @@ using System.Windows.Forms;
 using System.Linq;
 using Tesseract;
 using WelsonJS.Service;
+using System.Security.Cryptography;
 
 public class ScreenMatch
 {
@@ -114,12 +116,12 @@ public class ScreenMatch
     private List<string> _params = new List<string>();
     private bool isSearchFromEnd = false;
     private bool isSaveToFile = false;
-    private bool isUseSampleClipboard = false;
-    private bool isUseSampleOCR = false;
     private Size sampleSize;
-    private int sampleAdjustX = 0;
-    private int sampleAdjustY = 0;
+    private int sampleAdjustX;
+    private int sampleAdjustY;
     private List<string> sampleAny;
+    private List<string> sampleClipboard;
+    private List<string> sampleOcr;
     private List<string> sampleNodup;
     private Size sampleNodupSize;
     private Queue<Bitmap> sampleOutdated;
@@ -133,13 +135,20 @@ public class ScreenMatch
 
         templateDirectoryPath = Path.Combine(workingDirectory, "app/assets/img/_templates");
         outputDirectoryPath = Path.Combine(workingDirectory, "app/assets/img/_captured");
-
         templateImages = new List<Bitmap>();
+
+        // Initialize variables for sampling process
         sampleSize = new Size
         {
             Width = 128,
             Height = 128
         };
+        sampleAdjustX = 0;
+        sampleAdjustY = 0;
+        sampleAny = new List<string>();
+        sampleClipboard = new List<string>();
+        sampleOcr = new List<string>();
+        sampleNodup = new List<string>();
         sampleNodupSize = new Size
         {
             Width = 128,
@@ -212,8 +221,7 @@ public class ScreenMatch
 
                         case "sample_clipboard":
                             {
-                                isUseSampleClipboard = true;
-                                this.parent.Log($"Use Clipboard within a {sampleSize.Width}x{sampleSize.Height} pixel range around specific coordinates.");
+                                sampleClipboard = new List<string>(config_value.Split(':'));
                                 break;
                             }
 
@@ -221,8 +229,7 @@ public class ScreenMatch
                             {
                                 tesseractDataPath = Path.Combine(workingDirectory, "app/assets/tessdata_best");
                                 tesseractLanguage = "eng";
-                                isUseSampleOCR = true;
-                                this.parent.Log($"Use OCR within a {sampleSize.Width}x{sampleSize.Height} pixel range around specific coordinates.");
+                                sampleOcr = new List<string>(config_value.Split(':'));
                                 break;
                             }
 
@@ -395,7 +402,7 @@ public class ScreenMatch
             }
 
             List<Point> matchPositions = FindTemplate(_mainImage, (Bitmap)image.Clone());
-            matchPositions.ForEach((matchPosition) =>
+            foreach (Point matchPosition in matchPositions)
             {
                 try
                 {
@@ -409,12 +416,14 @@ public class ScreenMatch
                         Position = matchPosition,
                         Text = text
                     });
+
+                    break;  // Only one
                 }
                 catch (Exception ex)
                 {
                     parent.Log($"Ignore the match. {ex.Message}");
                 }
-            });
+            }
         }
 
         if (results.Count > 0)
@@ -431,7 +440,7 @@ public class ScreenMatch
         return results;
     }
 
-    public Bitmap cropBitmap(Bitmap bitmap, Point matchPosition, Size templateSize, Size sampleSize, int dx = 0, int dy = 0)
+    public Bitmap CropBitmap(Bitmap bitmap, Point matchPosition, Size templateSize, Size sampleSize, int dx = 0, int dy = 0)
     {
         // Adjust coordinates to the center
         int x = matchPosition.X + (templateSize.Width / 2);
@@ -464,14 +473,15 @@ public class ScreenMatch
         string text = "";
 
         // Crop image
-        Bitmap croppedBitmap = cropBitmap(bitmap, matchPosition, templateSize, sampleSize, sampleAdjustX, sampleAdjustY);
+        Bitmap croppedBitmap = CropBitmap(bitmap, matchPosition, templateSize, sampleSize, sampleAdjustX, sampleAdjustY);
 
         // Save to the outdated samples
         if (sampleNodup.Contains(templateName))
         {
-            Bitmap croppedNodupBitmap = cropBitmap(bitmap, matchPosition, templateSize, sampleNodupSize);
-            int bitmapHash = croppedNodupBitmap.GetHashCode();
-            bool bitmapExists = sampleOutdated.Any(x => x.GetHashCode() == bitmapHash);
+            Bitmap croppedNodupBitmap = CropBitmap(bitmap, matchPosition, templateSize, sampleNodupSize);
+            uint bitmapCrc32 = ComputeBitmapCrc32(croppedNodupBitmap);
+            parent.Log($"bitmapCrc32: {bitmapCrc32}");
+            bool bitmapExists = sampleOutdated.Any(x => ComputeBitmapCrc32(x) == bitmapCrc32);
             if (bitmapExists)
             {
                 throw new InvalidOperationException($"This may be a duplicate request. {templateName}");
@@ -484,7 +494,7 @@ public class ScreenMatch
         }
 
         // if use Clipboard
-        if (isUseSampleClipboard)
+        if (sampleClipboard.Contains(templateName))
         {
             Thread th = new Thread(new ThreadStart(() =>
             {
@@ -503,7 +513,7 @@ public class ScreenMatch
         }
 
         // if use OCR
-        if (isUseSampleOCR)
+        if (sampleOcr.Contains(templateName))
         {
             try
             {
@@ -754,5 +764,19 @@ public class ScreenMatch
         }
 
         return binaryImage;
+    }
+
+    private uint ComputeBitmapCrc32(Bitmap bitmap)
+    {
+        using (MemoryStream ms = new MemoryStream())
+        {
+            bitmap.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
+
+            byte[] bitmapBytes = ms.ToArray();
+            Crc32 crc32 = new Crc32();
+            crc32.Append(bitmapBytes);
+
+            return BitConverter.ToUInt32(crc32.GetCurrentHash(), 0);
+        }
     }
 }
