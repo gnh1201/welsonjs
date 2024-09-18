@@ -116,11 +116,12 @@ public class ScreenMatch
     private bool isSaveToFile = false;
     private bool isUseSampleClipboard = false;
     private bool isUseSampleOCR = false;
-    private int sampleWidth = 128;
-    private int sampleHeight = 128;
+    private Size sampleSize;
     private int sampleAdjustX = 0;
     private int sampleAdjustY = 0;
-    private string sampleOnly = "";
+    private List<string> sampleAny;
+    private List<string> sampleNodup;
+    private Queue<Bitmap> sampleOutdated;
     private byte thresholdConvertToBinary = 191;
     private string tesseractDataPath;
     private string tesseractLanguage;
@@ -128,9 +129,17 @@ public class ScreenMatch
     public ScreenMatch(ServiceBase parent, string workingDirectory)
     {
         this.parent = (ServiceMain)parent;
+
         templateDirectoryPath = Path.Combine(workingDirectory, "app/assets/img/_templates");
         outputDirectoryPath = Path.Combine(workingDirectory, "app/assets/img/_captured");
+
         templateImages = new List<Bitmap>();
+        sampleSize = new Size
+        {
+            Width = 128,
+            Height = 128
+        };
+        sampleOutdated = new Queue<Bitmap>();
 
         // Read values from configration file
         string screen_time_mode;
@@ -164,7 +173,8 @@ public class ScreenMatch
                 "sample_height",
                 "sample_adjust_x",
                 "sample_adjust_y",
-                "sample_only",
+                "sample_any",
+                "sample_nodup",
                 "backward",
                 "save",
                 "sample_clipboard",
@@ -197,7 +207,7 @@ public class ScreenMatch
                         case "sample_clipboard":
                             {
                                 isUseSampleClipboard = true;
-                                this.parent.Log($"Use Clipboard within a {sampleWidth}x{sampleHeight} pixel range around specific coordinates.");
+                                this.parent.Log($"Use Clipboard within a {sampleSize.Width}x{sampleSize.Height} pixel range around specific coordinates.");
                                 break;
                             }
 
@@ -206,19 +216,21 @@ public class ScreenMatch
                                 tesseractDataPath = Path.Combine(workingDirectory, "app/assets/tessdata_best");
                                 tesseractLanguage = "eng";
                                 isUseSampleOCR = true;
-                                this.parent.Log($"Use OCR within a {sampleWidth}x{sampleHeight} pixel range around specific coordinates.");
+                                this.parent.Log($"Use OCR within a {sampleSize.Width}x{sampleSize.Height} pixel range around specific coordinates.");
                                 break;
                             }
 
                         case "sample_width":
                             {
-                                int.TryParse(config_value, out sampleWidth);
+                                int.TryParse(config_value, out int w);
+                                sampleSize.Width = w;
                                 break;
                             }
 
                         case "sample_height":
                             {
-                                int.TryParse(config_value, out sampleHeight);
+                                int.TryParse(config_value, out int h);
+                                sampleSize.Height = h;
                                 break;
                             }
 
@@ -234,9 +246,15 @@ public class ScreenMatch
                                 break;
                             }
 
-                        case "sample_only":
+                        case "sample_any":
                             {
-                                sampleOnly = config_value;
+                                sampleAny = new List<string>(config_value.Split(':'));
+                                break;
+                            }
+
+                        case "sample_nodup":
+                            {
+                                sampleNodup = new List<string>(config_value.Split(':'));
                                 break;
                             }
                     }
@@ -353,12 +371,15 @@ public class ScreenMatch
             Bitmap image = templateImages[templateCurrentIndex];
             parent.Log($"Trying match the template {image.Tag as string} on the screen {i}...");
 
-            string filename = image.Tag as string;
-            int imageWidth = image.Width;
-            int imageHeight = image.Height;
+            string templateName = image.Tag as string;
+            Size templateSize = new Size
+            {
+                Width = image.Width,
+                Height = image.Height
+            };
 
             Bitmap _mainImage;
-            if (filename.StartsWith("binary_"))
+            if (templateName.StartsWith("binary_"))
             {
                 _mainImage = ConvertToBinary((Bitmap)mainImage.Clone(), thresholdConvertToBinary);
             }
@@ -367,29 +388,27 @@ public class ScreenMatch
                 _mainImage = mainImage;
             }
 
-            Point matchPosition = FindTemplate(_mainImage, (Bitmap)image.Clone(), out double maxCorrelation);
-            if (matchPosition != Point.Empty)
+            List<Point> matchPositions = FindTemplate(_mainImage, (Bitmap)image.Clone());
+            matchPositions.ForEach((matchPosition) =>
             {
-                string text = "";
+                try
+                {
+                    string text = sampleAny.Contains(templateName) ?
+                        InspectSample((Bitmap)mainImage.Clone(), matchPosition, templateSize, templateName, sampleSize) : string.Empty;
 
-                if (String.IsNullOrEmpty(sampleOnly) || (!String.IsNullOrEmpty(sampleOnly) && sampleOnly == filename))
-                {
-                    text = InspectSample((Bitmap)mainImage.Clone(), matchPosition, imageWidth, imageHeight, sampleWidth, sampleHeight);
+                    results.Add(new ScreenMatchResult
+                    {
+                        FileName = image.Tag.ToString(),
+                        ScreenNumber = i,
+                        Position = matchPosition,
+                        Text = text
+                    });
                 }
-                else
+                catch (Exception ex)
                 {
-                    parent.Log("Skipped inspect the image sample.");
+                    parent.Log($"Ignore the match. {ex.Message}");
                 }
-
-                results.Add(new ScreenMatchResult
-                {
-                    FileName = image.Tag.ToString(),
-                    ScreenNumber = i,
-                    Position = matchPosition,
-                    MaxCorrelation = maxCorrelation,
-                    Text = text
-                });
-            }
+            });
         }
 
         if (results.Count > 0)
@@ -406,7 +425,7 @@ public class ScreenMatch
         return results;
     }
 
-    public string InspectSample(Bitmap bitmap, Point matchPosition, int a, int b, int w, int h)
+    public string InspectSample(Bitmap bitmap, Point matchPosition, Size templateSize, string templateName, Size sampleSize)
     {
         if (bitmap == null)
         {
@@ -415,25 +434,42 @@ public class ScreenMatch
 
         if (matchPosition == null || matchPosition == Point.Empty)
         {
-            throw new ArgumentNullException("matchPosition cannot be empty.");
+            throw new ArgumentException("matchPosition cannot be empty.");
         }
 
         // initial text
         string text = "";
 
         // Adjust coordinates
-        int x = matchPosition.X + (a / 2);
-        int y = matchPosition.Y + (b / 2);
+        int positionX = matchPosition.X + (templateSize.Width / 2);
+        int positionY = matchPosition.Y + (templateSize.Height / 2);
 
         // Set range of crop image
-        int cropX = Math.Max((x - w / 2) + sampleAdjustX, 0);
-        int cropY = Math.Max((y - h / 2) + sampleAdjustY, 0);
-        int cropWidth = Math.Min(w, bitmap.Width - cropX);
-        int cropHeight = Math.Min(h, bitmap.Height - cropY);
+        int cropX = Math.Max((positionX - sampleSize.Width / 2) + sampleAdjustX, 0);
+        int cropY = Math.Max((positionY - sampleSize.Height / 2) + sampleAdjustY, 0);
+        int cropWidth = Math.Min(sampleSize.Width, bitmap.Width - cropX);
+        int cropHeight = Math.Min(sampleSize.Height, bitmap.Height - cropY);
         Rectangle cropArea = new Rectangle(cropX, cropY, cropWidth, cropHeight);
 
         // Crop image
         Bitmap croppedBitmap = bitmap.Clone(cropArea, bitmap.PixelFormat);
+
+        // Save to the outdated samples
+        if (sampleNodup.Contains(templateName))
+        {
+            int croppedBitmapHash = croppedBitmap.GetHashCode();
+            bool bitmapExists = sampleOutdated.Any(x => x.GetHashCode() == croppedBitmapHash);
+
+            if (bitmapExists)
+            {
+                throw new InvalidOperationException($"This may be a duplicate request. {templateName}");
+            }
+            else
+            {
+                sampleOutdated.Enqueue((Bitmap)croppedBitmap.Clone());
+                parent.Log($"Added to the image queue. {templateName}");
+            }
+        }
 
         // if use Clipboard
         if (isUseSampleClipboard)
@@ -447,7 +483,7 @@ public class ScreenMatch
                 }
                 catch (Exception ex)
                 {
-                    parent.Log($"Error in Clipboard: {ex.Message}");
+                    parent.Log($"Failed to copy to the clipboard: {ex.Message}");
                 }
             }));
             th.SetApartmentState(ApartmentState.STA);
@@ -472,7 +508,7 @@ public class ScreenMatch
             }
             catch (Exception ex)
             {
-                parent.Log($"Error in OCR: {ex.Message}");
+                parent.Log($"Failed to OCR: {ex.Message}");
             }
         }
 
@@ -517,29 +553,31 @@ public class ScreenMatch
                     string windowTitle = GetWindowTitle(hWnd);
                     string processName = GetProcessName(hWnd);
                     GetWindowRect(hWnd, out RECT windowRect);
-                    Point windowPosition = new Point(windowRect.Left, windowRect.Top); // 창 위치 계산
+                    Point windowPosition = new Point(windowRect.Left, windowRect.Top);
                     Bitmap windowImage = CaptureWindow(hWnd);
 
                     if (windowImage != null)
                     {
                         Bitmap image = templateImages[templateCurrentIndex];
-                        Point matchPosition = FindTemplate(windowImage, image, out double maxCorrelation);
-                        string templateFileName = image.Tag as string;
-
-                        var result = new ScreenMatchResult
+                        List<Point> matchPositions = FindTemplate(windowImage, image);
+                        matchPositions.ForEach((matchPosition) =>
                         {
-                            FileName = templateFileName,
-                            WindowHandle = hWnd,
-                            WindowTitle = windowTitle,
-                            ProcessName = processName,
-                            WindowPosition = windowPosition,
-                            Position = matchPosition,
-                            MaxCorrelation = maxCorrelation
-                        };
-                        results.Add(result);
+                            string templateName = image.Tag as string;
+                            results.Add(new ScreenMatchResult
+                            {
+                                FileName = templateName,
+                                WindowHandle = hWnd,
+                                WindowTitle = windowTitle,
+                                ProcessName = processName,
+                                WindowPosition = windowPosition,
+                                Position = matchPosition
+                            });
+                        });
                     }
                 }
-                catch { }
+                catch (Exception ex) {
+                    parent.Log($"Error {ex.Message}");
+                }
             }
             return true;
         }, IntPtr.Zero);
@@ -586,15 +624,14 @@ public class ScreenMatch
         return success ? bitmap : null;
     }
 
-    public Point FindTemplate(Bitmap mainImage, Bitmap templateImage, out double maxCorrelation)
+    public List<Point> FindTemplate(Bitmap mainImage, Bitmap templateImage)
     {
+        var matches = new List<Point>();
+
         int mainWidth = mainImage.Width;
         int mainHeight = mainImage.Height;
         int templateWidth = templateImage.Width;
         int templateHeight = templateImage.Height;
-
-        Point bestMatch = Point.Empty;
-        maxCorrelation = 0;
 
         int startX = isSearchFromEnd ? mainWidth - templateWidth : 0;
         int endX = isSearchFromEnd ? -1 : mainWidth - templateWidth + 1;
@@ -610,14 +647,12 @@ public class ScreenMatch
             {
                 if (IsTemplateMatch(mainImage, templateImage, x, y, threshold))
                 {
-                    bestMatch = new Point(x, y);
-                    maxCorrelation = 1.0;
-                    return bestMatch;
+                    matches.Add(new Point(x, y));
                 }
             }
         }
 
-        return bestMatch;
+        return matches;
     }
 
     private void toggleBusy()

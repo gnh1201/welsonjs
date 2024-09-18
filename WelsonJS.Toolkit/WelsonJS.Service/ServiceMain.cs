@@ -349,16 +349,13 @@ namespace WelsonJS.Service
                 List<ScreenMatchResult> matchedResults = screenMatcher.CaptureAndMatch();
                 matchedResults.ForEach(result =>
                 {
-                    if (result.MaxCorrelation > 0.0) {
-                        Log(DispatchServiceEvent("screenTime", new string[]
-                        {
-                            result.FileName,
-                            result.ScreenNumber.ToString(),
-                            result.Position.X.ToString(),
-                            result.Position.Y.ToString(),
-                            result.MaxCorrelation.ToString()
-                        }));
-                    }
+                    Log(DispatchServiceEvent("screenTime", new string[]
+                    {
+                        result.FileName,
+                        result.ScreenNumber.ToString(),
+                        result.Position.X.ToString(),
+                        result.Position.Y.ToString()
+                    }));
                 });
             }
             catch (Exception ex)

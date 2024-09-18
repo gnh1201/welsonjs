@@ -12,14 +12,13 @@ namespace WelsonJS.Service
         public string ProcessName { get; set; }
         public Point WindowPosition { get; set; }
         public Point Position { get; set; }
-        public double MaxCorrelation { get; set; }
         public string Text { get; set; }
 
         public override string ToString()
         {
             return $"Template: {FileName}, Screen Number: {ScreenNumber}, Window Title: {WindowTitle}, " +
                    $"Process Name: {ProcessName}, Window Position: (x: {WindowPosition.X}, y: {WindowPosition.Y}), " +
-                   $"Location: (x: {Position.X}, y: {Position.Y}), Max Correlation: {MaxCorrelation}";
+                   $"Location: (x: {Position.X}, y: {Position.Y})";
         }
     }
 }
