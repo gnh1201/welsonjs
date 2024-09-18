@@ -121,6 +121,7 @@ public class ScreenMatch
     private int sampleAdjustY = 0;
     private List<string> sampleAny;
     private List<string> sampleNodup;
+    private Size sampleNodupSize;
     private Queue<Bitmap> sampleOutdated;
     private byte thresholdConvertToBinary = 191;
     private string tesseractDataPath;
@@ -138,6 +139,11 @@ public class ScreenMatch
         {
             Width = 128,
             Height = 128
+        };
+        sampleNodupSize = new Size
+        {
+            Width = 128,
+            Height = 64
         };
         sampleOutdated = new Queue<Bitmap>();
 
@@ -425,6 +431,23 @@ public class ScreenMatch
         return results;
     }
 
+    public Bitmap cropBitmap(Bitmap bitmap, Point matchPosition, Size templateSize, Size sampleSize, int dx = 0, int dy = 0)
+    {
+        // Adjust coordinates to the center
+        int x = matchPosition.X + (templateSize.Width / 2);
+        int y = matchPosition.Y + (templateSize.Height / 2);
+
+        // Set range of crop image
+        int cropX = Math.Max((x - sampleSize.Width / 2) + dx, 0);
+        int cropY = Math.Max((y - sampleSize.Height / 2) + dy, 0);
+        int cropWidth = Math.Min(sampleSize.Width, bitmap.Width - cropX);
+        int cropHeight = Math.Min(sampleSize.Height, bitmap.Height - cropY);
+        Rectangle cropArea = new Rectangle(cropX, cropY, cropWidth, cropHeight);
+
+        // Crop image
+        return bitmap.Clone(cropArea, bitmap.PixelFormat);
+    }
+
     public string InspectSample(Bitmap bitmap, Point matchPosition, Size templateSize, string templateName, Size sampleSize)
     {
         if (bitmap == null)
@@ -437,36 +460,25 @@ public class ScreenMatch
             throw new ArgumentException("matchPosition cannot be empty.");
         }
 
-        // initial text
+        // initialize the text
         string text = "";
 
-        // Adjust coordinates
-        int positionX = matchPosition.X + (templateSize.Width / 2);
-        int positionY = matchPosition.Y + (templateSize.Height / 2);
-
-        // Set range of crop image
-        int cropX = Math.Max((positionX - sampleSize.Width / 2) + sampleAdjustX, 0);
-        int cropY = Math.Max((positionY - sampleSize.Height / 2) + sampleAdjustY, 0);
-        int cropWidth = Math.Min(sampleSize.Width, bitmap.Width - cropX);
-        int cropHeight = Math.Min(sampleSize.Height, bitmap.Height - cropY);
-        Rectangle cropArea = new Rectangle(cropX, cropY, cropWidth, cropHeight);
-
         // Crop image
-        Bitmap croppedBitmap = bitmap.Clone(cropArea, bitmap.PixelFormat);
+        Bitmap croppedBitmap = cropBitmap(bitmap, matchPosition, templateSize, sampleSize, sampleAdjustX, sampleAdjustY);
 
         // Save to the outdated samples
         if (sampleNodup.Contains(templateName))
         {
-            int croppedBitmapHash = croppedBitmap.GetHashCode();
-            bool bitmapExists = sampleOutdated.Any(x => x.GetHashCode() == croppedBitmapHash);
-
+            Bitmap croppedNodupBitmap = cropBitmap(bitmap, matchPosition, templateSize, sampleNodupSize);
+            int bitmapHash = croppedNodupBitmap.GetHashCode();
+            bool bitmapExists = sampleOutdated.Any(x => x.GetHashCode() == bitmapHash);
             if (bitmapExists)
             {
                 throw new InvalidOperationException($"This may be a duplicate request. {templateName}");
             }
             else
             {
-                sampleOutdated.Enqueue((Bitmap)croppedBitmap.Clone());
+                sampleOutdated.Enqueue((Bitmap)croppedNodupBitmap.Clone());
                 parent.Log($"Added to the image queue. {templateName}");
             }
         }
