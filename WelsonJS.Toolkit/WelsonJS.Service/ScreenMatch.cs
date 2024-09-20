@@ -15,7 +15,6 @@ using System.Windows.Forms;
 using System.Linq;
 using Tesseract;
 using WelsonJS.Service;
-using System.Security.Cryptography;
 
 public class ScreenMatch
 {
@@ -480,15 +479,16 @@ public class ScreenMatch
         {
             Bitmap croppedNodupBitmap = CropBitmap(bitmap, matchPosition, templateSize, sampleNodupSize);
             uint bitmapCrc32 = ComputeBitmapCrc32(croppedNodupBitmap);
-            parent.Log($"bitmapCrc32: {bitmapCrc32}");
-            bool bitmapExists = sampleOutdated.Any(x => ComputeBitmapCrc32(x) == bitmapCrc32);
+            croppedNodupBitmap.Tag = bitmapCrc32;
+
+            bool bitmapExists = sampleOutdated.Any(x => (uint)x.Tag == bitmapCrc32);
             if (bitmapExists)
             {
                 throw new InvalidOperationException($"This may be a duplicate request. {templateName}");
             }
             else
             {
-                sampleOutdated.Enqueue((Bitmap)croppedNodupBitmap.Clone());
+                sampleOutdated.Enqueue(croppedNodupBitmap);
                 parent.Log($"Added to the image queue. {templateName}");
             }
         }
