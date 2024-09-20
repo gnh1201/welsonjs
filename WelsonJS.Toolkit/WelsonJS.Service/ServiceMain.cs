@@ -244,11 +244,21 @@ namespace WelsonJS.Service
                     scriptControl.Reset();
                     scriptControl.AddCode(scriptText);
 
-                    // initialize
-                    Log(DispatchServiceEvent("start", new string[]
+                    // make the start arguments
+                    string[] startArguments;
+                    if (Environment.UserInteractive)
                     {
-                        Environment.UserInteractive.ToString().ToLower()
-                    }));
+                        startArguments = new string[args.Length + 1];
+                        args.CopyTo(startArguments, 0);
+                        startArguments[args.Length] = "--user-interactive";
+                    }
+                    else
+                    {
+                        startArguments = args;
+                    }
+
+                    // initialize
+                    Log(DispatchServiceEvent("start", startArguments));
                 }
                 catch (Exception ex)
                 {
