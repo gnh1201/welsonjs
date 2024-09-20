@@ -8,8 +8,8 @@ function getDeviceID() {
     return SYS.getUUID();
 }
 
-function onServiceStart() {
-    return "onServiceStart recevied";
+function onServiceStart(args) {
+    return "onServiceStart recevied. " + args.join(', ');
 }
 
 function onServiceStop() {
