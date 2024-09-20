@@ -245,11 +245,14 @@ namespace WelsonJS.Service
                     scriptControl.AddCode(scriptText);
 
                     // initialize
-                    Log(DispatchServiceEvent("start"));
+                    Log(DispatchServiceEvent("start", new string[]
+                    {
+                        Environment.UserInteractive.ToString().ToLower()
+                    }));
                 }
                 catch (Exception ex)
                 {
-                    Log("Exception when start: " + ex.Message);
+                    Log($"Failed to start because of {ex.Message}");
                 }
             }
             else

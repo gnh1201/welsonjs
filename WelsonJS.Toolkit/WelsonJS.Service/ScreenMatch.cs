@@ -150,8 +150,8 @@ public class ScreenMatch
         sampleNodup = new List<string>();
         sampleNodupSize = new Size
         {
-            Width = 128,
-            Height = 64
+            Width = 256,
+            Height = 32
         };
         sampleOutdated = new Queue<Bitmap>();
 
