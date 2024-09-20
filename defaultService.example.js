@@ -1,3 +1,5 @@
+// defaultService.example.js
+// https://github.com/gnh1201/welsonjs
 var SYS = require("lib/system");
 
 function main(args) {
