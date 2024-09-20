@@ -317,13 +317,16 @@ public class ScreenMatch
                 Tag = filename
             };
 
-            if (filename.StartsWith("binary_"))
+            if (!filename.StartsWith("no_"))
             {
-                templateImages.Add(ConvertToBinary(bitmap, thresholdConvertToBinary));
-            }
-            else
-            {
-                templateImages.Add(bitmap);
+                if (filename.StartsWith("binary_"))
+                {
+                    templateImages.Add(ConvertToBinary(bitmap, thresholdConvertToBinary));
+                }
+                else
+                {
+                    templateImages.Add(bitmap);
+                }
             }
         }
     }
@@ -382,6 +385,8 @@ public class ScreenMatch
 
             Bitmap image = templateImages[templateCurrentIndex];
             string templateName = image.Tag as string;
+            string nextTemplateName = parent.GetNextTemplateName();
+
             Size templateSize = new Size
             {
                 Width = image.Width,
@@ -389,6 +394,12 @@ public class ScreenMatch
             };
 
             parent.Log($"Trying match the template {templateName} on the screen {i}...");
+
+            if (!String.IsNullOrEmpty(nextTemplateName) && templateName != nextTemplateName)
+            {
+                parent.Log($"Ignored the template {templateName}");
+                break;
+            }
 
             Bitmap _mainImage;
             if (templateName.StartsWith("binary_"))
@@ -496,6 +507,7 @@ public class ScreenMatch
         // if use Clipboard
         if (sampleClipboard.Contains(templateName))
         {
+            parent.Log($"Trying to use the clipboard... {templateName}");
             Thread th = new Thread(new ThreadStart(() =>
             {
                 try

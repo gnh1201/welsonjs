@@ -26,8 +26,12 @@ function onMessageReceived() {
     return "onMessageReceived recevied. " + args.join(', ');
 }
 
-function onServiceScreenTime(args) {
-    return "onServiceScreenTime recevied. " + args.join(', ');
+function onScreenNextTemplate(args) {
+    return "example.png";
+}
+
+function onScreenTemplateMatched(args) {
+    return "onScreenTemplateMatched recevied. " + args.join(', ');
 }
 
 function onFileCreated(args) {
@@ -51,7 +55,8 @@ exports.getDeviceID = getDeviceID;
 exports.onServiceStart = onServiceStart;
 exports.onServiceStop = onServiceStop;
 exports.onServiceElapsedTime = onServiceElapsedTime;
-exports.onServiceScreenTime = onServiceScreenTime;
+exports.onScreenNextTemplate = onScreenNextTemplate;
+exports.onScreenTemplateMatched = onScreenTemplateMatched;
 exports.onFileCreated = onFileCreated;
 exports.onNetworkConnected = onNetworkConnected;
 exports.onRegistryModified = onRegistryModified;

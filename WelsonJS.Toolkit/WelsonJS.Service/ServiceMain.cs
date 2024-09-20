@@ -362,7 +362,7 @@ namespace WelsonJS.Service
                 List<ScreenMatchResult> matchedResults = screenMatcher.CaptureAndMatch();
                 matchedResults.ForEach(result =>
                 {
-                    Log(DispatchServiceEvent("screenTime", new string[]
+                    Log(DispatchServiceEvent("screenTemplateMatched", new string[]
                     {
                         result.FileName,
                         result.ScreenNumber.ToString(),
@@ -423,6 +423,22 @@ namespace WelsonJS.Service
             }
 
             return arguments;
+        }
+
+        public string GetNextTemplateName()
+        {
+            string templateName = string.Empty;
+
+            try
+            {
+                templateName = DispatchServiceEvent("screenNextTemplate");
+            }
+            catch (Exception ex)
+            {
+                Log($"Use all templates because of {ex.Message}");
+            }
+
+            return templateName;
         }
 
         public string DispatchServiceEvent(string eventType, string[] args = null)
