@@ -81,7 +81,7 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
   - Write a Windows Service Application with JavaScript
   - [File Event Monitor](https://github.com/gnh1201/welsonjs/wiki/File-Event-Monitor): Trace file creation, network connections, and registry modifications.
   - [Screen Time Feature](https://github.com/gnh1201/welsonjs/wiki/Screen-Time-Feature): Find an image position on the computer screens or windows.
-- [WelsonJS.Launcher](https://github.com/gnh1201/welsonjs/wiki/Awesome-binaries) (Launcher Application, For recent Windows based systems)
+- [WelsonJS.Launcher](https://github.com/gnh1201/welsonjs/wiki/Launcher) (Launcher Application, For recent Windows based systems)
   - This is a launcher app designed to easily distribute WelsonJS application packages (based on ZIP compression files).
 - lib/chatgpt ([ChatGPT](https://openai.com/chatgpt) integration)
 - Everything you can imagine.
