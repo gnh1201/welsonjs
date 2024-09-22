@@ -139,16 +139,17 @@ namespace WelsonJS.Launcher
             process.StandardInput.WriteLine();
             process.StandardInput.Flush();
             process.StandardOutput.ReadLine();
-            if (!isConsoleApplication)
+
+            if (isInteractiveServiceAapplication)
             {
-                process.StandardInput.WriteLine(entrypointFileName);
+                process.StandardInput.WriteLine($"start cmd /c startInteractiveService.bat");
                 process.StandardInput.WriteLine();
                 process.StandardInput.Flush();
                 process.StandardOutput.ReadLine();
             }
-            else if (isInteractiveServiceAapplication)
+            else if (!isConsoleApplication)
             {
-                process.StandardInput.WriteLine($"start cmd /c bin\\x86\\WelsonJS.Service.exe --working-directory={workingDirectory} --script-name={scriptName}");
+                process.StandardInput.WriteLine(entrypointFileName);
                 process.StandardInput.WriteLine();
                 process.StandardInput.Flush();
                 process.StandardOutput.ReadLine();
