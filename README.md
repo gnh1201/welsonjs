@@ -156,7 +156,7 @@ This is so cool and so simple.
 ## Sponsors
 - [GitHub Sponsors](https://github.com/sponsors/gnh1201)
 - <img src="app/assets/img/logo_oss.gif" height="30" alt=""/> Open Software Portal, Korea National Industry Promotion Agency - Awarded Prize
-- Free code signing on Windows provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org/)
+- <img src="app/assets/img/signpath_logo.png" height="30" alt=""/> Free code signing on Windows provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org/)
 
 ## Thanks to
 - Heavy-industry specialized CSP(Cloud Service Provider) in Republic of Korea - Use case establishment
