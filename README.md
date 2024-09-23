@@ -14,6 +14,11 @@ WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)*** + [Y
 
 Dual license notice: The default license for this project is GPL 3.0. However, if the GPL 3.0 license is not compatible with Microsoft products, it is subject to the MS-RL license.
 
+## Sponsors
+- [GitHub Sponsors](https://github.com/sponsors/gnh1201)
+- <img src="app/assets/img/logo_oss.gif" height="30" alt=""/> Open Software Portal, Korea National Industry Promotion Agency - Awarded Prize
+- <img src="app/assets/img/signpath_logo.png" height="30" alt=""/> Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org/)
+
 ## Structure
 ![Structure Overview](app/assets/img/structure.png)
 
@@ -152,11 +157,6 @@ This is so cool and so simple.
 ![(Screenshot 5) Template Matching on the computer screen](app/assets/img/screenshot5.png)
 
 ![(Screenshot 6) The Launcher for WelsonJS Application Packages](app/assets/img/screenshot6.png)
-
-## Sponsors
-- [GitHub Sponsors](https://github.com/sponsors/gnh1201)
-- <img src="app/assets/img/logo_oss.gif" height="30" alt=""/> Open Software Portal, Korea National Industry Promotion Agency - Awarded Prize
-- <img src="app/assets/img/signpath_logo.png" height="30" alt=""/> Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org/)
 
 ## Thanks to
 - Heavy-industry specialized CSP(Cloud Service Provider) in Republic of Korea - Use case establishment
