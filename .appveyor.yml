@@ -12,8 +12,7 @@ environment:
     - CONFIGURATION: Debug
       SIGNING_POLICY_SLUG: test-signing
     - CONFIGURATION: Release
-      #SIGNING_POLICY_SLUG: release-signing
-      SIGNING_POLICY_SLUG: test-signing
+      SIGNING_POLICY_SLUG: release-signing
 
 before_build:
   - nuget restore WelsonJS.Toolkit
