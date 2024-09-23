@@ -6,7 +6,7 @@
 
 WelsonJS - Build a Windows app on the Windows built-in JavaScript engine.
 
-![(Cover Image) Windows in 1999](app/assets/img/cover.png)
+![(This is a cover image) Windows in 1999](app/assets/img/cover.png)
 
 Now, You can build an Windows desktop app with JavaScript, TypeScript, CoffeeScript, ReScript, and HTML/CSS on Windows built-in ECMAScript engine.
 
@@ -15,7 +15,7 @@ WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)*** + [Y
 Dual license notice: The default license for this project is GPL 3.0. However, if the GPL 3.0 license is not compatible with Microsoft products, it is subject to the MS-RL license.
 
 ## Sponsors
-- [GitHub Sponsors](https://github.com/sponsors/gnh1201)
+- <img src="app/assets/img/github_octocat_logo.png" height="30" alt=""/> [GitHub Sponsors](https://github.com/sponsors/gnh1201)
 - <img src="app/assets/img/logo_oss.gif" height="30" alt=""/> Open Software Portal, Korea National Industry Promotion Agency - Awarded Prize
 - <img src="app/assets/img/signpath_logo.png" height="30" alt=""/> Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org/)
 
