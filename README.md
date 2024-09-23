@@ -154,7 +154,7 @@ This is so cool and so simple.
 ![(Screenshot 6) The Launcher for WelsonJS Application Packages](app/assets/img/screenshot6.png)
 
 ## Sponsors
-- [GitHub Sponsors](https://github.com/sponsors/gnh1201)
+- <img src="app/assets/img/github_octocat_logo.png" height="30" alt=""/> [GitHub Sponsors](https://github.com/sponsors/gnh1201)
 - <img src="app/assets/img/logo_oss.gif" height="30" alt=""/> Open Software Portal, Korea National Industry Promotion Agency - Awarded Prize
 - <img src="app/assets/img/signpath_logo.png" height="30" alt=""/> Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org/)
 
