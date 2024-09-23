@@ -131,19 +131,11 @@ ended say()
 ```
 
 ## How to release my application?
+The WelsonJS framework suggests the following application release methods:
 
-### Method 1. Compress to Zip, and Use `WelsonJS.Launcher`
-There have been various attempts at EXE packaging for WelsonJS, and I've reviewed as much feedback as possible. This includes not only usability but also whether the process is relatively secure.
-
-I have tentatively concluded that a launcher method, where a ZIP file is distributed and then executed, would be effective. Therefore, I have begun distributing the [WelsonJS.Launcher](https://github.com/gnh1201/welsonjs/wiki/Awesome-binaries) artifact.
-
-You can download and run the release or upstream source code of this project from GitHub in ZIP file format.
-
-### Method 2. Build a setup file with `Inno Setup` 
-Please check `setup.iss` file it could be compile with [Inno Setup](https://jrsoftware.org/isinfo.php)
-
-### Method 3. Copy all directories and files
-This is so cool and so simple.
+- **Compress to Zip, and use the launcher**: Compress the files and directories necessary for running the project into a Zip file, and distribute it along with the [WelsonJS.Launcher](https://github.com/gnh1201/welsonjs/wiki/Launcher).
+- **Build a setup file**: Use [Inno Setup](https://jrsoftware.org/isinfo.php). Information needed to create the setup file (the `setup.iss` file) is already included.
+- **Copy all directories and files**: This is the simplest and most straightforward method.
 
 ## Screenshots
 ![(Screenshot 1) GUI environment](app/assets/img/screenshot.png)
