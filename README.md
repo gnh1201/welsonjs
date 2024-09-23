@@ -153,8 +153,12 @@ This is so cool and so simple.
 
 ![(Screenshot 6) The Launcher for WelsonJS Application Packages](app/assets/img/screenshot6.png)
 
-## Thanks to
+## Sponsors
+- [GitHub Sponsors](https://github.com/sponsors/gnh1201)
 - <img src="app/assets/img/logo_oss.gif" height="30" alt=""/> Open Software Portal, Korea National Industry Promotion Agency - Awarded Prize
+- Free code signing on Windows provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org/)
+
+## Thanks to
 - Heavy-industry specialized CSP(Cloud Service Provider) in Republic of Korea - Use case establishment
 - Live-commerce specialized online advertisement companies in Republic of Korea - Use case establishment
 - Information security companies in Republic of Korea - Use case establishment
@@ -166,7 +170,6 @@ This is so cool and so simple.
 - Inspired by the use of Named Shared Memory in an inter-language IPC implementation devised by an unidentified developer.
 - <img src="app/assets/img/Fediverse_logo_proposal.svg" height="30" alt=""/> Fediverse - Mentioned
 - <img src="app/assets/img/Hackernews_logo.png" height="30" alt=""/> Hacker News - Mentioned
-- [GitHub Sponsors](https://github.com/sponsors/gnh1201)
 
 ## Related links
 - [gnh1201/wsh-js-gtk](https://github.com/gnh1201/wsh-js-gtk) - GTK GUI ported to Windows Scripting Host - Javascript (Microsoft JScript) (wsh-js)
