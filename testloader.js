@@ -1012,7 +1012,8 @@ var test_implements = {
                 "api_key": "YOUR_API_KEY",
                 "render_js": "false",
                 "residential": "false",
-                "country": "us"
+                "country": "us",
+                "keep_headers": "false"
             })
             .setProxy({
                 "enabled": true,
