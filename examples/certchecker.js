@@ -17,8 +17,6 @@ function main() {
             .setConnectTimeout(2)
             .open("GET", "https://" + x)
             .send();
-			
-		console.log(handler.responseText);
 
         if (handler.detectSSLCompleted()) {
             urls.push("https://" + x);
