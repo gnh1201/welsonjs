@@ -163,6 +163,9 @@ The WelsonJS framework suggests the following application release methods:
 - <img src="app/assets/img/Fediverse_logo_proposal.svg" height="30" alt=""/> Fediverse - Mentioned
 - <img src="app/assets/img/Hackernews_logo.png" height="30" alt=""/> Hacker News - Mentioned
 
+## Partnerships
+- <img src="app/assets/img/scrapeops-logo.svg" height="30" alt=""/> [ScrapeOps Proxy Aggregator (scrapeops.io)](https://scrapeops.io?fpr=namhyeon75) (Promo code `START10-1kbJd1Hr`)
+
 ## Related links
 - [gnh1201/wsh-js-gtk](https://github.com/gnh1201/wsh-js-gtk) - GTK GUI ported to Windows Scripting Host - Javascript (Microsoft JScript) (wsh-js)
 - [gnh1201/wsh-json](https://github.com/gnh1201/wsh-json) - JSON stringify/parse (encode/decode) for Windows Scripting Host
