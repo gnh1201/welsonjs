@@ -1001,6 +1001,11 @@ var test_implements = {
             var result = worker.exec("select * from authors limit 3");
             console.log(JSON.stringify(result));
         }
+    },
+
+	// [lib/http] Proxy API services integration #143
+    "proxy_custom_provider": function() {
+		// todo
     }
 };
 
