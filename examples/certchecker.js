@@ -6,7 +6,7 @@ var HTTP = require("lib/http");
 var RAND = require("lib/rand");
 
 function main() {
-    var domains = splitLn(FILE.readFile("data\\target_domains.txt", FILE.CdoCharset.CdoUTF_8));
+    var domains = splitLn(FILE.readFile("data\\example_domains.txt", FILE.CdoCharset.CdoUTF_8));
     var urls = [];
 
     domains.forEach(function(x) {
@@ -17,6 +17,8 @@ function main() {
             .setConnectTimeout(2)
             .open("GET", "https://" + x)
             .send();
+			
+		console.log(handler.responseText);
 
         if (handler.detectSSLCompleted()) {
             urls.push("https://" + x);
@@ -29,7 +31,7 @@ function main() {
         sleep(RAND.getInt(1000, 2000));
     });
 
-    FILE.writeFile("data\\target_urls.txt", urls.join("\r\n"), FILE.CdoCharset.CdoUTF_8);
+    FILE.writeFile("data\\example_urls.txt", urls.join("\r\n"), FILE.CdoCharset.CdoUTF_8);
 
     console.log("Done");
 }
