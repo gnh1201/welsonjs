@@ -977,10 +977,10 @@ var test_implements = {
     },
 
     // https://stackoverflow.com/questions/33417367/example-of-how-to-use-peg-js
-    "pegjs": {
+    "pegjs": function() {
         var syntax = FILE.readFile("app/assets/pegjs/test.pegjs", FILE.CdoCharset.CdoUTF_8);
         var parser = PEG.generate(syntax);
-        console.log(JSON.stringify(parser.parse("test123"));
+        console.log(JSON.stringify(parser.parse("test123")));
     },
 
     "domparser_test": function() {
@@ -1002,10 +1002,27 @@ var test_implements = {
             console.log(JSON.stringify(result));
         }
     },
-
-	// [lib/http] Proxy API services integration #143
+    
+    // [lib/http] Proxy API services integration #143
     "proxy_custom_provider": function() {
-		// todo
+        var HTTP = require("lib/http");
+
+        var response = HTTP.create("CURL")
+            .setVariables({
+                "api_key": "YOUR_API_KEY",
+                "render_js": "false",
+                "residential": "false",
+                "country": "us"
+            })
+            .setProxy({
+                "enabled": true,
+                "provider": "scrapeops",
+                "type": "stateless"
+            })
+            .open("GET", "https://example.org")
+            .send();
+
+        console.log("responseBody:", response.responseBody);
     }
 };
 

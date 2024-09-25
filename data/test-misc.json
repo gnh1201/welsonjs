@@ -1,6 +1,6 @@
 {
     "description": "WelsonJS test profile (test-misc.json)",
-    "released": "2024-08-29",
+    "released": "2024-09-25",
     "dependencies": {
         "welsonjs": "0.2.7"
     },
@@ -90,6 +90,11 @@
             "id": "domparser_test",
             "description": "DOMParser compatibility test",
             "tags": ["Standards"]
+        },
+        {
+            "id": "proxy_custom_provider",
+            "description": "HTTP proxy with a custom provider",
+            "tags": ["Network", "HTTP"]
         }
     ]
 }
