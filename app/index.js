@@ -81,6 +81,16 @@ Router.add('/notepad', function(render) {
     document.getElementById("useragent").innerHTML = window.navigator.userAgent;
 });
 
+Router.add('/components', function(render) {
+    render("app\\components.html", {});
+
+    console.log("log message");
+    console.warn("warning message");
+    console.info("information message");
+    console.error("information message");
+});
+
+
 // clear
 Browser.setContent("");
 
