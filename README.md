@@ -39,8 +39,9 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
   - [github.com/keithclark/selectivizr](https://github.com/keithclark/selectivizr)
   - [github.com/arv/ExplorerCanvas](https://github.com/arv/ExplorerCanvas)
   - [github.com/Modernizr/Modernizr](https://github.com/Modernizr/Modernizr)
-- Default CSS Framework
+- CSS Frameworks
   - [github.com/jslegers/cascadeframework](https://github.com/jslegers/cascadeframework)
+  - [github.com/golden-layout/golden-layout](https://github.com/golden-layout/golden-layout)
 - WYSIWYG HTML Editor
   - [github.com/summernote/summernote](https://github.com/summernote/summernote)
 - Included libraries
