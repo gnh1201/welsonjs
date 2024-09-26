@@ -10,12 +10,12 @@ var Router = require("lib/router").Router;
 Router.setRender(function(filename, data) {
     var template = FILE.readFile(filename, FILE.CdoCharset.CdoUTF_8);
     var tmpl = $.templates(template);
-    Browser.setContent(tmpl.render(data));
+    addContentItem(filename, tmpl.render(data));
 
     // check all links
     Object.values(document.getElementsByTagName("a")).map(function(x) {
         x.addEventListener("click", function(e) {
-            var href = e.target.getAttribute("href");    // NOTE: x.href != x.getAttribute("href")
+            var href = e.target.getAttribute("href"); // NOTE: x.href != x.getAttribute("href")
             if (href.indexOf('/') == 0) {
                 e.preventDefault();
                 Router.go(href);
@@ -27,30 +27,6 @@ Router.setRender(function(filename, data) {
 // main
 Router.add('/', function(render) {
     render("app\\signin.html", {});
-
-    var token;
-    if (FILE.fileExists("token.txt")) {
-        token = FILE.readFile("token.txt", FILE.CdoCharset.CdoUTF_8);
-    }
-
-    document.getElementById("loginform").onsubmit = function(ev) {
-        ev.preventDefault();
-    };
-
-    if (FILE.fileExists("credential.json")) {
-        var credential = JSON.parse(FILE.readFile("credential.json", FILE.CdoCharset.CdoUTF_8));
-        document.getElementById("txt_email").value = credential.email;
-        document.getElementById("txt_password").value = credential.password;
-    }
-
-    document.getElementById("btn_submit").onclick = function() {
-        var credential = {
-            "email": document.getElementById("txt_email").value,
-            "password": document.getElementById("txt_password").value
-        };
-        
-        FILE.writeFile("credential.json", JSON.stringify(credential), FILE.CdoCharset.CdoUTF_8);
-    };
 });
 
 // test
@@ -105,5 +81,77 @@ Router.add('/notepad', function(render) {
     document.getElementById("useragent").innerHTML = window.navigator.userAgent;
 });
 
-// go
+// clear
+Browser.setContent("");
+
+// initialize the layout
+var config = {
+    settings: {
+        hasHeaders: true,
+        constrainDragToContainer: false,
+        reorderEnabled: false,
+        selectionEnabled: false,
+        popoutWholeStack: false,
+        blockedPopoutsThrowError: false,
+        closePopoutsOnUnload: false,
+        showPopoutIcon: false,
+        showMaximiseIcon: false,
+        showCloseIcon: false
+    },
+    content: [{
+        type: 'stack',
+        isClosable: false,
+        content: []
+    }]
+};
+
+var myLayout = new GoldenLayout(config);
+
+myLayout.registerComponent('example', function(container, state) {
+    container.getElement().html('<div >' + state.text + '</div>');
+});
+
+myLayout.init();
+
+var addContentItem = function(title, text) {
+    var newItemConfig = {
+        title: title,
+        type: 'component',
+        componentName: 'example',
+        componentState: {
+            text: text
+        }
+    };
+
+    myLayout.root.contentItems[0].addChild(newItemConfig);
+};
+
+// enable move the window with mouse drag and drop
+(function(grip) {
+    var oX, oY,
+        mouseDown = function(e) {
+            if (e.offsetY + e.offsetX < 0) return;
+            oX = e.screenX;
+            oY = e.screenY;
+            window.addEventListener("mousemove", mouseMove);
+            window.addEventListener("mouseup", mouseUp);
+        },
+        mouseMove = function(e) {
+            window.moveTo(screenX + e.screenX - oX, screenY + e.screenY - oY);
+            oX = e.screenX;
+            oY = e.screenY;
+        },
+        gripMouseMove = function(e) {
+            this.style.cursor = (e.offsetY + e.offsetX > -1) ? "move" : "default";
+        },
+        mouseUp = function(e) {
+            window.removeEventListener("mousemove", mouseMove);
+            window.removeEventListener("mouseup", mouseUp);
+        };
+
+    grip.addEventListener("mousedown", mouseDown);
+    grip.addEventListener("mousemove", gripMouseMove);
+})($(".lm_header")[0]);
+
+// go to main
 Router.go('/');

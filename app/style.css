@@ -12,6 +12,10 @@ input, textarea {
     font-family: "맑은 고딕", "Malgun Gothic", "Segoe UI", Calibri, Arial, Sans-Serif;
 }
 
+body .lm_content {
+  overflow: auto;
+}
+
 #app {
     width: 100%;
 }
