@@ -18,7 +18,7 @@ global.console._echo = function(args, type) {
             icon = "error";
             break;
 
-        case "warning":
+        case "warn":
             heading = "Warning";
             icon = "warning";
             break;
