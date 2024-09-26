@@ -84,10 +84,10 @@ Router.add('/notepad', function(render) {
 Router.add('/components', function(render) {
     render("app\\components.html", {});
 
-    console.log("log message");
-    console.warn("warning message");
-    console.info("information message");
-    console.error("information message");
+    console.log("example log message");
+    console.warn("example warning message");
+    console.info("example information message");
+    console.error("example error message");
 });
 
 
