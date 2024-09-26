@@ -118,14 +118,15 @@ var config = {
 var myLayout = new GoldenLayout(config);
 
 myLayout.registerComponent('example', function(container, state) {
-    container.getElement().html('<div >' + state.text + '</div>');
+    container.getElement().html('<div>' + state.text + '</div>');
 });
 
 myLayout.init();
 
 var addContentItem = function(title, text) {
-    var newItemConfig = {
+    var contentItemConfig = {
         title: title,
+        id: title,
         type: 'component',
         componentName: 'example',
         componentState: {
@@ -133,7 +134,13 @@ var addContentItem = function(title, text) {
         }
     };
 
-    myLayout.root.contentItems[0].addChild(newItemConfig);
+    var contentItems = myLayout.root.getItemsById(title);
+    var contentItemsCount = contentItems.length;
+    if (contentItemsCount > 0) {
+        contentItems[0].element.show();
+    } else {
+        myLayout.root.contentItems[0].addChild(contentItemConfig);
+    }
 };
 
 // enable move the window with mouse drag and drop
