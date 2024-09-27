@@ -1007,7 +1007,7 @@ var test_implements = {
     "proxy_custom_provider": function() {
         var HTTP = require("lib/http");
 
-        var response = HTTP.create("CURL")
+        var response = HTTP.create()
             .setVariables({
                 "api_key": "YOUR_API_KEY",
                 "render_js": "false",
@@ -1029,7 +1029,7 @@ var test_implements = {
     "proxy_serp": function() {
         var HTTP = require("lib/http");
 
-        var response = HTTP.create("CURL")
+        var response = HTTP.create()
             .setVariables({
                 "api_key": "YOUR_API_KEY"
             })
@@ -1038,7 +1038,6 @@ var test_implements = {
                 "provider": "searchapi",
                 "type": "serp"
             })
-            .setUserAgent("Mozilla/5.0 (Windows NT 10.0; Trident/7.0; rv:11.0) like Gecko")
             .open("GET", "https://www.google.com/search?q=test")
             .send();
 
