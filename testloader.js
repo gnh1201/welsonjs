@@ -1031,7 +1031,7 @@ var test_implements = {
 
         var response = HTTP.create("CURL")
             .setVariables({
-                "api_key": "2DG3WQgeL2djLFvnQBw83J4y"
+                "api_key": "YOUR_API_KEY"
             })
             .setProxy({
                 "enabled": true,
