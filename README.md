@@ -20,6 +20,8 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
 - <img src="app/assets/img/signpath_logo.png" height="30" alt=""/> Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org/)
 
 ## Partnerships
+Through partnerships, when you purchase a service or product, the revenue is automatically contributed to support this project. These partnerships consist of services or products that have **case studies** of integration with this project.
+
 - <img src="app/assets/img/scrapeops-logo.svg" height="30" alt=""/> [ScrapeOps (scrapeops.io)](https://scrapeops.io?fpr=namhyeon75) - Proxy Aggregator (Free 1,000 calls + Free 0.5GB per month, 10% Off Coupon `gnh10`)
 
 ## Structure
