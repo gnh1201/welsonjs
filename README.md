@@ -21,7 +21,7 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
 
 ## [Partnerships](https://github.com/gnh1201/welsonjs/wiki/Partnerships)
 - [<img src="app/assets/img/scrapeops-logo.svg" height="30" alt=""/> ScrapeOps (scrapeops.io)](https://scrapeops.io?fpr=namhyeon75) - Proxy Aggregator (1,000 free calls/month, [10% discount coupon](https://github.com/gnh1201/welsonjs/wiki/Partnerships))
-- [<img src="app/assets/img/searchapi-logo.svg" height="30" alt="SearchAPI"/> (searchapi.io)](https://www.searchapi.io/?via=namhyeon) - SERP (Google, YouTube, Bing, Baidu, Amazon, etc.) scraping (100 free calls/month)
+- [<img src="app/assets/img/searchapi-logo.svg" height="30" alt="SearchAPI"/> (searchapi.io)](https://www.searchapi.io/?via=namhyeon) - SERP (Google, Bing, Baidu, Amazon, YouTube, App Store (Google, Apple), etc.) scraping (100 free calls/month)
 
 ## Structure
 ![The structure of the WelsonJS framework can be extended based on whether it operates in a console (command prompt) environment, a GUI (with HTML/CSS) environment, or a service environment, with the `app.js` file at its core.](app/assets/img/structure.png)
