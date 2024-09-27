@@ -1,6 +1,6 @@
 {
     "description": "WelsonJS test profile (test-misc.json)",
-    "released": "2024-09-25",
+    "released": "2024-09-27",
     "dependencies": {
         "welsonjs": "0.2.7"
     },
@@ -93,7 +93,12 @@
         },
         {
             "id": "proxy_custom_provider",
-            "description": "HTTP proxy with a custom provider",
+            "description": "HTTP proxy with an web proxy provider",
+            "tags": ["Network", "HTTP"]
+        },
+        {
+            "id": "proxy_serp",
+            "description": "HTTP proxy with a SERP provider",
             "tags": ["Network", "HTTP"]
         }
     ]

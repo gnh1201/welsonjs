@@ -1024,6 +1024,25 @@ var test_implements = {
             .send();
 
         console.log("responseBody:", response.responseBody);
+    },
+    
+    "proxy_serp": function() {
+        var HTTP = require("lib/http");
+
+        var response = HTTP.create("CURL")
+            .setVariables({
+                "api_key": "2DG3WQgeL2djLFvnQBw83J4y"
+            })
+            .setProxy({
+                "enabled": true,
+                "provider": "searchapi",
+                "type": "serp"
+            })
+            .setUserAgent("Mozilla/5.0 (Windows NT 10.0; Trident/7.0; rv:11.0) like Gecko")
+            .open("GET", "https://www.google.com/search?q=test")
+            .send();
+
+        console.log("responseBody:", response.responseBody);
     }
 };
 
