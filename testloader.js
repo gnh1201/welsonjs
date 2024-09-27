@@ -1003,7 +1003,7 @@ var test_implements = {
         }
     },
     
-    // [lib/http] Proxy API services integration #143
+    // https://github.com/gnh1201/welsonjs/wiki/Partnerships#scrapeops-proxy-aggregator
     "proxy_custom_provider": function() {
         var HTTP = require("lib/http");
 
@@ -1026,6 +1026,7 @@ var test_implements = {
         console.log("responseBody:", response.responseBody);
     },
     
+    // https://github.com/gnh1201/welsonjs/wiki/Partnerships#searchapi
     "proxy_serp": function() {
         var HTTP = require("lib/http");
 
