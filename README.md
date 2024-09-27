@@ -20,9 +20,9 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
 - <img src="app/assets/img/signpath_logo.png" height="30" alt=""/> Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org/)
 
 ## Partnerships
-Through partnerships, proceeds from purchases of services or products are used to support this project. These are services or products with **existing cases** of integration with this project.
-
 - <img src="app/assets/img/scrapeops-logo.svg" height="30" alt=""/> [ScrapeOps (scrapeops.io)](https://scrapeops.io?fpr=namhyeon75) - Proxy Aggregator (Free 1,000 calls + Free 0.5GB per month, 10% Off Coupon `gnh10`)
+
+These partnerships are based on existing cases of integration with this project. The proceeds are used to support this project.
 
 ## Structure
 ![The structure of the WelsonJS framework can be extended based on whether it operates in a console (command prompt) environment, a GUI (with HTML/CSS) environment, or a service environment, with the `app.js` file at its core.](app/assets/img/structure.png)
