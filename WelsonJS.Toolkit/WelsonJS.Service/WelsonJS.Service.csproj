@@ -96,6 +96,9 @@
   <PropertyGroup>
     <StartupObject />
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>favicon.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="ClamAV.Net, Version=0.1.166.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\ClamAV.Net.0.1.166\lib\netstandard2.0\ClamAV.Net.dll</HintPath>
@@ -240,7 +243,9 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="favicon.ico" />
+  </ItemGroup>
   <ItemGroup>
     <Protobuf Include="Protos\heartbeat.proto" GrpcServices="Client" />
   </ItemGroup>

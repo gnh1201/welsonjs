@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<svg width="250.6666604" height="194.66666179999999" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" version="1.1">
+ <g class="layer">
+  <title>Layer 1</title>
+  <g id="svg_35" transform="translate(0 -2) translate(-540 -242) matrix(1.33333 0 0 -1.33333 592.817 412.324)">
+   <path d="m0,0l-28.17,0l53.83,115.1l28.17,0l-53.83,-115.1z" fill="#ff3100" fill-rule="nonzero" id="svg_36"/>
+  </g>
+  <g id="svg_33" transform="translate(0 -2) translate(-540 -242) matrix(1.33333 0 0 -1.33333 631.405 412.324)">
+   <path d="m0,0l-23.12,0l53.83,115.1l23.12,0l-53.83,-115.1z" fill="#46bd00" fill-rule="nonzero" id="svg_34"/>
+  </g>
+  <g id="svg_31" transform="translate(0 -2) translate(-540 -242) translate(544.997 248.997) translate(0 -119) translate(9 10) translate(-554 -465) translate(359.987 237.527) matrix(1.33333 0 0 -1.33333 305.524 499.8)">
+   <path d="m0,0l-19.75,0l53.82,115.1l19.76,0l-53.83,-115.1z" fill="#0096ff" fill-rule="nonzero" id="svg_32"/>
+  </g>
+  <g id="svg_29" transform="translate(0 -2) translate(-540 -242) translate(544.997 248.997) translate(0 -119) translate(9 10) translate(-554 -465) translate(359.987 237.527) translate(251.355 625.151) matrix(1.33333 0 0 -1.33333 83.7851 -125.351)">
+   <path d="m0,0l-16.39,0l53.83,115.1l16.39,0l-53.83,-115.1z" fill="#ffbd00" fill-rule="nonzero" id="svg_30"/>
+  </g>
+  <g id="svg_27" transform="translate(0 -2) translate(-540 -242) translate(544.997 248.997) translate(0 -119) translate(9 10) translate(-554 -465) translate(359.987 237.527) translate(228.569 624.856) matrix(1.33333 0 0 -1.33333 76.1898 -124.665)">
+   <path d="m0,0l0,70.6l17.65,0l0,-70.6l-8.83,0l0,-8.82l-35.29,0l0,8.82l-8.83,0l0,17.65l17.65,0l0,-17.65l17.65,0z" fill="#000000" fill-rule="nonzero" id="svg_28"/>
+  </g>
+  <g id="svg_25" transform="translate(0 -2) translate(-540 -242) translate(544.997 248.997) translate(0 -119) translate(9 10) translate(-554 -465) translate(359.987 237.527) translate(295.167 624.856) matrix(1.33333 0 0 -1.33333 98.3888 -124.665)">
+   <path d="m0,0l0,17.65l-8.82,0l0,8.82l-8.83,0l0,8.83l-8.82,0l0,8.82l-8.83,0l0,17.65l8.83,0l0,8.83l35.29,0l0,-8.83l8.83,0l0,-8.82l-17.65,0l0,8.82l-17.65,0l0,-17.65l8.83,0l0,-8.82l8.82,0l0,-8.83l8.82,0l0,-8.82l8.83,0l0,-17.65l-8.83,0l0,-8.82l-35.29,0l0,8.82l-8.83,0l0,8.82l17.65,0l0,-8.82l17.65,0z" fill="#000000" fill-rule="nonzero" id="svg_26"/>
+  </g>
+ </g>
+</svg>

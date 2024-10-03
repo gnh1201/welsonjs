@@ -4,7 +4,7 @@
 [![AppVeyor Status](https://ci.appveyor.com/api/projects/status/github/gnh1201/welsonjs?svg=true)](https://ci.appveyor.com/project/gnh1201/welsonjs)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11382384.svg)](https://doi.org/10.5281/zenodo.11382384)
 
-WelsonJS - Build a Windows app on the Windows built-in JavaScript engine.
+<img src="app/assets/img/logo.svg" height="30" alt=""/> WelsonJS - Build a Windows app on the Windows built-in JavaScript engine.
 
 ![(This is a cover image) Windows in 1999](app/assets/img/cover.png)
 
