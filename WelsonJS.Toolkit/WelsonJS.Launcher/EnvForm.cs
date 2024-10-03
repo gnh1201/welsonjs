@@ -199,5 +199,86 @@ namespace WelsonJS.Launcher
                 textSetValue.Text = fileDialog.FileName;
             }
         }
+
+        private void btnImport_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Env files (*.env)|*.env|All files (*.*)|*.*";
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    // Load variables from the selected file
+                    string filePath = openFileDialog.FileName;
+                    string[] lines = File.ReadAllLines(filePath);
+
+                    foreach (string line in lines)
+                    {
+                        // Skip empty lines
+                        if (string.IsNullOrWhiteSpace(line)) continue;
+
+                        int indexOfEquals = line.IndexOf('=');
+                        if (indexOfEquals != -1)
+                        {
+                            string key = line.Substring(0, indexOfEquals).Trim();
+                            string value = line.Substring(indexOfEquals + 1).Trim();
+
+                            // Remove surrounding quotes if present
+                            if (value.StartsWith("\"") && value.EndsWith("\""))
+                            {
+                                value = value.Substring(1, value.Length - 2);
+                            }
+
+                            // Unescape double quotes in the value
+                            value = value.Replace("\\\"", "\"");
+
+                            // Update or add the key-value pair
+                            userVariables[key] = value;
+                        }
+                    }
+
+                    // Save the updated variables to the file
+                    SaveUserVariables();
+                    UpdateListView(); // Refresh the display
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error importing variable file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private void btnExport_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "Env files (*.env)|*.env|All files (*.*)|*.*";
+            if (saveFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                try
+                {
+                    // Save the current variables to the selected file
+                    string filePath = saveFileDialog.FileName;
+                    List<string> lines = new List<string>();
+                    foreach (var variable in userVariables)
+                    {
+                        // Escape double quotes in the value
+                        string value = variable.Value.Replace("\"", "\\\"");
+
+                        // Enclose the value in double quotes if it contains spaces
+                        if (value.Contains(" "))
+                        {
+                            value = $"\"{value}\"";
+                        }
+
+                        lines.Add($"{variable.Key}={value}");
+                    }
+                    File.WriteAllLines(filePath, lines);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error exporting variable file: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
     }
 }

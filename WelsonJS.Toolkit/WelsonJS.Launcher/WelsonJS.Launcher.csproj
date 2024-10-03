@@ -119,7 +119,13 @@
     <None Include="Resources\icon_zip_128.png" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="favicon.ico" />
+    <None Include="favicon.ico" />
+    <None Include="Resources\favicon.ico" />
+    <None Include="Resources\icon_check_32.png" />
+    <None Include="Resources\icon_directory_32.png" />
+    <None Include="Resources\icon_file_32.png" />
+    <None Include="Resources\icon_export_32.png" />
+    <None Include="Resources\icon_import_32.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

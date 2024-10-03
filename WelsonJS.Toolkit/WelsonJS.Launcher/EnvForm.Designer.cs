@@ -28,9 +28,10 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(EnvForm));
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.listView1 = new System.Windows.Forms.ListView();
+            this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.checkDeleteVariable = new System.Windows.Forms.CheckBox();
             this.btnOk = new System.Windows.Forms.Button();
@@ -40,10 +41,12 @@
             this.textSetName = new System.Windows.Forms.TextBox();
             this.labelSetValue = new System.Windows.Forms.Label();
             this.labelSetName = new System.Windows.Forms.Label();
-            this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.btnExport = new System.Windows.Forms.Button();
+            this.btnImport = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
+            this.groupBox3.SuspendLayout();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -51,7 +54,7 @@
             this.groupBox1.Controls.Add(this.listView1);
             this.groupBox1.Location = new System.Drawing.Point(12, 12);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(419, 328);
+            this.groupBox1.Size = new System.Drawing.Size(419, 170);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "User-defined variables";
@@ -64,10 +67,18 @@
             this.listView1.HideSelection = false;
             this.listView1.Location = new System.Drawing.Point(16, 26);
             this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(386, 285);
+            this.listView1.Size = new System.Drawing.Size(386, 129);
             this.listView1.TabIndex = 0;
             this.listView1.UseCompatibleStateImageBehavior = false;
             this.listView1.SelectedIndexChanged += new System.EventHandler(this.ListView1_SelectedIndexChanged);
+            // 
+            // columnHeader1
+            // 
+            this.columnHeader1.Text = "Name";
+            // 
+            // columnHeader2
+            // 
+            this.columnHeader2.Text = "Value";
             // 
             // groupBox2
             // 
@@ -79,7 +90,7 @@
             this.groupBox2.Controls.Add(this.textSetName);
             this.groupBox2.Controls.Add(this.labelSetValue);
             this.groupBox2.Controls.Add(this.labelSetName);
-            this.groupBox2.Location = new System.Drawing.Point(12, 346);
+            this.groupBox2.Location = new System.Drawing.Point(12, 188);
             this.groupBox2.Name = "groupBox2";
             this.groupBox2.Size = new System.Drawing.Size(419, 229);
             this.groupBox2.TabIndex = 1;
@@ -122,7 +133,7 @@
             // 
             // btnOpenDirectory
             // 
-            this.btnOpenDirectory.Image = ((System.Drawing.Image)(resources.GetObject("btnOpenDirectory.Image")));
+            this.btnOpenDirectory.Image = global::WelsonJS.Launcher.Properties.Resources.icon_directory_32;
             this.btnOpenDirectory.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnOpenDirectory.Location = new System.Drawing.Point(31, 123);
             this.btnOpenDirectory.Name = "btnOpenDirectory";
@@ -164,19 +175,47 @@
             this.labelSetName.TabIndex = 0;
             this.labelSetName.Text = "Set name:";
             // 
-            // columnHeader1
+            // groupBox3
             // 
-            this.columnHeader1.Text = "Name";
+            this.groupBox3.Controls.Add(this.btnExport);
+            this.groupBox3.Controls.Add(this.btnImport);
+            this.groupBox3.Location = new System.Drawing.Point(12, 423);
+            this.groupBox3.Name = "groupBox3";
+            this.groupBox3.Size = new System.Drawing.Size(419, 89);
+            this.groupBox3.TabIndex = 2;
+            this.groupBox3.TabStop = false;
+            this.groupBox3.Text = "Import and export";
             // 
-            // columnHeader2
+            // btnExport
             // 
-            this.columnHeader2.Text = "Value";
+            this.btnExport.Image = global::WelsonJS.Launcher.Properties.Resources.icon_export_32;
+            this.btnExport.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnExport.Location = new System.Drawing.Point(213, 29);
+            this.btnExport.Name = "btnExport";
+            this.btnExport.Size = new System.Drawing.Size(176, 40);
+            this.btnExport.TabIndex = 6;
+            this.btnExport.Text = "Export";
+            this.btnExport.UseVisualStyleBackColor = true;
+            this.btnExport.Click += new System.EventHandler(this.btnExport_Click);
+            // 
+            // btnImport
+            // 
+            this.btnImport.Image = global::WelsonJS.Launcher.Properties.Resources.icon_import_32;
+            this.btnImport.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnImport.Location = new System.Drawing.Point(31, 29);
+            this.btnImport.Name = "btnImport";
+            this.btnImport.Size = new System.Drawing.Size(176, 40);
+            this.btnImport.TabIndex = 5;
+            this.btnImport.Text = "Import";
+            this.btnImport.UseVisualStyleBackColor = true;
+            this.btnImport.Click += new System.EventHandler(this.btnImport_Click);
             // 
             // EnvForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(447, 596);
+            this.ClientSize = new System.Drawing.Size(447, 529);
+            this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
@@ -187,6 +226,7 @@
             this.groupBox1.ResumeLayout(false);
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
+            this.groupBox3.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -206,5 +246,8 @@
         private System.Windows.Forms.ListView listView1;
         private System.Windows.Forms.ColumnHeader columnHeader1;
         private System.Windows.Forms.ColumnHeader columnHeader2;
+        private System.Windows.Forms.GroupBox groupBox3;
+        private System.Windows.Forms.Button btnImport;
+        private System.Windows.Forms.Button btnExport;
     }
 }

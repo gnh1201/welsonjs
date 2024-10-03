@@ -93,9 +93,29 @@ namespace WelsonJS.Launcher.Properties {
         /// <summary>
         ///   System.Drawing.Bitmap 형식의 지역화된 리소스를 찾습니다.
         /// </summary>
+        internal static System.Drawing.Bitmap icon_export_32 {
+            get {
+                object obj = ResourceManager.GetObject("icon_export_32", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   System.Drawing.Bitmap 형식의 지역화된 리소스를 찾습니다.
+        /// </summary>
         internal static System.Drawing.Bitmap icon_file_32 {
             get {
                 object obj = ResourceManager.GetObject("icon_file_32", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   System.Drawing.Bitmap 형식의 지역화된 리소스를 찾습니다.
+        /// </summary>
+        internal static System.Drawing.Bitmap icon_import_32 {
+            get {
+                object obj = ResourceManager.GetObject("icon_import_32", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
