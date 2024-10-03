@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(EnvForm));
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.listView1 = new System.Windows.Forms.ListView();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
@@ -39,6 +40,8 @@
             this.textSetName = new System.Windows.Forms.TextBox();
             this.labelSetValue = new System.Windows.Forms.Label();
             this.labelSetName = new System.Windows.Forms.Label();
+            this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -55,12 +58,16 @@
             // 
             // listView1
             // 
+            this.listView1.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.columnHeader1,
+            this.columnHeader2});
             this.listView1.HideSelection = false;
             this.listView1.Location = new System.Drawing.Point(16, 26);
             this.listView1.Name = "listView1";
             this.listView1.Size = new System.Drawing.Size(386, 285);
             this.listView1.TabIndex = 0;
             this.listView1.UseCompatibleStateImageBehavior = false;
+            this.listView1.SelectedIndexChanged += new System.EventHandler(this.ListView1_SelectedIndexChanged);
             // 
             // groupBox2
             // 
@@ -91,30 +98,39 @@
             // 
             // btnOk
             // 
+            this.btnOk.Image = global::WelsonJS.Launcher.Properties.Resources.icon_check_32;
             this.btnOk.Location = new System.Drawing.Point(303, 123);
             this.btnOk.Name = "btnOk";
             this.btnOk.Size = new System.Drawing.Size(86, 86);
             this.btnOk.TabIndex = 6;
             this.btnOk.Text = "Ok";
+            this.btnOk.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             this.btnOk.UseVisualStyleBackColor = true;
+            this.btnOk.Click += new System.EventHandler(this.btnOk_Click);
             // 
             // btnOpenFile
             // 
+            this.btnOpenFile.Image = global::WelsonJS.Launcher.Properties.Resources.icon_file_32;
+            this.btnOpenFile.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnOpenFile.Location = new System.Drawing.Point(31, 169);
             this.btnOpenFile.Name = "btnOpenFile";
             this.btnOpenFile.Size = new System.Drawing.Size(201, 40);
             this.btnOpenFile.TabIndex = 5;
             this.btnOpenFile.Text = "Open the file...";
             this.btnOpenFile.UseVisualStyleBackColor = true;
+            this.btnOpenFile.Click += new System.EventHandler(this.btnOpenFile_Click);
             // 
             // btnOpenDirectory
             // 
+            this.btnOpenDirectory.Image = ((System.Drawing.Image)(resources.GetObject("btnOpenDirectory.Image")));
+            this.btnOpenDirectory.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnOpenDirectory.Location = new System.Drawing.Point(31, 123);
             this.btnOpenDirectory.Name = "btnOpenDirectory";
             this.btnOpenDirectory.Size = new System.Drawing.Size(201, 40);
             this.btnOpenDirectory.TabIndex = 4;
             this.btnOpenDirectory.Text = "Open the directory...";
             this.btnOpenDirectory.UseVisualStyleBackColor = true;
+            this.btnOpenDirectory.Click += new System.EventHandler(this.btnOpenDirectory_Click);
             // 
             // textSetValue
             // 
@@ -148,6 +164,14 @@
             this.labelSetName.TabIndex = 0;
             this.labelSetName.Text = "Set name:";
             // 
+            // columnHeader1
+            // 
+            this.columnHeader1.Text = "Name";
+            // 
+            // columnHeader2
+            // 
+            this.columnHeader2.Text = "Value";
+            // 
             // EnvForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
@@ -180,5 +204,7 @@
         private System.Windows.Forms.Button btnOpenDirectory;
         private System.Windows.Forms.CheckBox checkDeleteVariable;
         private System.Windows.Forms.ListView listView1;
+        private System.Windows.Forms.ColumnHeader columnHeader1;
+        private System.Windows.Forms.ColumnHeader columnHeader2;
     }
 }
