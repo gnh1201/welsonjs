@@ -72,5 +72,10 @@ namespace WelsonJS.Service
             userVariables.TryGetValue(name, out string value);
             return value;
         }
+
+        public string GetEnvFilePath()
+        {
+            return envFilePath;
+        }
     }
 }

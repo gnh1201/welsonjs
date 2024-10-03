@@ -34,6 +34,7 @@ using System.Collections.Generic;
 using WelsonJS.TinyINIController;
 using System.Collections;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace WelsonJS.Service
 {
@@ -256,15 +257,27 @@ namespace WelsonJS.Service
 
                     // make the start arguments
                     string[] startArguments;
+                    string[] _args;
                     if (Environment.UserInteractive)
                     {
-                        startArguments = new string[args.Length + 1];
-                        args.CopyTo(startArguments, 0);
-                        startArguments[args.Length] = "--user-interactive";
+                        _args = new string[]
+                        {
+                            $"--user-variables-file={userVariablesHandler.GetEnvFilePath()}",
+                            "--user-interactive"
+                        };
                     }
                     else
                     {
-                        startArguments = args;
+                        _args = new string[]
+                        {
+                            $"--user-variables-file={userVariablesHandler.GetEnvFilePath()}"
+                        };
+                    }
+                    startArguments = new string[args.Length + _args.Length];
+                    args.CopyTo(startArguments, 0);
+                    for (int i = 0; i < _args.Length; i++)
+                    {
+                        startArguments[args.Length + i] = _args[i];
                     }
 
                     // initialize
