@@ -196,6 +196,7 @@ namespace WelsonJS.Launcher
             var fileDialog = new OpenFileDialog();
             if (fileDialog.ShowDialog() == DialogResult.OK)
             {
+                textSetName.Text = Path.GetFileName(fileDialog.FileName);
                 textSetValue.Text = fileDialog.FileName;
             }
         }
