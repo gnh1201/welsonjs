@@ -4,7 +4,7 @@
 [![AppVeyor Status](https://ci.appveyor.com/api/projects/status/github/gnh1201/welsonjs?svg=true)](https://ci.appveyor.com/project/gnh1201/welsonjs)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.11382384.svg)](https://doi.org/10.5281/zenodo.11382384)
 
-<img src="app/assets/img/logo.svg" height="30" alt=""/> WelsonJS - Build a Windows app on the Windows built-in JavaScript engine.
+<img src="app/assets/img/logo.svg" height="32 alt=""/> WelsonJS - Build a Windows app on the Windows built-in JavaScript engine.
 
 ![(This is a cover image) Windows in 1999](app/assets/img/cover.png)
 
@@ -15,13 +15,13 @@ WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)*** + [Y
 Dual license notice: The default license for this project is GPL 3.0. However, if the GPL 3.0 license is not compatible with Microsoft products, it is subject to the MS-RL license.
 
 ## Sponsors
-- <img src="app/assets/img/github_octocat_logo.png" height="30" alt=""/> [GitHub Sponsors](https://github.com/sponsors/gnh1201)
-- <img src="app/assets/img/logo_oss.gif" height="30" alt=""/> Open Software Portal, Korea National Industry Promotion Agency - Awarded Prize
-- <img src="app/assets/img/signpath_logo.png" height="30" alt=""/> Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org/)
+- <img src="app/assets/img/github_octocat_logo.png" height="32" alt=""/> [GitHub Sponsors](https://github.com/sponsors/gnh1201)
+- <img src="app/assets/img/logo_oss.gif" height="32" alt=""/> Open Software Portal, Korea National Industry Promotion Agency - Awarded Prize
+- <img src="app/assets/img/signpath_logo.png" height="32" alt=""/> Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org/)
 
 ## [Partnerships](https://github.com/gnh1201/welsonjs/wiki/Partnerships)
-- [<img src="app/assets/img/scrapeops-logo.svg" height="30" alt=""/> ScrapeOps (scrapeops.io)](https://scrapeops.io?fpr=namhyeon75) - Proxy Aggregator (1,000 free calls/month, [10% discount coupon](https://github.com/gnh1201/welsonjs/wiki/Partnerships))
-- [<img src="app/assets/img/searchapi-logo.svg" height="30" alt="SearchApi"/> (searchapi.io)](https://www.searchapi.io/?via=namhyeon) - SERP (Google, Bing, Baidu, Amazon, YouTube, App Store (Google, Apple), etc.) scraping (100 free calls/month)
+- [<img src="app/assets/img/scrapeops-logo.svg" height="32" alt=""/> ScrapeOps (scrapeops.io)](https://scrapeops.io?fpr=namhyeon75) - Proxy Aggregator (1,000 free calls/month, [10% discount coupon](https://github.com/gnh1201/welsonjs/wiki/Partnerships))
+- [<img src="app/assets/img/searchapi-logo.svg" height="32" alt="SearchApi"/> (searchapi.io)](https://www.searchapi.io/?via=namhyeon) - SERP (Google, Bing, Baidu, Amazon, YouTube, App Store (Google, Apple), etc.) scraping (100 free calls/month)
 
 ## Structure
 ![The structure of the WelsonJS framework can be extended based on whether it operates in a console (command prompt) environment, a GUI (with HTML/CSS) environment, or a service environment, with the `app.js` file at its core.](app/assets/img/structure.png)
@@ -159,14 +159,14 @@ The WelsonJS framework suggests the following application release methods:
 - Heavy-industry specialized CSP(Cloud Service Provider) in Republic of Korea - Use case establishment
 - Live-commerce specialized online advertisement companies in Republic of Korea - Use case establishment
 - Information security companies in Republic of Korea - Use case establishment
-- <img src="app/assets/img/morioh.svg" height="30" alt=""/> morioh.com - Mentioned
-- <img src="app/assets/img/CSDN_Logo.svg" height="30" alt=""/> CSDN - Mentioned
-- <img src="app/assets/img/qiita-logo.png" height="30" alt=""/> Qiita - Knowledge-base about WSH environment
-- <img src="app/assets/img/RedSky-logo-web.webp" height="30" alt=""/> Redsky Software - PoC(Proof of Concept) of the CommonJS on WSH environment
+- <img src="app/assets/img/morioh.svg" height="32" alt=""/> morioh.com - Mentioned
+- <img src="app/assets/img/CSDN_Logo.svg" height="32" alt=""/> CSDN - Mentioned
+- <img src="app/assets/img/qiita-logo.png" height="32" alt=""/> Qiita - Knowledge-base about WSH environment
+- <img src="app/assets/img/RedSky-logo-web.webp" height="32" alt=""/> Redsky Software - PoC(Proof of Concept) of the CommonJS on WSH environment
 - Inspired by a small-sized JavaScript payload demonstrated by a cybersecurity related group.
 - Inspired by the use of Named Shared Memory in an inter-language IPC implementation devised by an unidentified developer.
-- <img src="app/assets/img/Fediverse_logo_proposal.svg" height="30" alt=""/> Fediverse - Mentioned
-- <img src="app/assets/img/Hackernews_logo.png" height="30" alt=""/> Hacker News - Mentioned
+- <img src="app/assets/img/Fediverse_logo_proposal.svg" height="32" alt=""/> Fediverse - Mentioned
+- <img src="app/assets/img/Hackernews_logo.png" height="32" alt=""/> Hacker News - Mentioned
 
 ## Related links
 - [gnh1201/wsh-js-gtk](https://github.com/gnh1201/wsh-js-gtk) - GTK GUI ported to Windows Scripting Host - Javascript (Microsoft JScript) (wsh-js)
