@@ -75,7 +75,7 @@ namespace WelsonJS.Service
 
             try
             {
-                clamAvConenctionString = this.parent.GetSettingsFileHandler().Read("CLAMAV_HOST", "Service");
+                clamAvConenctionString = this.parent.GetSettingsHandler().Read("CLAMAV_HOST", "Service");
             }
             catch (Exception ex)
             {

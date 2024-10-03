@@ -203,6 +203,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScreenMatch.cs" />
     <Compile Include="Model\ScreenMatchResult.cs" />
+    <Compile Include="UserVariables.cs" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="MSScriptControl">

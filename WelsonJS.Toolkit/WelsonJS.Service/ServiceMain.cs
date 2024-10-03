@@ -45,7 +45,7 @@ namespace WelsonJS.Service
         private string scriptFilePath;
         private string scriptText;
         private ScriptControl scriptControl;
-        private readonly string logFilePath = Path.Combine(Path.GetTempPath(), "WelsonJS.Service.Log.txt");
+        private readonly string logFilePath = Path.Combine(Path.GetTempPath(), "welsonjs_service.log");
         private readonly string appName = "WelsonJS";
         private string[] args;
         private bool disabledHeartbeat = false;
@@ -53,7 +53,8 @@ namespace WelsonJS.Service
         private bool disabledFileMonitor = false;
         private ScreenMatch screenMatcher;
         private FileEventMonitor fileEventMonitor;
-        private IniFile settingsFileHandler;
+        private IniFile settingsHandler;
+        private UserVariables userVariablesHandler;
 
         [DllImport("user32.dll")]
         private static extern int GetSystemMetrics(int nIndex);
@@ -95,6 +96,10 @@ namespace WelsonJS.Service
                 }
             }
 
+            // load the user variables
+            userVariablesHandler = new UserVariables(this);
+            userVariablesHandler.Load();
+
             // set timers
             timers = new List<Timer>();
 
@@ -118,11 +123,11 @@ namespace WelsonJS.Service
             {
                 try
                 {
-                    settingsFileHandler = new IniFile(settingsFilePath);
+                    settingsHandler = new IniFile(settingsFilePath);
                 }
                 catch (Exception)
                 {
-                    settingsFileHandler = null;
+                    settingsHandler = null;
                 }
             }
             else
@@ -131,7 +136,7 @@ namespace WelsonJS.Service
             }
 
             // read configrations from settings.ini
-            if (settingsFileHandler != null)
+            if (settingsHandler != null)
             {
                 string[] configNames = new string[]
                 {
@@ -143,7 +148,7 @@ namespace WelsonJS.Service
                 {
                     try
                     {
-                        if ("true" == GetSettingsFileHandler().Read(configName, "Service"))
+                        if ("true" == GetSettingsHandler().Read(configName, "Service"))
                         {
                             switch (configName)
                             {
@@ -211,9 +216,14 @@ namespace WelsonJS.Service
             Log(appName + " Service Loaded");
         }
 
-        public IniFile GetSettingsFileHandler()
+        public IniFile GetSettingsHandler()
         {
-            return settingsFileHandler;
+            return settingsHandler;
+        }
+
+        public UserVariables GetUserVariablesHandler()
+        {
+            return userVariablesHandler;
         }
 
         internal void TestStartupAndStop()
