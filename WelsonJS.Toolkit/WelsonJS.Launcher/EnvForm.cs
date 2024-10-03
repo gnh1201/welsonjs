@@ -15,7 +15,7 @@ namespace WelsonJS.Launcher
             InitializeComponent();
             InitializeListView();
             // Set the variable file path in the temporary folder
-            tempFilePath = Path.Combine(Path.GetTempPath(), "WelsonJS.UserVariables.txt");
+            tempFilePath = Path.Combine(Path.GetTempPath(), "welsonjs_default.env");
             LoadUserVariables();  // Load variables
         }
 
@@ -29,7 +29,7 @@ namespace WelsonJS.Launcher
             listView1.SelectedIndexChanged += ListView1_SelectedIndexChanged;
         }
 
-        // Load user-defined variables from the temporary folder (text format)
+        // Load user-defined variables from the temporary folder in .env format
         private void LoadUserVariables()
         {
             if (File.Exists(tempFilePath))
@@ -37,18 +37,34 @@ namespace WelsonJS.Launcher
                 try
                 {
                     string fileContent = File.ReadAllText(tempFilePath);
-                    string[] keyValuePairs = fileContent.Split(new[] { " --" }, StringSplitOptions.RemoveEmptyEntries);
+                    // Split based on new line characters
+                    string[] keyValuePairs = fileContent.Split(new[] { '\n', '\r' }, StringSplitOptions.RemoveEmptyEntries);
 
                     userVariables = new Dictionary<string, string>();
 
                     foreach (string pair in keyValuePairs)
                     {
-                        string[] keyValue = pair.Split(new[] { '=' }, 2);
-                        if (keyValue.Length == 2)
+                        // Split by the first occurrence of '='
+                        int indexOfEquals = pair.IndexOf('=');
+                        if (indexOfEquals != -1)
                         {
-                            string key = keyValue[0].TrimStart('-');
-                            string value = keyValue[1];
+                            string key = pair.Substring(0, indexOfEquals).Trim();
+                            string value = pair.Substring(indexOfEquals + 1).Trim();
+
+                            // Remove surrounding quotes if present
+                            if (value.StartsWith("\"") && value.EndsWith("\""))
+                            {
+                                value = value.Substring(1, value.Length - 2); // Remove the first and last character
+                            }
+
+                            // Unescape double quotes in the value
+                            value = value.Replace("\\\"", "\"");
+
                             userVariables[key] = value;
+                        }
+                        else
+                        {
+                            MessageBox.Show($"Error parsing line: '{pair}'.", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                         }
                     }
                 }
@@ -124,19 +140,31 @@ namespace WelsonJS.Launcher
             ClearInputFields();
         }
 
-        // Save user-defined variables to the temporary folder (text format)
+        // Save user-defined variables to the temporary folder in .env format
         private void SaveUserVariables()
         {
             try
             {
-                List<string> keyValuePairs = new List<string>();
+                List<string> lines = new List<string>();
+
                 foreach (var variable in userVariables)
                 {
-                    keyValuePairs.Add($"--{variable.Key}={variable.Value}");
+                    // Escape double quotes in the value
+                    string value = variable.Value.Replace("\"", "\\\"");
+
+                    // Enclose the value in double quotes if it contains spaces
+                    if (value.Contains(" "))
+                    {
+                        value = $"\"{value}\"";
+                    }
+
+                    // Create the line in the format: KEY=VALUE
+                    string line = $"{variable.Key}={value}";
+                    lines.Add(line);
                 }
 
-                string content = string.Join(" ", keyValuePairs);
-                File.WriteAllText(tempFilePath, content);
+                // Write lines to the file
+                File.WriteAllLines(tempFilePath, lines);
             }
             catch (Exception ex)
             {
