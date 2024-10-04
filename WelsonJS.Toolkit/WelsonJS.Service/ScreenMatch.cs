@@ -160,8 +160,8 @@ public class ScreenMatch
         string screen_time_params;
         try
         {
-            screen_time_mode = this.parent.GetSettingsFileHandler().Read("SCREEN_TIME_MODE", "Service");
-            screen_time_params = this.parent.GetSettingsFileHandler().Read("SCREEN_TIME_PARAMS", "Service");
+            screen_time_mode = this.parent.GetSettingsHandler().Read("SCREEN_TIME_MODE", "Service");
+            screen_time_params = this.parent.GetSettingsHandler().Read("SCREEN_TIME_PARAMS", "Service");
         }
         catch (Exception ex)
         {
@@ -312,7 +312,21 @@ public class ScreenMatch
         foreach (var file in files)
         {
             string filename = Path.GetFileName(file);
-            Bitmap bitmap = new Bitmap(file)
+
+            string realpath;
+            string altpath = parent.GetUserVariablesHandler().GetValue(filename);
+            if (!String.IsNullOrEmpty(altpath))
+            {
+                realpath = altpath;
+                parent.Log($"Use the alternative image: {realpath}");
+            }
+            else
+            {
+                realpath = file;
+                parent.Log($"Use the default image: {realpath}");
+            }
+
+            Bitmap bitmap = new Bitmap(realpath)
             {
                 Tag = filename
             };

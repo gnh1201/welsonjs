@@ -208,5 +208,13 @@ namespace WelsonJS.Launcher
         {
             System.Diagnostics.Process.Start("https://github.com/gnh1201/welsonjs");
         }
+
+        private void userdefinedVariablesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            using (var envForm = new EnvForm())
+            {
+                envForm.Show();
+            }
+        }
     }
 }
