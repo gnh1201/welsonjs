@@ -211,7 +211,10 @@ namespace WelsonJS.Launcher
 
         private void userdefinedVariablesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            (new EnvForm()).Show();
+            using (var envForm = new EnvForm())
+            {
+                envForm.Show();
+            }
         }
     }
 }

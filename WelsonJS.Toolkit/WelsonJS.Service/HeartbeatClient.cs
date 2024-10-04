@@ -16,7 +16,7 @@ namespace WelsonJS.Service
     {
         private readonly HeartbeatService.HeartbeatServiceClient _client;
         private readonly GrpcChannel _channel;
-        private const int HeartbeatInterval = 2000; // 2 seconds
+        private int HeartbeatInterval;
         private ServiceMain _parent;
         private string clientId;
         private string serverAddress;
@@ -24,6 +24,8 @@ namespace WelsonJS.Service
         public HeartbeatClient(ServiceBase parent)
         {
             _parent = (ServiceMain)parent;
+
+            HeartbeatInterval = int.Parse(_parent.GetSettingsHandler().Read("HEARTBEAT_INTERVAL", "Service") ?? "2000");
 
             try
             {
@@ -69,7 +71,7 @@ namespace WelsonJS.Service
                     await call.RequestStream.CompleteAsync();
                     _parent.Log("Sent heartbeat");
 
-                    await Task.Delay(HeartbeatInterval); // HeartbeatInterval 동안 대기
+                    await Task.Delay(HeartbeatInterval); // Wait for HeartbeatInterval
 
                 }
                 catch (Exception ex)
