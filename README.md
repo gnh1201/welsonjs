@@ -159,14 +159,15 @@ The WelsonJS framework suggests the following application release methods:
 - Heavy-industry specialized CSP(Cloud Service Provider) in Republic of Korea - Use case establishment
 - Live-commerce specialized online advertisement companies in Republic of Korea - Use case establishment
 - Information security companies in Republic of Korea - Use case establishment
-- <img src="app/assets/img/morioh.svg" height="32" alt=""/> morioh.com - Mentioned
+- <img src="app/assets/img/morioh.svg" height="32" alt=""/> morioh.com - [Mentioned](https://morioh.com/a/23c427a82bf1/build-a-windows-desktop-apps-with-javascript-html-and-css)
 - <img src="app/assets/img/CSDN_Logo.svg" height="32" alt=""/> CSDN - Mentioned
 - <img src="app/assets/img/qiita-logo.png" height="32" alt=""/> Qiita - Knowledge-base about WSH environment
 - <img src="app/assets/img/RedSky-logo-web.webp" height="32" alt=""/> Redsky Software - PoC(Proof of Concept) of the CommonJS on WSH environment
 - Inspired by a small-sized JavaScript payload demonstrated by a cybersecurity related group.
 - Inspired by the use of Named Shared Memory in an inter-language IPC implementation devised by an unidentified developer.
 - <img src="app/assets/img/Fediverse_logo_proposal.svg" height="32" alt=""/> Fediverse - Mentioned
-- <img src="app/assets/img/Hackernews_logo.png" height="32" alt=""/> Hacker News - Mentioned
+- <img src="app/assets/img/Hackernews_logo.png" height="32" alt=""/> Hacker News - [Mentioned](https://news.ycombinator.com/item?id=41316782)
+- <img src="app/assets/img/webtoolsweekly-logo.svg" height="32" alt=""/> WebToolsWeekly - [Mentioned](https://webtoolsweekly.com/archives/issue-585/)
 
 ## Related links
 - [gnh1201/wsh-js-gtk](https://github.com/gnh1201/wsh-js-gtk) - GTK GUI ported to Windows Scripting Host - Javascript (Microsoft JScript) (wsh-js)
