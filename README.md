@@ -186,7 +186,7 @@ The WelsonJS framework suggests the following application release methods:
 - [GitHub Security Advisories](https://github.com/gnh1201/welsonjs/security)
 - abuse@catswords.net
 - ActivityPub [@catswords_oss@catswords.social](https://catswords.social/@catswords_oss)
-- XMPP [gnh1201@xmpp.catswords.net](https://policy.catswords.social/xmpp.html)
+- XMPP [catswords@conference.xmpp.catswords.net](xmpp:catswords@conference.xmpp.catswords.net?join)
 - [Join Catswords on Microsoft Teams](https://teams.live.com/l/community/FEACHncAhq8ldnojAI)
 
 ## License
