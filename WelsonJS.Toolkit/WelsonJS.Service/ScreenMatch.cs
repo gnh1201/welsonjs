@@ -123,10 +123,34 @@ public class ScreenMatch
     private List<string> sampleOcr;
     private List<string> sampleNodup;
     private Size sampleNodupSize;
-    private Queue<Bitmap> sampleOutdated;
+    private Queue<Bitmap> outdatedSamples;
     private byte thresholdConvertToBinary = 191;
     private string tesseractDataPath;
     private string tesseractLanguage;
+
+    public class TemplateInfo
+    {
+        public string FileName { get; set; }
+        public int Index { get; set; }
+
+        public TemplateInfo(string fileName, int index)
+        {
+            FileName = fileName;
+            Index = index;
+        }
+    }
+
+    public class SampleInfo
+    {
+        public string FileName { get; set; }
+        public uint Crc32 { get; set; }
+
+        public SampleInfo(string fileName, uint crc32)
+        {
+            FileName = fileName;
+            Crc32 = crc32;
+        }
+    }
 
     public ScreenMatch(ServiceBase parent, string workingDirectory)
     {
@@ -153,7 +177,7 @@ public class ScreenMatch
             Width = 256,
             Height = 32
         };
-        sampleOutdated = new Queue<Bitmap>();
+        outdatedSamples = new Queue<Bitmap>();
 
         // Read values from configration file
         string screen_time_mode;
@@ -399,7 +423,7 @@ public class ScreenMatch
 
             Bitmap image = templateImages[templateCurrentIndex];
             string templateName = image.Tag as string;
-            string nextTemplateName = parent.GetNextTemplateName();
+            TemplateInfo nextTemplateInfo = parent.GetNextTemplateInfo();
 
             Size templateSize = new Size
             {
@@ -409,7 +433,7 @@ public class ScreenMatch
 
             parent.Log($"Trying match the template {templateName} on the screen {i}...");
 
-            if (!String.IsNullOrEmpty(nextTemplateName) && templateName != nextTemplateName)
+            if (!String.IsNullOrEmpty(nextTemplateInfo.FileName) && templateName != nextTemplateInfo.FileName)
             {
                 parent.Log($"Ignored the template {templateName}");
                 break;
@@ -425,7 +449,38 @@ public class ScreenMatch
                 _mainImage = mainImage;
             }
 
-            List<Point> matchPositions = FindTemplate(_mainImage, (Bitmap)image.Clone());
+            // List to store the positions of matched templates in the main image
+            List<Point> matchPositions;
+
+            // If the index value is negative, retrieve and use an outdated image from the queue
+            if (nextTemplateInfo.Index < 0)
+            {
+                // Dequeue the oldest image from the sampleOutdated queue
+                Bitmap outdatedImage = null;
+                while (outdatedSamples.Count > 0)
+                {
+                    outdatedImage = outdatedSamples.Dequeue();
+                    if (outdatedImage.Tag != null && ((SampleInfo)outdatedImage.Tag).FileName == nextTemplateInfo.FileName)
+                    {
+                        break;
+                    }
+                }
+
+                // Find the matching positions of the outdated image in the main image
+                if (outdatedImage != null) {
+                    matchPositions = FindTemplate(_mainImage, (Bitmap)outdatedImage.Clone());
+                }
+                else
+                {
+                    matchPositions = new List<Point>();
+                }
+            }
+            else
+            {
+                // If the index is not negative, use the current image for template matching
+                matchPositions = FindTemplate(_mainImage, (Bitmap)image.Clone());
+            }
+
             foreach (Point matchPosition in matchPositions)
             {
                 try
@@ -504,16 +559,16 @@ public class ScreenMatch
         {
             Bitmap croppedNodupBitmap = CropBitmap(bitmap, matchPosition, templateSize, sampleNodupSize);
             uint bitmapCrc32 = ComputeBitmapCrc32(croppedNodupBitmap);
-            croppedNodupBitmap.Tag = bitmapCrc32;
+            croppedNodupBitmap.Tag = new SampleInfo(templateName, bitmapCrc32);
 
-            bool bitmapExists = sampleOutdated.Any(x => (uint)x.Tag == bitmapCrc32);
+            bool bitmapExists = outdatedSamples.Any(x => ((SampleInfo)x.Tag).Crc32 == bitmapCrc32);
             if (bitmapExists)
             {
                 throw new InvalidOperationException($"This may be a duplicate request. {templateName}");
             }
             else
             {
-                sampleOutdated.Enqueue(croppedNodupBitmap);
+                outdatedSamples.Enqueue(croppedNodupBitmap);
                 parent.Log($"Added to the image queue. {templateName}");
             }
         }

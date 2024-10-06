@@ -34,7 +34,6 @@ using System.Collections.Generic;
 using WelsonJS.TinyINIController;
 using System.Collections;
 using System.Threading.Tasks;
-using System.Linq;
 
 namespace WelsonJS.Service
 {
@@ -448,20 +447,29 @@ namespace WelsonJS.Service
             return arguments;
         }
 
-        public string GetNextTemplateName()
+        public ScreenMatch.TemplateInfo GetNextTemplateInfo()
         {
             string templateName = string.Empty;
+            int index = 0;
 
             try
             {
                 templateName = DispatchServiceEvent("screenNextTemplate");
+
+                // Check if the received value contains an index
+                string[] parts = templateName.Split(':');
+                if (parts.Length > 1)
+                {
+                    templateName = parts[0];
+                    int.TryParse(parts[1], out index);
+                }
             }
             catch (Exception ex)
             {
                 Log($"Use all templates because of {ex.Message}");
             }
 
-            return templateName;
+            return new ScreenMatch.TemplateInfo(templateName, index);
         }
 
         public string DispatchServiceEvent(string eventType, string[] args = null)
