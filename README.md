@@ -67,7 +67,7 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
 - lib/system (System interface)
 - lib/base64 (BASE64 encode and decode)
 - lib/file (File I/O interface)
-- lib/http (HTTP/HTTPS client with [XHR(MSXML)](https://developer.mozilla.org/docs/Glossary/XMLHttpRequest), [cURL](https://curl.se/), [BITS](https://en.m.wikipedia.org/w/index.php?title=Background_Intelligent_Transfer_Service), [CERT](https://github.com/MicrosoftDocs/windowsserverdocs/blob/main/WindowsServerDocs/administration/windows-commands/certutil.md), and [Web Proxy](https://scrapeops.io?fpr=namhyeon75), [SERP](https://www.searchapi.io/?via=namhyeon))
+- lib/http (HTTP/HTTPS client with [XHR(MSXML)](https://developer.mozilla.org/docs/Glossary/XMLHttpRequest), [cURL](https://curl.se/), [BITS](https://en.m.wikipedia.org/w/index.php?title=Background_Intelligent_Transfer_Service), [CERT](https://github.com/MicrosoftDocs/windowsserverdocs/blob/main/WindowsServerDocs/administration/windows-commands/certutil.md), [Web Proxy and SERP](https://github.com/gnh1201/welsonjs/wiki/SERP))
 - lib/registry (Windows Registry interface)
 - lib/security (Windows Security Policy interface)
 - lib/shell (Windows Shell (Command Prompt) interface)
