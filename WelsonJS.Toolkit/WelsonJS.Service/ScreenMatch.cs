@@ -111,7 +111,7 @@ public class ScreenMatch
     private int templateCurrentIndex = 0;
     private double threshold = 0.4;
     private string mode;
-    private bool busy = false;
+    private bool busy;
     private List<string> _params = new List<string>();
     private bool isSearchFromEnd = false;
     private bool isSaveToFile = false;
@@ -124,9 +124,14 @@ public class ScreenMatch
     private List<string> sampleNodup;
     private Size sampleNodupSize;
     private Queue<Bitmap> outdatedSamples;
-    private byte thresholdConvertToBinary = 191;
     private string tesseractDataPath;
     private string tesseractLanguage;
+
+    private void SetBusy(bool busy)
+    {
+        this.busy = busy;
+        parent.Log($"State changed: busy={busy}");
+    }
 
     public class TemplateInfo
     {
@@ -155,6 +160,8 @@ public class ScreenMatch
     public ScreenMatch(ServiceBase parent, string workingDirectory)
     {
         this.parent = (ServiceMain)parent;
+
+        SetBusy(false);
 
         templateDirectoryPath = Path.Combine(workingDirectory, "app/assets/img/_templates");
         outputDirectoryPath = Path.Combine(workingDirectory, "app/assets/img/_captured");
@@ -359,7 +366,7 @@ public class ScreenMatch
             {
                 if (filename.StartsWith("binary_"))
                 {
-                    templateImages.Add(ConvertToBinary(bitmap, thresholdConvertToBinary));
+                    templateImages.Add(ImageQuantize(bitmap));
                 }
                 else
                 {
@@ -381,22 +388,22 @@ public class ScreenMatch
 
         if (templateImages.Count > 0)
         {
-            toggleBusy();
+            SetBusy(true);
 
             switch (mode)
             {
                 case "screen":    // 화면 기준
                     results = CaptureAndMatchAllScreens();
-                    toggleBusy();
+                    SetBusy(false);
                     break;
 
                 case "window":    // 윈도우 핸들 기준
                     results = CaptureAndMatchAllWindows();
-                    toggleBusy();
+                    SetBusy(false);
                     break;
 
                 default:
-                    toggleBusy();
+                    SetBusy(false);
                     throw new Exception($"Unknown capture mode {mode}");
             }
         }
@@ -413,13 +420,6 @@ public class ScreenMatch
         {
             Screen screen = Screen.AllScreens[i];
             Bitmap mainImage = CaptureScreen(screen);
-
-            if (isSaveToFile)
-            {
-                string outputFilePath = Path.Combine(outputDirectoryPath, $"{DateTime.Now.ToString("yyyy-MM-dd hh mm ss")}.png");
-                ((Bitmap)mainImage.Clone()).Save(outputFilePath);
-                parent.Log($"Screenshot saved: {outputFilePath}");
-            }
 
             Bitmap image = templateImages[templateCurrentIndex];
             string templateName = image.Tag as string;
@@ -439,14 +439,24 @@ public class ScreenMatch
                 break;
             }
 
-            Bitmap _mainImage;
+            Bitmap out_mainImage;
+            string out_filename;
             if (templateName.StartsWith("binary_"))
             {
-                _mainImage = ConvertToBinary((Bitmap)mainImage.Clone(), thresholdConvertToBinary);
+                out_mainImage = ImageQuantize((Bitmap)mainImage.Clone());
+                out_filename = $"{DateTime.Now:yyyy-MM-dd hh mm ss} binary.png";
             }
             else
             {
-                _mainImage = mainImage;
+                out_mainImage = mainImage;
+                out_filename = $"{DateTime.Now:yyyy-MM-dd hh mm ss}.png";
+            }
+
+            if (isSaveToFile)
+            {
+                string out_filepath = Path.Combine(outputDirectoryPath, out_filename);
+                ((Bitmap)out_mainImage.Clone()).Save(out_filepath);
+                parent.Log($"Screenshot saved: {out_filepath}");
             }
 
             // List to store the positions of matched templates in the main image
@@ -468,7 +478,7 @@ public class ScreenMatch
 
                 // Find the matching positions of the outdated image in the main image
                 if (outdatedImage != null) {
-                    matchPositions = FindTemplate(_mainImage, (Bitmap)outdatedImage.Clone());
+                    matchPositions = FindTemplate(out_mainImage, (Bitmap)outdatedImage.Clone());
                 }
                 else
                 {
@@ -478,7 +488,7 @@ public class ScreenMatch
             else
             {
                 // If the index is not negative, use the current image for template matching
-                matchPositions = FindTemplate(_mainImage, (Bitmap)image.Clone());
+                matchPositions = FindTemplate(out_mainImage, (Bitmap)image.Clone());
             }
 
             foreach (Point matchPosition in matchPositions)
@@ -775,11 +785,6 @@ public class ScreenMatch
         return matches;
     }
 
-    private void toggleBusy()
-    {
-        busy = !busy;
-    }
-
     private bool IsTemplateMatch(Bitmap mainImage, Bitmap templateImage, int offsetX, int offsetY, double threshold)
     {
         int templateWidth = templateImage.Width;
@@ -822,13 +827,15 @@ public class ScreenMatch
         return true;
     }
 
-    private Bitmap ConvertToBinary(Bitmap image, byte threshold)
+    private Bitmap ImageQuantize(Bitmap image, int levels = 4)
     {
-        Bitmap binaryImage = new Bitmap(image.Width, image.Height);
+        Bitmap quantizedImage = new Bitmap(image.Width, image.Height);
         if (image.Tag != null)
         {
-            binaryImage.Tag = image.Tag;
+            quantizedImage.Tag = image.Tag;
         }
+
+        int step = 255 / (levels - 1);  // step by step..... ooh baby...(?)
 
         for (int y = 0; y < image.Height; y++)
         {
@@ -838,13 +845,16 @@ public class ScreenMatch
                 Color pixelColor = image.GetPixel(x, y);
                 byte grayValue = (byte)((pixelColor.R + pixelColor.G + pixelColor.B) / 3);
 
-                // Apply threshold to convert to binary
-                Color binaryColor = grayValue >= threshold ? Color.White : Color.Black;
-                binaryImage.SetPixel(x, y, binaryColor);
+                // Convert the grayscale value to the quantize value
+                byte quantizedValue = (byte)((grayValue / step) * step);
+
+                // Renew the colors
+                Color quantizedColor = Color.FromArgb(quantizedValue, quantizedValue, quantizedValue);
+                quantizedImage.SetPixel(x, y, quantizedColor);
             }
         }
 
-        return binaryImage;
+        return quantizedImage;
     }
 
     private uint ComputeBitmapCrc32(Bitmap bitmap)
