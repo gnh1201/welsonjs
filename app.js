@@ -1,48 +1,15 @@
-//////////////////////////////////////////////////////////////////////////////////
-//
-//    app.js
-//
-//    Bootstrap code for running a javascript app in windows.  Run as:
-//
-//    cscript.js app.js <appname> <app arguments> ...
-//
-/////////////////////////////////////////////////////////////////////////////////
+// app.js
+// Bootstrap code for running a javascript app in windows.  Run as:
+// cscript.js app.js <appname> <app arguments> ...
+// 
+// Author: Namhyeon Go <abuse@catswords.net>
+// Repository: https://github.com/gnh1201/welsonjs
+// Report abuse: abuse@catswords.net
+// Latest news: [ActivityPub @catswords_oss@catswords.social](https://catswords.social/@catswords_oss)
+// Join our team: https://teams.live.com/l/community/FEACHncAhq8ldnojAI
+// 
 "use strict";
 
-/////////////////////////////////////////////////////////////////////////////////
-//
-//    Author: Namhyeon Go <abuse@catswords.net>
-//    Repository: https://github.com/gnh1201/welsonjs
-//    Report abuse: abuse@catswords.net
-//    Latest news: ActivityPub @catswords_oss@catswords.social
-//    Join our team: https://teams.live.com/l/community/FEACHncAhq8ldnojAI
-//
-/////////////////////////////////////////////////////////////////////////////////
-
-/////////////////////////////////////////////////////////////////////////////////
-// Bootstrap code, basic module loading functionality
-/////////////////////////////////////////////////////////////////////////////////
-
-//
-//    The module loaded is run inside a function, with one argument, global which
-//    points to the global context.  So global.FN is the same as FN (as long as a
-//    version of FN does not exist in local scope).
-//
-//    The module should return its interface at the end of the script.  The basic
-//    pattern for a module is:-
-//
-//    var module = { ... };
-//    return module;
-//
-//    Or:-
-//
-//    return function() {
-//    }
-//
-//    The appname argument causes <appname>.js to be loaded. The interface returned
-//    must define main = function(args) {}, which is called once the module is
-//    loaded.
-//
 var exit = function(status) {
     console.error("Exit", status, "caused");
 
@@ -239,8 +206,8 @@ function require(pathname) {
 
     var T = null;
     var pos = FN.indexOf('://');
-
-    if (pos > -1) {    // from a remote server
+    if (pos > -1) {
+        // load script from a remote server
         if (["http", "https"].indexOf(FN.substring(0, pos)) > -1) {
             require._addScriptProvider(function(url) {
                 try {
@@ -263,7 +230,8 @@ function require(pathname) {
                 i++;
             }
         }
-    } else {    // from a local server
+    } else {
+        // load script from a local server
         var _filename = (function(fs, path) {
             var filepaths = [
                 FN,    // default

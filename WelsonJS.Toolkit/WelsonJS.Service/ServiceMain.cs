@@ -261,7 +261,7 @@ namespace WelsonJS.Service
                     {
                         _args = new string[]
                         {
-                            $"--user-variables-file={userVariablesHandler.GetEnvFilePath()}",
+                            $"--env-file={userVariablesHandler.GetEnvFilePath()}",
                             "--user-interactive"
                         };
                     }
@@ -269,7 +269,7 @@ namespace WelsonJS.Service
                     {
                         _args = new string[]
                         {
-                            $"--user-variables-file={userVariablesHandler.GetEnvFilePath()}"
+                            $"--env-file={userVariablesHandler.GetEnvFilePath()}"
                         };
                     }
                     startArguments = new string[args.Length + _args.Length];
