@@ -2,6 +2,9 @@
 // https://github.com/gnh1201/welsonjs
 var SYS = require("lib/system");
 
+// env
+var env = {};
+
 function main(args) {
     console.log("WelsonJS.Service required.");
 }
@@ -11,7 +14,14 @@ function getDeviceID() {
 }
 
 function onServiceStart(args) {
-    return "onServiceStart recevied. " + args.join(', ');
+    // load the environment file
+    FILE.loadEnvFromArgs(args, function(envConfig) {
+        if ("message" in envConfig) {
+            env.message = envConfig.message;
+        }
+    });
+    
+    return "onServiceStart recevied. " + args.join(', ') + ", env: " + JSON.stringify(env);
 }
 
 function onServiceStop() {
