@@ -465,15 +465,32 @@ public class ScreenMatch
             // If the index value is negative, retrieve and use an outdated image from the queue
             if (nextTemplateInfo.Index < 0)
             {
-                // Dequeue the oldest image from the sampleOutdated queue
+                parent.Log($"Review and find the last data of {nextTemplateInfo.FileName}...");
+
                 Bitmap outdatedImage = null;
-                while (outdatedSamples.Count > 0)
+
+                // Dequeue the oldest image from the sampleOutdated queue
+                try
                 {
-                    outdatedImage = outdatedSamples.Dequeue();
-                    if (outdatedImage.Tag != null && ((SampleInfo)outdatedImage.Tag).FileName == nextTemplateInfo.FileName)
+                    while (outdatedSamples.Count > 0)
                     {
-                        break;
+                        outdatedImage = outdatedSamples.Dequeue();
+
+                        if (outdatedImage.Tag != null)
+                        {
+                            parent.Log($"Reviewing... {((SampleInfo)outdatedImage.Tag).FileName}");
+
+                            if (((SampleInfo)outdatedImage.Tag).FileName == nextTemplateInfo.FileName)
+                            {
+                                parent.Log($"Found the last data of {nextTemplateInfo.FileName}");
+                                break;
+                            }
+                        }
                     }
+                }
+                catch (Exception ex)
+                {
+                    parent.Log($"Error while reviewing the data: {ex.Message}");
                 }
 
                 // Find the matching positions of the outdated image in the main image
