@@ -2,8 +2,14 @@
 // https://github.com/gnh1201/welsonjs
 var SYS = require("lib/system");
 
-// env
-var env = {};
+// Examples of class (prototype) and instance referencing .env values
+function examplePrototype() {
+    this.env = {};
+    this.setEnv = function(k, v) {
+        this.env[k] = v;
+    };
+}
+var exampleInstance = new examplePrototype();
 
 function main(args) {
     console.log("WelsonJS.Service required.");
@@ -16,12 +22,14 @@ function getDeviceID() {
 function onServiceStart(args) {
     // load the environment file
     FILE.loadEnvFromArgs(args, function(envConfig) {
-        if ("message" in envConfig) {
-            env.message = envConfig.message;
+        // In Node.js and recent JavaScript engines, it is common to assign .env values globally, such as with `process.env`.
+        // However, WelsonJS is designed to limit the scope to specific areas.
+        for (var envKey in envConfig) {
+            exampleInstance.setEnv(envKey, envConfig[envKey]);
         }
     });
     
-    return "onServiceStart recevied. " + args.join(', ') + ", env: " + JSON.stringify(env);
+    return "onServiceStart recevied. " + args.join(', ') + ", env: " + JSON.stringify(exampleInstance.env);
 }
 
 function onServiceStop() {
