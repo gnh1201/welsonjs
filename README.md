@@ -20,8 +20,8 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
 - <img src="app/assets/img/logo_oss.gif" height="32" alt=""/> Open Software Portal, Korea National Industry Promotion Agency - Awarded Prize
 - <img src="app/assets/img/signpath_logo.png" height="32" alt=""/> Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org/)
 
-## [Partnerships](https://github.com/gnh1201/welsonjs/wiki/Partnerships)
-- [<img src="app/assets/img/scrapeops-logo.svg" height="32" alt=""/> ScrapeOps (scrapeops.io)](https://scrapeops.io?fpr=namhyeon75) - Proxy Aggregator (1,000 free calls/month, [10% discount coupon](https://github.com/gnh1201/welsonjs/wiki/Partnerships))
+## [Partnerships](https://catswords-oss.rdbl.io/5719744820/8278298336)
+- [<img src="app/assets/img/scrapeops-logo.svg" height="32" alt=""/> ScrapeOps (scrapeops.io)](https://scrapeops.io?fpr=namhyeon75) - Proxy Aggregator (1,000 free calls/month, [10% discount coupon](https://catswords-oss.rdbl.io/5719744820/8278298336))
 - [<img src="app/assets/img/searchapi-logo.svg" height="32" alt="SearchApi"/> (searchapi.io)](https://www.searchapi.io/?via=namhyeon) - SERP (Google, Bing, Baidu, Amazon, YouTube, App Store (Google, Apple), etc.) scraping (100 free calls/month)
 
 ## Structure
@@ -54,7 +54,6 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
   - [github.com/BorisMoore/jsrender](https://github.com/BorisMoore/jsrender) - A lightweight, powerful and highly extensible templating engine. In the browser or on Node.js, with or without jQuery.
   - [github.com/mihaifm/linq](https://github.com/mihaifm/linq) - LINQ for JavaScript
   - [github.com/pegjs/pegjs](https://github.com/pegjs/pegjs) - PEG.js: Parser generator for JavaScript
-- [Includes binaries](https://github.com/gnh1201/welsonjs/blob/master/bin/README.MD)
 - [module.exports](https://nodejs.org/api/modules.html#moduleexports), CommonJS, UMD compatibility
 - [NPM](https://www.npmjs.com/) compatibility
 - [Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/) support
@@ -68,7 +67,7 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
 - lib/system (System interface)
 - lib/base64 (BASE64 encode and decode)
 - lib/file (File I/O interface)
-- lib/http (HTTP/HTTPS client with [XHR(MSXML)](https://developer.mozilla.org/docs/Glossary/XMLHttpRequest), [cURL](https://curl.se/), [BITS](https://en.m.wikipedia.org/w/index.php?title=Background_Intelligent_Transfer_Service), [CERT](https://github.com/MicrosoftDocs/windowsserverdocs/blob/main/WindowsServerDocs/administration/windows-commands/certutil.md), [Web Proxy and SEO/SERP](https://github.com/gnh1201/welsonjs/wiki/SERP))
+- lib/http (HTTP/HTTPS client with [XHR(MSXML)](https://developer.mozilla.org/docs/Glossary/XMLHttpRequest), [cURL](https://curl.se/), [BITS](https://en.m.wikipedia.org/w/index.php?title=Background_Intelligent_Transfer_Service), [CERT](https://github.com/MicrosoftDocs/windowsserverdocs/blob/main/WindowsServerDocs/administration/windows-commands/certutil.md), [Web Proxy and SEO/SERP](https://app.rdbl.io/T0AB411UHDW9/S0VLKP4HKVGC/P0CC9H6ZSQCY))
 - lib/registry (Windows Registry interface)
 - lib/security (Windows Security Policy interface)
 - lib/shell (Windows Shell (Command Prompt) interface)
@@ -83,16 +82,16 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
 - lib/gtk (GTK-server and GladeXML supported GUI interface)
 - lib/chrome ([Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/) based Chrome/Chromium web browser testing interface)
 - lib/pipe-ipc (PIPE (e.g., File IO, Standard IO) based IPC(Inter-Process Communication) implementation)
-- [WelsonJS.Toolkit](https://github.com/gnh1201/welsonjs/wiki/Awesome-binaries) (DLL/COM component with .NET 2.0, For all Windows based systems)
+- [WelsonJS.Toolkit](https://catswords-oss.rdbl.io/5719744820/0811015590) (DLL/COM component with .NET 2.0, For all Windows based systems)
   - User prompt methods (e.g., alert, confirm) implementation
   - Useful tools to control the windows and window handle (find, attach, trigger events. e.g., Virtual Human Interface
   - Cryptography ([ISO/IEC 18033-3:2010](https://www.iso.org/standard/54531.html) aka. [HIGHT](https://seed.kisa.or.kr/kisa/algorithm/EgovHightInfo.do))
   - [Named Shared Memory](https://learn.microsoft.com/en-us/windows/win32/memory/creating-named-shared-memory) based IPC(Inter-Process Communication) implementation [#](https://qiita.com/gnh1201/items/4e70dccdb7adacf0ace5)
-- [WelsonJS.Service](https://github.com/gnh1201/welsonjs/wiki/Awesome-binaries) (Windows Service Application, For recent Windows based systems)
+- [WelsonJS.Service](https://catswords-oss.rdbl.io/5719744820/0811015590) (Windows Service Application, For recent Windows based systems)
   - Write a Windows Service Application with JavaScript
-  - [File Event Monitor](https://github.com/gnh1201/welsonjs/wiki/File-Event-Monitor): Trace file creation, network connections, and registry modifications.
-  - [Screen Time Feature](https://github.com/gnh1201/welsonjs/wiki/Screen-Time-Feature): Find an image position on the computer screens or windows.
-- [WelsonJS.Launcher](https://github.com/gnh1201/welsonjs/wiki/Launcher) (Launcher Application, For recent Windows based systems)
+  - [File Event Monitor](https://catswords-oss.rdbl.io/5719744820/6159022056): Trace file creation, network connections, and registry modifications.
+  - [Screen Time Feature](https://catswords-oss.rdbl.io/5719744820/8803957194): Find an image position on the computer screens or windows.
+- [WelsonJS.Launcher](https://catswords-oss.rdbl.io/5719744820/4131485779) (Launcher Application, For recent Windows based systems)
   - This is a launcher app designed to easily distribute WelsonJS application packages (based on ZIP compression files).
 - lib/chatgpt ([ChatGPT](https://openai.com/chatgpt) integration)
 - Everything you can imagine.
@@ -139,7 +138,7 @@ ended say()
 ## How to release my application?
 The WelsonJS framework suggests the following application release methods:
 
-- **Compress to Zip, and use the launcher**: Compress the files and directories necessary for running the project into a Zip file, and distribute it along with the [WelsonJS.Launcher](https://github.com/gnh1201/welsonjs/wiki/Launcher).
+- **Compress to Zip, and use the launcher**: Compress the files and directories necessary for running the project into a Zip file, and distribute it along with the [WelsonJS.Launcher](https://catswords-oss.rdbl.io/5719744820/4131485779).
 - **Build a setup file**: Use [Inno Setup](https://jrsoftware.org/isinfo.php). Information needed to create the setup file (the `setup.iss` file) is already included.
 - **Copy all directories and files**: This is the simplest and most straightforward method.
 
