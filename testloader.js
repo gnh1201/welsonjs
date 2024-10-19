@@ -1003,7 +1003,7 @@ var test_implements = {
         }
     },
     
-    // https://github.com/gnh1201/welsonjs/wiki/Partnerships#scrapeops-proxy-aggregator
+    // https://catswords-oss.rdbl.io/5719744820/8278298336
     "proxy_custom_provider": function() {
         var HTTP = require("lib/http");
 
@@ -1026,7 +1026,7 @@ var test_implements = {
         console.log("responseBody:", response.responseBody);
     },
     
-    // https://github.com/gnh1201/welsonjs/wiki/Partnerships#searchapi
+    // https://catswords-oss.rdbl.io/5719744820/8278298336
     "proxy_serp": function() {
         var HTTP = require("lib/http");
 
