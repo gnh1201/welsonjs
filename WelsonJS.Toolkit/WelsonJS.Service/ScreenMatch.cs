@@ -1,6 +1,6 @@
 ﻿// ScreenMatching.cs
 // https://github.com/gnh1201/welsonjs
-// https://github.com/gnh1201/welsonjs/wiki/Screen-Time-Feature
+// https://catswords-oss.rdbl.io/5719744820/8803957194
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
