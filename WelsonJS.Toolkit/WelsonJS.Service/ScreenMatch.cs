@@ -510,8 +510,6 @@ public class ScreenMatch
                     parent.Log($"Error finding a previous screen: {ex.Message}");
                 }
 
-                outdatedImage.Save("outdated.png");
-
                 // Find the matching positions of the outdated image in the main image
                 if (outdatedImage != null) {
                     matchPositions = FindTemplate(out_mainImage, outdatedImage);
