@@ -109,7 +109,7 @@ public class ScreenMatch
     private string templateDirectoryPath;
     private string outputDirectoryPath;
     private int templateCurrentIndex = 0;
-    private double threshold = 0.4;
+    private double threshold = 0.3;
     private string mode;
     private bool busy;
     private List<string> _params = new List<string>();
@@ -181,8 +181,8 @@ public class ScreenMatch
         sampleNodup = new List<string>();
         sampleNodupSize = new Size
         {
-            Width = 256,
-            Height = 32
+            Width = 180,
+            Height = 60
         };
         outdatedSamples = new Queue<Bitmap>();
 
@@ -249,6 +249,13 @@ public class ScreenMatch
                                 break;
                             }
 
+                        case "threshold":
+                            {
+                                double.TryParse(config_value, out double t);
+                                threshold = t;
+                                break;
+                            }
+
                         case "sample_clipboard":
                             {
                                 sampleClipboard = new List<string>(config_value.Split(':'));
@@ -274,6 +281,20 @@ public class ScreenMatch
                             {
                                 int.TryParse(config_value, out int h);
                                 sampleSize.Height = h;
+                                break;
+                            }
+
+                        case "sample_nodup_width":
+                            {
+                                int.TryParse(config_value, out int w);
+                                sampleNodupSize.Width = w;
+                                break;
+                            }
+
+                        case "sample_nodup_height":
+                            {
+                                int.TryParse(config_value, out int h);
+                                sampleNodupSize.Height = h;
                                 break;
                             }
 
@@ -465,24 +486,20 @@ public class ScreenMatch
             // If the index value is negative, retrieve and use an outdated image from the queue
             if (nextTemplateInfo.Index < 0)
             {
-                parent.Log($"Review and find the last data of {nextTemplateInfo.FileName}...");
-
                 Bitmap outdatedImage = null;
 
-                // Dequeue the oldest image from the sampleOutdated queue
+                parent.Log($"Finding a previous screen of {nextTemplateInfo.FileName}...");
+
                 try
                 {
                     while (outdatedSamples.Count > 0)
                     {
                         outdatedImage = outdatedSamples.Dequeue();
-
                         if (outdatedImage.Tag != null)
                         {
-                            parent.Log($"Reviewing... {((SampleInfo)outdatedImage.Tag).FileName}");
-
                             if (((SampleInfo)outdatedImage.Tag).FileName == nextTemplateInfo.FileName)
                             {
-                                parent.Log($"Found the last data of {nextTemplateInfo.FileName}");
+                                parent.Log($"Found the previous screen of {nextTemplateInfo.FileName}");
                                 break;
                             }
                         }
@@ -490,15 +507,26 @@ public class ScreenMatch
                 }
                 catch (Exception ex)
                 {
-                    parent.Log($"Error while reviewing the data: {ex.Message}");
+                    parent.Log($"Error finding a previous screen: {ex.Message}");
                 }
+
+                outdatedImage.Save("outdated.png");
 
                 // Find the matching positions of the outdated image in the main image
                 if (outdatedImage != null) {
-                    matchPositions = FindTemplate(out_mainImage, (Bitmap)outdatedImage.Clone());
+                    matchPositions = FindTemplate(out_mainImage, outdatedImage);
+                    if (matchPositions.Count > 0)
+                    {
+                        parent.Log("Match found with the outdated image");
+                    }
+                    else
+                    {
+                        parent.Log("No match found with the outdated image");
+                    }
                 }
                 else
                 {
+                    parent.Log("Not found a outdated image");
                     matchPositions = new List<Point>();
                 }
             }
