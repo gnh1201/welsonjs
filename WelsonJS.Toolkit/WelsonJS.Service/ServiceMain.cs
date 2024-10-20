@@ -39,14 +39,14 @@ namespace WelsonJS.Service
 {
     public partial class ServiceMain : ServiceBase
     {
+        private readonly string appName = "WelsonJS";
         private static List<Timer> timers;
         private string workingDirectory;
         private string scriptName;
         private string scriptFilePath;
         private string scriptText;
         private ScriptControl scriptControl;
-        private readonly string logFilePath = Path.Combine(Path.GetTempPath(), "welsonjs_service.log");
-        private readonly string appName = "WelsonJS";
+        private string logFilePath;
         private string[] args;
         private bool disabledHeartbeat = false;
         private bool disabledScreenTime = false;
@@ -67,6 +67,9 @@ namespace WelsonJS.Service
 
             // set service arguments
             this.args = args;
+
+            // set the log file path
+            logFilePath = Path.Combine(Path.GetTempPath(), "welsonjs_service.log");
 
             // mapping arguments to each variables
             var arguments = ParseArguments(this.args);
@@ -211,8 +214,6 @@ namespace WelsonJS.Service
                 Log("Disabled the User Interactive Mode. (e.g., OnScreenTime)");
             }
 
-            // set the log file path
-            logFilePath = Path.Combine(Path.GetTempPath(), "WelsonJS.Service.Log.txt");
             Log(appName + " Service Loaded");
         }
 
@@ -503,7 +504,7 @@ namespace WelsonJS.Service
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Failed to write log: {ex.Message}");
+                Console.WriteLine($"LOGGING FAILED: {ex.Message}");
             }
         }
     }
