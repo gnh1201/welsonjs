@@ -87,6 +87,7 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
   - Useful tools to control the windows and window handle (find, attach, trigger events. e.g., Virtual Human Interface
   - Cryptography ([ISO/IEC 18033-3:2010](https://www.iso.org/standard/54531.html) aka. [HIGHT](https://seed.kisa.or.kr/kisa/algorithm/EgovHightInfo.do))
   - [Named Shared Memory](https://learn.microsoft.com/en-us/windows/win32/memory/creating-named-shared-memory) based IPC(Inter-Process Communication) implementation [#](https://qiita.com/gnh1201/items/4e70dccdb7adacf0ace5)
+  - [NuGet package](https://www.nuget.org/packages/WelsonJS.Toolkit) available
 - [WelsonJS.Service](https://catswords-oss.rdbl.io/5719744820/0811015590) (Windows Service Application, For recent Windows based systems)
   - Write a Windows Service Application with JavaScript
   - [File Event Monitor](https://catswords-oss.rdbl.io/5719744820/6159022056): Trace file creation, network connections, and registry modifications.
