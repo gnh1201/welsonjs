@@ -3,7 +3,8 @@
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs?ref=badge_shield)
 [![AppVeyor Status](https://ci.appveyor.com/api/projects/status/github/gnh1201/welsonjs?svg=true)](https://ci.appveyor.com/project/gnh1201/welsonjs)
 [![DOI 10.5281/zenodo.11382384](https://zenodo.org/badge/DOI/10.5281/zenodo.11382384.svg)](https://doi.org/10.5281/zenodo.11382384)
-[![slideshare.net available](https://img.shields.io/badge/available-blue?logo=slideshare&label=slideshare.net)](https://www.slideshare.net/slideshow/welsonjs-2023/263181443)
+[![ChatGPT available](https://img.shields.io/badge/ChatGPT-74aa9c?logo=openai&logoColor=white)](#)
+[![slideshare.net available](https://img.shields.io/badge/SlideShare-black?logo=slideshare)](https://www.slideshare.net/slideshow/welsonjs-2023/263181443)
 
 <img src="app/assets/img/logo.svg" height="32" alt=""/> WelsonJS - Build a Windows app on the Windows built-in JavaScript engine.
 
@@ -84,6 +85,7 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
   - Useful tools to control the windows and window handle (find, attach, trigger events. e.g., Virtual Human Interface
   - Cryptography ([ISO/IEC 18033-3:2010](https://www.iso.org/standard/54531.html) aka. [HIGHT](https://seed.kisa.or.kr/kisa/algorithm/EgovHightInfo.do))
   - [Named Shared Memory](https://learn.microsoft.com/en-us/windows/win32/memory/creating-named-shared-memory) based IPC(Inter-Process Communication) implementation [#](https://qiita.com/gnh1201/items/4e70dccdb7adacf0ace5)
+  - [NuGet package](https://www.nuget.org/packages/WelsonJS.Toolkit) available
 - [WelsonJS.Service](https://catswords-oss.rdbl.io/5719744820/0811015590) (Windows Service Application, For recent Windows based systems)
   - Write a Windows Service Application with JavaScript
   - [File Event Monitor](https://catswords-oss.rdbl.io/5719744820/6159022056): Trace file creation, network connections, and registry modifications.
