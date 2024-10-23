@@ -158,7 +158,7 @@ The WelsonJS framework suggests the following application release methods:
 - Heavy-industry specialized CSP(Cloud Service Provider) in Republic of Korea - Use case establishment
 - Live-commerce specialized online advertisement companies in Republic of Korea - Use case establishment
 - Information security companies in Republic of Korea - Use case establishment
-- :eyes: Facebook Group Javascript Programming (javascript4u) - [Mentioned](https://www.facebook.com/javascript4u/posts/build-a-windows-desktop-apps-with-javascript-html-and-cssmorioh-javascript-html-/1484014618472735/)
+- :eyes: Facebook Group "Javascript Programming"(javascript4u) - [Mentioned](https://www.facebook.com/javascript4u/posts/build-a-windows-desktop-apps-with-javascript-html-and-cssmorioh-javascript-html-/1484014618472735/)
 - :eyes: morioh.com - [Mentioned](https://morioh.com/a/23c427a82bf1/build-a-windows-desktop-apps-with-javascript-html-and-css)
 - :eyes: CSDN - Mentioned
 - :eyes: Qiita - Knowledge-base about WSH environment
@@ -168,6 +168,7 @@ The WelsonJS framework suggests the following application release methods:
 - :eyes: Fediverse - Mentioned
 - :eyes: Hacker News - [Mentioned](https://news.ycombinator.com/item?id=41316782)
 - :eyes: WebToolsWeekly - [Mentioned](https://webtoolsweekly.com/archives/issue-585/)
+- :eyes: GeekNews - [Mentioned](https://news.hada.io/weekly/202441) in GeekNews Weekly (2024-09-30 ~ 2024-10-06)
 
 ## Related links
 - [gnh1201/wsh-js-gtk](https://github.com/gnh1201/wsh-js-gtk) - GTK GUI ported to Windows Scripting Host - Javascript (Microsoft JScript) (wsh-js)
