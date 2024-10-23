@@ -79,6 +79,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>favicon.ico</ApplicationIcon>
+    <PackageIcon>icon.png</PackageIcon>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -100,6 +101,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="welsonjs.snk" />
+    <None Include="WelsonJS.Toolkit.nuspec" />
+    <None Include="assets/img/logo.png" Pack="true" PackagePath="" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="favicon.ico" />

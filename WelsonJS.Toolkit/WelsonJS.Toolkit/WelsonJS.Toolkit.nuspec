@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>0.2.7.22</version>
+    <title>$title$</title>
+    <authors>Namhyeon Go</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">GPL-3.0-only</license>
+    <icon>logo.png</icon>
+    <projectUrl>https://github.com/gnh1201/welsonjs</projectUrl>
+    <description>COM library for WelsonJS framework-based applications. Supports access to a Window Handle, Named Shared Memory, and INI files.</description>
+    <releaseNotes>First release</releaseNotes>
+    <copyright>$copyright$</copyright>
+    <tags>com scripting library javascript ini window-handle named-shared-memory</tags>
+  </metadata>
+  <files>
+    <file src="assets\img\logo.png" />
+  </files>
+</package>
