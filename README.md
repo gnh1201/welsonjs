@@ -18,8 +18,8 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
 
 ## Sponsors
 - :octocat: [GitHub Sponsors](https://github.com/sponsors/gnh1201)
-- <img src="app/assets/img/logo_oss.gif" height="32" alt=""/> Open Software Portal, Korea National Industry Promotion Agency - Awarded Prize
-- <img src="app/assets/img/signpath_logo.png" height="32" alt=""/> Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org/)
+- <img src="https://ics.catswords.net/logo_oss.gif" height="32" alt=""/> Open Software Portal, Korea National Industry Promotion Agency - Awarded Prize
+- <img src="https://ics.catswords.net/signpath_logo.png" height="32" alt=""/> Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org/)
 - :dart: [Partnerships](https://catswords-oss.rdbl.io/5719744820/8278298336) ([ScrapeOps](https://scrapeops.io?fpr=namhyeon75), [SearchApi](https://www.searchapi.io/?via=namhyeon), ...)
 
 ## Structure
