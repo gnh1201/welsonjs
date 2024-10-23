@@ -20,7 +20,7 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
 - <img src="app/assets/img/github_octocat_logo.png" height="32" alt=""/> [GitHub Sponsors](https://github.com/sponsors/gnh1201)
 - <img src="app/assets/img/logo_oss.gif" height="32" alt=""/> Open Software Portal, Korea National Industry Promotion Agency - Awarded Prize
 - <img src="app/assets/img/signpath_logo.png" height="32" alt=""/> Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org/)
-- [Partnerships](https://catswords-oss.rdbl.io/5719744820/8278298336) ([ScrapeOps]((https://scrapeops.io?fpr=namhyeon75), [SearchApi](https://www.searchapi.io/?via=namhyeon), ...)
+- [Partnerships](https://catswords-oss.rdbl.io/5719744820/8278298336) ([ScrapeOps](https://scrapeops.io?fpr=namhyeon75), [SearchApi](https://www.searchapi.io/?via=namhyeon), ...)
 
 ## Structure
 ![The structure of the WelsonJS framework can be extended based on whether it operates in a console (command prompt) environment, a GUI (with HTML/CSS) environment, or a service environment, with the `app.js` file at its core.](app/assets/img/structure.png)
