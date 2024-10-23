@@ -155,16 +155,16 @@ The WelsonJS framework suggests the following application release methods:
 ![(Screenshot 6) The Launcher for WelsonJS Application Packages](https://ics.catswords.net/screenshot6.png)
 
 ## Thanks to
-- Heavy-industry specialized CSP(Cloud Service Provider) in Republic of Korea - Use case establishment
-- Live-commerce specialized online advertisement companies in Republic of Korea - Use case establishment
-- Information security companies in Republic of Korea - Use case establishment
+- :sunglasses: Heavy-industry specialized CSP(Cloud Service Provider) in Republic of Korea - Use case establishment
+- :sunglasses: Live-commerce specialized online advertisement companies in Republic of Korea - Use case establishment
+- :sunglasses: Information security companies in Republic of Korea - Use case establishment
 - :eyes: Facebook Group "Javascript Programming"(javascript4u) - [Mentioned](https://www.facebook.com/javascript4u/posts/build-a-windows-desktop-apps-with-javascript-html-and-cssmorioh-javascript-html-/1484014618472735/)
 - :eyes: morioh.com - [Mentioned](https://morioh.com/a/23c427a82bf1/build-a-windows-desktop-apps-with-javascript-html-and-css)
 - :eyes: CSDN - Mentioned
 - :eyes: Qiita - Knowledge-base about WSH environment
 - :eyes: Redsky Software - PoC(Proof of Concept) of the CommonJS on WSH environment
-- Inspired by a small-sized JavaScript payload demonstrated by a cybersecurity related group.
-- Inspired by the use of Named Shared Memory in an inter-language IPC implementation devised by an unidentified developer.
+- :sunglasses: Inspired by a small-sized JavaScript payload demonstrated by a cybersecurity related group.
+- :sunglasses: Inspired by the use of Named Shared Memory in an inter-language IPC implementation devised by an unidentified developer.
 - :eyes: Fediverse - Mentioned
 - :eyes: Hacker News - [Mentioned](https://news.ycombinator.com/item?id=41316782)
 - :eyes: WebToolsWeekly - [Mentioned](https://webtoolsweekly.com/archives/issue-585/)
