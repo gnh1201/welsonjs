@@ -8,7 +8,7 @@
 
 <img src="app/assets/img/logo.svg" height="32" alt=""/> WelsonJS - Build a Windows app on the Windows built-in JavaScript engine.
 
-![(This is a cover image) Windows in 1999](app/assets/img/cover.png)
+![(This is a cover image) Windows in 1999](https://ics.catswords.net/cover.png)
 
 Now, You can build an Windows desktop app with JavaScript, TypeScript, CoffeeScript, ReScript, and HTML/CSS on Windows built-in ECMAScript engine.
 
@@ -23,7 +23,7 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
 - :dart: [Partnerships](https://catswords-oss.rdbl.io/5719744820/8278298336) ([ScrapeOps](https://scrapeops.io?fpr=namhyeon75), [SearchApi](https://www.searchapi.io/?via=namhyeon), ...)
 
 ## Structure
-![The structure of the WelsonJS framework can be extended based on whether it operates in a console (command prompt) environment, a GUI (with HTML/CSS) environment, or a service environment, with the `app.js` file at its core.](app/assets/img/structure.png)
+![The structure of the WelsonJS framework can be extended based on whether it operates in a console (command prompt) environment, a GUI (with HTML/CSS) environment, or a service environment, with the `app.js` file at its core.](https://ics.catswords.net/structure.png)
 
 ## Specifications
 - Built-in transpilers: [TypeScript](https://www.typescriptlang.org/), [Rescript](https://rescript-lang.org/), [CoffeeScript 2](https://coffeescript.org/), [LiveScript](https://livescript.net/)
@@ -142,22 +142,23 @@ The WelsonJS framework suggests the following application release methods:
 - **Copy all directories and files**: This is the simplest and most straightforward method.
 
 ## Screenshots
-![(Screenshot 1) GUI environment](app/assets/img/screenshot.png)
+![(Screenshot 1) GUI environment](https://ics.catswords.net/screenshot.png)
 
-![(Screenshot 2) Command-line environment](app/assets/img/screenshot2.png)
+![(Screenshot 2) Command-line environment](https://ics.catswords.net/screenshot2.png)
 
-![(Screenshot 3) WelsonJS with Microsoft Excel](app/assets/img/screenshot3.png)
+![(Screenshot 3) WelsonJS with Microsoft Excel](https://ics.catswords.net/screenshot3.png)
 
-![(Screenshot 4) Write a Windows Services with JavaScript](app/assets/img/screenshot4.png)
+![(Screenshot 4) Write a Windows Services with JavaScript](https://ics.catswords.net/screenshot4.png)
 
-![(Screenshot 5) Template Matching on the computer screen](app/assets/img/screenshot5.png)
+![(Screenshot 5) Template Matching on the computer screen](https://ics.catswords.net/screenshot5.png)
 
-![(Screenshot 6) The Launcher for WelsonJS Application Packages](app/assets/img/screenshot6.png)
+![(Screenshot 6) The Launcher for WelsonJS Application Packages](https://ics.catswords.net/screenshot6.png)
 
 ## Thanks to
 - Heavy-industry specialized CSP(Cloud Service Provider) in Republic of Korea - Use case establishment
 - Live-commerce specialized online advertisement companies in Republic of Korea - Use case establishment
 - Information security companies in Republic of Korea - Use case establishment
+- :eyes: Facebook Group Javascript Programming (javascript4u) - [Mentioned](https://www.facebook.com/javascript4u/posts/build-a-windows-desktop-apps-with-javascript-html-and-cssmorioh-javascript-html-/1484014618472735/)
 - :eyes: morioh.com - [Mentioned](https://morioh.com/a/23c427a82bf1/build-a-windows-desktop-apps-with-javascript-html-and-css)
 - :eyes: CSDN - Mentioned
 - :eyes: Qiita - Knowledge-base about WSH environment
