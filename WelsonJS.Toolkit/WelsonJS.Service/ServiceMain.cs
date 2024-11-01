@@ -74,7 +74,7 @@ namespace WelsonJS.Service
             // set the logger
             ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
             factory.AddDirectory(Path.GetTempPath());
-            logger = factory.CreateLogger(applicationName);
+            logger = factory.CreateLogger(applicationName.ToLower());
 
             // mapping arguments to each variables
             var arguments = ParseArguments(this.args);

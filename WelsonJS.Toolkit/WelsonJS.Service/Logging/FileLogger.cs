@@ -55,7 +55,6 @@ namespace WelsonJS.Service.Logging
                     {
                         Console.WriteLine(LogLevel.Warning.ToString() + ": [" + DateTime.Now.ToString() + "] Failed to write a log file. " + ex.Message);
                     }
-
                 }
             }
         }
