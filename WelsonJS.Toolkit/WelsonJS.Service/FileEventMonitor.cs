@@ -3,9 +3,9 @@
 // https://github.com/gnh1201/welsonjs
 using ClamAV.Net.Client;
 using ClamAV.Net.Client.Results;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics.Eventing.Reader;
-using System.Runtime.CompilerServices;
 using System.ServiceProcess;
 using System.Threading.Tasks;
 
@@ -15,6 +15,7 @@ namespace WelsonJS.Service
     {
         private EventLogWatcher eventLogWatcher;
         private ServiceMain parent;
+        private ILogger logger;
         private enum EventType: int
         {
             FileCreate = 11,
@@ -80,9 +81,14 @@ namespace WelsonJS.Service
             catch (Exception ex)
             {
                 clamAvConenctionString = "tcp://127.0.0.1:3310";
-                this.parent.Log($"Failed to read the address because of {ex.Message}. Set default: {clamAvConenctionString}");
+                logger.LogInformation($"Failed to read the address because of {ex.Message}. Set default: {clamAvConenctionString}");
             }
             ConnectToClamAv().Start();
+        }
+
+        public void SetLogger(ILogger _logger)
+        {
+            logger = _logger;
         }
 
         public void Start()
@@ -103,7 +109,7 @@ namespace WelsonJS.Service
             }
             catch (Exception ex)
             {
-                parent.Log($"Could not reach to the Sysmon service: {ex.Message}");
+                logger.LogInformation($"Could not reach to the Sysmon service: {ex.Message}");
             }
         }
 
@@ -140,8 +146,8 @@ namespace WelsonJS.Service
                                 string image = e.EventRecord.Properties[(int)FileCreateEvent.Image]?.Value?.ToString();
                                 string fileName = e.EventRecord.Properties[(int)FileCreateEvent.TargetFilename]?.Value?.ToString();
 
-                                parent.Log($"> Detected the file creation: {fileName}");
-                                parent.Log(parent.DispatchServiceEvent("fileCreated", new string[] {
+                                logger.LogInformation($"> Detected the file creation: {fileName}");
+                                logger.LogInformation(parent.DispatchServiceEvent("fileCreated", new string[] {
                                     ruleName,
                                     processId,
                                     image,
@@ -150,7 +156,7 @@ namespace WelsonJS.Service
 
                                 if (clamAvClient != null)
                                 {
-                                    parent.Log($"> Starting the ClamAV scan: {fileName}");
+                                    logger.LogInformation($"> Starting the ClamAV scan: {fileName}");
                                     Task.Run(async () =>
                                     {
                                         await ScanWithClamAv(fileName);
@@ -170,8 +176,8 @@ namespace WelsonJS.Service
                                 string desinationPort = e.EventRecord.Properties[(int)NetworkConnectionEvent.DestinationPort]?.Value?.ToString();
                                 string dstinationAddress = $"{protocol}://{destinationIp}:{desinationPort}";
 
-                                parent.Log($"> Detected the network connection: {dstinationAddress}");
-                                parent.Log(parent.DispatchServiceEvent("networkConnected", new string[] {
+                                logger.LogInformation($"> Detected the network connection: {dstinationAddress}");
+                                logger.LogInformation(parent.DispatchServiceEvent("networkConnected", new string[] {
                                     ruleName,
                                     processId,
                                     image,
@@ -191,8 +197,8 @@ namespace WelsonJS.Service
                                 string eventType = e.EventRecord.Properties[(int)RegistryEvent.EventType]?.Value?.ToString();
                                 string targetObject = e.EventRecord.Properties[(int)RegistryEvent.TargetObject]?.Value?.ToString();
 
-                                parent.Log($"> Detected the registry modification: {targetObject}");
-                                parent.Log(parent.DispatchServiceEvent("registryModified", new string[] {
+                                logger.LogInformation($"> Detected the registry modification: {targetObject}");
+                                logger.LogInformation(parent.DispatchServiceEvent("registryModified", new string[] {
                                     ruleName,
                                     processId,
                                     image,
@@ -209,12 +215,12 @@ namespace WelsonJS.Service
                 }
                 catch (Exception ex)
                 {
-                    parent.Log($"Failed to process the event bacause of {ex.Message}.");
+                    logger.LogInformation($"Failed to process the event bacause of {ex.Message}.");
                 }
             }
             else
             {
-                parent.Log("The event instance was null.");
+                logger.LogInformation("The event instance was null.");
             }
         }
 
@@ -230,11 +236,11 @@ namespace WelsonJS.Service
                 // Get ClamAV engine and virus database version
                 VersionResult result = await clamAvClient.GetVersionAsync().ConfigureAwait(false);
 
-                parent.Log($"ClamAV version {result.ProgramVersion}, Virus database version {result.VirusDbVersion}");
+                logger.LogInformation($"ClamAV version {result.ProgramVersion}, Virus database version {result.VirusDbVersion}");
             }
             catch (Exception ex)
             {
-                parent.Log($"Failed to read the address because of {ex.Message}. {clamAvConenctionString}");
+                logger.LogInformation($"Failed to read the address because of {ex.Message}. {clamAvConenctionString}");
                 clamAvClient = null;
             }
         }
@@ -243,8 +249,8 @@ namespace WelsonJS.Service
         {
             ScanResult res = await clamAvClient.ScanRemotePathAsync(remotePath).ConfigureAwait(false);
 
-            parent.Log($"> Scan result: Infected={res.Infected}, VirusName={res.VirusName}");
-            parent.Log(parent.DispatchServiceEvent("avScanResult", new string[] {
+            logger.LogInformation($"> Scan result: Infected={res.Infected}, VirusName={res.VirusName}");
+            logger.LogInformation(parent.DispatchServiceEvent("avScanResult", new string[] {
                 res.Infected.ToString(),
                 res.VirusName
             }));

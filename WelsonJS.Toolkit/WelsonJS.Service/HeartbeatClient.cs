@@ -9,12 +9,14 @@ using System.ServiceProcess;
 using Grpc.Net.Client;
 using Grpc.Net.Client.Web;
 using System.Net.Http;
+using Microsoft.Extensions.Logging;
 
 namespace WelsonJS.Service
 {
     public class HeartbeatClient
     {
         private readonly HeartbeatService.HeartbeatServiceClient _client;
+        private ILogger logger;
         private readonly GrpcChannel _channel;
         private int HeartbeatInterval;
         private ServiceMain _parent;
@@ -38,7 +40,7 @@ namespace WelsonJS.Service
             catch (Exception ex)
             {
                 serverAddress = "http://localhost:50051";
-                _parent.Log($"Failed to read the address because of {ex.Message}. Set default: {serverAddress}");
+                logger.LogInformation($"Failed to read the address because of {ex.Message}. Set default: {serverAddress}");
             }
 
             var httpClientHandler = new HttpClientHandler();
@@ -51,7 +53,12 @@ namespace WelsonJS.Service
             _client = new HeartbeatService.HeartbeatServiceClient(_channel);
 
             clientId = GetSystemUUID().ToLower();
-            _parent.Log($"Use the client ID: {clientId}");
+            logger.LogInformation($"Use the client ID: {clientId}");
+        }
+
+        public void SetLogger(ILogger _logger)
+        {
+            logger = _logger;
         }
 
         public async Task StartHeartbeatAsync()
@@ -69,14 +76,14 @@ namespace WelsonJS.Service
 
                     await call.RequestStream.WriteAsync(request);
                     await call.RequestStream.CompleteAsync();
-                    _parent.Log("Sent heartbeat");
+                    logger.LogInformation("Sent heartbeat");
 
                     await Task.Delay(HeartbeatInterval); // Wait for HeartbeatInterval
 
                 }
                 catch (Exception ex)
                 {
-                    _parent.Log("Heartbeat request stream failed: " + ex.Message);
+                    logger.LogInformation("Heartbeat request stream failed: " + ex.Message);
                 }
 
                 // 서버 응답을 수신하는 작업
@@ -85,16 +92,16 @@ namespace WelsonJS.Service
                     while (await call.ResponseStream.MoveNext())
                     {
                         var response = call.ResponseStream.Current;
-                        _parent.Log("Heartbeat response received: " + response.IsAlive);
+                        logger.LogInformation("Heartbeat response received: " + response.IsAlive);
                     }
                 }
                 catch (RpcException ex)
                 {
-                    _parent.Log($"gRPC error: {ex.Status.Detail}");
+                    logger.LogInformation($"gRPC error: {ex.Status.Detail}");
                 }
                 catch (Exception ex)
                 {
-                    _parent.Log($"Unexpected error: {ex.Message}");
+                    logger.LogInformation($"Unexpected error: {ex.Message}");
                 }
                 finally
                 {
@@ -118,7 +125,7 @@ namespace WelsonJS.Service
                     while (await eventCall.ResponseStream.MoveNext())
                     {
                         var response = eventCall.ResponseStream.Current;
-                        _parent.Log($"Received event from server: {response.EventType} with args: {string.Join(", ", response.Args)}");
+                        logger.LogInformation($"Received event from server: {response.EventType} with args: {string.Join(", ", response.Args)}");
                     }
                 }
                 finally
@@ -148,7 +155,7 @@ namespace WelsonJS.Service
             }
             catch (Exception ex)
             {
-                _parent.Log($"An error occurred while retrieving the system UUID: {ex.Message}");
+                logger.LogInformation($"An error occurred while retrieving the system UUID: {ex.Message}");
             }
 
             return "UNKNOWN";

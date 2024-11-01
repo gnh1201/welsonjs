@@ -51,13 +51,13 @@ namespace WelsonJS.Service
                         }
                         else
                         {
-                            parent.Log($"Error parsing line: '{pair}'.");
+                            throw new Exception($"Error parsing line: '{pair}'.");
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    parent.Log($"Error loading variable file: {ex.Message}");
+                    Console.WriteLine($"Error loading variable file: {ex.Message}");
                     userVariables = new Dictionary<string, string>();
                 }
             }

@@ -34,19 +34,22 @@ using System.Collections.Generic;
 using WelsonJS.TinyINIController;
 using System.Collections;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+using WelsonJS.Service.Logging;
+using Grpc.Core.Logging;
 
 namespace WelsonJS.Service
 {
     public partial class ServiceMain : ServiceBase
     {
-        private readonly string appName = "WelsonJS";
+        private readonly static string applicationName = "WelsonJS";
         private static List<Timer> timers;
+        private Microsoft.Extensions.Logging.ILogger logger;
         private string workingDirectory;
         private string scriptName;
         private string scriptFilePath;
         private string scriptText;
         private ScriptControl scriptControl;
-        private string logFilePath;
         private string[] args;
         private bool disabledHeartbeat = false;
         private bool disabledScreenTime = false;
@@ -68,8 +71,10 @@ namespace WelsonJS.Service
             // set service arguments
             this.args = args;
 
-            // set the log file path
-            logFilePath = Path.Combine(Path.GetTempPath(), "welsonjs_service.log");
+            // set the logger
+            ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
+            factory.AddDirectory(Path.GetTempPath());
+            logger = factory.CreateLogger(applicationName);
 
             // mapping arguments to each variables
             var arguments = ParseArguments(this.args);
@@ -109,13 +114,13 @@ namespace WelsonJS.Service
             // set working directory
             if (string.IsNullOrEmpty(workingDirectory))
             {
-                workingDirectory = Path.Combine(Path.GetTempPath(), appName);
-                Log("Working directory not provided. Using default value: " + workingDirectory);
+                workingDirectory = Path.Combine(Path.GetTempPath(), applicationName);
+                logger.LogInformation("Working directory not provided. Using default value: " + workingDirectory);
 
                 if (!Directory.Exists(workingDirectory))
                 {
                     Directory.CreateDirectory(workingDirectory);
-                    Log("Directory created: " + workingDirectory);
+                    logger.LogInformation("Directory created: " + workingDirectory);
                 }
             }
             Directory.SetCurrentDirectory(workingDirectory);
@@ -135,7 +140,7 @@ namespace WelsonJS.Service
             }
             else
             {
-                Log($"Configuration file not found: {settingsFilePath}");
+                logger.LogInformation($"Configuration file not found: {settingsFilePath}");
             }
 
             // read configrations from settings.ini
@@ -174,7 +179,7 @@ namespace WelsonJS.Service
                     }
                     catch (Exception ex)
                     {
-                        Log($"{configName} is ignored: {ex.Message}");
+                        logger.LogInformation($"{configName} is ignored: {ex.Message}");
                     }
                 }
             }
@@ -183,7 +188,7 @@ namespace WelsonJS.Service
             if (string.IsNullOrEmpty(scriptName))
             {
                 scriptName = "defaultService";
-                Log($"Script name not provided. Using default value: {scriptName}");
+                logger.LogInformation($"Script name not provided. Using default value: {scriptName}");
             }
 
             // set path of the script
@@ -193,6 +198,7 @@ namespace WelsonJS.Service
             if (!disabledHeartbeat)
             {
                 HeartbeatClient heartbeatClient = new HeartbeatClient(this);
+                heartbeatClient.SetLogger(logger);
                 Task.Run(heartbeatClient.StartHeartbeatAsync);
                 Task.Run(heartbeatClient.StartEventListenerAsync);
             }
@@ -211,10 +217,10 @@ namespace WelsonJS.Service
             }
             else
             {
-                Log("Disabled the User Interactive Mode. (e.g., OnScreenTime)");
+                logger.LogInformation("Disabled the User Interactive Mode. (e.g., OnScreenTime)");
             }
 
-            Log(appName + " Service Loaded");
+            logger.LogInformation(applicationName + " Service Loaded");
         }
 
         public IniFile GetSettingsHandler()
@@ -241,7 +247,7 @@ namespace WelsonJS.Service
             // Check exists the entry script file
             if (File.Exists(scriptFilePath))
             {
-                Log($"Script file found: {scriptFilePath}");
+                logger.LogInformation($"Script file found: {scriptFilePath}");
 
                 try
                 {
@@ -281,35 +287,36 @@ namespace WelsonJS.Service
                     }
 
                     // initialize
-                    Log(DispatchServiceEvent("start", startArguments));
+                    logger.LogInformation(DispatchServiceEvent("start", startArguments));
                 }
                 catch (Exception ex)
                 {
-                    Log($"Failed to start because of {ex.Message}");
+                    logger.LogInformation($"Failed to start because of {ex.Message}");
                 }
             }
             else
             {
-                Log($"Script file not found: {scriptFilePath}");
+                logger.LogInformation($"Script file not found: {scriptFilePath}");
             }
 
             // Trace a Sysmon file events (If Sysinternals Sysmon installed)
             if (!disabledFileMonitor)
             {
                 fileEventMonitor = new FileEventMonitor(this, workingDirectory);
+                fileEventMonitor.SetLogger(logger);
                 fileEventMonitor.Start();
 
-                Log("File Event Monitor Started");
+                logger.LogInformation("File Event Monitor Started");
             }
             else
             {
-                Log("File Event Monitor is Disabled");
+                logger.LogInformation("File Event Monitor is Disabled");
             }
 
             // Start all the registered timers
-            timers.ForEach(timer => timer?.Start()); 
+            timers.ForEach(timer => timer?.Start());
 
-            Log(appName + " Service Started");
+            logger.LogInformation(applicationName + " Service Started");
         }
 
         protected override void OnStop()
@@ -323,16 +330,16 @@ namespace WelsonJS.Service
             // dispatch stop callback
             try
             {
-                Log(DispatchServiceEvent("stop"));
+                logger.LogInformation(DispatchServiceEvent("stop"));
                 scriptControl?.Reset();
             }
             catch (Exception ex)
             {
-                Log("Exception when stop: " + ex.Message);
+                logger.LogInformation("Exception when stop: " + ex.Message);
             }
             scriptControl = null;
 
-            Log(appName + " Service Stopped");
+            logger.LogInformation(applicationName + " Service Stopped");
         }
 
         private void OnUserInteractiveEnvironment()
@@ -341,13 +348,14 @@ namespace WelsonJS.Service
             if (GetSystemMetrics(SM_REMOTESESSION) > 0)
             {
                 disabledScreenTime = true;
-                Log("This application may not work correctly in a remote desktop session");
+                logger.LogInformation("This application may not work correctly in a remote desktop session");
             }
 
             // set screen timer
             if (!disabledScreenTime)
             {
                 screenMatcher = new ScreenMatch(this, workingDirectory);
+                screenMatcher.SetLogger(logger);
 
                 Timer screenTimer = new Timer
                 {
@@ -356,13 +364,13 @@ namespace WelsonJS.Service
                 screenTimer.Elapsed += OnScreenTime;
                 timers.Add(screenTimer);
 
-                Log("Screen Time Event Enabled");
+                logger.LogInformation("Screen Time Event Enabled");
             }
             else
             {
                 disabledScreenTime = true;
 
-                Log("Screen Time Event Disabled");
+                logger.LogInformation("Screen Time Event Disabled");
             }
         }
 
@@ -370,11 +378,11 @@ namespace WelsonJS.Service
         {
             try
             {
-                Log(DispatchServiceEvent("elapsedTime"));
+                logger.LogInformation(DispatchServiceEvent("elapsedTime"));
             }
             catch (Exception ex)
             {
-                Log("Exception when elapsed time: " + ex.Message);
+                logger.LogInformation("Exception when elapsed time: " + ex.Message);
             }
         }
 
@@ -385,7 +393,7 @@ namespace WelsonJS.Service
                 List<ScreenMatchResult> matchedResults = screenMatcher.CaptureAndMatch();
                 matchedResults.ForEach(result =>
                 {
-                    Log(DispatchServiceEvent("screenTemplateMatched", new string[]
+                    logger.LogInformation(DispatchServiceEvent("screenTemplateMatched", new string[]
                     {
                         result.FileName,
                         result.ScreenNumber.ToString(),
@@ -396,7 +404,7 @@ namespace WelsonJS.Service
             }
             catch (Exception ex)
             {
-                Log($"Waiting a next screen time... {ex.Message}");
+                logger.LogInformation($"Waiting a next screen time... {ex.Message}");
             }
         }
 
@@ -416,7 +424,7 @@ namespace WelsonJS.Service
             }
             else
             {
-                Log("InvokeScriptMethod Ignored: " + methodName);
+                logger.LogInformation("InvokeScriptMethod Ignored: " + methodName);
             }
 
             return "void";
@@ -467,7 +475,7 @@ namespace WelsonJS.Service
             }
             catch (Exception ex)
             {
-                Log($"Use all templates because of {ex.Message}");
+                logger.LogInformation($"Use all templates because of {ex.Message}");
             }
 
             return new ScreenMatch.TemplateInfo(templateName, index);
@@ -484,28 +492,6 @@ namespace WelsonJS.Service
                 return InvokeScriptMethod("dispatchServiceEvent", scriptName, eventType, args);
             }
 
-        }
-
-        public void Log(string message)
-        {
-            string _message = $"{DateTime.Now}: {message}";
-
-            if (Environment.UserInteractive)
-            {
-                Console.WriteLine(_message);
-            }
-
-            try
-            {
-                using (StreamWriter writer = new StreamWriter(logFilePath, true))
-                {
-                    writer.WriteLine(_message);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"LOGGING FAILED: {ex.Message}");
-            }
         }
     }
 }
