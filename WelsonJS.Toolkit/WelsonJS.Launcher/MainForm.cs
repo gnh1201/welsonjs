@@ -11,13 +11,15 @@ namespace WelsonJS.Launcher
     public partial class MainForm : Form
     {
         private string workingDirectory;
-        private string appName;
-        private readonly string entrypointFileName = "bootstrap.bat";
+        private string instanceName;
+        private string entryFileName;
         private string scriptName;
 
         public MainForm()
         {
             InitializeComponent();
+
+            entryFileName = "bootstrap.bat";
         }
 
         private void EnableUI()
@@ -43,7 +45,7 @@ namespace WelsonJS.Launcher
 
         private void button2_Click(object sender, EventArgs e)
         {
-            ShowMessageBox("Comming soon...!");
+            MessageBox.Show("Comming soon...!");
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -54,7 +56,7 @@ namespace WelsonJS.Launcher
                 string fileExtension = Path.GetExtension(filePath);
                 if (fileExtension != ".zip")
                 {
-                    ShowMessageBox("It doesn't seems to a ZIP file.");
+                    MessageBox.Show("It doesn't seems to a ZIP file.");
                 }
                 else
                 {
@@ -65,8 +67,8 @@ namespace WelsonJS.Launcher
 
         private void ExtractAndRun(string filePath)
         {
-            appName = Path.GetFileNameWithoutExtension(filePath);
-            workingDirectory = Path.Combine(Path.GetTempPath(), appName);
+            instanceName = Guid.NewGuid().ToString();
+            workingDirectory = Path.Combine(Path.GetTempPath(), instanceName);
             scriptName = textBox1.Text;
 
             Task.Run(() =>
@@ -90,7 +92,7 @@ namespace WelsonJS.Launcher
                 }
                 catch (Exception ex)
                 {
-                    ShowMessageBox(ex.Message);
+                    MessageBox.Show(ex.Message);
                 }
 
                 // Enable UI
@@ -109,9 +111,9 @@ namespace WelsonJS.Launcher
 
             if (!isConsoleApplication)
             {
-                if (!File.Exists(Path.Combine(workingDirectory, entrypointFileName)))
+                if (!File.Exists(Path.Combine(workingDirectory, entryFileName)))
                 {
-                    throw new Exception("Not Found: " + entrypointFileName);
+                    throw new Exception("Not Found: " + entryFileName);
                 }
             }
             else
@@ -149,7 +151,7 @@ namespace WelsonJS.Launcher
             }
             else if (!isConsoleApplication)
             {
-                process.StandardInput.WriteLine(entrypointFileName);
+                process.StandardInput.WriteLine(entryFileName);
                 process.StandardInput.WriteLine();
                 process.StandardInput.Flush();
                 process.StandardOutput.ReadLine();
@@ -169,21 +171,16 @@ namespace WelsonJS.Launcher
         {
             string filePath = null;
 
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            using (OpenFileDialog fileDialog = new OpenFileDialog())
             {
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                if (fileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    //Get the path of specified file
-                    filePath = openFileDialog.FileName;
+                    // Get the path of specified file
+                    filePath = fileDialog.FileName;
                 }
             }
 
             return filePath;
-        }
-
-        private void ShowMessageBox(string message)
-        {
-            MessageBox.Show(message);
         }
 
         private string GetFinalDirectory(string path)
@@ -206,7 +203,7 @@ namespace WelsonJS.Launcher
 
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            System.Diagnostics.Process.Start("https://github.com/gnh1201/welsonjs");
+            Process.Start("https://github.com/gnh1201/welsonjs");
         }
 
         private void userdefinedVariablesToolStripMenuItem_Click(object sender, EventArgs e)
