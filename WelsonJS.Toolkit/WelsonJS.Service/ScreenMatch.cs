@@ -461,14 +461,14 @@ public class ScreenMatch
             Screen screen = Screen.AllScreens[i];
             Bitmap mainImage = CaptureScreen(screen);
 
-            Bitmap image = templateImages[templateCurrentIndex];
-            string templateName = image.Tag as string;
+            Bitmap templateImage = templateImages[templateCurrentIndex];
+            string templateName = templateImage.Tag as string;
             TemplateInfo nextTemplateInfo = parent.GetNextTemplateInfo();
 
             Size templateSize = new Size
             {
-                Width = image.Width,
-                Height = image.Height
+                Width = templateImage.Width,
+                Height = templateImage.Height
             };
 
             logger.LogInformation($"Trying match the template {templateName} on the screen {i}...");
@@ -505,22 +505,20 @@ public class ScreenMatch
             // If the index value is negative, retrieve and use an outdated image from the queue
             if (nextTemplateInfo.Index < 0)
             {
-                Bitmap outdatedImage = null;
-
                 logger.LogInformation($"Finding a previous screen of {nextTemplateInfo.FileName}...");
 
+                Bitmap outdatedImage = null;
                 try
                 {
-                    while (outdatedSamples.Count > 0)
+                    // Since outdatedSamples is also used to detect duplicate work, we do not delete tasks with Dequeue.
+                    foreach (var image in outdatedSamples)
                     {
-                        outdatedImage = outdatedSamples.Dequeue();
-                        if (outdatedImage.Tag != null)
+                        if (image.Tag != null &&
+                            ((SampleInfo)image.Tag).FileName == nextTemplateInfo.FileName)
                         {
-                            if (((SampleInfo)outdatedImage.Tag).FileName == nextTemplateInfo.FileName)
-                            {
-                                logger.LogInformation($"Found the previous screen of {nextTemplateInfo.FileName}");
-                                break;
-                            }
+                            outdatedImage = image;
+                            logger.LogInformation($"Found the previous screen of {nextTemplateInfo.FileName}");
+                            break;
                         }
                     }
                 }
@@ -550,7 +548,7 @@ public class ScreenMatch
             else
             {
                 // If the index is not negative, use the current image for template matching
-                matchPositions = FindTemplate(out_mainImage, (Bitmap)image.Clone());
+                matchPositions = FindTemplate(out_mainImage, (Bitmap)templateImage.Clone());
             }
 
             foreach (Point matchPosition in matchPositions)
