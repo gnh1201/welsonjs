@@ -135,6 +135,22 @@ public class ScreenMatch
         logger.LogInformation($"State changed: busy={busy}");
     }
 
+    private decimal GetScreenScalingFactor(Screen screen)
+    {
+        DEVMODE dm = new DEVMODE();
+        dm.dmSize = (short)Marshal.SizeOf(typeof(DEVMODE));
+        EnumDisplaySettings(screen.DeviceName, -1, ref dm);
+
+        decimal scalingFactor = Math.Round(Decimal.Divide(dm.dmPelsWidth, screen.Bounds.Width), 2);
+        if (scalingFactor > 1)
+        {
+            logger.LogInformation($"Screen with scaling detected: {scalingFactor}x");
+            logger.LogWarning("Please check the screen DPI.");
+        }
+
+        return scalingFactor;
+    }
+
     public class TemplateInfo
     {
         public string FileName { get; set; }
@@ -527,7 +543,7 @@ public class ScreenMatch
                 }
                 else
                 {
-                    logger.LogInformation("Not found a outdated image");
+                    logger.LogInformation("No match found an outdated image");
                     matchPositions = new List<Point>();
                 }
             }
@@ -677,13 +693,7 @@ public class ScreenMatch
     public Bitmap CaptureScreen(Screen screen)
     {
         Rectangle screenSize = screen.Bounds;
-
-        DEVMODE dm = new DEVMODE();
-        dm.dmSize = (short)Marshal.SizeOf(typeof(DEVMODE));
-        EnumDisplaySettings(screen.DeviceName, -1, ref dm);
-
-        var scalingFactor = Math.Round(Decimal.Divide(dm.dmPelsWidth, screen.Bounds.Width), 2);
-        logger.LogInformation($"Resolved the screen scale: {scalingFactor}");
+        decimal scalingFactor = GetScreenScalingFactor(screen);
 
         int adjustedWidth = (int)(screenSize.Width * scalingFactor);
         int adjustedHeight = (int)(screenSize.Height * scalingFactor);
