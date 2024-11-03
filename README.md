@@ -3,7 +3,7 @@
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs?ref=badge_shield)
 [![AppVeyor Status](https://ci.appveyor.com/api/projects/status/github/gnh1201/welsonjs?svg=true)](https://ci.appveyor.com/project/gnh1201/welsonjs)
 [![DOI 10.5281/zenodo.11382384](https://zenodo.org/badge/DOI/10.5281/zenodo.11382384.svg)](https://doi.org/10.5281/zenodo.11382384)
-[![ChatGPT available](https://img.shields.io/badge/ChatGPT-74aa9c?logo=openai&logoColor=white)](#)
+[![ChatGPT available](https://img.shields.io/badge/ChatGPT-74aa9c?logo=openai&logoColor=white)](https://catswords-oss.rdbl.io/5719744820/8278298336)
 [![slideshare.net available](https://img.shields.io/badge/SlideShare-black?logo=slideshare)](https://www.slideshare.net/slideshow/welsonjs-2023/263181443)
 
 <img src="app/assets/img/logo.svg" height="32" alt=""/> WelsonJS - Build a Windows app on the Windows built-in JavaScript engine.
@@ -92,7 +92,7 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
   - [Screen Time Feature](https://catswords-oss.rdbl.io/5719744820/8803957194): Find an image position on the computer screens or windows.
 - [WelsonJS.Launcher](https://catswords-oss.rdbl.io/5719744820/4131485779) (Launcher Application, For recent Windows based systems)
   - This is a launcher app designed to easily distribute WelsonJS application packages (based on ZIP compression files).
-- lib/chatgpt ([ChatGPT](https://openai.com/chatgpt) integration)
+- [ChatGPT](https://openai.com/index/chatgpt/) or [Anthropic/Claude](https://claude.ai/) integration
 - Everything you can imagine.
 
 ## Make your own `sayhello` example
