@@ -19,19 +19,20 @@ namespace WelsonJS.Service
         private ILogger logger;
         private readonly GrpcChannel _channel;
         private int HeartbeatInterval;
-        private ServiceMain _parent;
+        private ServiceMain parent;
         private string clientId;
         private string serverAddress;
 
-        public HeartbeatClient(ServiceBase parent)
+        public HeartbeatClient(ServiceBase _parent, ILogger _logger)
         {
-            _parent = (ServiceMain)parent;
+            parent = (ServiceMain)_parent;
+            logger = _logger;
 
-            HeartbeatInterval = int.Parse(_parent.GetSettingsHandler().Read("HEARTBEAT_INTERVAL", "Service") ?? "2000");
+            HeartbeatInterval = int.Parse(parent.ReadSettingsValue("HEARTBEAT_INTERVAL") ?? "2000");
 
             try
             {
-                serverAddress = _parent.GetSettingsHandler().Read("GRPC_HOST", "Service");
+                serverAddress = parent.ReadSettingsValue("GRPC_HOST");
                 if (String.IsNullOrEmpty(serverAddress))
                 {
                     throw new Exception("The server address could not be empty.");
@@ -54,11 +55,6 @@ namespace WelsonJS.Service
 
             clientId = GetSystemUUID().ToLower();
             logger.LogInformation($"Use the client ID: {clientId}");
-        }
-
-        public void SetLogger(ILogger _logger)
-        {
-            logger = _logger;
         }
 
         public async Task StartHeartbeatAsync()

@@ -70,13 +70,14 @@ namespace WelsonJS.Service
         private string clamAvConenctionString;
         private IClamAvClient clamAvClient;
 
-        public FileEventMonitor(ServiceBase parent, string workingDirectory)
+        public FileEventMonitor(ServiceBase _parent, string workingDirectory, ILogger _logger)
         {
-            this.parent = (ServiceMain)parent;
+            parent = (ServiceMain)_parent;
+            logger = _logger;
 
             try
             {
-                clamAvConenctionString = this.parent.GetSettingsHandler().Read("CLAMAV_HOST", "Service");
+                clamAvConenctionString = parent.ReadSettingsValue("CLAMAV_HOST");
             }
             catch (Exception ex)
             {
@@ -84,11 +85,6 @@ namespace WelsonJS.Service
                 logger.LogInformation($"Failed to read the address because of {ex.Message}. Set default: {clamAvConenctionString}");
             }
             ConnectToClamAv().Start();
-        }
-
-        public void SetLogger(ILogger _logger)
-        {
-            logger = _logger;
         }
 
         public void Start()

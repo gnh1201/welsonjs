@@ -36,7 +36,6 @@ using System.Collections;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using WelsonJS.Service.Logging;
-using Grpc.Core.Logging;
 
 namespace WelsonJS.Service
 {
@@ -44,7 +43,7 @@ namespace WelsonJS.Service
     {
         private readonly static string applicationName = "WelsonJS";
         private static List<Timer> timers;
-        private Microsoft.Extensions.Logging.ILogger logger;
+        private ILogger logger;
         private string workingDirectory;
         private string scriptName;
         private string scriptFilePath;
@@ -56,7 +55,7 @@ namespace WelsonJS.Service
         private bool disabledFileMonitor = false;
         private ScreenMatch screenMatcher;
         private FileEventMonitor fileEventMonitor;
-        private IniFile settingsHandler;
+        private IniFile settingsFileHandler;
         private UserVariables userVariablesHandler;
 
         [DllImport("user32.dll")]
@@ -64,17 +63,13 @@ namespace WelsonJS.Service
 
         private static int SM_REMOTESESSION = 0x1000;
 
-        public ServiceMain(string[] args)
+        public ServiceMain(string[] _args, ILogger _logger)
         {
             InitializeComponent();
 
-            // set service arguments
-            this.args = args;
-
-            // set the logger
-            ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
-            factory.AddDirectory(Path.GetTempPath());
-            logger = factory.CreateLogger(applicationName.ToLower());
+            // set arguments and logger
+            args = _args;
+            logger = _logger;
 
             // mapping arguments to each variables
             var arguments = ParseArguments(this.args);
@@ -131,11 +126,11 @@ namespace WelsonJS.Service
             {
                 try
                 {
-                    settingsHandler = new IniFile(settingsFilePath);
+                    settingsFileHandler = new IniFile(settingsFilePath);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    settingsHandler = null;
+                    logger.LogWarning(ex.Message);
                 }
             }
             else
@@ -144,7 +139,7 @@ namespace WelsonJS.Service
             }
 
             // read configrations from settings.ini
-            if (settingsHandler != null)
+            if (settingsFileHandler != null)
             {
                 string[] configNames = new string[]
                 {
@@ -156,7 +151,7 @@ namespace WelsonJS.Service
                 {
                     try
                     {
-                        if ("true" == GetSettingsHandler().Read(configName, "Service"))
+                        if ("true" == ReadSettingsValue(configName))
                         {
                             switch (configName)
                             {
@@ -197,8 +192,7 @@ namespace WelsonJS.Service
             // start the heartbeat
             if (!disabledHeartbeat)
             {
-                HeartbeatClient heartbeatClient = new HeartbeatClient(this);
-                heartbeatClient.SetLogger(logger);
+                HeartbeatClient heartbeatClient = new HeartbeatClient(this, logger);
                 Task.Run(heartbeatClient.StartHeartbeatAsync);
                 Task.Run(heartbeatClient.StartEventListenerAsync);
             }
@@ -213,7 +207,7 @@ namespace WelsonJS.Service
 
             // check this session is the user interactive mode
             if (Environment.UserInteractive) {
-                this.OnUserInteractiveEnvironment();
+                OnUserInteractiveEnvironment();
             }
             else
             {
@@ -223,9 +217,17 @@ namespace WelsonJS.Service
             logger.LogInformation(applicationName + " Service Loaded");
         }
 
-        public IniFile GetSettingsHandler()
+        public string ReadSettingsValue(string key, string defaultValue = null)
         {
-            return settingsHandler;
+            if (settingsFileHandler != null)
+            {
+                return settingsFileHandler.Read(key, "Service") ?? defaultValue;
+            }
+            else
+            {
+                logger.LogWarning("Unable to read the value. It seems that settings.ini is not configured correctly.");
+                return defaultValue;
+            }
         }
 
         public UserVariables GetUserVariablesHandler()
@@ -302,8 +304,7 @@ namespace WelsonJS.Service
             // Trace a Sysmon file events (If Sysinternals Sysmon installed)
             if (!disabledFileMonitor)
             {
-                fileEventMonitor = new FileEventMonitor(this, workingDirectory);
-                fileEventMonitor.SetLogger(logger);
+                fileEventMonitor = new FileEventMonitor(this, workingDirectory, logger);
                 fileEventMonitor.Start();
 
                 logger.LogInformation("File Event Monitor Started");
@@ -354,8 +355,7 @@ namespace WelsonJS.Service
             // set screen timer
             if (!disabledScreenTime)
             {
-                screenMatcher = new ScreenMatch(this, workingDirectory);
-                screenMatcher.SetLogger(logger);
+                screenMatcher = new ScreenMatch(this, workingDirectory, logger);
 
                 Timer screenTimer = new Timer
                 {

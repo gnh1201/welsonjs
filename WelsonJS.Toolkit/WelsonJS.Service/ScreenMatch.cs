@@ -159,9 +159,10 @@ public class ScreenMatch
         }
     }
 
-    public ScreenMatch(ServiceBase parent, string workingDirectory)
+    public ScreenMatch(ServiceBase _parent, string workingDirectory, ILogger _logger)
     {
-        this.parent = (ServiceMain)parent;
+        parent = (ServiceMain)_parent;
+        logger = _logger;
 
         SetBusy(false);
 
@@ -193,8 +194,8 @@ public class ScreenMatch
         string screen_time_params;
         try
         {
-            screen_time_mode = this.parent.GetSettingsHandler().Read("SCREEN_TIME_MODE", "Service");
-            screen_time_params = this.parent.GetSettingsHandler().Read("SCREEN_TIME_PARAMS", "Service");
+            screen_time_mode = parent.ReadSettingsValue("SCREEN_TIME_MODE");
+            screen_time_params = parent.ReadSettingsValue("SCREEN_TIME_PARAMS");
         }
         catch (Exception ex)
         {
@@ -330,11 +331,6 @@ public class ScreenMatch
 
         SetMode(screen_time_mode);
         LoadTemplateImages();
-    }
-
-    public void SetLogger(ILogger _logger)
-    {
-        logger = _logger;
     }
 
     public void SetMode(string mode)
