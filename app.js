@@ -315,7 +315,7 @@ function require(pathname) {
             });
             break;
 
-        case ".enc":   // protected script (HIGHT, ISO/IEC 18033-3)
+        case ".enc":   // encrypted script (require WelsonJS.Toolkit)
             T = (function(data, o) {
                 try {
                     var s = '', i = 0, k = 6;
@@ -327,7 +327,7 @@ function require(pathname) {
                         i++;
                     }
                     if (i == k) return '';
-                    return o.DecryptStringHIGHT(s, data);
+                    return o.DecryptString(s, data);
                 } catch (e) {
                     console.error("Failed to load the encrypted data:", e.message);
                     return '';

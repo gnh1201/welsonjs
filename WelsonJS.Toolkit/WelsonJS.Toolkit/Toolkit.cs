@@ -225,7 +225,7 @@ namespace WelsonJS
         }
 
         [ComVisible(true)]
-        public string EncryptStringHIGHT(string key, string data)
+        public string EncryptString(string key, string data)
         {
             byte[] userKey = Encoding.ASCII.GetBytes(key);
             byte[] dataIn = Encoding.UTF8.GetBytes(data);
@@ -235,7 +235,7 @@ namespace WelsonJS
         }
 
         [ComVisible(true)]
-        public string DecryptStringHIGHT(string key, string encryptedData)
+        public string DecryptString(string key, string encryptedData)
         {
             byte[] userKey = Encoding.ASCII.GetBytes(key);
             byte[] dataIn = Convert.FromBase64String(encryptedData);

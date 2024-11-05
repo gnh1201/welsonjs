@@ -5,7 +5,7 @@
  *         HIGHT.cs
  * 
  *     description:
- *         HIGHT(ISO/IEC 18033-3) cryptography algorithm (ECB mode) implementation for WelsonJS
+ *         HIGHT(ISO/IEC 18033-3) cryptography algorithm implementation
  * 
  *     website:
  *         - https://github.com/gnh1201/welsonjs
@@ -16,6 +16,7 @@
  *         - Namhyeon Go <abuse@catswords.net>
  *         - @chandong83 (github.com) - Original author of CryptoHIGHT.cs
  *         - KISA(Korea Internet & Security Agency)
+ *         - Korea Unversity
  *     
  *     references:
  *         - https://github.com/chandong83/csharp_crypto_hight_ecb_examples

@@ -25,7 +25,7 @@ function main(args) {
     }
 
     var data = FILE.readFile(filename, FILE.CdoCharset.CdoUTF_8);
-    var encryptedData = Toolkit.encryptStringHIGHT(userKey, data);
+    var encryptedData = Toolkit.encryptString(userKey, data);
 
     var dstfile = filename + ".enc";
     FILE.writeFile(dstfile, encryptedData, FILE.CdoCharset.CdoUTF_8);

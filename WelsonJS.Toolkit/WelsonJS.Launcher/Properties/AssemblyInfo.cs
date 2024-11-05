@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Catswords")]
 [assembly: AssemblyProduct("WelsonJS")]
-[assembly: AssemblyCopyright("Catswords OSS, C-2021-000237, Opensource licensed under GPLv3 or MS-RL")]
+[assembly: AssemblyCopyright("Catswords OSS, Opensource licensed under GPLv3")]
 [assembly: AssemblyTrademark("WelsonJS")]
 [assembly: AssemblyCulture("")]
 
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // 모든 값을 지정하거나 아래와 같이 '*'를 사용하여 빌드 번호 및 수정 번호를
 // 기본값으로 할 수 있습니다.
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.2.7.31")]
-[assembly: AssemblyFileVersion("0.2.7.31")]
+[assembly: AssemblyVersion("0.2.7.49")]
+[assembly: AssemblyFileVersion("0.2.7.49")]
