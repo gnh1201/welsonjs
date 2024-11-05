@@ -12,7 +12,7 @@
     <description>Native toolkit for WelsonJS framework-based RPA applications.</description>
     <releaseNotes>Updated release</releaseNotes>
     <copyright>$copyright$</copyright>
-    <tags>com scripting library javascript ini window-handle named-shared-memory</tags>
+    <tags>rpa com scripting library javascript ini window-handle named-shared-memory</tags>
   </metadata>
   <files>
     <file src="assets\img\logo.png" />
