@@ -8,6 +8,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type="expression">GPL-3.0-only</license>
     <icon>logo.png</icon>
+	<readme>README.md</readme>
     <projectUrl>https://github.com/gnh1201/welsonjs</projectUrl>
     <description>Native toolkit for WelsonJS framework-based RPA applications.</description>
     <releaseNotes>Updated release</releaseNotes>
@@ -16,5 +17,6 @@
   </metadata>
   <files>
     <file src="assets\img\logo.png" />
+    <file src="assets\docs\README.md" />
   </files>
 </package>
