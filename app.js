@@ -660,10 +660,11 @@ function __main__() {
     console.log("   \\ V  V /  __/ \\__ \\ (_) | | | | |_| |___) |");
     console.log("    \\_/\\_/ \\___|_|___/\\___/|_| |_|\\___/|____/ ");
     console.log("");
-    console.log("  WelsonJS - Build a Windows app on the Windows built-in JavaScript engine");
-    console.log("  C-2021-000237 (cros.or.kr), 10.5281/zenodo.11382385 (doi.org), 2023-A0562 (oss.kr), Codename Macadamia");
-    console.log("  This software is distributed as open source under the GPL 3.0 or MS-RL licenses.");
-    console.log("  https://github.com/gnh1201/welsonjs");
+    console.log(" WelsonJS - Build a Windows app on the Windows built-in JavaScript engine");
+    console.log(" C-2021-000237 (cros.or.kr), 10.5281/zenodo.11382385 (doi.org), 2023-A0562 (oss.kr), Codename Macadamia");
+    console.log(" This software is distributed as open source under the GPL 3.0 or MS-RL licenses.");
+    console.log(" Please support this project: https://gnh1201.link");
+    console.log(" Source code available: https://github.com/gnh1201/welsonjs");
     console.log("");
 
     if (typeof window === "undefined") {
