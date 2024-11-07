@@ -1,14 +1,18 @@
 {
   "name": "welsonjs",
-  "version": "0.2.7.12",
-  "description": "WelsonJS - Build a Windows app on the Windows built-in JavaScript engine",
+  "version": "0.2.7.50",
+  "description": "WelsonJS is a framework to build a Windows app on the Windows built-in JavaScript engine",
   "main": "app.js",
   "directories": {
     "lib": "lib"
   },
   "scripts": {
-    "start": "start.bat",
-    "test": "cscript app.js testloader"
+    "start": "bootstrap.bat",
+    "installService": "installService.bat",
+    "uninstallService": "uninstallService.bat",
+    "startInteractiveService": "startInteractiveService.bat",
+    "startService": "sc start WelsonJS.Service",
+    "stopService": "sc stop WelsonJS.Service"
   },
   "repository": {
     "type": "git",
