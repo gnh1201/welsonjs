@@ -1443,6 +1443,7 @@ matrix.determinant = function (m) {
     return m[0][0] * m[1][1] - m[0][1] * m[1][0];
   }
 
+  /*
   for (col = 0; col < numCol; col++) {
     diagLeft = m[0][col];
     diagRight = m[0][col];
@@ -1454,8 +1455,29 @@ matrix.determinant = function (m) {
 
     det += diagRight - diagLeft;
   }
-
+  
   return det;
+  */
+  
+  // new algorithm for matrix determinant #161 @youngbizman
+  // https://github.com/numbers/numbers.js/pull/161
+  // https://github.com/numbers/numbers.js/issues/160
+  var indexColumn = 0;
+  var result = 0;
+  var numberOfAddedRows = 0;
+  while (indexColumn < numCol) {
+    numberOfAddedRows = 0;
+    var newArray = new Array();
+    while (numberOfAddedRows < numRow - 1) {
+      newArray.push(m[numberOfAddedRows + 1].slice(0, indexColumn).concat(m[numberOfAddedRows + 1].slice(indexColumn + 1)));
+      numberOfAddedRows++;
+	}
+	
+    result += Math.pow(-1, indexColumn) * m[0][indexColumn] * matrix.determinant(newArray);
+    indexColumn++;
+  }
+  
+  return result;
 };
 
 /**

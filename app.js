@@ -639,7 +639,7 @@ if (typeof JSON === "undefined") {
 require("app/assets/js/core-js-3.38.0.minified");
 
 // Squel.js SQL query string builder for Javascript
-var squel = require("app/assets/js/squel-basic-5.13.0.hiddentao-afa1cb5.wsh");
+var squel = require("app/assets/js/squel-basic-5.13.0-afa1cb5.wsh");
 
 // JavaScript YAML parser and dumper. 
 var yaml = require("app/assets/js/js-yaml-4.1.0.wsh");
