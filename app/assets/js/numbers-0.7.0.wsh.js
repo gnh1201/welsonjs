@@ -1471,8 +1471,8 @@ matrix.determinant = function (m) {
     while (numberOfAddedRows < numRow - 1) {
       newArray.push(m[numberOfAddedRows + 1].slice(0, indexColumn).concat(m[numberOfAddedRows + 1].slice(indexColumn + 1)));
       numberOfAddedRows++;
-	}
-	
+    }
+    
     result += Math.pow(-1, indexColumn) * m[0][indexColumn] * matrix.determinant(newArray);
     indexColumn++;
   }

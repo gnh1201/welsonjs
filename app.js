@@ -82,7 +82,10 @@ var console = {
             }
         }
         
-        var message = type + ": " + messages.join(' ');
+        var message = messages.join(' ');
+        if (typeof type !== "undefined") {
+            message = type + ": " + message;
+        }
         this._echoDefault(message);
         this._messages.push(message);
 
