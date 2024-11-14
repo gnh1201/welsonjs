@@ -53,6 +53,7 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
   - [github.com/BorisMoore/jsrender](https://github.com/BorisMoore/jsrender) - A lightweight, powerful and highly extensible templating engine. In the browser or on Node.js, with or without jQuery.
   - [github.com/mihaifm/linq](https://github.com/mihaifm/linq) - LINQ for JavaScript
   - [github.com/pegjs/pegjs](https://github.com/pegjs/pegjs) - PEG.js: Parser generator for JavaScript
+  - [github.com/numbers/numbers.js](https://github.com/numbers/numbers.js) - Advanced Mathematics Library for Node.js and JavaScript
 - [module.exports](https://nodejs.org/api/modules.html#moduleexports), CommonJS, UMD compatibility
 - [NPM](https://www.npmjs.com/) compatibility
 - [Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/) support
