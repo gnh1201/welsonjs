@@ -82,7 +82,7 @@ var console = {
             }
         }
         
-        var message = messages.join(' ');
+        var message = type + ": " + messages.join(' ');
         this._echoDefault(message);
         this._messages.push(message);
 
