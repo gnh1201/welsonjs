@@ -1,11 +1,11 @@
 {
     "description": "WelsonJS test profile for Microsoft Office",
-    "released": "2024-06-02",
+    "updated_on": "2024-06-02",
     "dependencies": {
         "welsonjs": "0.2.7"
     },
     "authors": [
-        "Namhyeon Go <gnh1201@gmail.com>"
+        "Namhyeon Go <abuse@catswords.net>"
     ],
     "references": [
         "https://github.com/gnh1201/welsonjs",

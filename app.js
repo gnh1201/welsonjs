@@ -45,7 +45,7 @@ var console = {
     },
     _echoCallback: null,
     _echo: function(args, type) {
-        var message = "";
+        var messages = [];
         var params = {
             type: type,
             scope: [],
@@ -53,32 +53,38 @@ var console = {
             datetime: new Date().toISOString()
         };
 
-        if (args.length > 0) {
-            if (typeof args[0] === "string") {
-                // if not type is "log", then "{type}: {message}"
-                if (typeof type !== "undefined") {
-                    message += (type + ": " + this._join(args));
-                } else {
-                    message += this._join(args);
-                }
-                this._echoDefault(message);
-                this._messages.push(message);
-                params.message = message;
-            } else if (typeof args[0] === "object") {
-                if ('message' in args[0]) {
-                    if (typeof type !== "undefined") {
-                        message += (type + ": " + args[0].message);
+        var argl = args.length;
+        for (var i = 0; i < argl; i++) {
+            switch (typeof args[i]) {
+                case "string":
+                    messages.push(args[i]);
+                    break;
+                
+                case "number":
+                case "boolean":
+                    messages.push(String(args[i]));
+                    break;
+                
+                case "object":
+                    if ("message" in args[i]) {
+                        messages.push(args[i].message);
+                        for (var k in args[i]) {
+                            params[k] = args[i][k];
+                        }
                     } else {
-                        message += args[0].message;
+                        messages.push("[object Object]");
                     }
-                }
-                this._echoDefault(message);
-                this._messages.push(args[0].message);
-                for (var k in args[0]) {
-                    params[k] = args[0][k];
-                }
+                    break;
+                    
+                case "unknown":
+                    messages.push("[unknown]");
+                    break;
             }
         }
+        
+        var message = messages.join(' ');
+        this._echoDefault(message);
+        this._messages.push(message);
 
         if (params.scope.length > 0 && this._echoCallback != null) {
             try {
@@ -646,7 +652,7 @@ var is = require("app/assets/js/is-0.9.0.min");
 //console.log(new Intl.NumberFormat().format(1234567890.123456));
 
 // numbers.js - Advanced Mathematics Library for Node.js and JavaScript
-var numbers = require("app/assets/js/numbers-0.7.0.wsh")
+var numbers = require("app/assets/js/numbers-0.7.0.wsh");
 
 // linq.js - LINQ for JavaScript
 var Enumerable = require("app/assets/js/linq-4.0.2.wsh")._default;

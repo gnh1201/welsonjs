@@ -1,6 +1,6 @@
 {
     "description": "WelsonJS test profile (test-misc.json)",
-    "released": "2024-09-27",
+    "updated_on": "2024-11-15",
     "dependencies": {
         "welsonjs": "0.2.7"
     },
@@ -100,6 +100,11 @@
             "id": "proxy_serp",
             "description": "HTTP proxy with a SERP provider",
             "tags": ["Network", "HTTP"]
+        },
+        {
+            "id": "numbers_test",
+            "description": "number.js test",
+            "tags": ["Mathematics"]
         }
     ]
 }

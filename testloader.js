@@ -1043,6 +1043,58 @@ var test_implements = {
             .send();
 
         console.log("responseBody:", response.responseBody);
+    },
+    
+    "numbers_test": function() {
+        // Riemann integrals
+        console.log("Test Riemann integrals (with 200 subdivisions)");
+        console.log(numbers.calculus.Riemann(Math.sin, -2, 4, 200));
+
+        // Adaptive simpson quadrature
+        //console.log("Test Adaptive simpson quadrature (with epsilon .0001)");
+        //console.log(numbers.calculus.adaptiveSimpson(Math.sin, -2, 4, .0001));
+        
+        // User-defined function
+        console.log("Test User-defined functions");
+        var myFunc = function(x) {
+            return 2*Math.pow(x,2) + 1;
+        }
+        console.log("Test Riemann sum");
+        console.log(numbers.calculus.Riemann(myFunc, -2, 4, 200));
+        console.log("Test Adaptive Simpson's Rule");
+        console.log(numbers.calculus.adaptiveSimpson(myFunc, -2, 4, .0001));
+        
+        // example array
+        var array1 = [0, 1, 2];
+        var array2 = [3, 4, 5];
+        var array = array1.concat(array2);
+        
+        // add two matrices
+        console.log("Test Add two metrices");
+        console.log(JSON.stringify(numbers.matrix.addition(array1, array2)));
+        
+        // transpose a matrix
+        //console.log("Test Transpose a matrix");
+        //console.log(JSON.stringify(numbers.matrix.transpose(array)));
+        
+        // basic check
+        var number = 3;   // number
+
+        console.log("Test Prime Number Check (Simple test)");
+        console.log(numbers.prime.simple(number));
+
+        // Miller-Rabin primality test
+        console.log("Test Prime Number Check (Miller-Rabin primality test)");
+        console.log(numbers.prime.millerRabin(number));
+
+        // mean, median, mode, standard deviation, random sample generator, correlation, confidence intervals, t-test, chi-square, and more.
+        console.log("Test mean, median, mode, standard deviation, random sample generator, correlation, confidence intervals, t-test, chi-square, and more.");
+        console.log(numbers.statistic.mean(array));
+        console.log(numbers.statistic.median(array));
+        console.log(numbers.statistic.mode(array));
+        console.log(numbers.statistic.standardDev(array));
+        //console.log(numbers.statistic.randomSample(100, 100, 20));
+        console.log(numbers.statistic.correlation(array1, array2));
     }
 };
 
