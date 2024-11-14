@@ -645,6 +645,9 @@ var is = require("app/assets/js/is-0.9.0.min");
 //var Intl = require("app/assets/js/Intl-1.2.5-e93b114.min");
 //console.log(new Intl.NumberFormat().format(1234567890.123456));
 
+// numbers.js - Advanced Mathematics Library for Node.js and JavaScript
+var numbers = require("app/assets/js/numbers-0.7.0.wsh")
+
 // linq.js - LINQ for JavaScript
 var Enumerable = require("app/assets/js/linq-4.0.2.wsh")._default;
 
