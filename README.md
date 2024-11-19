@@ -21,7 +21,7 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
 - :octocat: [GitHub Sponsors](https://github.com/sponsors/gnh1201)
 - <img src="https://ics.catswords.net/logo_oss.gif" height="32" alt=""/> [Open Software Portal](https://oss.kr), Korea National Industry Promotion Agency - Awarded Prize
 - <img src="https://ics.catswords.net/signpath_logo.png" height="32" alt=""/> Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org/)
-- <img src="https://ics.catswords.net/f1security_logo.png" height="32" alt=""/> [F1Security](https://azuremarketplace.microsoft.com/ko-kr/marketplace/apps/1599123192819.uwss?tab=overview) offers web security solutions developed by [industry-leading cybersecurity experts](https://www.ksecurity.or.kr/kisis/subIndex/469.do).
+- <img src="https://ics.catswords.net/f1security_logo.png" height="32" alt=""/> [F1Security](https://azuremarketplace.microsoft.com/ko-kr/marketplace/apps/1599123192819.uwss?tab=overview) provides web security services through [industry-leading experts](https://www.ksecurity.or.kr/kisis/subIndex/469.do).
 - :zap: [Integrations](https://catswords-oss.rdbl.io/5719744820/8278298336) ([ScrapeOps](https://scrapeops.io?fpr=namhyeon75), [SearchApi](https://www.searchapi.io/?via=namhyeon), ...)
 
 ## Structure
