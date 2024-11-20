@@ -195,7 +195,7 @@ The WelsonJS framework suggests the following application release methods:
 - XMPP [catswords@conference.omemo.id](xmpp:catswords@conference.omemo.id?join)
 - [Join Catswords OSS on Microsoft Teams (teams.live.com)](https://teams.live.com/l/community/FEACHncAhq8ldnojAI)
 - [Join Catswords OSS #welsonjs on Discord (discord.gg)](https://discord.gg/XKG5CjtXEj)
-- [Join Catswords OSS on Gather (app.gather.town)](https://app.gather.town/app/wAX6hpdvHVRc1lJU/catswords)
+- [Join Catswords OSS on Gather (app.gather.town)](https://app.gather.town/invite?token=IE2AYZDpS-Ocu3SzpSc0)
 
 ## License
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs?ref=badge_large)
