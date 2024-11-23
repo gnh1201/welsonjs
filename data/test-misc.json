@@ -1,6 +1,6 @@
 {
     "description": "WelsonJS test profile (test-misc.json)",
-    "updated_on": "2024-11-15",
+    "updated_on": "2024-11-24",
     "dependencies": {
         "welsonjs": "0.2.7"
     },
@@ -93,12 +93,17 @@
         },
         {
             "id": "proxy_custom_provider",
-            "description": "HTTP proxy with an web proxy provider",
+            "description": "HTTP request with an web proxy provider",
             "tags": ["Network", "HTTP"]
         },
         {
             "id": "proxy_serp",
-            "description": "HTTP proxy with a SERP provider",
+            "description": "HTTP request with a SERP provider",
+            "tags": ["Network", "HTTP"]
+        },
+        {
+            "id": "proxy_stateless_jsonrpc2",
+            "description": "HTTP request with a JSON-RPC 2.0 based stateless proxy",
             "tags": ["Network", "HTTP"]
         },
         {

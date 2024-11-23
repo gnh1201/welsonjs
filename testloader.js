@@ -1045,6 +1045,23 @@ var test_implements = {
         console.log("responseBody:", response.responseBody);
     },
     
+    "proxy_stateless_jsonrpc2": function() {
+        var HTTP = require("lib/http");
+        
+        var response = HTTP.create()
+            .setProxy({
+                "enabled": true,
+                "provider": "github.com/gnh1201/caterpillar",
+                "type": "stateless-jsonrpc2",
+                "url": "https://localhost:8080"
+            })
+            .setDataType("json")
+            .open("GET", "https://example.org")
+            .send();
+
+        console.log("responseBody:", response.responseBody);
+    },
+    
     "numbers_test": function() {
         // Riemann integrals
         console.log("Test Riemann integrals (with 200 subdivisions)");
