@@ -185,6 +185,7 @@ The WelsonJS framework suggests the following application release methods:
 - [johnjohnsp1/WindowsScriptHostExtension](https://github.com/johnjohnsp1/WindowsScriptHostExtension) - Inject DLL Prototype using Microsoft.Windows.ACTCTX COM Object
 - [kuntashov/jsunit](https://github.com/kuntashov/jsunit) - JSUnit port for Windows Scripting Host
 - [nickdoth/WSHHttpServer](https://github.com/nickdoth/WSHHttpServer) - HTTP server based on Windows Script Host
+- [joncasey/modern-hta](https://github.com/joncasey/modern-hta) - Run modern code in an HTML Application
 - FOSSA report [HTML](https://ics.catswords.net/fossa_report.html) [CSV](https://ics.catswords.net/fossa_report.csv) [TXT](https://ics.catswords.net/fossa_report.txt)
 - [License attributions of a stock images](https://policy.catswords.social/stock_images.html)
 
@@ -195,7 +196,6 @@ The WelsonJS framework suggests the following application release methods:
 - XMPP [catswords@conference.omemo.id](xmpp:catswords@conference.omemo.id?join)
 - [Join Catswords OSS on Microsoft Teams (teams.live.com)](https://teams.live.com/l/community/FEACHncAhq8ldnojAI)
 - [Join Catswords OSS #welsonjs on Discord (discord.gg)](https://discord.gg/XKG5CjtXEj)
-- [Join Catswords OSS on Gather (app.gather.town)](https://app.gather.town/invite?token=IE2AYZDpS-Ocu3SzpSc0)
 
 ## License
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs?ref=badge_large)
