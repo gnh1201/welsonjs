@@ -42,7 +42,7 @@ WelsonJS is a project inspired by the requirements of a cloud service provider t
 This program is also known by the following names. These names are used solely for the purpose of identifying the work and do not impact the license:
 
 - DOI [10.5281/zenodo.11382384](https://zenodo.org/doi/10.5281/zenodo.11382384) (CERN/OpenAIRE Zenodo)
-- Registered with the [UK Copyright Service](https://copyrightservice.co.uk/). Registration No: [284757291](https://ics.catswords.net/1494315-Certificate%2BSoR-284757291.pdf)
+- ["284757291"](https://ics.catswords.net/1494315-Certificate%2BSoR-284757291.pdf) (Registered with the [UK Copyright Service](https://copyrightservice.co.uk/))
 - ["A0562"](https://www.oss.kr/dev_competition_activities/show/544723e6-850a-4956-9194-79640420c19a)(2023) (2023 Open-source Development Contest, NIPA National IT Industry Promotion Agency, Republic of Korea)
 - "C-2021-000237"(2021) (Copyright Registration Online System, Korea Copyright Commission, Republic of Korea)
 - "Codename Macadamia"(2020) (Heavy industry specialized CSP in the Republic of Korea)
