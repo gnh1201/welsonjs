@@ -6,7 +6,7 @@
 [![ChatGPT available](https://img.shields.io/badge/ChatGPT-74aa9c?logo=openai&logoColor=white)](https://catswords-oss.rdbl.io/5719744820/8278298336)
 [![Anthropic available](https://img.shields.io/badge/Anthropic-000000?logo=Anthropic&logoColor=white)](https://catswords-oss.rdbl.io/5719744820/8278298336)
 [![slideshare.net presentation](https://img.shields.io/badge/SlideShare-black?logo=slideshare)](https://www.slideshare.net/slideshow/welsonjs-2023/263181443)
-[![YouTube promotion video](https://img.shields.io/badge/YouTube-black?logo=youtube)](https://youtu.be/JavH7Dms8-U)
+[![YouTube promotion video](https://img.shields.io/badge/YouTube-red?logo=youtube)](https://youtu.be/JavH7Dms8-U)
 
 <img src="app/assets/img/logo.svg" height="32" alt=""/> WelsonJS - Build a Windows app on the Windows built-in JavaScript engine.
 
