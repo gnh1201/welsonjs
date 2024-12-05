@@ -5,7 +5,7 @@
  *         SEED.cs
  * 
  *     description:
- *         SEED cryptography algorithm implementation (Experimental)
+ *         SEED(ISO/IEC 18033-3) cryptography algorithm implementation (Experimental)
  * 
  *     website:
  *         - https://github.com/gnh1201/welsonjs
@@ -19,6 +19,10 @@
  *     
  *     references:
  *         - https://seed.kisa.or.kr/kisa/Board/17/detailView.do
+ *         - https://www.iso.org/standard/54531.html
+ *         - https://ics.catswords.net/SEED%2B128_Specification_english_M.pdf
+ *         - https://ics.catswords.net/SEED_Algorithm_Specification_korean_M.pdf
+ *         - https://ics.catswords.net/SEED_sourcecode_explanation_korean.pdf
  *
  *     license:
  *         GPLv3 or MS-RL(Microsoft Reciprocal License)
