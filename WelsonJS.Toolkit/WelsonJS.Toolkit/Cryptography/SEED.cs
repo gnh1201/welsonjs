@@ -389,8 +389,8 @@ namespace WelsonJS.Cryptography
                 LR[LR_R1] = EndianChange(LR[LR_R1]);
             }
 
-	        // Copy output values from last round to pbData
-	        _out[out_offset + 0] = LR[LR_R0];
+            // Copy output values from last round to pbData
+            _out[out_offset + 0] = LR[LR_R0];
             _out[out_offset + 1] = LR[LR_R1];
             _out[out_offset + 2] = LR[LR_L0];
             _out[out_offset + 3] = LR[LR_L1];
