@@ -11,6 +11,7 @@
  *         - https://github.com/gnh1201/welsonjs
  *         - https://catswords.social/@catswords_oss
  *         - https://teams.live.com/l/community/FEACHncAhq8ldnojAI
+ *         - https://discord.gg/XKG5CjtXEj
  * 
  *     author:
  *         - Namhyeon Go <abuse@catswords.net>
@@ -23,6 +24,8 @@
  *         - https://blog.naver.com/chandong83/222198351602
  *         - https://seed.kisa.or.kr/kisa/algorithm/EgovHightInfo.do
  *         - https://www.iso.org/standard/54531.html
+ *         - https://ics.catswords.net/HIGHT-algorithm-specification-english.pdf
+ *         - https://ics.catswords.net/HIGHT-algorithm-specification-korean.pdf
  *
  *     license:
  *         GPLv3 or MS-RL(Microsoft Reciprocal License)
@@ -33,7 +36,7 @@ using System;
 
 namespace WelsonJS.Cryptography
 {
-    public static class HIGHT
+    public class HIGHT
     {
         private static readonly byte[] hightDelta = {
             0x5A,0x6D,0x36,0x1B,0x0D,0x06,0x03,0x41,
@@ -236,24 +239,6 @@ namespace WelsonJS.Cryptography
                 dataOut[6] = (byte)((xx[6] ^ scheduleKey[3]) & 0xFF);
             }
 
-            void debugPrintHex(byte[] dat)
-            {
-                for (int i = 0; i < dat.Length; i++)
-                {
-                    Console.Write(string.Format("0x{0:x2}, ", dat[i]));
-                    if (((i + 1) % 16) == 0)
-                    {
-                        Console.WriteLine("");
-                    }
-                }
-                Console.WriteLine("");
-            }
-
-            void debugPrintLine(string str)
-            {
-                Console.WriteLine(str);
-            }
-
             void EncryptBlock(byte[] dataIn, byte[] dataOut)
             {
                 byte[] xx = new byte[8];
@@ -318,6 +303,7 @@ namespace WelsonJS.Cryptography
                 dataOut[4] = (byte)((xx[5] + scheduleKey[6]) & 0xFF);
                 dataOut[6] = (byte)((xx[7] ^ scheduleKey[7]) & 0xFF);
             }
+
             public byte[] Encrypt(byte[] dataIn)
             {
                 int length;
@@ -347,6 +333,7 @@ namespace WelsonJS.Cryptography
                 }
                 return dataOut;
             }
+
             public byte[] Decrypt(byte[] dataIn)
             {
                 int length;
@@ -376,7 +363,7 @@ namespace WelsonJS.Cryptography
                 return dataOut;
             }
 
-            public void test()
+            public void Test()
             {
                 byte[] dataIn = new byte[15];
                 byte[] dataOut = new byte[15];
@@ -385,17 +372,17 @@ namespace WelsonJS.Cryptography
                 {
                     dataIn[i] = (byte)i;
                 }
-                debugPrintLine("schedule key data");
-                debugPrintHex(scheduleKey);
+                Console.WriteLine("schedule key data");
+                Console.WriteLine(string.Format("0x{0:x2}", scheduleKey));
 
                 dataOut = Encrypt(dataIn);
                 dataOut2 = Decrypt(dataOut);
-                debugPrintLine("origin data");
-                debugPrintHex(dataIn);
-                debugPrintLine("encryption data");
-                debugPrintHex(dataOut);
-                debugPrintLine("decryption data");
-                debugPrintHex(dataOut2);
+                Console.WriteLine("origin data");
+                Console.WriteLine(string.Format("0x{0:x2}", dataIn));
+                Console.WriteLine("encryption data");
+                Console.WriteLine(string.Format("0x{0:x2}", dataOut));
+                Console.WriteLine("decryption data");
+                Console.WriteLine(string.Format("0x{0:x2}", dataOut2));
             }
         }
     }
