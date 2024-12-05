@@ -221,7 +221,7 @@ namespace WelsonJS.Cryptography
         // L0, L1 : left input values at each round
         // R0, R1 : right input values at each round
         // K : round keys at each round
-        private static void SeedRound(uint[] T, uint[] LR, int L0, int L1, int R0, int R1, uint[] K, int K_offset)
+        private static void SeedRound(ref uint[] T, ref uint[] LR, int L0, int L1, int R0, int R1, uint[] K, int K_offset)
         {
             T[0] = LR[R0] ^ K[K_offset + 0];
             T[1] = LR[R1] ^ K[K_offset + 1];
@@ -293,7 +293,7 @@ namespace WelsonJS.Cryptography
         private const int LR_R0 = 2;
         private const int LR_R1 = 3;
 
-        public static void KISA_SEED_Encrypt_Block_forECB(ref uint[] _in, uint in_offset, ref uint[] _out, int out_offset, KISA_SEED_KEY ks)
+        public static void KISA_SEED_Encrypt_Block_forECB(uint[] _in, uint in_offset, ref uint[] _out, int out_offset, KISA_SEED_KEY ks)
         {
             uint[] LR = new uint[4];      // Iuput/output values at each rounds
             uint[] T = new uint[2];       // Temporary variables for round function F
@@ -315,22 +315,22 @@ namespace WelsonJS.Cryptography
                 LR[LR_R1] = EndianChange(LR[LR_R1]);
             }
 
-            SeedRound(T, LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 0);    // Round 1
-            SeedRound(T, LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 2);    // Round 2
-            SeedRound(T, LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 4);    // Round 3
-            SeedRound(T, LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 6);    // Round 4
-            SeedRound(T, LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 8);    // Round 5
-            SeedRound(T, LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 10);    // Round 6
-            SeedRound(T, LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 12);    // Round 7
-            SeedRound(T, LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 14);    // Round 8
-            SeedRound(T, LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 16);    // Round 9
-            SeedRound(T, LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 18);    // Round 10
-            SeedRound(T, LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 20);    // Round 11
-            SeedRound(T, LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 22);    // Round 12
-            SeedRound(T, LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 24);    // Round 13
-            SeedRound(T, LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 26);    // Round 14
-            SeedRound(T, LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 28);    // Round 15
-            SeedRound(T, LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 30);    // Round 16
+            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 0);    // Round 1
+            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 2);    // Round 2
+            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 4);    // Round 3
+            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 6);    // Round 4
+            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 8);    // Round 5
+            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 10);    // Round 6
+            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 12);    // Round 7
+            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 14);    // Round 8
+            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 16);    // Round 9
+            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 18);    // Round 10
+            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 20);    // Round 11
+            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 22);    // Round 12
+            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 24);    // Round 13
+            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 26);    // Round 14
+            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 28);    // Round 15
+            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 30);    // Round 16
 
             if (ENDIAN.BIG != DEFAULT_ENDIAN)
             {
@@ -347,7 +347,7 @@ namespace WelsonJS.Cryptography
             _out[out_offset + 3] = LR[LR_L1];
         }
 
-        public static void KISA_SEED_Decrypt_Block_forECB(ref uint[] _in, int in_offset, ref uint[] _out, int out_offset, KISA_SEED_KEY ks)
+        public static void KISA_SEED_Decrypt_Block_forECB(uint[] _in, int in_offset, ref uint[] _out, int out_offset, KISA_SEED_KEY ks)
         {
             uint[] LR = new uint[4];              // Iuput/output values at each rounds
             uint[] T = new uint[2];               // Temporary variables for round function F
@@ -368,22 +368,22 @@ namespace WelsonJS.Cryptography
                 LR[LR_R1] = EndianChange(LR[LR_R1]);
             }
 
-            SeedRound(T, LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 30);    // Round 1
-            SeedRound(T, LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 28);    // Round 2
-            SeedRound(T, LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 26);    // Round 3
-            SeedRound(T, LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 24);    // Round 4
-            SeedRound(T, LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 22);    // Round 5
-            SeedRound(T, LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 20);    // Round 6
-            SeedRound(T, LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 18);    // Round 7
-            SeedRound(T, LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 16);    // Round 8
-            SeedRound(T, LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 14);    // Round 9
-            SeedRound(T, LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 12);    // Round 10
-            SeedRound(T, LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 10);    // Round 11
-            SeedRound(T, LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 8);    // Round 12
-            SeedRound(T, LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 6);    // Round 13
-            SeedRound(T, LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 4);    // Round 14
-            SeedRound(T, LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 2);    // Round 15
-            SeedRound(T, LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 0);    // Round 16
+            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 30);    // Round 1
+            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 28);    // Round 2
+            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 26);    // Round 3
+            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 24);    // Round 4
+            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 22);    // Round 5
+            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 20);    // Round 6
+            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 18);    // Round 7
+            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 16);    // Round 8
+            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 14);    // Round 9
+            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 12);    // Round 10
+            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 10);    // Round 11
+            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 8);    // Round 12
+            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 6);    // Round 13
+            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 4);    // Round 14
+            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 2);    // Round 15
+            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 0);    // Round 16
 
             if (ENDIAN.BIG != DEFAULT_ENDIAN)
             {
