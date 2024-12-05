@@ -232,12 +232,12 @@ namespace WelsonJS.Cryptography
                   (src[srcOffset + 3] & 0xFF) << 24);
         }
 
-        private static byte GetB(uint A, int position)
+        private static byte GetB(uint A, int pos)
         {
-            if (position < 0 || position > 4)
+            if (pos < 0 || pos > 4)
                 throw new ArgumentException("Invalid position.");
 
-            return position > 0 ? (byte)((A >> (8 * position)) & 0x0ff) : (byte)(A & 0x0ff);
+            return pos > 0 ? (byte)((A >> (8 * pos)) & 0x0ff) : (byte)(A & 0x0ff);
         }
 
         // Round function F and adding output of F to L.
@@ -249,11 +249,11 @@ namespace WelsonJS.Cryptography
             T[0] = LR[R0] ^ K[K_offset + 0];
             T[1] = LR[R1] ^ K[K_offset + 1];
             T[1] ^= T[0];
-            T[1] = SS0[GetB(T[1], 0) & 0x0ff] ^ SS1[GetB(T[1], 1) & 0x0ff] ^ SS2[GetB(T[1], 2) & 0x0ff] ^ SS3[GetB(T[1], 3) & 0x0ff];
+            T[1] = SS0[GetB(T[1], 0)] ^ SS1[GetB(T[1], 1)] ^ SS2[GetB(T[1], 2)] ^ SS3[GetB(T[1], 3)];
             T[0] += T[1];
-            T[0] = SS0[GetB(T[0], 0) & 0x0ff] ^ SS1[GetB(T[0], 1) & 0x0ff] ^ SS2[GetB(T[0], 2) & 0x0ff] ^ SS3[GetB(T[0], 3) & 0x0ff];
+            T[0] = SS0[GetB(T[0], 0)] ^ SS1[GetB(T[0], 1)] ^ SS2[GetB(T[0], 2)] ^ SS3[GetB(T[0], 3)];
             T[1] += T[0];
-            T[1] = SS0[GetB(T[1], 0) & 0x0ff] ^ SS1[GetB(T[1], 1) & 0x0ff] ^ SS2[GetB(T[1], 2) & 0x0ff] ^ SS3[GetB(T[1], 3) & 0x0ff];
+            T[1] = SS0[GetB(T[1], 0)] ^ SS1[GetB(T[1], 1)] ^ SS2[GetB(T[1], 2)] ^ SS3[GetB(T[1], 3)];
             T[0] += T[1];
             LR[L0] ^= T[0]; LR[L1] ^= T[1];
         }
