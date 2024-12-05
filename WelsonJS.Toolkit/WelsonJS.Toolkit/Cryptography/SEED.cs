@@ -42,27 +42,27 @@ namespace WelsonJS.Cryptography
         private static ENDIAN DEFAULT_ENDIAN = ENDIAN.BIG;
 
         // Constants for Key schedule
-        private static uint KC0 = 0x9e3779b9;
-        private static uint KC1 = 0x3c6ef373;
-        private static uint KC2 = 0x78dde6e6;
-        private static uint KC3 = 0xf1bbcdcc;
-        private static uint KC4 = 0xe3779b99;
-        private static uint KC5 = 0xc6ef3733;
-        private static uint KC6 = 0x8dde6e67;
-        private static uint KC7 = 0x1bbcdccf;
-        private static uint KC8 = 0x3779b99e;
-        private static uint KC9 = 0x6ef3733c;
-        private static uint KC10 = 0xdde6e678;
-        private static uint KC11 = 0xbbcdccf1;
-        private static uint KC12 = 0x779b99e3;
-        private static uint KC13 = 0xef3733c6;
-        private static uint KC14 = 0xde6e678d;
-        private static uint KC15 = 0xbcdccf1b;
+        private const uint KC0 = 0x9e3779b9;
+        private const uint KC1 = 0x3c6ef373;
+        private const uint KC2 = 0x78dde6e6;
+        private const uint KC3 = 0xf1bbcdcc;
+        private const uint KC4 = 0xe3779b99;
+        private const uint KC5 = 0xc6ef3733;
+        private const uint KC6 = 0x8dde6e67;
+        private const uint KC7 = 0x1bbcdccf;
+        private const uint KC8 = 0x3779b99e;
+        private const uint KC9 = 0x6ef3733c;
+        private const uint KC10 = 0xdde6e678;
+        private const uint KC11 = 0xbbcdccf1;
+        private const uint KC12 = 0x779b99e3;
+        private const uint KC13 = 0xef3733c6;
+        private const uint KC14 = 0xde6e678d;
+        private const uint KC15 = 0xbcdccf1b;
 
-        private static int ABCD_A = 0;
-        private static int ABCD_B = 1;
-        private static int ABCD_C = 2;
-        private static int ABCD_D = 3;
+        private const int ABCD_A = 0;
+        private const int ABCD_B = 1;
+        private const int ABCD_C = 2;
+        private const int ABCD_D = 3;
 
         private const int LR_L0 = 0;
         private const int LR_L1 = 1;
@@ -73,7 +73,7 @@ namespace WelsonJS.Cryptography
         private const int BLOCK_SIZE_SEED_INT = 4;
 
         // S-BOX
-        private static uint[] SS0 = new uint[] {
+        private static readonly uint[] SS0 = new uint[] {
             0x2989a1a8, 0x05858184, 0x16c6d2d4, 0x13c3d3d0, 0x14445054, 0x1d0d111c, 0x2c8ca0ac, 0x25052124,
             0x1d4d515c, 0x03434340, 0x18081018, 0x1e0e121c, 0x11415150, 0x3cccf0fc, 0x0acac2c8, 0x23436360,
             0x28082028, 0x04444044, 0x20002020, 0x1d8d919c, 0x20c0e0e0, 0x22c2e2e0, 0x08c8c0c8, 0x17071314,
@@ -108,7 +108,7 @@ namespace WelsonJS.Cryptography
             0x28c8e0e8, 0x1b0b1318, 0x05050104, 0x39497178, 0x10809090, 0x2a4a6268, 0x2a0a2228, 0x1a8a9298
         };
 
-        private static uint[] SS1 = new uint[]
+        private static readonly uint[] SS1 = new uint[]
         {
             0x38380830, 0xe828c8e0, 0x2c2d0d21, 0xa42686a2, 0xcc0fcfc3, 0xdc1eced2, 0xb03383b3, 0xb83888b0,
             0xac2f8fa3, 0x60204060, 0x54154551, 0xc407c7c3, 0x44044440, 0x6c2f4f63, 0x682b4b63, 0x581b4b53,
@@ -144,7 +144,7 @@ namespace WelsonJS.Cryptography
             0xd819c9d1, 0x4c0c4c40, 0x80038383, 0x8c0f8f83, 0xcc0ecec2, 0x383b0b33, 0x480a4a42, 0xb43787b3
         };
 
-        private static uint[] SS2 = new uint[]
+        private static readonly  uint[] SS2 = new uint[]
         {
             0xa1a82989, 0x81840585, 0xd2d416c6, 0xd3d013c3, 0x50541444, 0x111c1d0d, 0xa0ac2c8c, 0x21242505,
             0x515c1d4d, 0x43400343, 0x10181808, 0x121c1e0e, 0x51501141, 0xf0fc3ccc, 0xc2c80aca, 0x63602343,
@@ -288,170 +288,173 @@ namespace WelsonJS.Cryptography
             ABCD[ABCD_D] = (ABCD[ABCD_D] << 8) ^ ((T[0] >> 24) & 0x000000ff);
         }
 
-        public static void KISA_SEED_Encrypt_Block_forECB(in uint[] _in, uint in_offset, ref uint[] _out, int out_offset, KISA_SEED_KEY ks)
+        public class ECB
         {
-            uint[] LR = new uint[4];      // Iuput/output values at each rounds
-            uint[] T = new uint[2];       // Temporary variables for round function F
-            uint[] K = ks.key_data;      // Pointer of round keys
-
-            // Set up input values for first round
-            LR[LR_L0] = _in[in_offset+0];
-            LR[LR_L1] = _in[in_offset+1];
-            LR[LR_R0] = _in[in_offset+2];
-            LR[LR_R1] = _in[in_offset+3];
-
-            // Reorder for big endian
-            // Because SEED use little endian order in default
-            if (ENDIAN.BIG != DEFAULT_ENDIAN)
+            public void EncryptBlock(in uint[] _in, uint in_offset, ref uint[] _out, int out_offset, KISA_SEED_KEY ks)
             {
-                LR[LR_L0] = EndianChange(LR[LR_L0]);
-                LR[LR_L1] = EndianChange(LR[LR_L1]);
-                LR[LR_R0] = EndianChange(LR[LR_R0]);
-                LR[LR_R1] = EndianChange(LR[LR_R1]);
+                uint[] LR = new uint[4];      // Iuput/output values at each rounds
+                uint[] T = new uint[2];       // Temporary variables for round function F
+                uint[] K = ks.key_data;      // Pointer of round keys
+
+                // Set up input values for first round
+                LR[LR_L0] = _in[in_offset + 0];
+                LR[LR_L1] = _in[in_offset + 1];
+                LR[LR_R0] = _in[in_offset + 2];
+                LR[LR_R1] = _in[in_offset + 3];
+
+                // Reorder for big endian
+                // Because SEED use little endian order in default
+                if (ENDIAN.BIG != DEFAULT_ENDIAN)
+                {
+                    LR[LR_L0] = EndianChange(LR[LR_L0]);
+                    LR[LR_L1] = EndianChange(LR[LR_L1]);
+                    LR[LR_R0] = EndianChange(LR[LR_R0]);
+                    LR[LR_R1] = EndianChange(LR[LR_R1]);
+                }
+
+                SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 0);    // Round 1
+                SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 2);    // Round 2
+                SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 4);    // Round 3
+                SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 6);    // Round 4
+                SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 8);    // Round 5
+                SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 10);    // Round 6
+                SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 12);    // Round 7
+                SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 14);    // Round 8
+                SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 16);    // Round 9
+                SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 18);    // Round 10
+                SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 20);    // Round 11
+                SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 22);    // Round 12
+                SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 24);    // Round 13
+                SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 26);    // Round 14
+                SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 28);    // Round 15
+                SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 30);    // Round 16
+
+                if (ENDIAN.BIG != DEFAULT_ENDIAN)
+                {
+                    LR[LR_L0] = EndianChange(LR[LR_L0]);
+                    LR[LR_L1] = EndianChange(LR[LR_L1]);
+                    LR[LR_R0] = EndianChange(LR[LR_R0]);
+                    LR[LR_R1] = EndianChange(LR[LR_R1]);
+                }
+
+                // Copying output values from last round to pbData
+                _out[out_offset + 0] = LR[LR_R0];
+                _out[out_offset + 1] = LR[LR_R1];
+                _out[out_offset + 2] = LR[LR_L0];
+                _out[out_offset + 3] = LR[LR_L1];
             }
 
-            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 0);    // Round 1
-            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 2);    // Round 2
-            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 4);    // Round 3
-            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 6);    // Round 4
-            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 8);    // Round 5
-            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 10);    // Round 6
-            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 12);    // Round 7
-            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 14);    // Round 8
-            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 16);    // Round 9
-            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 18);    // Round 10
-            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 20);    // Round 11
-            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 22);    // Round 12
-            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 24);    // Round 13
-            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 26);    // Round 14
-            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 28);    // Round 15
-            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 30);    // Round 16
-
-            if (ENDIAN.BIG != DEFAULT_ENDIAN)
+            public void DecryptBlock(in uint[] _in, int in_offset, ref uint[] _out, int out_offset, KISA_SEED_KEY ks)
             {
-                LR[LR_L0] = EndianChange(LR[LR_L0]);
-                LR[LR_L1] = EndianChange(LR[LR_L1]);
-                LR[LR_R0] = EndianChange(LR[LR_R0]);
-                LR[LR_R1] = EndianChange(LR[LR_R1]);
+                uint[] LR = new uint[4];              // Iuput/output values at each rounds
+                uint[] T = new uint[2];               // Temporary variables for round function F
+                uint[] K = ks.key_data;              // Pointer of round keys
+
+                // Set up input values for first round
+                LR[LR_L0] = _in[in_offset + 0];
+                LR[LR_L1] = _in[in_offset + 1];
+                LR[LR_R0] = _in[in_offset + 2];
+                LR[LR_R1] = _in[in_offset + 3];
+
+                // Reorder for big endian
+                if (ENDIAN.BIG != DEFAULT_ENDIAN)
+                {
+                    LR[LR_L0] = EndianChange(LR[LR_L0]);
+                    LR[LR_L1] = EndianChange(LR[LR_L1]);
+                    LR[LR_R0] = EndianChange(LR[LR_R0]);
+                    LR[LR_R1] = EndianChange(LR[LR_R1]);
+                }
+
+                SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 30);    // Round 1
+                SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 28);    // Round 2
+                SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 26);    // Round 3
+                SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 24);    // Round 4
+                SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 22);    // Round 5
+                SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 20);    // Round 6
+                SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 18);    // Round 7
+                SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 16);    // Round 8
+                SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 14);    // Round 9
+                SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 12);    // Round 10
+                SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 10);    // Round 11
+                SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 8);    // Round 12
+                SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 6);    // Round 13
+                SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 4);    // Round 14
+                SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 2);    // Round 15
+                SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 0);    // Round 16
+
+                if (ENDIAN.BIG != DEFAULT_ENDIAN)
+                {
+                    LR[LR_L0] = EndianChange(LR[LR_L0]);
+                    LR[LR_L1] = EndianChange(LR[LR_L1]);
+                    LR[LR_R0] = EndianChange(LR[LR_R0]);
+                    LR[LR_R1] = EndianChange(LR[LR_R1]);
+                }
+
+                // Copy output values from last round to pbData
+                _out[out_offset + 0] = LR[LR_R0];
+                _out[out_offset + 1] = LR[LR_R1];
+                _out[out_offset + 2] = LR[LR_L0];
+                _out[out_offset + 3] = LR[LR_L1];
             }
 
-	        // Copying output values from last round to pbData
-	        _out[out_offset + 0] = LR[LR_R0];
-            _out[out_offset + 1] = LR[LR_R1];
-            _out[out_offset + 2] = LR[LR_L0];
-            _out[out_offset + 3] = LR[LR_L1];
-        }
-
-        public static void KISA_SEED_Decrypt_Block_forECB(in uint[] _in, int in_offset, ref uint[] _out, int out_offset, KISA_SEED_KEY ks)
-        {
-            uint[] LR = new uint[4];              // Iuput/output values at each rounds
-            uint[] T = new uint[2];               // Temporary variables for round function F
-            uint[] K = ks.key_data;              // Pointer of round keys
-
-            // Set up input values for first round
-            LR[LR_L0] = _in[in_offset+0];
-            LR[LR_L1] = _in[in_offset+1];
-            LR[LR_R0] = _in[in_offset+2];
-            LR[LR_R1] = _in[in_offset+3];
-
-            // Reorder for big endian
-            if (ENDIAN.BIG != DEFAULT_ENDIAN)
+            public bool Init(KISA_SEED_INFO pInfo, KISA_ENC_DEC enc, byte[] pbszUserKey)
             {
-                LR[LR_L0] = EndianChange(LR[LR_L0]);
-                LR[LR_L1] = EndianChange(LR[LR_L1]);
-                LR[LR_R0] = EndianChange(LR[LR_R0]);
-                LR[LR_R1] = EndianChange(LR[LR_R1]);
+                uint[] ABCD = new uint[4];            // Iuput/output values at each rounds
+                uint[] T = new uint[2];               // Temporary variable
+                uint[] K;
+
+                if (null == pInfo || null == pbszUserKey)
+                {
+                    return false;
+                }
+
+                K = pInfo.seed_key.key_data;        // Pointer of round keys
+
+                pInfo.encrypt = enc.value;
+                pInfo.last_block_flag = pInfo.buffer_length = 0;
+
+                // Set up input values for Key Schedule
+                ABCD[ABCD_A] = ByteToUInt(pbszUserKey, 0 * 4, DEFAULT_ENDIAN);
+                ABCD[ABCD_B] = ByteToUInt(pbszUserKey, 1 * 4, DEFAULT_ENDIAN);
+                ABCD[ABCD_C] = ByteToUInt(pbszUserKey, 2 * 4, DEFAULT_ENDIAN);
+                ABCD[ABCD_D] = ByteToUInt(pbszUserKey, 3 * 4, DEFAULT_ENDIAN);
+
+                // Reorder for big endian
+                if (ENDIAN.BIG != DEFAULT_ENDIAN)
+                {
+                    ABCD[ABCD_A] = EndianChange(ABCD[ABCD_A]);
+                    ABCD[ABCD_B] = EndianChange(ABCD[ABCD_B]);
+                    ABCD[ABCD_C] = EndianChange(ABCD[ABCD_C]);
+                    ABCD[ABCD_D] = EndianChange(ABCD[ABCD_D]);
+                }
+
+                // i-th round keys( K_i,0 and K_i,1 ) are denoted as K[2*(i-1)] and K[2*i-1], respectively
+                RoundKeyUpdate0(ref T, ref K, 0, ref ABCD, KC0);    // K_1,0 and K_1,1
+                RoundKeyUpdate1(ref T, ref K, 2, ref ABCD, KC1);    // K_2,0 and K_2,1
+                RoundKeyUpdate0(ref T, ref K, 4, ref ABCD, KC2);    // K_3,0 and K_3,1
+                RoundKeyUpdate1(ref T, ref K, 6, ref ABCD, KC3);    // K_4,0 and K_4,1
+                RoundKeyUpdate0(ref T, ref K, 8, ref ABCD, KC4);    // K_5,0 and K_5,1
+                RoundKeyUpdate1(ref T, ref K, 10, ref ABCD, KC5);    // K_6,0 and K_6,1
+                RoundKeyUpdate0(ref T, ref K, 12, ref ABCD, KC6);    // K_7,0 and K_7,1
+                RoundKeyUpdate1(ref T, ref K, 14, ref ABCD, KC7);    // K_8,0 and K_8,1
+                RoundKeyUpdate0(ref T, ref K, 16, ref ABCD, KC8);    // K_9,0 and K_9,1
+                RoundKeyUpdate1(ref T, ref K, 18, ref ABCD, KC9);    // K_10,0 and K_10,1
+                RoundKeyUpdate0(ref T, ref K, 20, ref ABCD, KC10);    // K_11,0 and K_11,1
+                RoundKeyUpdate1(ref T, ref K, 22, ref ABCD, KC11);    // K_12,0 and K_12,1
+                RoundKeyUpdate0(ref T, ref K, 24, ref ABCD, KC12);    // K_13,0 and K_13,1
+                RoundKeyUpdate1(ref T, ref K, 26, ref ABCD, KC13);    // K_14,0 and K_14,1
+                RoundKeyUpdate0(ref T, ref K, 28, ref ABCD, KC14);    // K_15,0 and K_15,1
+
+                T[0] = ABCD[ABCD_A] + ABCD[ABCD_C] - KC15;
+                T[1] = ABCD[ABCD_B] - ABCD[ABCD_D] + KC15;
+
+                K[30] = SS0[GetB(T[0], 0) & 0x0ff] ^ SS1[GetB(T[0], 1) & 0x0ff] ^   // K_16,0
+                        SS2[GetB(T[0], 2) & 0x0ff] ^ SS3[GetB(T[0], 3) & 0x0ff];
+                K[31] = SS0[GetB(T[1], 0) & 0x0ff] ^ SS1[GetB(T[1], 1) & 0x0ff] ^   // K_16,1
+                        SS2[GetB(T[1], 2) & 0x0ff] ^ SS3[GetB(T[1], 3) & 0x0ff];
+
+                return true;
             }
-
-            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 30);    // Round 1
-            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 28);    // Round 2
-            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 26);    // Round 3
-            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 24);    // Round 4
-            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 22);    // Round 5
-            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 20);    // Round 6
-            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 18);    // Round 7
-            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 16);    // Round 8
-            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 14);    // Round 9
-            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 12);    // Round 10
-            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 10);    // Round 11
-            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 8);    // Round 12
-            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 6);    // Round 13
-            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 4);    // Round 14
-            SeedRound(ref T, ref LR, LR_L0, LR_L1, LR_R0, LR_R1, K, 2);    // Round 15
-            SeedRound(ref T, ref LR, LR_R0, LR_R1, LR_L0, LR_L1, K, 0);    // Round 16
-
-            if (ENDIAN.BIG != DEFAULT_ENDIAN)
-            {
-                LR[LR_L0] = EndianChange(LR[LR_L0]);
-                LR[LR_L1] = EndianChange(LR[LR_L1]);
-                LR[LR_R0] = EndianChange(LR[LR_R0]);
-                LR[LR_R1] = EndianChange(LR[LR_R1]);
-            }
-
-            // Copy output values from last round to pbData
-            _out[out_offset + 0] = LR[LR_R0];
-            _out[out_offset + 1] = LR[LR_R1];
-            _out[out_offset + 2] = LR[LR_L0];
-            _out[out_offset + 3] = LR[LR_L1];
-        }
-
-        public static bool SEED_ECB_init(KISA_SEED_INFO pInfo, KISA_ENC_DEC enc, byte[] pbszUserKey)
-        {
-            uint[] ABCD = new uint[4];            // Iuput/output values at each rounds
-            uint[] T = new uint[2];               // Temporary variable
-            uint[] K;
-
-            if (null == pInfo || null == pbszUserKey)
-            {
-                return false;
-            }
-
-            K = pInfo.seed_key.key_data;        // Pointer of round keys
-
-            pInfo.encrypt = enc.value;
-            pInfo.last_block_flag = pInfo.buffer_length = 0;
-
-            // Set up input values for Key Schedule
-            ABCD[ABCD_A] = ByteToUInt(pbszUserKey, 0 * 4, DEFAULT_ENDIAN);
-            ABCD[ABCD_B] = ByteToUInt(pbszUserKey, 1 * 4, DEFAULT_ENDIAN);
-            ABCD[ABCD_C] = ByteToUInt(pbszUserKey, 2 * 4, DEFAULT_ENDIAN);
-            ABCD[ABCD_D] = ByteToUInt(pbszUserKey, 3 * 4, DEFAULT_ENDIAN);
-
-            // Reorder for big endian
-            if (ENDIAN.BIG != DEFAULT_ENDIAN)
-            {
-                ABCD[ABCD_A] = EndianChange(ABCD[ABCD_A]);
-                ABCD[ABCD_B] = EndianChange(ABCD[ABCD_B]);
-                ABCD[ABCD_C] = EndianChange(ABCD[ABCD_C]);
-                ABCD[ABCD_D] = EndianChange(ABCD[ABCD_D]);
-            }
-
-            // i-th round keys( K_i,0 and K_i,1 ) are denoted as K[2*(i-1)] and K[2*i-1], respectively
-            RoundKeyUpdate0(ref T, ref K, 0, ref ABCD, KC0);    // K_1,0 and K_1,1
-            RoundKeyUpdate1(ref T, ref K, 2, ref ABCD, KC1);    // K_2,0 and K_2,1
-            RoundKeyUpdate0(ref T, ref K, 4, ref ABCD, KC2);    // K_3,0 and K_3,1
-            RoundKeyUpdate1(ref T, ref K, 6, ref ABCD, KC3);    // K_4,0 and K_4,1
-            RoundKeyUpdate0(ref T, ref K, 8, ref ABCD, KC4);    // K_5,0 and K_5,1
-            RoundKeyUpdate1(ref T, ref K, 10, ref ABCD, KC5);    // K_6,0 and K_6,1
-            RoundKeyUpdate0(ref T, ref K, 12, ref ABCD, KC6);    // K_7,0 and K_7,1
-            RoundKeyUpdate1(ref T, ref K, 14, ref ABCD, KC7);    // K_8,0 and K_8,1
-            RoundKeyUpdate0(ref T, ref K, 16, ref ABCD, KC8);    // K_9,0 and K_9,1
-            RoundKeyUpdate1(ref T, ref K, 18, ref ABCD, KC9);    // K_10,0 and K_10,1
-            RoundKeyUpdate0(ref T, ref K, 20, ref ABCD, KC10);    // K_11,0 and K_11,1
-            RoundKeyUpdate1(ref T, ref K, 22, ref ABCD, KC11);    // K_12,0 and K_12,1
-            RoundKeyUpdate0(ref T, ref K, 24, ref ABCD, KC12);    // K_13,0 and K_13,1
-            RoundKeyUpdate1(ref T, ref K, 26, ref ABCD, KC13);    // K_14,0 and K_14,1
-            RoundKeyUpdate0(ref T, ref K, 28, ref ABCD, KC14);    // K_15,0 and K_15,1
-
-            T[0] = ABCD[ABCD_A] + ABCD[ABCD_C] - KC15;
-            T[1] = ABCD[ABCD_B] - ABCD[ABCD_D] + KC15;
-
-            K[30] = SS0[GetB(T[0], 0) & 0x0ff] ^ SS1[GetB(T[0], 1) & 0x0ff] ^   // K_16,0
-                    SS2[GetB(T[0], 2) & 0x0ff] ^ SS3[GetB(T[0], 3) & 0x0ff];
-            K[31] = SS0[GetB(T[1], 0) & 0x0ff] ^ SS1[GetB(T[1], 1) & 0x0ff] ^   // K_16,1
-                    SS2[GetB(T[1], 2) & 0x0ff] ^ SS3[GetB(T[1], 3) & 0x0ff];
-
-            return true;
         }
 
         public static void SetDefaultEndian(ENDIAN endian)
