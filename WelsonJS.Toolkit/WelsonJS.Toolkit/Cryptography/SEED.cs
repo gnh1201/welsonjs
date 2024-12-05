@@ -41,21 +41,36 @@ namespace WelsonJS.Cryptography
         };
         private static ENDIAN DEFAULT_ENDIAN = ENDIAN.BIG;
 
-        private static uint ByteToUInt(byte[] src, int srcOffset, ENDIAN endian)
-        {
-            if (src == null || src.Length < srcOffset + 4)
-                throw new ArgumentException("Invalid source array or offset.");
+        // Constants for Key schedule
+        private static uint KC0 = 0x9e3779b9;
+        private static uint KC1 = 0x3c6ef373;
+        private static uint KC2 = 0x78dde6e6;
+        private static uint KC3 = 0xf1bbcdcc;
+        private static uint KC4 = 0xe3779b99;
+        private static uint KC5 = 0xc6ef3733;
+        private static uint KC6 = 0x8dde6e67;
+        private static uint KC7 = 0x1bbcdccf;
+        private static uint KC8 = 0x3779b99e;
+        private static uint KC9 = 0x6ef3733c;
+        private static uint KC10 = 0xdde6e678;
+        private static uint KC11 = 0xbbcdccf1;
+        private static uint KC12 = 0x779b99e3;
+        private static uint KC13 = 0xef3733c6;
+        private static uint KC14 = 0xde6e678d;
+        private static uint KC15 = 0xbcdccf1b;
 
-            return (uint)(endian == ENDIAN.BIG
-                ? (src[srcOffset] & 0xFF) << 24 |
-                  (src[srcOffset + 1] & 0xFF) << 16 |
-                  (src[srcOffset + 2] & 0xFF) << 8 |
-                  (src[srcOffset + 3] & 0xFF)
-                : (src[srcOffset] & 0xFF) |
-                  (src[srcOffset + 1] & 0xFF) << 8 |
-                  (src[srcOffset + 2] & 0xFF) << 16 |
-                  (src[srcOffset + 3] & 0xFF) << 24);
-        }
+        private static int ABCD_A = 0;
+        private static int ABCD_B = 1;
+        private static int ABCD_C = 2;
+        private static int ABCD_D = 3;
+
+        private const int LR_L0 = 0;
+        private const int LR_L1 = 1;
+        private const int LR_R0 = 2;
+        private const int LR_R1 = 3;
+
+        private const int BLOCK_SIZE_SEED = 16;
+        private const int BLOCK_SIZE_SEED_INT = 4;
 
         // S-BOX
         private static uint[] SS0 = new uint[] {
@@ -201,20 +216,28 @@ namespace WelsonJS.Cryptography
             0xc9d1d819, 0x4c404c0c, 0x83838003, 0x8f838c0f, 0xcec2cc0e, 0x0b33383b, 0x4a42480a, 0x87b3b437
         };
 
-        private const int BLOCK_SIZE_SEED = 16;
-        private const int BLOCK_SIZE_SEED_INT = 4;
+        private static uint ByteToUInt(byte[] src, int srcOffset, ENDIAN endian = ENDIAN.BIG)
+        {
+            if (src == null || src.Length < srcOffset + 4)
+                throw new ArgumentException("Invalid source array or offset.");
 
-        private static byte GetB0(uint A) {
-            return (byte)(A & 0x0ff);
+            return (uint)(endian == ENDIAN.BIG
+                ? (src[srcOffset] & 0xFF) << 24 |
+                  (src[srcOffset + 1] & 0xFF) << 16 |
+                  (src[srcOffset + 2] & 0xFF) << 8 |
+                  (src[srcOffset + 3] & 0xFF)
+                : (src[srcOffset] & 0xFF) |
+                  (src[srcOffset + 1] & 0xFF) << 8 |
+                  (src[srcOffset + 2] & 0xFF) << 16 |
+                  (src[srcOffset + 3] & 0xFF) << 24);
         }
-        private static byte GetB1(uint A) {
-            return (byte)((A >> 8) & 0x0ff);
-        }
-        private static byte GetB2(uint A) {
-            return (byte)((A >> 16) & 0x0ff);
-        }
-        private static byte GetB3(uint A) {
-            return (byte)((A >> 24) & 0x0ff);
+
+        private static byte GetB(uint A, int position)
+        {
+            if (position < 0 || position > 4)
+                throw new ArgumentException("Invalid position.");
+
+            return position > 0 ? (byte)((A >> (8 * position)) & 0x0ff) : (byte)(A & 0x0ff);
         }
 
         // Round function F and adding output of F to L.
@@ -226,11 +249,11 @@ namespace WelsonJS.Cryptography
             T[0] = LR[R0] ^ K[K_offset + 0];
             T[1] = LR[R1] ^ K[K_offset + 1];
             T[1] ^= T[0];
-            T[1] = SS0[GetB0(T[1]) & 0x0ff] ^ SS1[GetB1(T[1]) & 0x0ff] ^ SS2[GetB2(T[1]) & 0x0ff] ^ SS3[GetB3(T[1]) & 0x0ff];
+            T[1] = SS0[GetB(T[1], 0) & 0x0ff] ^ SS1[GetB(T[1], 1) & 0x0ff] ^ SS2[GetB(T[1], 2) & 0x0ff] ^ SS3[GetB(T[1], 3) & 0x0ff];
             T[0] += T[1];
-            T[0] = SS0[GetB0(T[0]) & 0x0ff] ^ SS1[GetB1(T[0]) & 0x0ff] ^ SS2[GetB2(T[0]) & 0x0ff] ^ SS3[GetB3(T[0]) & 0x0ff];
+            T[0] = SS0[GetB(T[0], 0) & 0x0ff] ^ SS1[GetB(T[0], 1) & 0x0ff] ^ SS2[GetB(T[0], 2) & 0x0ff] ^ SS3[GetB(T[0], 3) & 0x0ff];
             T[1] += T[0];
-            T[1] = SS0[GetB0(T[1]) & 0x0ff] ^ SS1[GetB1(T[1]) & 0x0ff] ^ SS2[GetB2(T[1]) & 0x0ff] ^ SS3[GetB3(T[1]) & 0x0ff];
+            T[1] = SS0[GetB(T[1], 0) & 0x0ff] ^ SS1[GetB(T[1], 1) & 0x0ff] ^ SS2[GetB(T[1], 2) & 0x0ff] ^ SS3[GetB(T[1], 3) & 0x0ff];
             T[0] += T[1];
             LR[L0] ^= T[0]; LR[L1] ^= T[1];
         }
@@ -243,57 +266,29 @@ namespace WelsonJS.Cryptography
                    ((value & 0xFF000000) >> 24);  // Move the fourth byte to the first byte position
         }
 
-        // Constants for Key schedule
-        private static uint KC0 = 0x9e3779b9;
-        private static uint KC1 = 0x3c6ef373;
-        private static uint KC2 = 0x78dde6e6;
-        private static uint KC3 = 0xf1bbcdcc;
-        private static uint KC4 = 0xe3779b99;
-        private static uint KC5 = 0xc6ef3733;
-        private static uint KC6 = 0x8dde6e67;
-        private static uint KC7 = 0x1bbcdccf;
-        private static uint KC8 = 0x3779b99e;
-        private static uint KC9 = 0x6ef3733c;
-        private static uint KC10 = 0xdde6e678;
-        private static uint KC11 = 0xbbcdccf1;
-        private static uint KC12 = 0x779b99e3;
-        private static uint KC13 = 0xef3733c6;
-        private static uint KC14 = 0xde6e678d;
-        private static uint KC15 = 0xbcdccf1b;
-
-        private static int ABCD_A = 0;
-        private static int ABCD_B = 1;
-        private static int ABCD_C = 2;
-        private static int ABCD_D = 3;
-
-        private static void RoundKeyUpdate0(uint[] T, uint[] K, int K_offset, uint[] ABCD, uint KC)
+        private static void RoundKeyUpdate0(ref uint[] T, ref uint[] K, int K_offset, ref uint[] ABCD, uint KC)
         {
             T[0] = ABCD[ABCD_A] + ABCD[ABCD_C] - KC;
             T[1] = ABCD[ABCD_B] + KC - ABCD[ABCD_D];
-            K[K_offset + 0] = SS0[GetB0(T[0]) & 0x0ff] ^ SS1[GetB1(T[0]) & 0x0ff] ^ SS2[GetB2(T[0]) & 0x0ff] ^ SS3[GetB3(T[0]) & 0x0ff];
-            K[K_offset + 1] = SS0[GetB0(T[1]) & 0x0ff] ^ SS1[GetB1(T[1]) & 0x0ff] ^ SS2[GetB2(T[1]) & 0x0ff] ^ SS3[GetB3(T[1]) & 0x0ff];
+            K[K_offset + 0] = SS0[GetB(T[0], 0)] ^ SS1[GetB(T[0], 1)] ^ SS2[GetB(T[0], 2)] ^ SS3[GetB(T[0], 3)];
+            K[K_offset + 1] = SS0[GetB(T[1], 0)] ^ SS1[GetB(T[1], 1)] ^ SS2[GetB(T[1], 2)] ^ SS3[GetB(T[1], 3)];
             T[0] = ABCD[ABCD_A];
             ABCD[ABCD_A] = ((ABCD[ABCD_A] >> 8) & 0x00ffffff) ^ (ABCD[ABCD_B] << 24);
             ABCD[ABCD_B] = ((ABCD[ABCD_B] >> 8) & 0x00ffffff) ^ (T[0] << 24);
         }
 
-        private static void RoundKeyUpdate1(uint[] T, uint[] K, int K_offset, uint[] ABCD, uint KC)
+        private static void RoundKeyUpdate1(ref uint[] T, ref uint[] K, int K_offset, ref uint[] ABCD, uint KC)
         {
             T[0] = ABCD[ABCD_A] + ABCD[ABCD_C] - KC;
             T[1] = ABCD[ABCD_B] + KC - ABCD[ABCD_D];
-            K[K_offset + 0] = SS0[GetB0(T[0]) & 0x0ff] ^ SS1[GetB1(T[0]) & 0x0ff] ^ SS2[GetB2(T[0]) & 0x0ff] ^ SS3[GetB3(T[0]) & 0x0ff];
-            K[K_offset + 1] = SS0[GetB0(T[1]) & 0x0ff] ^ SS1[GetB1(T[1]) & 0x0ff] ^ SS2[GetB2(T[1]) & 0x0ff] ^ SS3[GetB3(T[1]) & 0x0ff];
+            K[K_offset + 0] = SS0[GetB(T[0], 0)] ^ SS1[GetB(T[0], 1)] ^ SS2[GetB(T[0], 2)] ^ SS3[GetB(T[0], 3)];
+            K[K_offset + 1] = SS0[GetB(T[1], 0)] ^ SS1[GetB(T[1], 1)] ^ SS2[GetB(T[1], 2)] ^ SS3[GetB(T[1], 3)];
             T[0] = ABCD[ABCD_C];
             ABCD[ABCD_C] = (ABCD[ABCD_C] << 8) ^ ((ABCD[ABCD_D] >> 24) & 0x000000ff);
             ABCD[ABCD_D] = (ABCD[ABCD_D] << 8) ^ ((T[0] >> 24) & 0x000000ff);
         }
 
-        private const int LR_L0 = 0;
-        private const int LR_L1 = 1;
-        private const int LR_R0 = 2;
-        private const int LR_R1 = 3;
-
-        public static void KISA_SEED_Encrypt_Block_forECB(uint[] _in, uint in_offset, ref uint[] _out, int out_offset, KISA_SEED_KEY ks)
+        public static void KISA_SEED_Encrypt_Block_forECB(in uint[] _in, uint in_offset, ref uint[] _out, int out_offset, KISA_SEED_KEY ks)
         {
             uint[] LR = new uint[4];      // Iuput/output values at each rounds
             uint[] T = new uint[2];       // Temporary variables for round function F
@@ -347,7 +342,7 @@ namespace WelsonJS.Cryptography
             _out[out_offset + 3] = LR[LR_L1];
         }
 
-        public static void KISA_SEED_Decrypt_Block_forECB(uint[] _in, int in_offset, ref uint[] _out, int out_offset, KISA_SEED_KEY ks)
+        public static void KISA_SEED_Decrypt_Block_forECB(in uint[] _in, int in_offset, ref uint[] _out, int out_offset, KISA_SEED_KEY ks)
         {
             uint[] LR = new uint[4];              // Iuput/output values at each rounds
             uint[] T = new uint[2];               // Temporary variables for round function F
@@ -400,7 +395,7 @@ namespace WelsonJS.Cryptography
             _out[out_offset + 3] = LR[LR_L1];
         }
 
-        public static int SEED_ECB_init(KISA_SEED_INFO pInfo, KISA_ENC_DEC enc, byte[] pbszUserKey)
+        public static bool SEED_ECB_init(KISA_SEED_INFO pInfo, KISA_ENC_DEC enc, byte[] pbszUserKey)
         {
             uint[] ABCD = new uint[4];            // Iuput/output values at each rounds
             uint[] T = new uint[2];               // Temporary variable
@@ -408,7 +403,7 @@ namespace WelsonJS.Cryptography
 
             if (null == pInfo || null == pbszUserKey)
             {
-                return 0;
+                return false;
             }
 
             K = pInfo.seed_key.key_data;        // Pointer of round keys
@@ -432,31 +427,31 @@ namespace WelsonJS.Cryptography
             }
 
             // i-th round keys( K_i,0 and K_i,1 ) are denoted as K[2*(i-1)] and K[2*i-1], respectively
-            RoundKeyUpdate0(T, K, 0, ABCD, KC0);    // K_1,0 and K_1,1
-            RoundKeyUpdate1(T, K, 2, ABCD, KC1);    // K_2,0 and K_2,1
-            RoundKeyUpdate0(T, K, 4, ABCD, KC2);    // K_3,0 and K_3,1
-            RoundKeyUpdate1(T, K, 6, ABCD, KC3);    // K_4,0 and K_4,1
-            RoundKeyUpdate0(T, K, 8, ABCD, KC4);    // K_5,0 and K_5,1
-            RoundKeyUpdate1(T, K, 10, ABCD, KC5);    // K_6,0 and K_6,1
-            RoundKeyUpdate0(T, K, 12, ABCD, KC6);    // K_7,0 and K_7,1
-            RoundKeyUpdate1(T, K, 14, ABCD, KC7);    // K_8,0 and K_8,1
-            RoundKeyUpdate0(T, K, 16, ABCD, KC8);    // K_9,0 and K_9,1
-            RoundKeyUpdate1(T, K, 18, ABCD, KC9);    // K_10,0 and K_10,1
-            RoundKeyUpdate0(T, K, 20, ABCD, KC10);    // K_11,0 and K_11,1
-            RoundKeyUpdate1(T, K, 22, ABCD, KC11);    // K_12,0 and K_12,1
-            RoundKeyUpdate0(T, K, 24, ABCD, KC12);    // K_13,0 and K_13,1
-            RoundKeyUpdate1(T, K, 26, ABCD, KC13);    // K_14,0 and K_14,1
-            RoundKeyUpdate0(T, K, 28, ABCD, KC14);    // K_15,0 and K_15,1
+            RoundKeyUpdate0(ref T, ref K, 0, ref ABCD, KC0);    // K_1,0 and K_1,1
+            RoundKeyUpdate1(ref T, ref K, 2, ref ABCD, KC1);    // K_2,0 and K_2,1
+            RoundKeyUpdate0(ref T, ref K, 4, ref ABCD, KC2);    // K_3,0 and K_3,1
+            RoundKeyUpdate1(ref T, ref K, 6, ref ABCD, KC3);    // K_4,0 and K_4,1
+            RoundKeyUpdate0(ref T, ref K, 8, ref ABCD, KC4);    // K_5,0 and K_5,1
+            RoundKeyUpdate1(ref T, ref K, 10, ref ABCD, KC5);    // K_6,0 and K_6,1
+            RoundKeyUpdate0(ref T, ref K, 12, ref ABCD, KC6);    // K_7,0 and K_7,1
+            RoundKeyUpdate1(ref T, ref K, 14, ref ABCD, KC7);    // K_8,0 and K_8,1
+            RoundKeyUpdate0(ref T, ref K, 16, ref ABCD, KC8);    // K_9,0 and K_9,1
+            RoundKeyUpdate1(ref T, ref K, 18, ref ABCD, KC9);    // K_10,0 and K_10,1
+            RoundKeyUpdate0(ref T, ref K, 20, ref ABCD, KC10);    // K_11,0 and K_11,1
+            RoundKeyUpdate1(ref T, ref K, 22, ref ABCD, KC11);    // K_12,0 and K_12,1
+            RoundKeyUpdate0(ref T, ref K, 24, ref ABCD, KC12);    // K_13,0 and K_13,1
+            RoundKeyUpdate1(ref T, ref K, 26, ref ABCD, KC13);    // K_14,0 and K_14,1
+            RoundKeyUpdate0(ref T, ref K, 28, ref ABCD, KC14);    // K_15,0 and K_15,1
 
             T[0] = ABCD[ABCD_A] + ABCD[ABCD_C] - KC15;
             T[1] = ABCD[ABCD_B] - ABCD[ABCD_D] + KC15;
 
-            K[30] = SS0[GetB0(T[0]) & 0x0ff] ^ SS1[GetB1(T[0]) & 0x0ff] ^   // K_16,0
-                    SS2[GetB2(T[0]) & 0x0ff] ^ SS3[GetB3(T[0]) & 0x0ff];
-            K[31] = SS0[GetB0(T[1]) & 0x0ff] ^ SS1[GetB1(T[1]) & 0x0ff] ^   // K_16,1
-                    SS2[GetB2(T[1]) & 0x0ff] ^ SS3[GetB3(T[1]) & 0x0ff];
+            K[30] = SS0[GetB(T[0], 0) & 0x0ff] ^ SS1[GetB(T[0], 1) & 0x0ff] ^   // K_16,0
+                    SS2[GetB(T[0], 2) & 0x0ff] ^ SS3[GetB(T[0], 3) & 0x0ff];
+            K[31] = SS0[GetB(T[1], 0) & 0x0ff] ^ SS1[GetB(T[1], 1) & 0x0ff] ^   // K_16,1
+                    SS2[GetB(T[1], 2) & 0x0ff] ^ SS3[GetB(T[1], 3) & 0x0ff];
 
-            return 1;
+            return true;
         }
 
         public static void SetDefaultEndian(ENDIAN endian)
