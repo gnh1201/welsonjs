@@ -30,6 +30,7 @@
  */
 
 using System;
+using static WelsonJS.Cryptography.SEED;
 
 namespace WelsonJS.Cryptography
 {
@@ -216,7 +217,7 @@ namespace WelsonJS.Cryptography
             0xc9d1d819, 0x4c404c0c, 0x83838003, 0x8f838c0f, 0xcec2cc0e, 0x0b33383b, 0x4a42480a, 0x87b3b437
         };
 
-        private static uint ByteToUInt(byte[] src, int srcOffset, ENDIAN endian = ENDIAN.BIG)
+        private static uint GetUIntFromByteArray(byte[] src, int srcOffset, ENDIAN endian = ENDIAN.BIG)
         {
             if (src == null || src.Length < srcOffset + 4)
                 throw new ArgumentException("Invalid source array or offset.");
@@ -270,6 +271,44 @@ namespace WelsonJS.Cryptography
                 : (byteOffset % 4) * 8;
 
             return (byte)((src[uintIndex] >> shiftValue) & 0xFF);
+        }
+
+        private static uint[] ConvertToUIntArray(byte[] src, int inLen, ENDIAN endian = ENDIAN.BIG)
+        {
+            if (src == null)
+                throw new ArgumentNullException(nameof(src), "source cannot be null.");
+
+            if (inLen <= 0 || inLen > src.Length)
+                throw new ArgumentException("Invalid input length.", nameof(inLen));
+
+            int outLen = (inLen + 3) / 4;
+            uint[] data = new uint[outLen];
+
+            for (int i = 0; i < outLen; i++)
+            {
+                data[i] = GetUIntFromByteArray(src, i * 4, endian);
+            }
+
+            return data;
+        }
+
+        private static byte[] ConvertToByteArray(uint[] src, int inLen, ENDIAN endian = ENDIAN.BIG)
+        {
+            if (src == null)
+                throw new ArgumentNullException(nameof(src), "source cannot be null.");
+
+            if (inLen <= 0 || inLen > src.Length)
+                throw new ArgumentException("Invalid input length.", nameof(inLen));
+
+            int outLen = inLen;
+            byte[] data = new byte[outLen];
+
+            for (int i = 0; i < outLen; i++)
+            {
+                data[i] = GetByteFromUIntArray(src, i, endian);
+            }
+
+            return data;
         }
 
         private static uint Substitute(uint value)
@@ -452,10 +491,10 @@ namespace WelsonJS.Cryptography
                 pInfo.last_block_flag = pInfo.buffer_length = 0;
 
                 // Set up input values for Key Schedule
-                ABCD[ABCD_A] = ByteToUInt(pbszUserKey, 0 * 4, DEFAULT_ENDIAN);
-                ABCD[ABCD_B] = ByteToUInt(pbszUserKey, 1 * 4, DEFAULT_ENDIAN);
-                ABCD[ABCD_C] = ByteToUInt(pbszUserKey, 2 * 4, DEFAULT_ENDIAN);
-                ABCD[ABCD_D] = ByteToUInt(pbszUserKey, 3 * 4, DEFAULT_ENDIAN);
+                ABCD[ABCD_A] = GetUIntFromByteArray(pbszUserKey, 0 * 4, DEFAULT_ENDIAN);
+                ABCD[ABCD_B] = GetUIntFromByteArray(pbszUserKey, 1 * 4, DEFAULT_ENDIAN);
+                ABCD[ABCD_C] = GetUIntFromByteArray(pbszUserKey, 2 * 4, DEFAULT_ENDIAN);
+                ABCD[ABCD_D] = GetUIntFromByteArray(pbszUserKey, 3 * 4, DEFAULT_ENDIAN);
 
                 // Reorder for big endian
                 if (ENDIAN.BIG != DEFAULT_ENDIAN)
@@ -529,37 +568,135 @@ namespace WelsonJS.Cryptography
                 }
             }
 
-            public void Close(KISA_SEED_INFO pInfo, uint[] _out, int out_offset, ref int[] outLen)
+            public bool Close(KISA_SEED_INFO pInfo, uint[] _out, int out_offset, ref int[] outLen)
             {
-                int nPaddngLeng;
+                int nPaddngLen;
 
                 outLen[0] = 0;
 
                 if (_out == null)
-                    return;   // return with no error
+                    return false;
 
                 if (KISA_ENC_DEC._KISA_ENCRYPT == pInfo.encrypt)
                 {
-                    nPaddngLeng = BLOCK_SIZE_SEED - pInfo.buffer_length;
+                    nPaddngLen = BLOCK_SIZE_SEED - pInfo.buffer_length;
                     for (int i = pInfo.buffer_length; i < BLOCK_SIZE_SEED; i++)
                     {
-                        SetByteToUIntArray(ref pInfo.ecb_buffer, i, (byte)nPaddngLeng, DEFAULT_ENDIAN);
+                        SetByteToUIntArray(ref pInfo.ecb_buffer, i, (byte)nPaddngLen, DEFAULT_ENDIAN);
                     }
                     EncryptBlock(pInfo.ecb_buffer, 0, ref _out, (out_offset) / 4, pInfo.seed_key);
                     outLen[0] = BLOCK_SIZE_SEED;
                 }
                 else
                 {
-                    nPaddngLeng = GetByteFromUIntArray(pInfo.ecb_last_block, BLOCK_SIZE_SEED - 1, DEFAULT_ENDIAN);
-                    if (nPaddngLeng > 0 && nPaddngLeng <= BLOCK_SIZE_SEED)
+                    nPaddngLen = GetByteFromUIntArray(pInfo.ecb_last_block, BLOCK_SIZE_SEED - 1, DEFAULT_ENDIAN);
+                    if (nPaddngLen > 0 && nPaddngLen <= BLOCK_SIZE_SEED)
                     {
-                        for (int i = nPaddngLeng; i > 0; i--)
+                        for (int i = nPaddngLen; i > 0; i--)
                         {
                             SetByteToUIntArray(ref _out, out_offset - i, (byte)0x00, DEFAULT_ENDIAN);
                         }
-                        outLen[0] = nPaddngLeng;
+                        outLen[0] = nPaddngLen;
+                    }
+                    else
+                    {
+                        return false;
                     }
                 }
+
+                return true;
+            }
+
+            public byte[] Encrypt(byte[] pbszUserKey, byte[] pbData, int offset, int length)
+            {
+                KISA_SEED_INFO info = new KISA_SEED_INFO();
+                uint[] _out;
+                uint[] data;
+                byte[] cdata;
+                int outLen;
+                int[] nRetOutLen = new int[] { 0 };
+                int[] nPaddingLen = new int[] { 0 };
+
+                byte[] pbszPlainText = new byte[length];
+                Array.Copy(pbData, offset, pbszPlainText, 0, length);
+                int nPlainTextLen = length;
+
+                int nPlainTextPadding = (BLOCK_SIZE_SEED - (nPlainTextLen) % BLOCK_SIZE_SEED);
+                byte[] newpbszPlainText = new byte[nPlainTextLen + nPlainTextPadding];
+                Array.Copy(pbszPlainText, newpbszPlainText, nPlainTextLen);
+
+                byte[] pbszCipherText = new byte[nPlainTextLen + nPlainTextPadding];
+
+                Init(info, KISA_ENC_DEC.KISA_ENCRYPT, pbszUserKey);
+
+                outLen = ((nPlainTextLen / 16) + 1) * 4;
+
+                _out = new uint[outLen];
+
+                data = ConvertToUIntArray(newpbszPlainText, nPlainTextLen);
+                Process(info, data, nPlainTextLen, ref _out, ref nRetOutLen);
+                Close(info, _out, nRetOutLen[0], ref nPaddingLen);
+
+                cdata = ConvertToByteArray(_out, nRetOutLen[0] + nPaddingLen[0]);
+                Array.Copy(cdata, pbszCipherText, nRetOutLen[0] + nPaddingLen[0]);
+
+                data = null;
+                cdata = null;
+                _out = null;
+
+                return pbszCipherText;
+            }
+
+            public byte[] Decrypt(byte[] pbszUserKey, byte[] pbData, int offset, int length)
+            {
+                byte[] result = new byte[] { };
+
+                KISA_SEED_INFO info = new KISA_SEED_INFO();
+                uint[] _out;
+                uint[] data;
+                byte[] cdata;
+                int outLen = 0;
+                int[] nRetOutLen = new int[] { 0 };
+                int[] nPaddingLen = new int[] { 0 };
+
+                byte[] pbszCipherText = pbData;
+                int nCipherTextLen = length;
+
+                if (nCipherTextLen % BLOCK_SIZE_SEED > 0)
+                {
+                    return result;
+                }
+
+                byte[] newpbszCipherText = new byte[nCipherTextLen];
+                Array.Copy(pbszCipherText, newpbszCipherText, nCipherTextLen);
+
+                byte[] pbszPlainText = new byte[nCipherTextLen];
+
+                Init(info, KISA_ENC_DEC.KISA_DECRYPT, pbszUserKey);
+
+                outLen = (nCipherTextLen / 16) * 4;
+                _out = new uint[outLen];
+                data = ConvertToUIntArray(newpbszCipherText, nCipherTextLen);
+                Process(info, data, nCipherTextLen, ref _out, ref nRetOutLen);
+                if (Close(info, _out, nRetOutLen[0], ref nPaddingLen))
+                {
+                    cdata = ConvertToByteArray(_out, nRetOutLen[0] - nPaddingLen[0]);
+                    Array.Copy(cdata, pbszPlainText, nRetOutLen[0] - nPaddingLen[0]);
+                    int message_length = nRetOutLen[0] - nPaddingLen[0];
+
+                    if (message_length < 0)
+                    {
+                        message_length = 0;
+                    }
+                    result = new byte[message_length];
+                    Array.Copy(pbszPlainText, 0, result, 0, message_length);
+
+                    data = null;
+                    cdata = null;
+                    _out = null;
+                }
+
+                return result;
             }
         }
 
