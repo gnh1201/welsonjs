@@ -232,12 +232,52 @@ namespace WelsonJS.Cryptography
                   (src[srcOffset + 3] & 0xFF) << 24);
         }
 
-        private static byte GetB(uint A, int pos)
+        private static byte GetByteFromUInt(uint value, int position)
         {
-            if (pos < 0 || pos > 4)
-                throw new ArgumentException("Invalid position.");
+            if (position < 0 || position >= 4)
+                throw new ArgumentException("Position must be between 0 and 3.");
 
-            return pos > 0 ? (byte)((A >> (8 * pos)) & 0x0ff) : (byte)(A & 0x0ff);
+            return position > 0
+                ? (byte)((value >> (8 * position)) & 0xFF)
+                : (byte)(value & 0xFF);
+        }
+
+        public static void SetByteToUIntArray(ref uint[] dst, int byteOffset, byte value, ENDIAN endian)
+        {
+            if (dst == null || byteOffset < 0 || byteOffset >= dst.Length * 4)
+                throw new ArgumentOutOfRangeException(nameof(byteOffset), "Invalid byte offset.");
+
+            int uintIndex = byteOffset / 4;
+            int shiftValue = (endian == ENDIAN.BIG)
+                ? (3 - byteOffset % 4) * 8
+                : (byteOffset % 4) * 8;
+
+            uint maskValue = (uint)(0xFF << shiftValue);
+            uint maskValue2 = ~maskValue;
+            uint valueToSet = (uint)(value & 0xFF) << shiftValue;
+
+            dst[uintIndex] = (dst[uintIndex] & maskValue2) | (valueToSet & maskValue);
+        }
+
+        public static byte GetByteFromUIntArray(uint[] src, int byteOffset, ENDIAN endian)
+        {
+            if (src == null || byteOffset < 0 || byteOffset >= src.Length * 4)
+                throw new ArgumentOutOfRangeException(nameof(byteOffset), "Invalid byte offset.");
+
+            int uintIndex = byteOffset / 4;
+            int shiftValue = (endian == ENDIAN.BIG)
+                ? (3 - byteOffset % 4) * 8
+                : (byteOffset % 4) * 8;
+
+            return (byte)((src[uintIndex] >> shiftValue) & 0xFF);
+        }
+
+        private static uint Substitute(uint value)
+        {
+            return SS0[GetByteFromUInt(value, 0)] ^
+                   SS1[GetByteFromUInt(value, 1)] ^
+                   SS2[GetByteFromUInt(value, 2)] ^
+                   SS3[GetByteFromUInt(value, 3)];
         }
 
         // Round function F and adding output of F to L.
@@ -249,11 +289,11 @@ namespace WelsonJS.Cryptography
             T[0] = LR[R0] ^ K[K_offset + 0];
             T[1] = LR[R1] ^ K[K_offset + 1];
             T[1] ^= T[0];
-            T[1] = SS0[GetB(T[1], 0)] ^ SS1[GetB(T[1], 1)] ^ SS2[GetB(T[1], 2)] ^ SS3[GetB(T[1], 3)];
+            T[1] = Substitute(T[1]);
             T[0] += T[1];
-            T[0] = SS0[GetB(T[0], 0)] ^ SS1[GetB(T[0], 1)] ^ SS2[GetB(T[0], 2)] ^ SS3[GetB(T[0], 3)];
+            T[0] = Substitute(T[0]);
             T[1] += T[0];
-            T[1] = SS0[GetB(T[1], 0)] ^ SS1[GetB(T[1], 1)] ^ SS2[GetB(T[1], 2)] ^ SS3[GetB(T[1], 3)];
+            T[1] = Substitute(T[1]);
             T[0] += T[1];
             LR[L0] ^= T[0]; LR[L1] ^= T[1];
         }
@@ -270,8 +310,8 @@ namespace WelsonJS.Cryptography
         {
             T[0] = ABCD[ABCD_A] + ABCD[ABCD_C] - KC;
             T[1] = ABCD[ABCD_B] + KC - ABCD[ABCD_D];
-            K[K_offset + 0] = SS0[GetB(T[0], 0)] ^ SS1[GetB(T[0], 1)] ^ SS2[GetB(T[0], 2)] ^ SS3[GetB(T[0], 3)];
-            K[K_offset + 1] = SS0[GetB(T[1], 0)] ^ SS1[GetB(T[1], 1)] ^ SS2[GetB(T[1], 2)] ^ SS3[GetB(T[1], 3)];
+            K[K_offset + 0] = Substitute(T[0]);
+            K[K_offset + 1] = Substitute(T[1]);
             T[0] = ABCD[ABCD_A];
             ABCD[ABCD_A] = ((ABCD[ABCD_A] >> 8) & 0x00ffffff) ^ (ABCD[ABCD_B] << 24);
             ABCD[ABCD_B] = ((ABCD[ABCD_B] >> 8) & 0x00ffffff) ^ (T[0] << 24);
@@ -281,8 +321,8 @@ namespace WelsonJS.Cryptography
         {
             T[0] = ABCD[ABCD_A] + ABCD[ABCD_C] - KC;
             T[1] = ABCD[ABCD_B] + KC - ABCD[ABCD_D];
-            K[K_offset + 0] = SS0[GetB(T[0], 0)] ^ SS1[GetB(T[0], 1)] ^ SS2[GetB(T[0], 2)] ^ SS3[GetB(T[0], 3)];
-            K[K_offset + 1] = SS0[GetB(T[1], 0)] ^ SS1[GetB(T[1], 1)] ^ SS2[GetB(T[1], 2)] ^ SS3[GetB(T[1], 3)];
+            K[K_offset + 0] = Substitute(T[0]);
+            K[K_offset + 1] = Substitute(T[1]);
             T[0] = ABCD[ABCD_C];
             ABCD[ABCD_C] = (ABCD[ABCD_C] << 8) ^ ((ABCD[ABCD_D] >> 24) & 0x000000ff);
             ABCD[ABCD_D] = (ABCD[ABCD_D] << 8) ^ ((T[0] >> 24) & 0x000000ff);
@@ -290,7 +330,7 @@ namespace WelsonJS.Cryptography
 
         public class ECB
         {
-            public void EncryptBlock(in uint[] _in, uint in_offset, ref uint[] _out, int out_offset, KISA_SEED_KEY ks)
+            public void EncryptBlock(in uint[] _in, int in_offset, ref uint[] _out, int out_offset, KISA_SEED_KEY ks)
             {
                 uint[] LR = new uint[4];      // Iuput/output values at each rounds
                 uint[] T = new uint[2];       // Temporary variables for round function F
@@ -397,16 +437,14 @@ namespace WelsonJS.Cryptography
                 _out[out_offset + 3] = LR[LR_L1];
             }
 
-            public bool Init(KISA_SEED_INFO pInfo, KISA_ENC_DEC enc, byte[] pbszUserKey)
+            public void Init(KISA_SEED_INFO pInfo, KISA_ENC_DEC enc, byte[] pbszUserKey)
             {
                 uint[] ABCD = new uint[4];            // Iuput/output values at each rounds
                 uint[] T = new uint[2];               // Temporary variable
                 uint[] K;
 
-                if (null == pInfo || null == pbszUserKey)
-                {
-                    return false;
-                }
+                if (pInfo == null || pbszUserKey == null)
+                    throw new ArgumentException("Invalid arguments");
 
                 K = pInfo.seed_key.key_data;        // Pointer of round keys
 
@@ -448,12 +486,80 @@ namespace WelsonJS.Cryptography
                 T[0] = ABCD[ABCD_A] + ABCD[ABCD_C] - KC15;
                 T[1] = ABCD[ABCD_B] - ABCD[ABCD_D] + KC15;
 
-                K[30] = SS0[GetB(T[0], 0) & 0x0ff] ^ SS1[GetB(T[0], 1) & 0x0ff] ^   // K_16,0
-                        SS2[GetB(T[0], 2) & 0x0ff] ^ SS3[GetB(T[0], 3) & 0x0ff];
-                K[31] = SS0[GetB(T[1], 0) & 0x0ff] ^ SS1[GetB(T[1], 1) & 0x0ff] ^   // K_16,1
-                        SS2[GetB(T[1], 2) & 0x0ff] ^ SS3[GetB(T[1], 3) & 0x0ff];
+                K[30] = SS0[GetByteFromUInt(T[0], 0) & 0x0ff] ^ SS1[GetByteFromUInt(T[0], 1) & 0x0ff] ^   // K_16,0
+                        SS2[GetByteFromUInt(T[0], 2) & 0x0ff] ^ SS3[GetByteFromUInt(T[0], 3) & 0x0ff];
+                K[31] = SS0[GetByteFromUInt(T[1], 0) & 0x0ff] ^ SS1[GetByteFromUInt(T[1], 1) & 0x0ff] ^   // K_16,1
+                        SS2[GetByteFromUInt(T[1], 2) & 0x0ff] ^ SS3[GetByteFromUInt(T[1], 3) & 0x0ff];
+            }
 
-                return true;
+            public void Process(KISA_SEED_INFO pInfo, in uint[] _in, int inLen, ref uint[] _out, ref int[] outLen)
+            {
+                int nCurrentCount = BLOCK_SIZE_SEED;
+                int in_offset = 0;
+                int out_offset = 0;
+
+                if (pInfo == null || _in == null || _out == null || inLen <= 0)
+                    throw new ArgumentException("Invalid arguments.");
+
+                if (KISA_ENC_DEC._KISA_ENCRYPT == pInfo.encrypt)
+                {
+                    while (nCurrentCount <= inLen)
+                    {
+                        EncryptBlock(_in, in_offset, ref _out, out_offset, pInfo.seed_key);
+                        nCurrentCount += BLOCK_SIZE_SEED;
+                        in_offset += BLOCK_SIZE_SEED_INT;
+                        out_offset += BLOCK_SIZE_SEED_INT;
+                    }
+
+                    outLen[0] = nCurrentCount - BLOCK_SIZE_SEED;
+                    pInfo.buffer_length = inLen - outLen[0];
+                    Array.Copy(_in, in_offset, pInfo.ecb_buffer, 0, pInfo.buffer_length);
+                }
+                else
+                {
+                    while (nCurrentCount <= inLen)
+                    {
+                        DecryptBlock(_in, in_offset, ref _out, out_offset, pInfo.seed_key);
+                        nCurrentCount += BLOCK_SIZE_SEED;
+                        in_offset += BLOCK_SIZE_SEED_INT;
+                        out_offset += BLOCK_SIZE_SEED_INT;
+                    }
+                    outLen[0] = nCurrentCount - BLOCK_SIZE_SEED;
+                    Array.Copy(_out, out_offset - BLOCK_SIZE_SEED_INT, pInfo.ecb_last_block, 0, BLOCK_SIZE_SEED);
+                }
+            }
+
+            public void Close(KISA_SEED_INFO pInfo, uint[] _out, int out_offset, ref int[] outLen)
+            {
+                int nPaddngLeng;
+
+                outLen[0] = 0;
+
+                if (_out == null)
+                    return;   // return with no error
+
+                if (KISA_ENC_DEC._KISA_ENCRYPT == pInfo.encrypt)
+                {
+                    nPaddngLeng = BLOCK_SIZE_SEED - pInfo.buffer_length;
+                    for (int i = pInfo.buffer_length; i < BLOCK_SIZE_SEED; i++)
+                    {
+                        SetByteToUIntArray(ref pInfo.ecb_buffer, i, (byte)nPaddngLeng, DEFAULT_ENDIAN);
+                    }
+                    EncryptBlock(pInfo.ecb_buffer, 0, ref _out, (out_offset) / 4, pInfo.seed_key);
+                    outLen[0] = BLOCK_SIZE_SEED;
+                }
+                else
+                {
+                    nPaddngLeng = GetByteFromUIntArray(pInfo.ecb_last_block, BLOCK_SIZE_SEED - 1, DEFAULT_ENDIAN);
+                    if (nPaddngLeng > 0 && nPaddngLeng <= BLOCK_SIZE_SEED)
+                    {
+                        for (int i = nPaddngLeng; i > 0; i--)
+                        {
+                            SetByteToUIntArray(ref _out, out_offset - i, (byte)0x00, DEFAULT_ENDIAN);
+                        }
+                        outLen[0] = nPaddngLeng;
+                    }
+                }
             }
         }
 
