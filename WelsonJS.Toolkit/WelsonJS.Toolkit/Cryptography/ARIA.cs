@@ -28,6 +28,8 @@
  *         - https://datatracker.ietf.org/doc/html/rfc5794
  *         - https://datatracker.ietf.org/doc/html/rfc6209
  *         - https://github.com/eGovFrame/egovframework.rte.root/blob/master/Foundation/egovframework.rte.fdl.crypto/src/main/java/egovframework/rte/fdl/cryptography/impl/aria/ARIAEngine.java
+*          - https://ics.catswords.net/ARIA-specification.pdf
+*          - https://ics.catswords.net/ARIA-testvector.pdf
  *         
  *     license:
  *         GPLv3 or MS-RL(Microsoft Reciprocal License)
