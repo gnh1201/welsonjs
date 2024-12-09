@@ -35,7 +35,6 @@
  *         GPLv3 or MS-RL(Microsoft Reciprocal License)
  * 
  */
-using System;
 using System.Security.Cryptography;
 using System.Text;
 
