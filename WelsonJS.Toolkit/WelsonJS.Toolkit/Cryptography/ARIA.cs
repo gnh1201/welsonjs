@@ -554,7 +554,6 @@ namespace WelsonJS.Cryptography
         public class ECB
         {
             private static readonly int BLOCK_SIZE = 16;
-
             private ARIA engine = null;
 
             public ECB(byte[] key)
@@ -581,9 +580,9 @@ namespace WelsonJS.Cryptography
             /// <returns></returns>
             protected byte[] CreateKey(string key)
             {
-                MD5 md5Hasher = MD5.Create();
+                SHA256 hasher = SHA256.Create();
+                byte[] hashData = hasher.ComputeHash(Encoding.Default.GetBytes(key));
 
-                byte[] hashData = md5Hasher.ComputeHash(Encoding.Default.GetBytes(key));
                 return hashData;
             }
 
