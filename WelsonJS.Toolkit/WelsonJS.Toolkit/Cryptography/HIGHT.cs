@@ -13,16 +13,16 @@
  *         - https://teams.live.com/l/community/FEACHncAhq8ldnojAI
  *         - https://discord.gg/XKG5CjtXEj
  * 
- *     author:
- *         - Namhyeon Go <abuse@catswords.net>
- *         - @chandong83 (github.com) - Original author of CryptoHIGHT.cs
- *         - KISA(Korea Internet & Security Agency)
- *         - Korea Unversity
+ *     authors:
+ *         - Namhyeon Go (@gnh1201) <abuse@catswords.net>
+ *         - @chandong83 (github.com)
+ *         - KISA(Korea Internet & Security Agency) (kisa.or.kr)
+ *         - Korea Unversity (www.korea.ac.kr)
  *     
  *     references:
+ *         - https://seed.kisa.or.kr/kisa/algorithm/EgovHightInfo.do
  *         - https://github.com/chandong83/csharp_crypto_hight_ecb_examples
  *         - https://blog.naver.com/chandong83/222198351602
- *         - https://seed.kisa.or.kr/kisa/algorithm/EgovHightInfo.do
  *         - https://www.iso.org/standard/54531.html
  *         - https://ics.catswords.net/HIGHT-algorithm-specification-english.pdf
  *         - https://ics.catswords.net/HIGHT-algorithm-specification-korean.pdf
@@ -31,7 +31,6 @@
  *         GPLv3 or MS-RL(Microsoft Reciprocal License)
  * 
  */
-
 using System;
 
 namespace WelsonJS.Cryptography

@@ -14,8 +14,8 @@
  *         - https://discord.gg/XKG5CjtXEj
  * 
  *     author:
- *         - Namhyeon Go <abuse@catswords.net>
- *         - KISA(Korea Internet & Security Agency)
+ *         - Namhyeon Go (@gnh1201) <abuse@catswords.net>
+ *         - KISA(Korea Internet & Security Agency) (kisa.or.kr)
  *     
  *     references:
  *         - https://seed.kisa.or.kr/kisa/Board/17/detailView.do
@@ -28,9 +28,7 @@
  *         GPLv3 or MS-RL(Microsoft Reciprocal License)
  * 
  */
-
 using System;
-using static WelsonJS.Cryptography.SEED;
 
 namespace WelsonJS.Cryptography
 {

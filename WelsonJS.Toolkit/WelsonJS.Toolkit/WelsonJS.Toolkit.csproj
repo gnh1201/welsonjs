@@ -89,6 +89,8 @@
   <ItemGroup>
     <Compile Include="BitmapUtils.cs" />
     <Compile Include="Compression\LZ77.cs" />
+    <Compile Include="Cryptography\AnsiX923Padding.cs" />
+    <Compile Include="Cryptography\ARIA.cs" />
     <Compile Include="Cryptography\HIGHT.cs" />
     <Compile Include="Cryptography\SEED.cs" />
     <Compile Include="NamedSharedMemory.cs" />
