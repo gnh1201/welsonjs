@@ -161,73 +161,85 @@ namespace WelsonJS.Cryptography
         /**
         * Resets the class so that it can be reused for another master key.
         */
-        void Reset()
+        private void Reset()
         {
-            this.keySize = 0;
-            this.numberOfRounds = 0;
-            this.masterKey = null;
-            this.encRoundKeys = null;
-            this.decRoundKeys = null;
+            keySize = 0;
+            numberOfRounds = 0;
+            masterKey = null;
+            encRoundKeys = null;
+            decRoundKeys = null;
         }
 
-        int GetKeySize()
+        public int GetKeySize()
         {
-            return this.keySize;
+            return keySize;
         }
 
-        void SetKeySize(int keySize)
+        private void SetKeySize(int _keySize)
         {
-            this.Reset();
-            if (keySize != 128 && keySize != 192 && keySize != 256)
-                throw new CryptographicException("keySize=" + keySize);
-            this.keySize = keySize;
-            switch (keySize)
+            Reset();
+
+            if (_keySize != 128 && _keySize != 192 && _keySize != 256)
+                throw new CryptographicException("keySize=" + _keySize);
+
+            switch (_keySize)
             {
                 case 128:
-                    this.numberOfRounds = 12;
+                    numberOfRounds = 12;
                     break;
                 case 192:
-                    this.numberOfRounds = 14;
+                    numberOfRounds = 14;
                     break;
                 case 256:
-                    this.numberOfRounds = 16;
+                    numberOfRounds = 16;
                     break;
             }
+
+            keySize = _keySize;
         }
 
-        public void SetKey(byte[] masterKey)
+        private void SetKey(byte[] masterKey)
         {
             if (masterKey.Length * 8 < keySize)
                 throw new CryptographicException("masterKey size=" + masterKey.Length);
-            this.decRoundKeys = null;
-            this.encRoundKeys = null;
-            this.masterKey = (byte[])masterKey.Clone();
+
+            decRoundKeys = null;
+            encRoundKeys = null;
+            masterKey = (byte[])masterKey.Clone();
         }
 
-        void SetupEncRoundKeys()
+        private void SetupEncRoundKeys()
         {
-            if (this.keySize == 0)
+            if (keySize == 0)
                 throw new CryptographicException("keySize");
-            if (this.masterKey == null)
+            if (masterKey == null)
                 throw new CryptographicException("masterKey");
-            if (this.encRoundKeys == null)
-                this.encRoundKeys = new uint[4 * (this.numberOfRounds + 1)];
-            this.decRoundKeys = null;
-            DoEncKeySetup(this.masterKey, this.encRoundKeys, this.keySize);
+            if (encRoundKeys == null)
+                encRoundKeys = new uint[4 * (numberOfRounds + 1)];
+
+            decRoundKeys = null;
+            DoEncKeySetup(masterKey, encRoundKeys, keySize);
         }
 
         void SetupDecRoundKeys()
         {
-            if (this.keySize == 0)
+            if (keySize == 0)
                 throw new CryptographicException("keySize");
-            if (this.encRoundKeys == null)
-                if (this.masterKey == null)
-                    throw new CryptographicException("masterKey");
-                else
-                    SetupEncRoundKeys();
 
-            this.decRoundKeys = (uint[])encRoundKeys.Clone();
-            DoDecKeySetup(this.masterKey, this.decRoundKeys, this.keySize);
+            if (encRoundKeys == null)
+            {
+                if (masterKey == null)
+                {
+                    throw new CryptographicException("masterKey");
+                }
+                else
+                {
+                    SetupEncRoundKeys();
+                }
+            }
+
+            decRoundKeys = (uint[])encRoundKeys.Clone();
+            DoDecKeySetup(masterKey, decRoundKeys, keySize);
         }
 
         public void SetupRoundKeys()
@@ -294,39 +306,56 @@ namespace WelsonJS.Cryptography
 
         public void Encrypt(byte[] i, int ioffset, byte[] o, int ooffset)
         {
-            if (this.keySize == 0)
+            if (keySize == 0)
                 throw new CryptographicException("keySize");
-            if (this.encRoundKeys == null)
-                if (this.masterKey == null)
+
+            if (encRoundKeys == null)
+            {
+                if (masterKey == null)
+                {
                     throw new CryptographicException("masterKey");
+                }
                 else
+                {
                     SetupEncRoundKeys();
-            DoCrypt(i, ioffset, this.encRoundKeys, this.numberOfRounds, o, ooffset);
+                }
+            }
+
+            DoCrypt(i, ioffset, encRoundKeys, numberOfRounds, o, ooffset);
         }
 
         public byte[] Encrypt(byte[] i, int ioffset)
         {
             byte[] o = new byte[16];
-            this.Encrypt(i, ioffset, o, 0);
+            Encrypt(i, ioffset, o, 0);
             return o;
         }
 
         public void Decrypt(byte[] i, int ioffset, byte[] o, int ooffset)
         {
-            if (this.keySize == 0)
+            if (keySize == 0)
                 throw new CryptographicException("keySize");
-            if (this.decRoundKeys == null)
-                if (this.masterKey == null)
+
+            if (decRoundKeys == null)
+            {
+                if (masterKey == null)
+                {
                     throw new CryptographicException("masterKey");
+                }
                 else
+                {
                     SetupDecRoundKeys();
-            DoCrypt(i, ioffset, this.decRoundKeys, this.numberOfRounds, o, ooffset);
+                }
+            }
+
+            DoCrypt(i, ioffset, decRoundKeys, numberOfRounds, o, ooffset);
         }
 
         public byte[] Decrypt(byte[] i, int ioffset)
         {
             byte[] o = new byte[16];
-            this.Decrypt(i, ioffset, o, 0);
+            Decrypt(i, ioffset, o, 0);
+
             return o;
         }
 
