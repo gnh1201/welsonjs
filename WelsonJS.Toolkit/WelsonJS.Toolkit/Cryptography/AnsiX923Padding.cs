@@ -48,6 +48,8 @@ namespace WelsonJS.Cryptography
             }
 
             byte[] paddedData = new byte[data.Length + paddingLength];
+
+            // Copy original data into the padded array
             Array.Copy(data, paddedData, data.Length);
 
             // Fill with 0x00 bytes, and the last byte is the padding length
@@ -99,12 +101,13 @@ namespace WelsonJS.Cryptography
             // Validate padding length
             if (paddingLength <= 0 || paddingLength > blockSize)
             {
-                if (ignoreErrors)
+                if (!ignoreErrors)
                 {
-                    // Treat padding length as 0 and return the full data
-                    return data;
+                    throw new ArgumentException($"Invalid padding length: {paddingLength}. Must be between 1 and {blockSize}.");
                 }
-                throw new ArgumentException($"Invalid padding length: {paddingLength}. Must be between 1 and {blockSize}.");
+
+                // Treat padding length as 0 and return the full data
+                return data;
             }
 
             // Validate the padding region (last paddingLength - 1 bytes must be 0x00)
@@ -112,20 +115,16 @@ namespace WelsonJS.Cryptography
             {
                 if (data[i] != 0x00)
                 {
-                    if (ignoreErrors)
+                    if (!ignoreErrors)
                     {
-                        // Ignore invalid padding and return data up to the detected length
-                        byte[] fallbackData = new byte[data.Length - paddingLength];
-                        Array.Copy(data, 0, fallbackData, 0, fallbackData.Length);
-                        return fallbackData;
+                        throw new ArgumentException("Invalid padding detected. Expected padding bytes to be 0x00.");
                     }
-                    throw new ArgumentException("Invalid padding detected. Expected padding bytes to be 0x00.");
                 }
             }
 
             // Extract unpadded data
             byte[] unpaddedData = new byte[data.Length - paddingLength];
-            Array.Copy(data, 0, unpaddedData, 0, unpaddedData.Length);
+            Array.Copy(data, unpaddedData, unpaddedData.Length);
 
             return unpaddedData;
         }

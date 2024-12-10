@@ -30,10 +30,22 @@ namespace WelsonJS.Cryptography
 {
     public class PKCS5Padding
     {
-        // Add padding to the data based on the block size.
+        /// <summary>
+        /// Add PKCS#5 padding to the input data to make it a multiple of the block size.
+        /// </summary>
+        /// <param name="data">The data to be padded.</param>
+        /// <param name="blockSize">The block size to pad to.</param>
+        /// <returns>Padded data with PKCS#5 padding.</returns>
         public static byte[] AddPadding(byte[] data, int blockSize)
         {
             int paddingLength = blockSize - (data.Length % blockSize);
+
+            // If the data is already a multiple of the block size, no padding is needed
+            if (paddingLength == blockSize)
+            {
+                return data;
+            }
+
             byte[] paddedData = new byte[data.Length + paddingLength];
 
             // Copy original data into the padded array
@@ -48,7 +60,14 @@ namespace WelsonJS.Cryptography
             return paddedData;
         }
 
-        // Remove padding based on the block size.
+        /// <summary>
+        /// Removes PKCS#5 padding from the given data.
+        /// </summary>
+        /// <param name="data">The input data, including padding.</param>
+        /// <param name="blockSize">The block size used for padding.</param>
+        /// <param name="ignoreErrors">If true, ignores errors and attempts to process the input data as-is.</param>
+        /// <returns>The unpadded data as a byte array.</returns>
+        /// <exception cref="ArgumentException">Thrown if the input data or padding is invalid and ignoreErrors is false.</exception>
         public static byte[] RemovePadding(byte[] data, int blockSize, bool ignoreErrors = false)
         {
             // If data length is 0, return empty array
@@ -67,16 +86,14 @@ namespace WelsonJS.Cryptography
             int paddingLength = data[data.Length - 1];
 
             // Validate padding length
-            if (paddingLength < 1 || paddingLength > blockSize)
+            if (paddingLength <= 0 || paddingLength > blockSize)
             {
                 if (!ignoreErrors)
                 {
-                    throw new ArgumentException("Invalid padding length.");
+                    throw new ArgumentException($"Invalid padding length: {paddingLength}. Must be between 1 and {blockSize}.");
                 }
-                else
-                {
-                    return data;  // Return data as is if error is ignored
-                }
+
+                return data;
             }
 
             // Check if the padding is correct (i.e., all padding bytes must be equal to paddingLength)
@@ -87,10 +104,6 @@ namespace WelsonJS.Cryptography
                     if (!ignoreErrors)
                     {
                         throw new ArgumentException("Invalid padding detected.");
-                    }
-                    else
-                    {
-                        return data;  // Return data as is if error is ignored
                     }
                 }
             }
