@@ -30,6 +30,8 @@
  * 
  */
 using System;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace WelsonJS.Cryptography
 {
@@ -278,6 +280,70 @@ namespace WelsonJS.Cryptography
         {
             ENCRYPT,
             DECRYPT
+        }
+
+        public class ECB
+        {
+            private Mode mode;
+            private LEA engine;
+            private int blockSize;
+
+            ECB(Mode mode, string key)
+            {
+                engine = new LEA();
+                Init(mode, CreateKey(key));
+                blockSize = engine.GetBlockSize();
+            }
+
+            public string GetAlgorithmName()
+            {
+                return engine.GetAlgorithmName() + "/ECB";
+            }
+
+            public void Init(Mode mode, byte[] mk)
+            {
+                this.mode = mode;
+                engine.Init(mode, mk);
+            }
+
+            private byte[] CreateKey(string key)
+            {
+                SHA256 hasher = SHA256.Create();
+                byte[] hashData = hasher.ComputeHash(Encoding.Default.GetBytes(key));
+
+                return hashData;
+            }
+
+            public byte[] Encrypt(byte[] data)
+            {
+                if (this.mode != Mode.ENCRYPT)
+                    throw new InvalidOperationException("Not initialized for encryption mode.");
+
+                byte[] inputData = PKCS5Padding.AddPadding(data, blockSize);
+                byte[] outputData = new byte[inputData.Length];
+
+                for (int i = 0; i < inputData.Length; i += blockSize)
+                {
+                    engine.ProcessBlock(inputData, i, outputData, i);
+                }
+
+                return outputData;
+            }
+
+            public byte[] Decrypt(byte[] data)
+            {
+                if (this.mode != Mode.DECRYPT)
+                    throw new InvalidOperationException("Not initialized for decryption mode.");
+
+                byte[] outputData = new byte[data.Length];
+
+                for (int i = 0; i < data.Length; i += blockSize)
+                {
+                    engine.ProcessBlock(data, i, outputData, i);
+                }
+
+                return PKCS5Padding.RemovePadding(outputData, blockSize, true);
+            }
         }
     }
 }

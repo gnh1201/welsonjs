@@ -577,7 +577,7 @@ namespace WelsonJS.Cryptography
             /// </summary>
             /// <param name="key"></param>
             /// <returns></returns>
-            protected byte[] CreateKey(string key)
+            private byte[] CreateKey(string key)
             {
                 SHA256 hasher = SHA256.Create();
                 byte[] hashData = hasher.ComputeHash(Encoding.Default.GetBytes(key));
@@ -587,7 +587,7 @@ namespace WelsonJS.Cryptography
 
             public byte[] Encrypt(byte[] data)
             {
-                byte[] indata = AnsiX923Padding.ApplyPadding(data, BLOCK_SIZE);
+                byte[] indata = AnsiX923Padding.AddPadding(data, BLOCK_SIZE);
                 byte[] outdata = new byte[indata.Length];
 
                 for (int i = 0; i < indata.Length; i += BLOCK_SIZE)
@@ -607,7 +607,7 @@ namespace WelsonJS.Cryptography
                     engine.Decrypt(data, i, outdata, i);
                 }
 
-                return AnsiX923Padding.RemovePadding(outdata, BLOCK_SIZE);
+                return AnsiX923Padding.RemovePadding(outdata, BLOCK_SIZE, true);
             }
         }
     }
