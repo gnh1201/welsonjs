@@ -92,6 +92,7 @@
     <Compile Include="Cryptography\AnsiX923Padding.cs" />
     <Compile Include="Cryptography\ARIA.cs" />
     <Compile Include="Cryptography\HIGHT.cs" />
+    <Compile Include="Cryptography\LEA.cs" />
     <Compile Include="Cryptography\SEED.cs" />
     <Compile Include="NamedSharedMemory.cs" />
     <Compile Include="ProcessUtils.cs" />

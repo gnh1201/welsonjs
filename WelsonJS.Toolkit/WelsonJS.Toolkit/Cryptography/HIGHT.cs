@@ -26,6 +26,7 @@
  *         - https://www.iso.org/standard/54531.html
  *         - https://ics.catswords.net/HIGHT-algorithm-specification-english.pdf
  *         - https://ics.catswords.net/HIGHT-algorithm-specification-korean.pdf
+ *         - https://ics.catswords.net/HIGHT-sourcecode-explanation.pdf
  *
  *     license:
  *         GPLv3 or MS-RL(Microsoft Reciprocal License)
