@@ -193,6 +193,10 @@ The WelsonJS framework suggests the following application release methods:
 ## Report abuse
 - [GitHub Security Advisories](https://github.com/gnh1201/welsonjs/security)
 - abuse@catswords.net
+
+## Join the community
+I am always open. Collaboration, opportunities, and community activities are all welcome.
+
 - ActivityPub [@catswords_oss@catswords.social](https://catswords.social/@catswords_oss)
 - XMPP [catswords@conference.omemo.id](xmpp:catswords@conference.omemo.id?join)
 - [Join Catswords OSS on Microsoft Teams (teams.live.com)](https://teams.live.com/l/community/FEACHncAhq8ldnojAI)
