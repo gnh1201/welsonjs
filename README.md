@@ -23,7 +23,7 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
 - <img src="https://ics.catswords.net/logo_oss.gif" height="32" alt=""/> [Open Software Portal](https://oss.kr), Korea National Industry Promotion Agency - Awarded Prize
 - <img src="https://ics.catswords.net/signpath_logo.png" height="32" alt=""/> Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org/)
 - <img src="https://ics.catswords.net/f1security_logo.png" height="32" alt=""/> [F1Security](https://azuremarketplace.microsoft.com/ko-kr/marketplace/apps/1599123192819.uwss?tab=overview) provides web security services designed by [industry-leading experts](https://www.ksecurity.or.kr/kisis/subIndex/469.do).
-- :zap: [Integrations](https://catswords-oss.rdbl.io/5719744820/8278298336) ([ScrapeOps](https://scrapeops.io?fpr=namhyeon75), [SearchApi](https://www.searchapi.io/?via=namhyeon), ...)
+- :zap: [Integrations](https://catswords-oss.rdbl.io/5719744820/8278298336) ([ScrapeOps](https://scrapeops.io?fpr=namhyeon75), [SearchApi](https://www.searchapi.io/?via=namhyeon), [AviationStack](https://aviationstack.com?utm_source=FirstPromoter&utm_medium=Affiliate&fpr=namhyeon71), ...)
 
 ## Structure
 ![The structure of the WelsonJS framework can be extended based on whether it operates in a console (command prompt) environment, a GUI (with HTML/CSS) environment, or a service environment, with the `app.js` file at its core.](https://ics.catswords.net/structure.png)
@@ -69,7 +69,7 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
 - lib/system (System interface)
 - lib/base64 (BASE64 encode and decode)
 - lib/file (File I/O interface)
-- lib/http (HTTP/HTTPS client with [XHR(MSXML)](https://developer.mozilla.org/docs/Glossary/XMLHttpRequest), [cURL](https://curl.se/), [BITS](https://en.m.wikipedia.org/w/index.php?title=Background_Intelligent_Transfer_Service), [CERT](https://github.com/MicrosoftDocs/windowsserverdocs/blob/main/WindowsServerDocs/administration/windows-commands/certutil.md), [Proxy/SEO/SERP](https://catswords-oss.rdbl.io/5719744820/1706431912))
+- lib/http (HTTP/HTTPS client with [XHR(MSXML)](https://developer.mozilla.org/docs/Glossary/XMLHttpRequest), [cURL](https://curl.se/), [BITS](https://en.m.wikipedia.org/w/index.php?title=Background_Intelligent_Transfer_Service), [CERT](https://github.com/MicrosoftDocs/windowsserverdocs/blob/main/WindowsServerDocs/administration/windows-commands/certutil.md), [HTTP Proxy, SEO/SERP, Aviation Data, and more integrations](https://catswords-oss.rdbl.io/5719744820/1706431912))
 - lib/registry (Windows Registry interface)
 - lib/security (Windows Security Policy interface)
 - lib/shell (Windows Shell (Command Prompt) interface)
