@@ -108,6 +108,7 @@ bin
 data/chatgpt-apikey.txt
 data/anthropic-apikey.txt
 data/groq-apikey.txt
+data/aviationstack-apikey.txt
 app/assets/img/_templates
 app/assets/img/_captured
 settings.ini
