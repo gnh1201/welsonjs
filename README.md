@@ -69,7 +69,7 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
 - lib/system (System interface)
 - lib/base64 (BASE64 encode and decode)
 - lib/file (File I/O interface)
-- lib/http (HTTP/HTTPS client with [XHR(MSXML)](https://developer.mozilla.org/docs/Glossary/XMLHttpRequest), [cURL](https://curl.se/), [BITS](https://en.m.wikipedia.org/w/index.php?title=Background_Intelligent_Transfer_Service), [CERT](https://github.com/MicrosoftDocs/windowsserverdocs/blob/main/WindowsServerDocs/administration/windows-commands/certutil.md), [HTTP Proxy, SEO/SERP, Aviation Data, and more integrations](https://catswords-oss.rdbl.io/5719744820/1706431912))
+- lib/http (HTTP/HTTPS client with [XHR(MSXML)](https://developer.mozilla.org/docs/Glossary/XMLHttpRequest), [cURL](https://curl.se/), [BITS](https://en.m.wikipedia.org/w/index.php?title=Background_Intelligent_Transfer_Service), [CERT](https://github.com/MicrosoftDocs/windowsserverdocs/blob/main/WindowsServerDocs/administration/windows-commands/certutil.md), [HTTP Proxy, SEO/SERP](https://catswords-oss.rdbl.io/5719744820/1706431912), and more [integrations](https://catswords-oss.rdbl.io/5719744820/8278298336))
 - lib/registry (Windows Registry interface)
 - lib/security (Windows Security Policy interface)
 - lib/shell (Windows Shell (Command Prompt) interface)
