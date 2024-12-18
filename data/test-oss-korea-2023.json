@@ -314,8 +314,8 @@
         },
         {
             "id": "chromium_run_incognito",
-            "description": "run web broswer in incognito mod",
-            "tags": ["control web browser", "control web broswer (Chromium-based)"]
+            "description": "run web browser in incognito mode",
+            "tags": ["control web browser", "control web browser (Chromium-based)"]
         },
         {
             "id": "chromium_navigate",
@@ -329,7 +329,7 @@
         },
         {
             "id": "chromium_find_page_by_id",
-            "description": "finding page by ",
+            "description": "finding page by original ID",
             "tags": ["control web browser", "control web browser (Chromium-based)"]
         },
         {
@@ -339,7 +339,7 @@
         },
         {
             "id": "chromium_move_focused",
-            "description": "move focuse of the window",
+            "description": "move focus of the window",
             "tags": ["control web browser", "control web browser (Chromium-based)"]
         },
         {
@@ -370,7 +370,7 @@
         {
             "id": "chromium_send_keys",
             "description": "send virtual key",
-            "tags":  ["control web browser", "control web browser (chromium-based browser)"]
+            "tags":  ["control web browser", "control web browser (Chromium-based browser)"]
         },
         {
             "id": "chromium_auto_scroll_until_end",
@@ -389,7 +389,7 @@
         },
         {
             "id": "gui_check",
-            "description": "Even in WebView (GUI) environment, (1)Windows System/Windows Shell, (Windows system/WMI control functions work.",
+            "description": "Even in WebView (GUI) environment, (1)Windows System/Windows Shell, (2)(Windows system/WMI control functions work.",
             "tags": ["WebView"]
         } 
     ]
