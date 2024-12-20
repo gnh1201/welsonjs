@@ -159,238 +159,238 @@
         },
         {
             "id": "system_get_os_version",
-            "description": "현재 OS 버전 불러오기",
-            "tags": ["Windows 시스템", "시스템 정보"]
+            "description": "Get current OS version",
+            "tags": ["Windows system", "system information"]
         },
         {
             "id": "system_get_architecture",
-            "description": "현재 아키텍쳐 불러오기",
-            "tags": ["Windows 시스템", "시스템 정보"]
+            "description": "Get current system architecture",
+            "tags": ["Windows system", "system information"]
         },
         {
             "id": "system_get_uuid",
-            "description": "현재 장치 고유번호(UUID) 불러오기",
-            "tags": ["Windows 시스템", "시스템 정보"]
+            "description": "bringing the UUID of current device",
+            "tags": ["Windows system", "system information"]
         },
         {
             "id": "system_get_working_directory",
-            "description": "현재 작업 디렉토리 불러오기",
-            "tags": ["Windows 시스템", "시스템 정보"]
+            "description": "bringing current working directory",
+            "tags": ["Windows system", "system information"]
         },
         {
             "id": "system_get_script_directory",
-            "description": "현재 스크립트 디렉토리 불러오기",
-            "tags": ["Windows 시스템", "시스템 정보"]
+            "description": "bringing current script directory",
+            "tags": ["Windows system", "system information"]
         },
         {
             "id": "system_get_network_interfaces",
-            "description": "네트워크 인터페이스 정보 불러오기",
-            "tags": ["Windows 시스템", "시스템 정보"]
+            "description": "bringing network interface information",
+            "tags": ["Windows system", "system information"]
         },
         {
             "id": "system_get_process_list",
-            "description": "활성 프로세스 목록 불러오기",
-            "tags": ["Windows 시스템", "시스템 정보"]
+            "description": "get activated ",
+            "tags": ["Windows system", "system information"]
         },
         {
             "id": "system_get_process_list_by_name",
-            "description": "프로세스 이름으로 특정 활성 프로세스 찾기",
-            "tags": ["Windows 시스템", "시스템 정보"]
+            "description": "find certain active process by process name",
+            "tags": ["Windows system", "system information"]
         },
         {
             "id": "system_register_uri",
-            "description": "URI를 등록하고 URI 요청 내용에 따른 명령 수행",
-            "tags": ["Windows 시스템", "URI(Uniform Resource Identifier) 등록"]
+            "description": "Register URI and carry out command as URI has requested",
+            "tags": ["Windows system", "Register URI(Uniform Resource Identifier)"]
         },
         {
             "id": "system_pipe_ipc",
-            "description": "두개 이상의 프로세스 간 통신",
-            "tags": ["Windows 시스템", "IPC(프로세스 간 통신)"]
+            "description": "Interprocess communication between more than 2 processes",
+            "tags": ["Windows system", "IPC(Inter Process Communication)"]
         },
         {
             "id": "vhid_find_window",
-            "description": "활성창(Window) 핸들 찾기",
-            "tags": ["휴먼 인터페이스", "가상 휴면 인터페이스"]
+            "description": "find active window handle",
+            "tags": ["human interface", "virtual human interface"]
         },
         {
             "id": "vhid_send_click",
-            "description": "가상 클릭(Click) 보내기",
-            "tags": ["휴먼 인터페이스", "가상 휴면 인터페이스"]
+            "description": "send virtual click",
+            "tags": ["human interface", "virtual human interface"]
         },
         {
             "id": "vhid_send_keys",
-            "description": "가상 문자키(a-zA-Z0-9) 보내기",
-            "tags": ["휴먼 인터페이스", "가상 휴면 인터페이스"]
+            "description": "Send virtual text key (a-zA-Z0-9)",
+            "tags": ["human interface", "virtual human interface"]
         },
         {
             "id": "vhid_send_key_enter",
-            "description": "가상 엔터키 보내기",
-            "tags": ["휴먼 인터페이스", "가상 휴면 인터페이스"]
+            "description": "send virtual enter key",
+            "tags": ["human interface", "virtual human interface"]
         },
         {
             "id": "vhid_send_key_functions",
-            "description": "가상 FN키 보내기",
-            "tags": ["휴먼 인터페이스", "가상 휴면 인터페이스"]
+            "description": "Send virtual FN key",
+            "tags": ["human interface", "virtual human interface"]
         },
         {
             "id": "vhid_alert",
-            "description": "Alert() API 호출 시 메시지 출력 여부",
-            "tags": ["휴먼 인터페이스", "가상 휴면 인터페이스"]
+            "description": "Alert whether message output will be provided when API is called",
+            "tags": ["human interface", "virtual human interface"]
         },
         {
             "id": "vhid_confirm",
-            "description": "Confirm() API 호출 시 메시지 출력 및 Yes/No 선택",
-            "tags": ["휴먼 인터페이스", "가상 휴면 인터페이스"]
+            "description": "Confirm() message output when API is called and choose between Yes/No",
+            "tags": ["human interface", "virtual human interface"]
         },
         {
             "id": "vhid_prompt",
-            "description": "Prompt() API 호출 시 서술형 응답 받을 수 있음",
-            "tags": ["휴먼 인터페이스", "가상 휴면 인터페이스"]
+            "description": "Prompt() When calling API, can receive descriptive response",
+            "tags": ["human interface", "virtual human interface"]
         },
         {
             "id": "network_http_get",
-            "description": "HTTP GET 전송",
-            "tags": ["네트워크", "HTTP 전송 및 처리"]
+            "description": "Send HTTP GET",
+            "tags": ["network", "Send HTTP and handle HTTP"]
         },
         {
             "id": "network_http_post",
-            "description": "HTTP POST 전송",
-            "tags": ["네트워크", "HTTP 전송 및 처리"]
+            "description": "Send HTTP POST",
+            "tags": ["network", "send HTTP and handle HTTP"]
         },
         {
             "id": "network_http_extended",
-            "description": "HTTP 확장 메소드(FETCH, PUT 등) 전송",
-            "tags": ["네트워크", "HTTP 전송 및 처리"]
+            "description": "send HTTP extension methods(FETCH, PUT, etc)",
+            "tags": ["network", "send HTTP and handle HTTP"]
         },
         {
             "id": "network_attach_debugger",
-            "description": "HTTP 디버거(Fiddler 등) 설정(Attach) 지원",
-            "tags": ["네트워크", "HTTP 전송 및 처리"]
+            "description": "support attaching HTTP debugger(Fiddler, etc)",
+            "tags": ["network", "send HTTP and handle HTTP"]
         },
         {
             "id": "network_detect_charset",
-            "description": "HTTP 응답 본문에서 문자셋(Charset) 탐지",
-            "tags": ["네트워크", "HTTP 전송 및 처리"]
+            "description": "detect Charset in HTTP response body",
+            "tags": ["network", "send HTTP and handle HTTP"]
         },
         {
             "id": "network_detect_http_ssl",
-            "description": "접속 대상 웹사이트의 보안통신(SSL) 사용 여부 탐지",
-            "tags": ["네트워크", "HTTP 전송 및 처리"]
+            "description": "detect whether SSL is running in the website to access ",
+            "tags": ["network", "send HTTP and handle HTTP"]
         },
         {
             "id": "network_send_icmp",
-            "description": "PING(ICMP) 전송",
-            "tags": ["네트워크", "PING(ICMP) 전송"]
+            "description": "send PING(ICMP)",
+            "tags": ["network", "send PING(ICMP)"]
         },
         {
             "id": "extramath_dtm",
-            "description": "2개 이상의 주어진 문장으로부터 DTM (문서-용어 행렬) 생성",
-            "tags": ["고급 문자열 처리", "자연어 처리"]
+            "description": "create DTM (Document-Term Matrix) from more than 2 sentences that are provided",
+            "tags": ["advanced string manipulation", "natural language processing"]
         },
         {
             "id": "extramath_cosine_similarity",
-            "description": "주어진 두 문장의 유사도를 코사인 유사도로 비교",
-            "tags": ["고급 문자열 처리", "자연어 처리"]
+            "description": "compare the similarity of 2 given sentences with cosine similarity",
+            "tags": ["advanced string manipulation", "natural language processing"]
         },
         {
             "id": "base64_encode",
-            "description": "BASE64 인코딩",
-            "tags": ["고급 문자열 처리", "BASE64"]
+            "description": "BASE64 encoding",
+            "tags": ["advanced string manipulation", "BASE64"]
         },
         {
             "id": "base64_decode",
-            "description": "BASE64 디코딩",
-            "tags": ["고급 문자열 처리", "BASE64"]
+            "description": "BASE64 decoding",
+            "tags": ["advanced string manipulation", "BASE64"]
         },
         {
             "id": "chromium_run",
-            "description": "웹 브라우저 실행",
-            "tags": ["웹 브라우저 제어", "웹 브라우저 제어 (크로미움 계열)"]
+            "description": "run web browser",
+            "tags": ["control web browser", "control web browser (Chromium-based)"]
         },
         {
             "id": "chromium_create_profile",
-            "description": "프로파일 생성",
-            "tags": ["웹 브라우저 제어", "웹 브라우저 제어 (크로미움 계열)"]
+            "description": "create profile",
+            "tags": ["control web browser", "control web browser (Chromium-based)"]
         },
         {
             "id": "chromium_run_incognito",
-            "description": "개인정보 보호 모드로 웹 브라우저 실행",
-            "tags": ["웹 브라우저 제어", "웹 브라우저 제어 (크로미움 계열)"]
+            "description": "run web browser in incognito mode",
+            "tags": ["control web browser", "control web browser (Chromium-based)"]
         },
         {
             "id": "chromium_navigate",
-            "description": "URL로 주소 이동",
-            "tags": ["웹 브라우저 제어", "웹 브라우저 제어 (크로미움 계열)"]
+            "description": "move to another address through URL",
+            "tags": ["control web browser", "control web browser (Chromium-based)"]
         },
         {
             "id": "chromium_get_active_pages",
-            "description": "활성 페이지 목록 불러오기",
-            "tags": ["웹 브라우저 제어", "웹 브라우저 제어 (크로미움 계열)"]
+            "description": "bringing active page list",
+            "tags": ["control web browser", "control web browser (Chromium-based)"]
         },
         {
             "id": "chromium_find_page_by_id",
-            "description": "고유 ID로 페이지 찾기",
-            "tags": ["웹 브라우저 제어", "웹 브라우저 제어 (크로미움 계열)"]
+            "description": "finding page by original ID",
+            "tags": ["control web browser", "control web browser (Chromium-based)"]
         },
         {
             "id": "chromium_find_pages_by_title",
-            "description": "페이지 제목으로 페이지 찾기",
-            "tags": ["웹 브라우저 제어", "웹 브라우저 제어 (크로미움 계열)"]
+            "description": "finding pages by title of the pages",
+            "tags": ["control web browser", "control web browser (Chromium-based)"]
         },
         {
             "id": "chromium_move_focused",
-            "description": "창 포커스 이동",
-            "tags": ["웹 브라우저 제어", "웹 브라우저 제어 (크로미움 계열)"]
+            "description": "move focus of the window",
+            "tags": ["control web browser", "control web browser (Chromium-based)"]
         },
         {
             "id": "chromium_adjust_window_size",
-            "description": "창 크기 제어",
-            "tags": ["웹 브라우저 제어", "웹 브라우저 제어 (크로미움 계열)"]
+            "description": "adjust size of the window",
+            "tags": ["control web browser", "control web browser (Chromium-based)"]
         },
         {
             "id": "chromium_get_element_position",
-            "description": "제공된 CSS Selector와 일치하는 단일 객체 포지션 찾기",
-            "tags":  ["웹 브라우저 제어", "웹 브라우저 제어 (크로미움 계열)"]
+            "description": "finding single element position that matches with provided CSS Selector",
+            "tags":  ["control web browser", "control web browser (Chromium-based)"]
         },
         {
             "id": "chromium_get_mapreduced_element_position",
-            "description": "CSS Selector와 일치하는 다중 객체 중 조건에 맞는 객체의 포지션 찾기",
-            "tags":  ["웹 브라우저 제어", "웹 브라우저 제어 (크로미움 계열)"]
+            "description": "finding position of the element that meets requirement among multiple elements that match with CSS selector",
+            "tags":  ["control web browser", "control web browser (Chromium-based)"]
         },
         {
             "id": "chromium_set_value_to_textbox",
-            "description": "대상 객체가 사용자 입력형(TextArea 또는 TextInput인 경우) 값 설정하기",
-            "tags":  ["웹 브라우저 제어", "웹 브라우저 제어 (크로미움 계열)"]
+            "description": "setting the value in case the object of the action is input by users(TextArea or TextInput)",
+            "tags":  ["control web browser", "control web browser (Chromium-based)"]
         },
         {
             "id": "chromium_send_click",
-            "description": "가상 클릭(Click) 보내기",
-            "tags":  ["웹 브라우저 제어", "웹 브라우저 제어 (크로미움 계열)"]
+            "description": "send virtual click",
+            "tags":  ["control web browser", "control web browser (Chromium-based)"]
         },
         {
             "id": "chromium_send_keys",
-            "description": "가상 키(Key) 보내기",
-            "tags":  ["웹 브라우저 제어", "웹 브라우저 제어 (크로미움 계열)"]
+            "description": "send virtual key",
+            "tags":  ["control web browser", "control web browser (Chromium-based browser)"]
         },
         {
             "id": "chromium_auto_scroll_until_end",
-            "description": "수직 스크롤이 있을 시 스크롤이 끝날 때까지 자동으로 화면 탐색하기",
-            "tags": ["웹 브라우저 제어", "웹 브라우저 제어 (크로미움 계열)"]
+            "description": "exploring the screen automatically until the scrolling finishes, in case of vertical scrolling",
+            "tags": ["control web browser", "control web browser (Chromium-based browser)"]
         },
         {
             "id": "grpc_run_server",
-            "description": "gRPC 서버 실행",
+            "description": "run gRPC server",
             "tags": ["gRPC"]
         },
         {
             "id": "grpc_receive_command",
-            "description": "gRPC로 들어온 명령을 스크립트로 받음",
+            "description": "receive command that is sent to grpc in script",
             "tags": ["gRPC"]
         },
         {
             "id": "gui_check",
-            "description": "WebView (GUI) 환경에서도 (1)Windows 시스템/Windows 쉘(Shell), (2)Windows 시스템/WMI 제어 기능이 동작 가능.",
+            "description": "Even in WebView (GUI) environment, (1)Windows System/Windows Shell, (2)(Windows system/WMI control functions work.",
             "tags": ["WebView"]
-        }
+        } 
     ]
 }

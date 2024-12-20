@@ -24,10 +24,10 @@ function main(args) {
     var lines = [];
     var wbInstance = Chrome.startWithDebugging("https://virustotal.com", null, "virustotal", 9222);
 
-    // 대기
+    // Wait
     sleep(5000);
 
-    // 브라우저 탭 찾기
+    // finding browser tap
     pages = wbInstance.getPagesByTitle("VirusTotal");
     if (pages.length > 0) {
         page = pages[0];
@@ -38,12 +38,12 @@ function main(args) {
     var callback1 = function(row) {
         var hash = row[1];
 
-        console.log("탐색을 시도합니다:", hash);
+        console.log("Attempt exploring:", hash);
 
         wbInstance.navigate("https://www.virustotal.com/gui/file/" + hash);
         sleep(RAND.getInt(4000, 5000));
 
-        // 자료를 찾았는지 여부
+        // Indicates whether data was found
         var msgNotFound = wbInstance.getEvaluatedValue(
             "__getDocument().querySelector('vt-ui-shell').shadowRoot.querySelector('#mainContent').querySelector('slot').assignedNodes()[2]" +
             wbInstance.getShadowRootSelector([
@@ -53,12 +53,12 @@ function main(args) {
             ".shadowRoot.querySelector('.title slot').assignedNodes()[0].innerText"
         );
         if (msgNotFound == "No matches found") {
-            console.log("찾을 수 없음 (No matches found): " + hash);
+            console.log("No matches found"): " + hash);
             lines.push([hash, '', '0', '0', '0', ''].join(','));
             return;
         }
 
-        // 전체 진단 수 확인
+        // Check how many times it was examined to detect and diagnose viruses
         var positives = wbInstance.getEvaluatedValue(
             "__getDocument().querySelector('vt-ui-shell').shadowRoot.querySelector('#mainContent').querySelector('slot').assignedNodes()[2]" +
             wbInstance.getShadowRootSelector([
@@ -69,7 +69,7 @@ function main(args) {
             ".shadowRoot.querySelector('div > div > div.positives').innerText"
         );
 
-        // 알려진 파일 명
+        // known filename
         var filename = wbInstance.getEvaluatedValue(
             "__getDocument().querySelector('vt-ui-shell').shadowRoot.querySelector('#mainContent').querySelector('slot').assignedNodes()[2]" +
             wbInstance.getShadowRootSelector([
@@ -79,7 +79,7 @@ function main(args) {
             ".shadowRoot.querySelector('div > div.card-body > div > div.hstack.gap-4 > div.vstack.gap-2.align-self-center.text-truncate > div.file-name.text-truncate > a').innerText"
         );
 
-        // 최근 진단 날짜 확인
+        // Check the latest date of the examination to detect and diagnose a virus
         var last = wbInstance.getEvaluatedValue(
             "__getDocument().querySelector('vt-ui-shell').shadowRoot.querySelector('#mainContent').querySelector('slot').assignedNodes()[2]" +
             wbInstance.getShadowRootSelector([
@@ -89,7 +89,7 @@ function main(args) {
             ".shadowRoot.querySelector('div > div.card-body > div > div.hstack.gap-4 > div:nth-child(5) > vt-ui-time-ago').getAttribute('data-tooltip-text')"
         );
 
-        // 국내 백신 진단 여부 확인
+        // Check whether a Korean vaccine programme has examined to detect and diagnose virus
         var score_undetected = wbInstance.getEvaluatedValue(
             'Object.values(' +
             "__getDocument().querySelector('vt-ui-shell').shadowRoot.querySelector('#mainContent').querySelector('slot').assignedNodes()[2].querySelector('file-view').shadowRoot.querySelector('vt-ui-main-generic-report').querySelector('.tab-slot')" +
@@ -100,13 +100,13 @@ function main(args) {
             ".querySelectorAll('.detection')).reduce(function(a, x) { if(/AhnLab|ALYac|ViRobot/.test(x.innerText) && x.innerText.indexOf('Undetected') > -1) a = a + 1; return a; }, 0)"
         );
 
-        console.log("해시:", hash);
-        console.log("알려진 파일 이름:", filename);
-        console.log("전체 진단:", positives);
-        console.log("최근 날짜:", last);
-        console.log("국내 백신 미진단:", score_undetected + "건");
+        console.log("hash:", hash);
+        console.log("known filename:", filename);
+        console.log("examined the whole to detect and diagnose viruses :", positives);
+        console.log("date of the latest activity:", last);
+        console.log("Hasn ' t examined with a Korean vaccine programme to detect and diagnose viruses:", score_undetected + "건");
 
-        // 쓰기 줄 생성
+        // create lines for writing
         lines.push([hash, filename, '1', positives, score_undetected, last].join(','));
     };
 
