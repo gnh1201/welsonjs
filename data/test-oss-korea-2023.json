@@ -39,132 +39,132 @@
     "tests": [
         {
             "id": "es5_polyfills",
-            "description": "Indicates Whether Polyfill higher than ES5 level has successfully performed (Perform pollyfill higher than ES5 level in Windows built-in Engine)",
-            "tags": ["Javascript engine", "ECMAScript Polyfills"]
+            "description": "ES5 수준 이상의 폴리필(Polyfill) 성공 여부 (Windows 내장 엔진에서 ES5 수준 이상의 폴리필 수행)",
+            "tags": ["Javascript 엔진", "ECMAScript Polyfills"]
         },
         {
             "id": "registry_find_provider",
-            "description": "Search registry provider",
-            "tags": ["Windows system", "Control Registry"]
+            "description": "레지스트리 제공자 찾기",
+            "tags": ["Windows 시스템", "레지스트리(Registry) 제어"]
         },
         {
             "id": "registry_write",
-            "description": "writing Registry",
-            "tags": ["Windows system", "control Registry"]
+            "description": "레지스트리 쓰기",
+            "tags": ["Windows 시스템", "레지스트리(Registry) 제어"]
         },
         {
             "id": "registry_read",
-            "description": "reading Registry",
-            "tags": ["Windows system", "control Registry"]
+            "description": "레지스트리 읽기",
+            "tags": ["Windows 시스템", "레지스트리(Registry) 제어"]
         },
         {
             "id": "wmi_create_object",
-            "description": "create WMI object",
-            "tags": ["Windows system", "control WMI(Windows Management Instrumentation) "]
+            "description": "WMI 오브젝트 생성",
+            "tags": ["Windows 시스템", "WMI(Windows Management Instrumentation) 제어"]
         },
         {
             "id": "wmi_execute_query",
-            "description": "executing WMI query",
-            "tags": ["Windows system", "control WMI(Windows Management Instrumentation) "]
+            "description": "WMI 쿼리 실행",
+            "tags": ["Windows 시스템", "WMI(Windows Management Instrumentation) 제어"]
         },
         {
             "id": "wmi_result_query",
-            "description": "result of WMI query",
-            "tags": ["Windows system", "control WMI(Windows Management Instrumentation) "]
+            "description": "WMI 쿼리 결과",
+            "tags": ["Windows 시스템", "WMI(Windows Management Instrumentation) 제어"]
         },
         {
             "id": "shell_create_object",
-            "description": "create Shell object",
-            "tags": ["Windows system", "Windows Shell"]
+            "description": "쉘(Shell) 오브젝트 생성",
+            "tags": ["Windows 시스템", "Windows 쉘(Shell)"]
         },
         {
             "id": "shell_build_command_line",
-            "description": "building command line (input: Array Object, output: Unescaped Command String)",
-            "tags": ["Windows system", "Windows Shell"]
+            "description": "명령 행 빌드 (입력: Array Object, 출력: Unescaped Command String)",
+            "tags": ["Windows 시스템", "Windows 쉘(Shell)"]
         },
         {
             "id": "shell_set_charset",
-            "description": "set Charset",
-            "tags": ["Windows system", "Windows Shell"]
+            "description": "문자셋(Charset) 설정",
+            "tags": ["Windows 시스템", "Windows 쉘(Shell)"]
         },
         {
             "id": "shell_working_directory",
-            "description": "set Working Directory",
-            "tags": ["Windows system", "Windows Shell"]
+            "description": "작업 디렉토리(Working Directory) 설정",
+            "tags": ["Windows 시스템", "Windows 쉘(Shell)"]
         },
         {
             "id": "shell_create_process",
-            "description": "creating process",
-            "tags": ["Windows system", "Windows Shell"]
+            "description": "프로세스 생성",
+            "tags": ["Windows 시스템", "Windows 쉘(Shell)"]
         },
         {
             "id": "shell_execute",
-            "description": "execute shell command (receive results(stdout, stderr))",
-            "tags": ["Windows system", "Windows Shell"]
+            "description": "쉘 명령어 실행 (결과(stdout, stderr)를 수신)",
+            "tags": ["Windows 시스템", "Windows 쉘(Shell)"]
         },
         {
             "id": "shell_run",
-            "description": "run shell command (fork)regardless of result",
-            "tags": ["Windows system", "Windows Shell"]
+            "description": "쉘 명령어 실행 (결과와 무관하게 fork)",
+            "tags": ["Windows 시스템", "Windows 쉘(Shell)"]
         },
         {
             "id": "shell_run_as",
-            "description": "run shell command (run with administrator's authority)",
-            "tags": ["Windows system", "Windows Shell"]
+            "description": "쉘 명령어 실행 (관리자 권한으로 실행)",
+            "tags": ["Windows 시스템", "Windows 쉘(Shell)"]
         },
         {
             "id": "shell_find_my_documents",
-            "description": "bring (My Documents) location",
-            "tags": ["Windows system", "Windows Shell"]
+            "description": "내 문서(My Documents) 위치 가져오기",
+            "tags": ["Windows 시스템", "Windows 쉘(Shell)"]
         },
         {
             "id": "shell_release",
-            "description": "release created shell object",
-            "tags": ["Windows system", "Windows Shell"]
+            "description": "생성된 쉘 오브젝트 해제",
+            "tags": ["Windows 시스템", "Windows 쉘(Shell)"]
         },
         {
             "id": "powershell_set_command",
-            "description": "Set command line",
-            "tags": ["Windows system", "Windows Powershell"]
+            "description": "실행할 명령(커맨드라인) 지정",
+            "tags": ["Windows 시스템", "Windows 파워쉘(Powershell)"]
         },
         {
             "id": "powershell_set_file",
-            "description": "set files(*.ps1)to run",
-            "tags": ["Windows system", "Windows Powershell"]
+            "description": "실행할 파일(*.ps1) 지정",
+            "tags": ["Windows 시스템", "Windows 파워쉘(Powershell)"]
         },
         {
             "id": "powershell_set_uri",
-            "description": "Use uri to set commands",
-            "tags": ["Windows system", "Windows Powershell"]
+            "description": "URI를 이용하여 명령 지정",
+            "tags": ["Windows 시스템", "Windows 파워쉘(Powershell)"]
         },
         {
             "id": "powershell_execute",
-            "description": "Execute command (user mode)",
-            "tags": ["Windows system", "Windows Powershell"]
+            "description": "명령 실행 (유저 모드)",
+            "tags": ["Windows 시스템", "Windows 파워쉘(Powershell)"]
         },
         {
             "id": "powershell_run_as",
-            "description": "run commands (administrator mode)",
-            "tags": ["Windows system", "Windows Powershell"]
+            "description": "명령 실행 (관리자 모드)",
+            "tags": ["Windows 시스템", "Windows 파워쉘(Powershell)"]
         },
         {
             "id": "system_resolve_env",
-            "description": "Check if Environmentment variables resolver resolves environment variables appropriately",
-            "tags": ["Windows system", "system information"]
+            "description": "환경변수 해석기(Resolver)가 환경변수를 적절히 해석하는지 확인",
+            "tags": ["Windows 시스템", "시스템 정보"]
         },
         {
             "id": "system_check_as",
-            "description": "Check if current process itself is in administrator mode",
-            "tags": ["Windows system", "system information"]
+            "description": "현재 프로세스 자신이 관리자 모드인지 체크",
+            "tags": ["Windows 시스템", "시스템 정보"]
         },
         {
             "id": "system_get_os_version",
-            "description": "bringing current OS version",
+            "description": "Get current OS version",
             "tags": ["Windows system", "system information"]
         },
         {
             "id": "system_get_architecture",
-            "description": "bringing current architecture",
+            "description": "Get current system architecture",
             "tags": ["Windows system", "system information"]
         },
         {
