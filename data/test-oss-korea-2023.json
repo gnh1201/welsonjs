@@ -284,7 +284,7 @@
         },
         {
             "id": "extramath_dtm",
-            "description": "create DTM (Document-Term Matrix) from more than 2 sentenced that are provided",
+            "description": "create DTM (Document-Term Matrix) from more than 2 sentences that are provided",
             "tags": ["advanced string manipulation", "natural language processing"]
         },
         {
