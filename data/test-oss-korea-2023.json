@@ -215,7 +215,7 @@
         {
             "id": "vhid_send_click",
             "description": "send virtual click",
-            "tags": ["human interface", "vi"]
+            "tags": ["human interface", "virtual human interface"]
         },
         {
             "id": "vhid_send_keys",
