@@ -47,12 +47,15 @@ This program is also known by the following names. These names are used solely f
 - "C-2021-000237"(2021) (Copyright Registration Online System, Korea Copyright Commission, Republic of Korea)
 - "Codename Macadamia"(2020) (Heavy industry specialized CSP in the Republic of Korea)
 
-## Report Abuse
-If you discover any instances of this project being misused, please report them.
-
+## Report abuse
 - [GitHub Security Advisories](https://github.com/gnh1201/welsonjs/security)
 - abuse@catswords.net
+
+## Join the community
 - ActivityPub [@catswords_oss@catswords.social](https://catswords.social/@catswords_oss)
 - XMPP [catswords@conference.omemo.id](xmpp:catswords@conference.omemo.id?join)
 - [Join Catswords OSS on Microsoft Teams (teams.live.com)](https://teams.live.com/l/community/FEACHncAhq8ldnojAI)
 - [Join Catswords OSS #welsonjs on Discord (discord.gg)](https://discord.gg/XKG5CjtXEj)
+
+## Fast-track consultation channels
+- [A Fast-track consultation channel (m.expert.naver.com)](https://m.expert.naver.com/mobile/expert/product/detail?storeId=100051156&productId=100144540) is available for Korean (한국어) customers.
