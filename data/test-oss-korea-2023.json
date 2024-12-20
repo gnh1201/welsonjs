@@ -365,7 +365,7 @@
         {
             "id": "chromium_send_click",
             "description": "send virtual click",
-            "tags":  ["control web browser", "control web broswer (Chromium-based)"]
+            "tags":  ["control web browser", "control web browser (Chromium-based)"]
         },
         {
             "id": "chromium_send_keys",
