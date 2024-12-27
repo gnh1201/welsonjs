@@ -1,8 +1,8 @@
 {
-    "chatgpt": "",
-    "anthropic": "",
-    "groq": "",
-    "scrapeops": "",
-    "searchapi": "",
-    "aviationstack": ""
+    "chatgpt": "file:chatgpt_apikey.txt",
+    "anthropic": "file:anthropic_apikey.txt",
+    "groq": "file:groq_apikey.txt",
+    "scrapeops": "file:scrapeops_apikey.txt",
+    "searchapi": "file:searchapi_apikey.txt",
+    "aviationstack": "file:aviationstack_apikey.txt"
 }
