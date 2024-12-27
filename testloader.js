@@ -1006,10 +1006,11 @@ var test_implements = {
     // https://catswords-oss.rdbl.io/5719744820/8278298336
     "proxy_custom_provider": function() {
         var HTTP = require("lib/http");
+        var APIKEY = require("lib/apikey");
 
         var response = HTTP.create()
             .setVariables({
-                "api_key": "YOUR_API_KEY",
+                "api_key": APIKEY.getApiKey("scrapeops"),
                 "render_js": "false",
                 "residential": "false",
                 "country": "us",
@@ -1029,10 +1030,11 @@ var test_implements = {
     // https://catswords-oss.rdbl.io/5719744820/8278298336
     "proxy_serp": function() {
         var HTTP = require("lib/http");
+        var APIKEY = require("lib/apikey");
 
         var response = HTTP.create()
             .setVariables({
-                "api_key": "YOUR_API_KEY"
+                "api_key": APIKEY.getApiKey("searchapi")
             })
             .setProxy({
                 "enabled": true,
