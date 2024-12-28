@@ -191,7 +191,7 @@ The WelsonJS framework suggests the following application release methods:
 - [License attributions of a stock images](https://policy.catswords.social/stock_images.html)
 
 ## Report abuse
-- [GitHub Security Advisories](https://github.com/gnh1201/welsonjs/security)
+- [GitHub Security Advisories (gnh1201/welsonjs)](https://github.com/gnh1201/welsonjs/security)
 - abuse@catswords.net
 
 ## Join the community
