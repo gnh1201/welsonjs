@@ -1,0 +1,86 @@
+Windows Registry Editor Version 5.00
+
+;.JS file type association fix - Windows XP
+;Author  : Ramesh Srinivasan
+;Created : Aug 30, 2007
+;Homepage: http://www.winhelponline.com
+
+[HKEY_CLASSES_ROOT\.JS]
+@="JSFile"
+"CachedFilterIID"="{c1243ca0-bf96-11cd-b579-08002b30bfeb}"
+
+[HKEY_CLASSES_ROOT\.JS\PersistentHandler]
+@="{5e941d80-bf96-11cd-b579-08002b30bfeb}"
+
+
+[HKEY_CLASSES_ROOT\JSFile]
+@="JScript Script File"
+"FriendlyTypeName"=hex(2):40,00,25,00,53,00,79,00,73,00,74,00,65,00,6d,00,52,\
+  00,6f,00,6f,00,74,00,25,00,5c,00,53,00,79,00,73,00,74,00,65,00,6d,00,33,00,\
+  32,00,5c,00,77,00,73,00,68,00,65,00,78,00,74,00,2e,00,64,00,6c,00,6c,00,2c,\
+  00,2d,00,34,00,38,00,30,00,34,00,00,00
+
+[HKEY_CLASSES_ROOT\JSFile\DefaultIcon]
+@=hex(2):25,00,53,00,79,00,73,00,74,00,65,00,6d,00,52,00,6f,00,6f,00,74,00,25,\
+  00,5c,00,53,00,79,00,73,00,74,00,65,00,6d,00,33,00,32,00,5c,00,57,00,53,00,\
+  63,00,72,00,69,00,70,00,74,00,2e,00,65,00,78,00,65,00,2c,00,33,00,00,00
+
+[HKEY_CLASSES_ROOT\JSFile\ScriptEngine]
+@="JScript"
+
+[HKEY_CLASSES_ROOT\JSFile\ScriptHostEncode]
+@="{85131630-480C-11D2-B1F9-00C04F86C324}"
+
+[HKEY_CLASSES_ROOT\JSFile\Shell]
+
+[HKEY_CLASSES_ROOT\JSFile\Shell\Edit]
+@="&Edit"
+
+[HKEY_CLASSES_ROOT\JSFile\Shell\Edit\Command]
+@="notepad.exe \"%1\""
+
+[HKEY_CLASSES_ROOT\JSFile\Shell\Open]
+@="&Open"
+
+[HKEY_CLASSES_ROOT\JSFile\Shell\Open\Command]
+@=hex(2):25,00,53,00,79,00,73,00,74,00,65,00,6d,00,52,00,6f,00,6f,00,74,00,25,\
+  00,5c,00,53,00,79,00,73,00,74,00,65,00,6d,00,33,00,32,00,5c,00,57,00,53,00,\
+  63,00,72,00,69,00,70,00,74,00,2e,00,65,00,78,00,65,00,20,00,22,00,25,00,31,\
+  00,22,00,20,00,25,00,2a,00,00,00
+
+[HKEY_CLASSES_ROOT\JSFile\Shell\Open2]
+@="Open &with Command Prompt"
+
+[HKEY_CLASSES_ROOT\JSFile\Shell\Open2\Command]
+@=hex(2):25,00,53,00,79,00,73,00,74,00,65,00,6d,00,52,00,6f,00,6f,00,74,00,25,\
+  00,5c,00,53,00,79,00,73,00,74,00,65,00,6d,00,33,00,32,00,5c,00,43,00,53,00,\
+  63,00,72,00,69,00,70,00,74,00,2e,00,65,00,78,00,65,00,20,00,22,00,25,00,31,\
+  00,22,00,20,00,25,00,2a,00,00,00
+
+[HKEY_CLASSES_ROOT\JSFile\Shell\Print]
+@="&Print"
+
+[HKEY_CLASSES_ROOT\JSFile\Shell\Print\Command]
+@=hex(2):25,00,53,00,79,00,73,00,74,00,65,00,6d,00,52,00,6f,00,6f,00,74,00,25,\
+  00,5c,00,53,00,79,00,73,00,74,00,65,00,6d,00,33,00,32,00,5c,00,4e,00,6f,00,\
+  74,00,65,00,70,00,61,00,64,00,2e,00,65,00,78,00,65,00,20,00,2f,00,70,00,20,\
+  00,25,00,31,00,00,00
+
+[HKEY_CLASSES_ROOT\JSFile\ShellEx]
+
+[HKEY_CLASSES_ROOT\JSFile\ShellEx\DropHandler]
+@="{60254CA5-953B-11CF-8C96-00AA00B8708C}"
+
+[HKEY_CLASSES_ROOT\JSFile\ShellEx\PropertySheetHandlers]
+
+[HKEY_CLASSES_ROOT\JSFile\ShellEx\PropertySheetHandlers\WSHProps]
+@="{60254CA5-953B-11CF-8C96-00AA00B8708C}"
+
+[HKEY_CLASSES_ROOT\JScript]
+@="JScript Language"
+
+[HKEY_CLASSES_ROOT\JScript\CLSID]
+@="{f414c260-6ac0-11cf-b6d1-00aa00bbbb58}"
+
+[HKEY_CLASSES_ROOT\JScript\OLEScript]
+
