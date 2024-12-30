@@ -69,7 +69,7 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
 - lib/system (System interface)
 - lib/base64 (BASE64 encode and decode)
 - lib/file (File I/O interface)
-- lib/http (HTTP(S) client with [XHR(MSXML)](https://developer.mozilla.org/docs/Glossary/XMLHttpRequest), [cURL](https://curl.se/), [BITS](https://en.m.wikipedia.org/w/index.php?title=Background_Intelligent_Transfer_Service), [CERT](https://github.com/MicrosoftDocs/windowsserverdocs/blob/main/WindowsServerDocs/administration/windows-commands/certutil.md), [Web Proxy, SEO/SERP](https://catswords-oss.rdbl.io/5719744820/1706431912), and more [integrations](https://catswords-oss.rdbl.io/5719744820/8278298336))
+- lib/http (HTTP(S) client with [XHR(MSXML)](https://developer.mozilla.org/docs/Glossary/XMLHttpRequest), [cURL](https://curl.se/), [BITS](https://en.m.wikipedia.org/w/index.php?title=Background_Intelligent_Transfer_Service), [CERT](https://github.com/MicrosoftDocs/windowsserverdocs/blob/main/WindowsServerDocs/administration/windows-commands/certutil.md), [Web Proxy, SEO/SERP](https://catswords-oss.rdbl.io/5719744820/1706431912), and [more...](https://catswords-oss.rdbl.io/5719744820/8278298336))
 - lib/registry (Windows Registry interface)
 - lib/security (Windows Security Policy interface)
 - lib/shell (Windows Shell (Command Prompt) interface)
@@ -97,6 +97,7 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
 - [WelsonJS.Launcher](https://catswords-oss.rdbl.io/5719744820/4131485779) (Launcher Application, For recent Windows based systems)
   - This is a launcher app designed to easily distribute WelsonJS application packages (based on ZIP compression files).
 - [ChatGPT](https://openai.com/index/chatgpt/), [Anthropic/Claude](https://claude.ai/), [Groq](https://groq.com/) integration
+- Aviation Data ([AviationStack](https://aviationstack.com?utm_source=FirstPromoter&utm_medium=Affiliate&fpr=namhyeon71), [SearchApi Google Flight]((https://www.searchapi.io/?via=namhyeon))) integration
 - Everything you can imagine.
 
 ## Make your own `sayhello` example
