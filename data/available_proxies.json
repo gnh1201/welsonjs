@@ -1,0 +1,80 @@
+[
+    {
+        "type": "stateless",
+        "provider": "scrapeops",
+        "url": "https://proxy.scrapeops.io/v1/?api_key={api_key}&url={url}&render_js={render_js}&residential={residential}&country={country}&keep_headers={keep_headers}",
+        "documentation": "https://scrapeops.io?fpr=namhyeon75"
+    },
+    {
+        "type": "stateful",
+        "provider": "scrapeops",
+        "url": "http://scrapeops:{api_key}@residential-proxy.scrapeops.io:8181",
+        "documentation": "https://scrapeops.io?fpr=namhyeon75"
+    },
+    {
+        "type": "serp",
+        "provider": "searchapi",
+        "url": "https://www.searchapi.io/api/v1/search?api_key={api_key}&engine={engine}&q={q}",
+        "documentation": "https://www.searchapi.io/?via=namhyeon"
+    },
+    {
+        "type": "serp",
+        "provider": "librey",
+        "url": "https://serp.catswords.net/librex/api.php?q={q}&p=1&t=0",
+        "documentation": "https://github.com/Ahwxorg/LibreY"
+    },
+    {
+        "type": "serp",
+        "provider": "invidious",
+        "url": "https://invidious.jing.rocks/invidious/api/v1/search?q={q}",
+        "documentation": "https://docs.invidious.io/instances/"
+    },
+    {
+        "type": "stateless-jsonrpc2",
+        "provider": "github.com/gnh1201/caterpillar",
+        "url": "http://localhost:8080",
+        "documentation": "https://github.com/gnh1201/caterpillar"
+    },
+    {
+        "type": "stateful",
+        "provider": "github.com/gnh1201/caterpillar",
+        "url": "http://localhost:5555",
+        "documentation": "https://github.com/gnh1201/caterpillar"
+    },
+    {
+        "type": "stateful",
+        "provider": "cloudflare",
+        "url": "http://localhost:40000",
+        "documentation": "https://developers.cloudflare.com/warp-client/warp-modes/"
+    },
+    {
+        "type": "stateful",
+        "provider": "fiddler",
+        "url": "http://localhost:8888",
+        "documentation": "https://www.telerik.com/fiddler/fiddler-classic"
+    },
+    {
+        "type": "stateful",
+        "provider": "fiddler2",
+        "url": "http://localhost:8866",
+        "documentation": "https://www.telerik.com/fiddler/fiddler-everywhere"
+    },
+    {
+        "type": "stateful",
+        "provider": "mitmproxy",
+        "url": "http://localhost:8080",
+        "documetation": "https://mitmproxy.org/"
+    },
+    {
+        "type": "stateful",
+        "provider": "burpsuite",
+        "url": "http://localhost:8080",
+        "documetation": "https://portswigger.net/burp"
+    },
+    {
+        "type": "stateful",
+        "provider": "zaproxy",
+        "url": "http://localhost:8080",
+        "documetation": "https://www.zaproxy.org/"
+    }
+]
