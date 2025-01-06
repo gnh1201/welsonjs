@@ -160,22 +160,23 @@ The WelsonJS framework suggests the following application release methods:
 ![(Screenshot 6) The Launcher for WelsonJS Application Packages](https://ics.catswords.net/screenshot6.png)
 
 ## Thanks to
+- :heart: Artwork by [@druidesse](https://github.com/druidesse)
 - :sunglasses: Heavy-industry specialized CSP(Cloud Service Provider) in Republic of Korea - Use case establishment
 - :sunglasses: Live-commerce specialized online advertisement companies in Republic of Korea - Use case establishment
 - :sunglasses: Information security companies in Republic of Korea - Use case establishment
-- :eyes: Facebook Group "Javascript Programming"(javascript4u) - [Mentioned](https://www.facebook.com/javascript4u/posts/build-a-windows-desktop-apps-with-javascript-html-and-cssmorioh-javascript-html-/1484014618472735/)
-- :eyes: morioh.com - [Mentioned](https://morioh.com/a/23c427a82bf1/build-a-windows-desktop-apps-with-javascript-html-and-css)
-- :eyes: CSDN - Mentioned
+- :eyes: [Facebook Group "Javascript Programming"(javascript4u)](https://www.facebook.com/javascript4u/posts/build-a-windows-desktop-apps-with-javascript-html-and-cssmorioh-javascript-html-/1484014618472735/)
+- :eyes: [morioh.com](https://morioh.com/a/23c427a82bf1/build-a-windows-desktop-apps-with-javascript-html-and-css)
+- :eyes: CSDN
 - :eyes: Qiita - Knowledge-base about WSH environment
-- :eyes: Redsky Software - PoC(Proof of Concept) of the CommonJS on WSH environment
+- :sunglasses: Redsky Software - PoC(Proof of Concept) of the CommonJS on WSH environment
 - :sunglasses: Inspired by a small-sized JavaScript payload demonstrated by a cybersecurity related group.
 - :sunglasses: Inspired by the use of Named Shared Memory in an inter-language IPC implementation devised by an unidentified developer.
-- :eyes: Fediverse - Mentioned
-- :eyes: Hacker News - [Mentioned](https://news.ycombinator.com/item?id=41316782)
-- :eyes: WebToolsWeekly - [Mentioned](https://webtoolsweekly.com/archives/issue-585/)
-- :eyes: GeekNews - [Mentioned](https://news.hada.io/weekly/202441) in GeekNews Weekly (2024-09-30 ~ 2024-10-06)
-- :eyes: daily.dev - [Mentioned](https://app.daily.dev/posts/js-libraries-svg-tools-json-databases-8quregz3a)
-- :eyes: PitchHut - [Mentioned](https://www.pitchhut.com/project/proj_Ya136OLSW5at)
+- :eyes: Fediverse
+- :eyes: [Hacker News](https://news.ycombinator.com/item?id=41316782)
+- :eyes: [WebToolsWeekly](https://webtoolsweekly.com/archives/issue-585/)
+- :eyes: [GeekNews](https://news.hada.io/weekly/202441) in GeekNews Weekly (2024-09-30 ~ 2024-10-06)
+- :eyes: [daily.dev](https://app.daily.dev/posts/js-libraries-svg-tools-json-databases-8quregz3a)
+- :eyes: [PitchHut](https://www.pitchhut.com/project/proj_Ya136OLSW5at)
 
 ## Related links
 - [gnh1201/wsh-js-gtk](https://github.com/gnh1201/wsh-js-gtk) - GTK GUI ported to Windows Scripting Host - Javascript (Microsoft JScript) (wsh-js)
