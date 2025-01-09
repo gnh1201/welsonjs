@@ -57,5 +57,6 @@ This program is also known by the following names. These names are used solely f
 - [Join Catswords OSS on Microsoft Teams (teams.live.com)](https://teams.live.com/l/community/FEACHncAhq8ldnojAI)
 - [Join Catswords OSS #welsonjs on Discord (discord.gg)](https://discord.gg/XKG5CjtXEj)
 
-## Fast-track consultation channels
-- [A Fast-track consultation channel (m.expert.naver.com)](https://m.expert.naver.com/mobile/expert/product/detail?storeId=100051156&productId=100144540) is available for Korean (한국어) customers.
+## Special channels
+- [A paid consultation channel (m.expert.naver.com)](https://m.expert.naver.com/mobile/expert/product/detail?storeId=100051156&productId=100144540) is available for Korean (한국어) region.
+- [Join the private operations channel (forms.gle)](https://forms.gle/ZKAAaGTiGamksHoo8) is available for all regions.
