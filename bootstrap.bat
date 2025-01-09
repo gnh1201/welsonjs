@@ -9,7 +9,8 @@ set TOOLKIT_URL=https://ics.catswords.net/welsonjs_toolkit.cab
 set TOOLKIT_PATH=%TEMP%\welsonjs_toolkit.cab
 set TOOLKIT_EXTRACT_PATH=%TEMP%
 set REGASM_PATH=%WINDIR%\Microsoft.NET\Framework\v2.0.50727\RegAsm.exe
-set TOOLKIT_DLL=%TEMP%\WelsonJS.Toolkit.dll
+set LOCAL_TOOLKIT_DLL=bin\x86\WelsonJS.Toolkit.dll
+set DOWNLOADED_TOOLKIT_DLL=%TEMP%\WelsonJS.Toolkit.dll
 
 echo [*] Initializing WelsonJS pre-configuration...
 
@@ -22,17 +23,24 @@ echo [*] Unlocking MSHTML performance limits...
 reg add "HKCU\Software\Microsoft\Internet Explorer\Styles" /f
 reg add "HKCU\Software\Microsoft\Internet Explorer\Styles" /v "MaxScriptStatements" /t REG_DWORD /d 0xFFFFFFFF /f
 
-:: Check if TOOLKIT_DLL exists
-if exist "%TOOLKIT_DLL%" (
-    echo [*] Toolkit already exists. Skipping download and extraction.
+:: Determine which toolkit to use
+if exist "%LOCAL_TOOLKIT_DLL%" (
+    echo [*] Local toolkit found. Using "%LOCAL_TOOLKIT_DLL%" for registration.
+    set TOOLKIT_DLL=%LOCAL_TOOLKIT_DLL%
+) else if exist "%DOWNLOADED_TOOLKIT_DLL%" (
+    echo [*] Downloaded toolkit found. Using "%DOWNLOADED_TOOLKIT_DLL%" for registration.
+    set TOOLKIT_DLL=%DOWNLOADED_TOOLKIT_DLL%
 ) else (
+    echo [*] Toolkit not found locally. Downloading from external source...
     :: Download the latest WelsonJS.Toolkit component
-    echo [*] Downloading the latest WelsonJS.Toolkit component...
     bitsadmin /transfer toolkit_download /download /priority normal %TOOLKIT_URL% %TOOLKIT_PATH%
     
     :: Extract the downloaded CAB file
     echo [*] Extracting WelsonJS.Toolkit component...
     expand %TOOLKIT_PATH% -F:* %TOOLKIT_EXTRACT_PATH%
+    
+    :: Set the downloaded DLL as the target
+    set TOOLKIT_DLL=%DOWNLOADED_TOOLKIT_DLL%
 )
 
 :: Register the WelsonJS.Toolkit component
