@@ -1,5 +1,5 @@
-REM bootstrap.bat - WelsonJS 0.2.7
-REM Repository: https://github.com/gnh1201/welsonjs
+REM WelsonJS 0.2.7 bootstrapping script
+REM Source code available: https://github.com/gnh1201/welsonjs
 
 @echo off
 pushd %~dp0
