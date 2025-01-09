@@ -32,7 +32,7 @@ if exist "%TOOLKIT_DLL%" (
     
     :: Extract the downloaded CAB file
     echo [*] Extracting WelsonJS.Toolkit component...
-    expand %TOOLKIT_PATH% %TOOLKIT_EXTRACT_PATH%
+    expand %TOOLKIT_PATH% -F:* %TOOLKIT_EXTRACT_PATH%
 )
 
 :: Register the WelsonJS.Toolkit component
