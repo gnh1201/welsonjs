@@ -4,5 +4,6 @@
     "groq": "file:data/groq_apikey.txt",
     "scrapeops": "file:data/scrapeops_apikey.txt",
     "searchapi": "file:data/searchapi_apikey.txt",
-    "aviationstack": "file:data/aviationstack_apikey.txt"
+    "aviationstack": "file:data/aviationstack_apikey.txt",
+    "abuseipdb": "file:data/abuseipdb_apikey.txt"
 }
