@@ -160,7 +160,8 @@ The WelsonJS framework suggests the following application release methods:
 ![(Screenshot 6) The Launcher for WelsonJS Application Packages](https://ics.catswords.net/screenshot6.png)
 
 ## Thanks to
-- :heart: Artwork by [@druidesse](https://github.com/druidesse)
+- :heart: Artwork (Logo image): [@druidesse](https://github.com/druidesse)
+- :heart: Artwork (Cover image): [@_bag0@x.com](https://x.com/_bag0)
 - :sunglasses: Heavy-industry specialized CSP(Cloud Service Provider) in Republic of Korea - Use case establishment
 - :sunglasses: Live-commerce specialized online advertisement companies in Republic of Korea - Use case establishment
 - :sunglasses: Information security companies in Republic of Korea - Use case establishment
