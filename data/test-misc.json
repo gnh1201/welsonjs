@@ -1,6 +1,6 @@
 {
     "description": "WelsonJS test profile (test-misc.json)",
-    "updated_on": "2024-11-24",
+    "updated_on": "2025-01-15",
     "dependencies": {
         "welsonjs": "0.2.7"
     },
@@ -110,6 +110,11 @@
             "id": "numbers_test",
             "description": "number.js test",
             "tags": ["Mathematics"]
+        },
+        {
+            "id": "backup_vmware_esxi",
+            "description": "Open Virtualization Format (OVF) Tool for Broadcom/VMware virtualization infrastructures".
+            "tags": ["Virtualization"]
         }
     ]
 }
