@@ -103,12 +103,10 @@ dist
 # TernJS port file
 .tern-port
 
-# user defined assets
+# user private assets
 bin
-data/chatgpt-apikey.txt
-data/anthropic-apikey.txt
-data/groq-apikey.txt
-data/aviationstack-apikey.txt
+data/*-apikey.txt
+data/*.nomedia.txt
 app/assets/img/_templates
 app/assets/img/_captured
 settings.ini
