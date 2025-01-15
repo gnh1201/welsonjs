@@ -824,7 +824,8 @@ var test_implements = {
             "Which one does Mom like, and which one does Dad like?",
             "If 100 billion won is deposited into my bank account without my knowledge, what would I do?",
             "If my friend passed out from drinking, and Arnold Schwarzenegger suggests having a drink together alone, is it okay to ditch my friend and go with him?",
-            "If there's a snake in our tent during the company camping trip, should I wake up the manager, or should I escape on my own without waking him up?"
+            "If there's a snake in our tent during the company camping trip, should I wake up the manager, or should I escape on my own without waking him up?",
+            "queen never cry"
         ];
 
         // Open the Excel window
@@ -1114,6 +1115,29 @@ var test_implements = {
         console.log(numbers.statistic.standardDev(array));
         //console.log(numbers.statistic.randomSample(100, 100, 20));
         console.log(numbers.statistic.correlation(array1, array2));
+    },
+
+    "backup_vmware_esxi": function() {
+        var OVFTool = require("lib/ovftool");
+
+        // set the credential (username, and password)
+        OVFTool.setCredential("arnold", "I_WILL_BE_BACK");
+
+        // set target virtual machines
+        var targetVMs = [
+            "/MyDatacenter/vm/MyGroup/MyMachine1",
+            "/MyDatacenter/vm/MyGroup/MyMachine2",
+            "/MyDatacenter/host/MyGroup/MyMachine2",
+            "/MyDatacenter/host/MyGroup/MyMachine2"
+        ];
+
+        // do backup
+        targetVMs.forEach(function(resourceName) {
+            var job = OVFTool.create();
+            job.setHostName("example.org");
+            job.setResourceName(resourceName);
+            job.saveTo("D:\\");
+        };
     }
 };
 
