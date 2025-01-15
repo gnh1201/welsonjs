@@ -98,7 +98,7 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
   - This is a launcher app designed to easily distribute WelsonJS application packages (based on ZIP compression files).
 - LLM-based AI services ([ChatGPT](https://openai.com/index/chatgpt/), [Anthropic/Claude](https://claude.ai/), [Groq](https://groq.com/)) integration
 - Aviation Data ([AviationStack](https://aviationstack.com?utm_source=FirstPromoter&utm_medium=Affiliate&fpr=namhyeon71), [SearchApi Google Flight](https://www.searchapi.io/?via=namhyeon)) integration
-- [OVFTool](https://developer.broadcom.com/tools/open-virtualization-format-ovf-tool/latest) (Open Virtualization Format (OVF) Tool for Broadcom/VMware virtualization infrastructures) integration
+- [OVFTool](https://developer.broadcom.com/tools/open-virtualization-format-ovf-tool/latest) (OVF export tool for Broadcom/VMware virtualization infrastructures) integration
 - Everything you can imagine.
 
 ## Make your own `sayhello` example
