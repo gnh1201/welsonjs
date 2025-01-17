@@ -97,7 +97,7 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
   - [Screen Time Feature](https://catswords-oss.rdbl.io/5719744820/8803957194): Find an image position on the computer screens or windows.
 - [WelsonJS.Launcher](https://catswords-oss.rdbl.io/5719744820/4131485779) (Launcher Application, For recent Windows based systems)
   - This is a launcher app designed to easily distribute WelsonJS application packages (based on ZIP compression files).
-- LLM-based AI services ([ChatGPT](https://openai.com/index/chatgpt/), [Anthropic/Claude](https://claude.ai/), [Groq](https://groq.com/)) integration
+- LLM-based AI services ([ChatGPT](https://openai.com/index/chatgpt/), [Anthropic/Claude](https://claude.ai/), [Grok](https://x.ai/), [Groq](https://groq.com/)) integrations
 - Aviation Data ([AviationStack](https://aviationstack.com?utm_source=FirstPromoter&utm_medium=Affiliate&fpr=namhyeon71), [SearchApi Google Flight](https://www.searchapi.io/?via=namhyeon)) integration
 - [OVFTool](https://developer.broadcom.com/tools/open-virtualization-format-ovf-tool/latest) (OVF export tool for Broadcom/VMware virtualization infrastructures) integration
 - Everything you can imagine.
