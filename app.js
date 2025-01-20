@@ -216,8 +216,10 @@ function require(pathname) {
     var T = null;
     var pos = FN.indexOf('://');
     if (pos > -1) {
+        var scheme = FN.substring(0, pos);
+
         // load script from a remote server
-        if (["http", "https"].indexOf(FN.substring(0, pos)) > -1) {
+        if (["http", "https"].indexOf(scheme) > -1) {
             require._addScriptProvider(function(url) {
                 try {
                     return require("lib/http").get(url);
@@ -226,7 +228,19 @@ function require(pathname) {
                 }
             });
         }
-
+        
+        // load script from ChatGPT (LLM based AI) service
+        if (["ai"].indexOf(scheme) > -1) {
+            require._addScriptProvider(function(url) {
+                try {
+                    return require("lib/chatgpt").get(url);
+                } catch (e) {
+                    return null;
+                }
+            });
+        }
+        
+        // if exists the custom script providers
         if (require._scriptProviders.length > 0) {
             var i = 0;
             while (T == null && i < require._scriptProviders.length) {
