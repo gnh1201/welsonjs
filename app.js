@@ -4,8 +4,9 @@
 // 
 // Author: Namhyeon Go <abuse@catswords.net>
 // Repository: https://github.com/gnh1201/welsonjs
+// License: GPLv3 or MS-RL (Opensource)
 // Report abuse: abuse@catswords.net
-// Latest news: [ActivityPub @catswords_oss@catswords.social](https://catswords.social/@catswords_oss)
+// Latest news: ActivityPub @catswords_oss@catswords.social
 // Join our team: https://teams.live.com/l/community/FEACHncAhq8ldnojAI
 // 
 "use strict";
