@@ -215,7 +215,7 @@ function require(pathname) {
     if (cache[FN]) return cache[FN];
 
     var T = null;
-    var pos = FN.indexOf('://');
+    var sep = '://', pos = FN.indexOf(sep);
     if (pos > -1) {
         var scheme = FN.substring(0, pos);
 
@@ -234,7 +234,8 @@ function require(pathname) {
         if (["ai"].indexOf(scheme) > -1) {
             require._addScriptProvider(function(url) {
                 try {
-                    return require("lib/chatgpt").get(url);
+                    var text = url.substring(pos + sep.length);
+                    return require("lib/chatgpt").chat(text);
                 } catch (e) {
                     return null;
                 }
