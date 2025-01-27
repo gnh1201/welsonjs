@@ -3,6 +3,8 @@
     "anthropic": "file:data/anthropic_apikey.txt",
     "groq": "file:data/groq_apikey.txt",
     "grok": "file:data/grok_apikey.txt",
+    "gemini": "file:data/gemini_apikey.txt",
+    "deepseek": "file:data/deepseek_apikey.txt",
     "scrapeops": "file:data/scrapeops_apikey.txt",
     "searchapi": "file:data/searchapi_apikey.txt",
     "aviationstack": "file:data/aviationstack_apikey.txt",
