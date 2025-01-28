@@ -230,12 +230,17 @@ function require(pathname) {
             });
         }
         
-        // load script from ChatGPT (LLM based AI) service
+        // load script from LIE(Language Inference Engine) service
         if (["ai"].indexOf(scheme) > -1) {
             require._addScriptProvider(function(url) {
                 try {
                     var text = url.substring(pos + sep.length);
-                    return require("lib/chatgpt").chat(text);
+                    return require("lib/language-inference-engine")
+                        .create()
+                        .setProvider("openai")
+                        .inference(text, 0)
+                        .join(' ')
+                    ;
                 } catch (e) {
                     return null;
                 }
