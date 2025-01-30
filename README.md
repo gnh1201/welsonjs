@@ -100,7 +100,7 @@ Dual license notice: The default license for this project is GPL 3.0. However, i
   - This is a launcher app designed to easily distribute WelsonJS application packages (based on ZIP compression files).
 - Text generative AI integrations
   - LLM: [ChatGPT](https://openai.com/index/chatgpt/), [Claude](https://claude.ai/), [Grok](https://x.ai/), [LLaMA on Groq](https://groq.com/), [Gemini](https://gemini.google.com/), [Mistral](https://mistral.ai/), [DeepSeek](https://www.deepseek.com/), [Kimi](https://kimi.moonshot.cn/)
-  - sLLM: [OpenChat](https://github.com/imoneoi/openchat), [Qwen](https://chat.qwenlm.ai/), [Gamma](https://ai.google.dev/gemma), [Cybertron 7B v2](https://huggingface.co/fblgit/una-cybertron-7b-v2-bf16), [Starling-LM-7B-beta](https://starling.cs.berkeley.edu/)
+  - sLLM: [OpenChat](https://github.com/imoneoi/openchat), [Qwen](https://chat.qwenlm.ai/), [Gamma](https://ai.google.dev/gemma), [Cybertron 7B v2](https://huggingface.co/fblgit/una-cybertron-7b-v2-bf16), [Starling-LM-7B-beta](https://starling.cs.berkeley.edu/), [Hermes 2 Pro](https://huggingface.co/NousResearch/Hermes-2-Pro-Mistral-7B)
 - Aviation Data ([AviationStack](https://aviationstack.com?utm_source=FirstPromoter&utm_medium=Affiliate&fpr=namhyeon71), [SearchApi Google Flight](https://www.searchapi.io/?via=namhyeon)) integrations
 - [OVFTool](https://developer.broadcom.com/tools/open-virtualization-format-ovf-tool/latest) for Broadcom/VMware virtualization infrastructures integration
 - Everything you can imagine.
