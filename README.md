@@ -18,7 +18,9 @@ Now, You can build an Windows desktop app with JavaScript, TypeScript, CoffeeScr
 
 WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)*** + [Your contribution](https://github.com/sponsors/gnh1201)
 
-Dual license notice: The default license for this project is GPL 3.0. However, if the GPL 3.0 license is not compatible with Microsoft products, it is subject to the MS-RL license.
+**Note**: WelsonJS is a framework specialized for system programming use cases, so it may differ somewhat from the experience of developing desktop applications using an Electron project.
+
+**Note**: The default license for this project is GPL 3.0. However, if the GPL 3.0 license is not compatible with Microsoft products, it is subject to the MS-RL license.
 
 ## Sponsors
 - :octocat: [GitHub Sponsors](https://github.com/sponsors/gnh1201)
