@@ -6,7 +6,7 @@
 [![ChatGPT available](https://img.shields.io/badge/ChatGPT-74aa9c?logo=openai&logoColor=white)](https://catswords-oss.rdbl.io/5719744820/5510319392)
 [![Anthropic available](https://img.shields.io/badge/Anthropic-000000?logo=Anthropic&logoColor=white)](https://catswords-oss.rdbl.io/5719744820/5510319392)
 [![Grok available](https://img.shields.io/badge/Grok-000000?logo=x&logoColor=white)](https://catswords-oss.rdbl.io/5719744820/5510319392)
-[![Google Gemini](https://img.shields.io/badge/Google%20Gemini-886FBF?logo=googlegemini&logoColor=fff)](https://catswords-oss.rdbl.io/5719744820/5510319392)
+[![Google Gemini available](https://img.shields.io/badge/Google%20Gemini-886FBF?logo=googlegemini&logoColor=fff)](https://catswords-oss.rdbl.io/5719744820/5510319392)
 [![slideshare.net presentation](https://img.shields.io/badge/SlideShare-black?logo=slideshare)](https://www.slideshare.net/slideshow/welsonjs-2023/263181443)
 [![YouTube promotion video](https://img.shields.io/badge/YouTube-red?logo=youtube)](https://youtu.be/JavH7Dms8-U)
 [![Open to work](https://img.shields.io/badge/%23-OPENTOWORK-green)](https://github.com/gnh1201/welsonjs/discussions/167)
