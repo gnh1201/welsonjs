@@ -98,7 +98,7 @@ WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)*** + :h
   - [Screen Time Feature](https://catswords-oss.rdbl.io/5719744820/8803957194): Find an image position on the computer screens or windows.
 - [WelsonJS.Launcher](https://catswords-oss.rdbl.io/5719744820/4131485779) (Launcher Application, For recent Windows based systems)
   - This is a launcher app designed to easily distribute WelsonJS application packages (based on ZIP compression files).
-- Text generative AI: Multiple LLM and sLLM integrations (e.g., ChatGPT, Claude)
+- Generative AI integrations: [Multiple LLM and sLLM](https://catswords-oss.rdbl.io/5719744820/5510319392) (e.g., ChatGPT, Claude, ...)
 - Aviation Data ([AviationStack](https://aviationstack.com?utm_source=FirstPromoter&utm_medium=Affiliate&fpr=namhyeon71), [SearchApi Google Flight](https://www.searchapi.io/?via=namhyeon)) integrations
 - [OVFTool](https://developer.broadcom.com/tools/open-virtualization-format-ovf-tool/latest) for Broadcom/VMware virtualization infrastructures integration
 - Everything you can imagine.
