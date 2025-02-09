@@ -54,12 +54,12 @@
             // 
             // columnHeader1
             // 
-            this.columnHeader1.Text = "InstanceId";
+            this.columnHeader1.Text = "Instance ID";
             this.columnHeader1.Width = 220;
             // 
             // columnHeader2
             // 
-            this.columnHeader2.Text = "FirstDeployTime";
+            this.columnHeader2.Text = "First Deploy Time";
             this.columnHeader2.Width = 160;
             // 
             // btnDelete
