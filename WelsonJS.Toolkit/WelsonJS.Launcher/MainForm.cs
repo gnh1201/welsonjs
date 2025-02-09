@@ -4,14 +4,13 @@ using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Linq;
 
 namespace WelsonJS.Launcher
 {
     public partial class MainForm : Form
     {
         private string workingDirectory;
-        private string instanceName;
+        private string instanceId;
         private string entryFileName;
         private string scriptName;
 
@@ -67,8 +66,8 @@ namespace WelsonJS.Launcher
 
         private void ExtractAndRun(string filePath)
         {
-            instanceName = Guid.NewGuid().ToString();
-            workingDirectory = Path.Combine(Path.GetTempPath(), instanceName);
+            instanceId = Guid.NewGuid().ToString();
+            workingDirectory = Path.Combine(Path.GetTempPath(), instanceId);
             scriptName = textBox1.Text;
 
             Task.Run(() =>
@@ -84,11 +83,14 @@ namespace WelsonJS.Launcher
                     // try to extact ZIP file
                     ZipFile.ExtractToDirectory(filePath, workingDirectory);
 
+                    // record the first deploy time
+                    RecordFirstDeployTime(workingDirectory);
+
                     // If it is created the sub-directory
                     workingDirectory = GetFinalDirectory(workingDirectory);
 
                     // Run the appliction
-                    RunCommandPrompt();
+                    Program.RunCommandPrompt(workingDirectory, entryFileName, scriptName, checkBox1.Checked, checkBox2.Checked);
                 }
                 catch (Exception ex)
                 {
@@ -104,67 +106,19 @@ namespace WelsonJS.Launcher
             DisableUI();
         }
 
-        private void RunCommandPrompt()
+        private void RecordFirstDeployTime(string directory)
         {
-            bool isConsoleApplication = checkBox1.Checked;
-            bool isInteractiveServiceAapplication = checkBox2.Checked;
+            try
+            {
+                string filePath = Path.Combine(directory, ".welsonjs_launcher");
+                string text = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
-            if (!isConsoleApplication)
-            {
-                if (!File.Exists(Path.Combine(workingDirectory, entryFileName)))
-                {
-                    throw new Exception("Not Found: " + entryFileName);
-                }
+                File.WriteAllText(filePath, text);
             }
-            else
+            catch (Exception ex)
             {
-                if (!Directory.EnumerateFiles(workingDirectory, scriptName + ".*").Any())
-                {
-                    throw new Exception("Not found matches file: " + scriptName);
-                }
+                throw new Exception($"Failed to record first deploy time: {ex.Message}");
             }
-
-            Process process = new Process
-            {
-                StartInfo = new ProcessStartInfo("cmd")
-                {
-                    UseShellExecute = false,
-                    RedirectStandardInput = true,
-                    RedirectStandardOutput = true,
-                    CreateNoWindow = true,
-                    Arguments = "/k",
-                }
-            };
-            process.Start();
-
-            process.StandardInput.WriteLine("pushd " + workingDirectory);
-            process.StandardInput.WriteLine();
-            process.StandardInput.Flush();
-            process.StandardOutput.ReadLine();
-
-            if (isInteractiveServiceAapplication)
-            {
-                process.StandardInput.WriteLine($"start cmd /c startInteractiveService.bat");
-                process.StandardInput.WriteLine();
-                process.StandardInput.Flush();
-                process.StandardOutput.ReadLine();
-            }
-            else if (!isConsoleApplication)
-            {
-                process.StandardInput.WriteLine(entryFileName);
-                process.StandardInput.WriteLine();
-                process.StandardInput.Flush();
-                process.StandardOutput.ReadLine();
-            }
-            else
-            {
-                process.StandardInput.WriteLine($"start cmd /c cscript app.js {scriptName}");
-                process.StandardInput.WriteLine();
-                process.StandardInput.Flush();
-                process.StandardOutput.ReadLine();
-            }
-            process.StandardInput.Close();
-            process.WaitForExit();
         }
 
         private string OpenFileDialog()
@@ -209,6 +163,11 @@ namespace WelsonJS.Launcher
         private void userdefinedVariablesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             (new EnvForm()).Show();
+        }
+
+        private void instancesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            (new InstancesForm()).Show();
         }
     }
 }

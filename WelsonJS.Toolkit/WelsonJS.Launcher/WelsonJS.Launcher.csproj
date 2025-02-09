@@ -76,6 +76,12 @@
     <Compile Include="EnvForm.Designer.cs">
       <DependentUpon>EnvForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="InstancesForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="InstancesForm.Designer.cs">
+      <DependentUpon>InstancesForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -86,6 +92,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="EnvForm.resx">
       <DependentUpon>EnvForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="InstancesForm.resx">
+      <DependentUpon>InstancesForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
@@ -126,6 +135,12 @@
     <None Include="Resources\icon_file_32.png" />
     <None Include="Resources\icon_export_32.png" />
     <None Include="Resources\icon_import_32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icon_delete_32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icon_start_32.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

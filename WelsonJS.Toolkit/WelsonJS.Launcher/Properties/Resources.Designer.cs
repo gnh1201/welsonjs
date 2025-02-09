@@ -83,6 +83,16 @@ namespace WelsonJS.Launcher.Properties {
         /// <summary>
         ///   System.Drawing.Bitmap 형식의 지역화된 리소스를 찾습니다.
         /// </summary>
+        internal static System.Drawing.Bitmap icon_delete_32 {
+            get {
+                object obj = ResourceManager.GetObject("icon_delete_32", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   System.Drawing.Bitmap 형식의 지역화된 리소스를 찾습니다.
+        /// </summary>
         internal static System.Drawing.Bitmap icon_directory_32 {
             get {
                 object obj = ResourceManager.GetObject("icon_directory_32", resourceCulture);
@@ -126,6 +136,16 @@ namespace WelsonJS.Launcher.Properties {
         internal static System.Drawing.Bitmap icon_link_128 {
             get {
                 object obj = ResourceManager.GetObject("icon_link_128", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   System.Drawing.Bitmap 형식의 지역화된 리소스를 찾습니다.
+        /// </summary>
+        internal static System.Drawing.Bitmap icon_start_32 {
+            get {
+                object obj = ResourceManager.GetObject("icon_start_32", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
