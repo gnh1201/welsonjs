@@ -32,11 +32,11 @@ namespace WelsonJS.Launcher
 
             foreach (string dir in Directory.GetDirectories(instancesRoot))
             {
-                string launcherFile = Path.Combine(dir, ".welsonjs_launcher");
+                string timestampFile = Path.Combine(dir, ".welsonjs_first_deploy_time");
 
-                if (File.Exists(launcherFile))
+                if (File.Exists(timestampFile))
                 {
-                    string firstDeployTime = File.ReadAllText(launcherFile).Trim();
+                    string firstDeployTime = File.ReadAllText(timestampFile).Trim();
                     ListViewItem item = new ListViewItem(new[] {
                         Path.GetFileName(dir),
                         firstDeployTime
@@ -56,6 +56,9 @@ namespace WelsonJS.Launcher
                 string selectedInstance = listView1.SelectedItems[0].Text;
                 string workingDirectory = Path.Combine(instancesRoot, selectedInstance);
 
+                // If it is created the sub-directory
+                workingDirectory = Program.GetFinalDirectory(workingDirectory);
+
                 Task.Run(() =>
                 {
                     try
@@ -68,6 +71,10 @@ namespace WelsonJS.Launcher
                         MessageBox.Show(ex.Message);
                     }
                 });
+            }
+            else
+            {
+                MessageBox.Show("No selected an instance");
             }
         }
 
@@ -84,6 +91,10 @@ namespace WelsonJS.Launcher
                     LoadInstances();
                 }
             }
+            else
+            {
+                MessageBox.Show("No selected an instance");
+            }
         }
 
         private void btnOpenWithExplorer_Click(object sender, EventArgs e)
@@ -97,6 +108,10 @@ namespace WelsonJS.Launcher
                 {
                     System.Diagnostics.Process.Start("explorer", workingDirectory);
                 }
+            }
+            else
+            {
+                MessageBox.Show("No selected an instance");
             }
         }
 

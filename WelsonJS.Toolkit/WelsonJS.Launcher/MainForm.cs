@@ -27,6 +27,7 @@ namespace WelsonJS.Launcher
             button1.Enabled = true;
             button2.Enabled = true;
             checkBox1.Enabled = true;
+            checkBox2.Enabled = true;
             if (checkBox1.Checked)
             {
                 textBox1.Enabled = true;
@@ -39,6 +40,7 @@ namespace WelsonJS.Launcher
             button1.Enabled = false;
             button2.Enabled = false;
             checkBox1.Enabled = false;
+            checkBox2.Enabled = false;
             textBox1.Enabled = false;
         }
 
@@ -87,7 +89,7 @@ namespace WelsonJS.Launcher
                     RecordFirstDeployTime(workingDirectory);
 
                     // If it is created the sub-directory
-                    workingDirectory = GetFinalDirectory(workingDirectory);
+                    workingDirectory = Program.GetFinalDirectory(workingDirectory);
 
                     // Run the appliction
                     Program.RunCommandPrompt(workingDirectory, entryFileName, scriptName, checkBox1.Checked, checkBox2.Checked);
@@ -110,7 +112,7 @@ namespace WelsonJS.Launcher
         {
             try
             {
-                string filePath = Path.Combine(directory, ".welsonjs_launcher");
+                string filePath = Path.Combine(directory, ".welsonjs_first_deploy_time");
                 string text = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
 
                 File.WriteAllText(filePath, text);
@@ -135,19 +137,6 @@ namespace WelsonJS.Launcher
             }
 
             return filePath;
-        }
-
-        private string GetFinalDirectory(string path)
-        {
-            string[] directories = Directory.GetDirectories(path);
-
-            while (directories.Length == 1)
-            {
-                path = directories[0];
-                directories = Directory.GetDirectories(path);
-            }
-
-            return path;
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)

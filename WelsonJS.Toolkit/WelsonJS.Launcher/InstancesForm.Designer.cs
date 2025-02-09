@@ -60,7 +60,7 @@
             // columnHeader2
             // 
             this.columnHeader2.Text = "FirstDeployTime";
-            this.columnHeader2.Width = 180;
+            this.columnHeader2.Width = 160;
             // 
             // btnDelete
             // 

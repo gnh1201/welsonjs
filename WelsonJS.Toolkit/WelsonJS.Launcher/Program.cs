@@ -16,7 +16,7 @@ namespace WelsonJS.Launcher
             Application.Run(new MainForm());
         }
 
-        public static void RunCommandPrompt(string workingDirectory, string entryFileName, string scriptName, bool isConsoleApplication = true, bool isInteractiveServiceAapplication = false)
+        public static void RunCommandPrompt(string workingDirectory, string entryFileName, string scriptName, bool isConsoleApplication = false, bool isInteractiveServiceAapplication = false)
         {
             if (!isConsoleApplication)
             {
@@ -74,6 +74,19 @@ namespace WelsonJS.Launcher
             }
             process.StandardInput.Close();
             process.WaitForExit();
+        }
+
+        public static string GetFinalDirectory(string path)
+        {
+            string[] directories = Directory.GetDirectories(path);
+
+            while (directories.Length == 1)
+            {
+                path = directories[0];
+                directories = Directory.GetDirectories(path);
+            }
+
+            return path;
         }
     }
 }
