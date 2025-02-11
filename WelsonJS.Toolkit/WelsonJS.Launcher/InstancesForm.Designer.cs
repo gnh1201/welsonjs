@@ -79,7 +79,7 @@
             this.btnOpenWithExplorer.Image = global::WelsonJS.Launcher.Properties.Resources.icon_directory_32;
             this.btnOpenWithExplorer.Location = new System.Drawing.Point(327, 364);
             this.btnOpenWithExplorer.Name = "btnOpenWithExplorer";
-            this.btnOpenWithExplorer.Size = new System.Drawing.Size(150, 60);
+            this.btnOpenWithExplorer.Size = new System.Drawing.Size(232, 60);
             this.btnOpenWithExplorer.TabIndex = 3;
             this.btnOpenWithExplorer.Text = "Open with Explorer";
             this.btnOpenWithExplorer.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
