@@ -48,7 +48,13 @@ Router.add('/test', function(render) {
     };
 
     var content = FILE.readFile(test_profile_filepath, FILE.CdoCharset.CdoUTF_8);
-    var data = JSON.parse(content);
+    var data;
+    try {
+        data = JSON.parse(content);
+    } catch (e) {
+        throw Error("JSON parse error: " + e.message);
+    }
+
     render("app/test.html", {
         "data": data
     });
