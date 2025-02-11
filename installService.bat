@@ -11,7 +11,14 @@ set CURRENT_DIR=%~dp0
 set CURRENT_DIR=%CURRENT_DIR:~0,-1%
 
 REM Set the paths
-set EXE_PATH=%CURRENT_DIR%\bin\x86\WelsonJS.Service.exe
+if "%PROCESSOR_ARCHITECTURE%"=="x86" (
+    set EXE_PATH=%CURRENT_DIR%\bin\x86\WelsonJS.Service.exe
+) else if "%PROCESSOR_ARCHITECTURE%"=="AMD64" (
+    set EXE_PATH=%CURRENT_DIR%\bin\x64\WelsonJS.Service.exe
+) else (
+    echo Unsupported platform: %PROCESSOR_ARCHITECTURE%
+    exit /b 1
+)
 set INSTALL_UTIL_PATH=%SystemRoot%\Microsoft.NET\Framework\v4.0.30319\InstallUtil.exe
 
 REM Uninstall the service
