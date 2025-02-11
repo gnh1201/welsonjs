@@ -49,7 +49,7 @@
             "id": "registry_find_provider",
             "description": "find registry provider",
             "tags": [
-                "Windows system",
+                "Windows Systems",
                 "Control Registry"
             ]
         },
@@ -57,7 +57,7 @@
             "id": "registry_write",
             "description": "writing Registry",
             "tags": [
-                "Windows system",
+                "Windows Systems",
                 "control Registry"
             ]
         },
@@ -65,7 +65,7 @@
             "id": "registry_read",
             "description": "reading Registry",
             "tags": [
-                "Windows system",
+                "Windows Systems",
                 "control Registry"
             ]
         },
@@ -73,7 +73,7 @@
             "id": "wmi_create_object",
             "description": "create WMI object",
             "tags": [
-                "Windows system",
+                "Windows Systems",
                 "control WMI(Windows Management Instrumentation) "
             ]
         },
@@ -81,7 +81,7 @@
             "id": "wmi_execute_query",
             "description": "executing WMI query",
             "tags": [
-                "Windows system",
+                "Windows Systems",
                 "control WMI(Windows Management Instrumentation) "
             ]
         },
@@ -89,7 +89,7 @@
             "id": "wmi_result_query",
             "description": "the result of WMI query",
             "tags": [
-                "Windows system",
+                "Windows Systems",
                 "control WMI(Windows Management Instrumentation) "
             ]
         },
@@ -97,7 +97,7 @@
             "id": "shell_create_object",
             "description": "create Shell object",
             "tags": [
-                "Windows system",
+                "Windows Systems",
                 "Windows Shell"
             ]
         },
@@ -105,7 +105,7 @@
             "id": "shell_build_command_line",
             "description": "building command line (input: Array Object, output: Unescaped Command String)",
             "tags": [
-                "Windows system",
+                "Windows Systems",
                 "Windows Shell"
             ]
         },
@@ -113,7 +113,7 @@
             "id": "shell_set_charset",
             "description": "set Charset",
             "tags": [
-                "Windows system",
+                "Windows Systems",
                 "Windows Shell"
             ]
         },
@@ -121,7 +121,7 @@
             "id": "shell_working_directory",
             "description": "set Working Directory",
             "tags": [
-                "Windows system",
+                "Windows Systems",
                 "Windows Shell"
             ]
         },
@@ -129,7 +129,7 @@
             "id": "shell_create_process",
             "description": "creating process",
             "tags": [
-                "Windows system",
+                "Windows Systems",
                 "Windows Shell"
             ]
         },
@@ -137,7 +137,7 @@
             "id": "shell_execute",
             "description": "execute shell command (receive results(stdout, stderr))",
             "tags": [
-                "Windows system",
+                "Windows Systems",
                 "Windows Shell"
             ]
         },
@@ -150,7 +150,7 @@
             "id": "shell_run_as",
             "description": "run shell command (run with administrator's authority)",
             "tags": [
-                "Windows system",
+                "Windows Systems",
                 "Windows Shell"
             ]
         },
@@ -158,7 +158,7 @@
             "id": "shell_find_my_documents",
             "description": "bring (My Documents) location",
             "tags": [
-                "Windows system",
+                "Windows Systems",
                 "Windows Shell"
             ]
         },
@@ -166,7 +166,7 @@
             "id": "shell_release",
             "description": "release created shell object",
             "tags": [
-                "Windows system",
+                "Windows Systems",
                 "Windows Shell"
             ]
         },
@@ -174,7 +174,7 @@
             "id": "powershell_set_command",
             "description": "Set command line to execute",
             "tags": [
-                "Windows system",
+                "Windows Systems",
                 "Windows Powershell"
             ]
         },
@@ -182,7 +182,7 @@
             "id": "powershell_set_file",
             "description": "set files(*.ps1)to execute",
             "tags": [
-                "Windows system",
+                "Windows Systems",
                 "Windows Powershell"
             ]
         },
@@ -190,111 +190,111 @@
             "id": "powershell_set_uri",
             "description": "Use URI to set commands",
             "tags": [
-                "Windows 시스템",
-                "Windows 파워쉘(Powershell)"
+                "Windows Systems",
+                "Windows Powershell"
             ]
         },
         {
             "id": "powershell_execute",
-            "description": "명령 실행 (유저 모드)",
+            "description": "Execute command (user mode)",
             "tags": [
-                "Windows 시스템",
-                "Windows 파워쉘(Powershell)"
+                "Windows Systems",
+                "Windows Powershell"
             ]
         },
         {
             "id": "powershell_run_as",
-            "description": "명령 실행 (관리자 모드)",
+            "description": "Execute command (administrator mode)",
             "tags": [
-                "Windows 시스템",
-                "Windows 파워쉘(Powershell)"
+                "Windows Systems",
+                "Windows Powershell"
             ]
         },
         {
             "id": "system_resolve_env",
-            "description": "환경변수 해석기(Resolver)가 환경변수를 적절히 해석하는지 확인",
+            "description": "Verify if the environment variable resolver interprets environment variables correctly",
             "tags": [
-                "Windows 시스템",
-                "시스템 정보"
+                "Windows Systems",
+                "System Information"
             ]
         },
         {
             "id": "system_check_as",
-            "description": "현재 프로세스 자신이 관리자 모드인지 체크",
+            "description": "Check if the current process is in administrator mode",
             "tags": [
-                "Windows 시스템",
-                "시스템 정보"
+                "Windows Systems",
+                "System Information"
             ]
         },
         {
             "id": "system_get_os_version",
             "description": "Get current OS version",
             "tags": [
-                "Windows system",
-                "system information"
+                "Windows Systems",
+                "System Information"
             ]
         },
         {
             "id": "system_get_architecture",
             "description": "Get current system architecture",
             "tags": [
-                "Windows system",
-                "system information"
+                "Windows Systems",
+                "System Information"
             ]
         },
         {
             "id": "system_get_uuid",
             "description": "bringing the UUID of current device",
             "tags": [
-                "Windows system",
-                "system information"
+                "Windows Systems",
+                "System Information"
             ]
         },
         {
             "id": "system_get_working_directory",
             "description": "bringing current working directory",
             "tags": [
-                "Windows system",
-                "system information"
+                "Windows Systems",
+                "System Information"
             ]
         },
         {
             "id": "system_get_script_directory",
             "description": "bringing current script directory",
             "tags": [
-                "Windows system",
-                "system information"
+                "Windows Systems",
+                "System Information"
             ]
         },
         {
             "id": "system_get_network_interfaces",
             "description": "bringing network interface information",
             "tags": [
-                "Windows system",
-                "system information"
+                "Windows Systems",
+                "System Information"
             ]
         },
         {
             "id": "system_get_process_list",
             "description": "get activated ",
             "tags": [
-                "Windows system",
-                "system information"
+                "Windows Systems",
+                "System Information"
             ]
         },
         {
             "id": "system_get_process_list_by_name",
             "description": "find certain active process by process name",
             "tags": [
-                "Windows system",
-                "system information"
+                "Windows Systems",
+                "System Information"
             ]
         },
         {
             "id": "system_register_uri",
             "description": "Register URI and carry out command as URI has requested",
             "tags": [
-                "Windows system",
+                "Windows Systems",
                 "Register URI(Uniform Resource Identifier)"
             ]
         },
@@ -302,7 +302,7 @@
             "id": "system_pipe_ipc",
             "description": "Interprocess communication between more than 2 processes",
             "tags": [
-                "Windows system",
+                "Windows Systems",
                 "IPC(Inter Process Communication)"
             ]
         },
@@ -594,7 +594,7 @@
         },
         {
             "id": "gui_check",
-            "description": "Even in WebView (GUI) environment, (1)Windows System/Windows Shell, (2)(Windows system/WMI control functions work.",
+            "description": "Even in WebView (GUI) environment, (1)Windows Systems/Windows Shell, (2)(Windows Systems/WMI control functions work.",
             "tags": [
                 "WebView"
             ]
