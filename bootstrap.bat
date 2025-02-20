@@ -6,11 +6,14 @@ pushd %~dp0
 
 :: Define variables
 set TOOLKIT_URL=https://ics.catswords.net/welsonjs_toolkit.cab
-set TOOLKIT_PATH=%TEMP%\welsonjs_toolkit.cab
-set TOOLKIT_EXTRACT_PATH=%TEMP%
+set TOOLKIT_PATH=%APPDATA%\welsonjs\welsonjs_toolkit.cab
+set TOOLKIT_EXTRACT_PATH=%APPDATA%\welsonjs
 set REGASM_PATH=%WINDIR%\Microsoft.NET\Framework\v2.0.50727\RegAsm.exe
 set LOCAL_TOOLKIT_DLL=bin\x86\WelsonJS.Toolkit.dll
-set DOWNLOADED_TOOLKIT_DLL=%TEMP%\WelsonJS.Toolkit.dll
+set DOWNLOADED_TOOLKIT_DLL=%APPDATA%\welsonjs\WelsonJS.Toolkit.dll
+
+:: Ensure directory exists
+if not exist "%APPDATA%\welsonjs" mkdir "%APPDATA%\welsonjs"
 
 echo [*] Initializing WelsonJS pre-configuration...
 
