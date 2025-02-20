@@ -14,35 +14,6 @@ set DOWNLOADED_TOOLKIT_DLL=%TEMP%\WelsonJS.Toolkit.dll
 
 echo [*] Initializing WelsonJS pre-configuration...
 
-:: Detect Windows version
-for /f "tokens=4-5 delims=. " %%i in ('ver') do set VERSION=%%i.%%j
-
-:: Check if .NET Framework 2.0/3.5 is installed
-if "%VERSION%" geq "6.1" (
-    :: Windows 7 or later (use DISM)
-    dism /online /get-features | findstr /i "NetFx3" > nul
-    if %errorlevel% equ 0 (
-        echo [*] .NET Framework 3.5 (includes 2.0) is already enabled.
-    ) else (
-        echo [*] Enabling .NET Framework 3.5...
-        dism /online /enable-feature /featurename:NetFx3 /all /norestart
-    )
-) else (
-    :: Windows XP or older (check registry)
-    reg query "HKLM\SOFTWARE\Microsoft\NET Framework Setup\NDP\v2.0.50727" /v Install >nul 2>&1
-    if %errorlevel% equ 0 (
-        echo [*] .NET Framework 2.0 is already installed.
-    ) else (
-        :: Attempt installation if dotnetfx.exe exists
-        if exist dotnetfx.exe (
-            echo [*] Installing .NET Framework 2.0...
-            start /wait dotnetfx.exe /q /norestart
-        ) else (
-            echo [*] dotnetfx.exe not found. Skipping installation.
-        )
-    )
-)
-
 :: Register HTA file association
 echo [*] Configuring HTA file association...
 reg import app\assets\reg\Default_HTA.reg
