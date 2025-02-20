@@ -14,8 +14,10 @@ namespace WelsonJS.Launcher
         {
             InitializeComponent();
             InitializeListView();
-            // Set the variable file path in the temporary folder
-            tempFilePath = Path.Combine(Path.GetTempPath(), "welsonjs_default.env");
+
+            // Set the variable file path
+            tempFilePath = Path.Combine(Program.GetAppDataPath(), "welsonjs_default.env");
+
             LoadUserVariables();  // Load variables
         }
 

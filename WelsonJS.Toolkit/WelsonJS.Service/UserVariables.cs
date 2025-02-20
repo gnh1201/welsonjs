@@ -9,10 +9,11 @@ namespace WelsonJS.Service
     {
         private ServiceMain parent;
         private Dictionary<string, string> userVariables;
-        private readonly string envFilePath = Path.Combine(Path.GetTempPath(), "welsonjs_default.env");
+        private string envFilePath;
 
         public UserVariables(ServiceBase parent)
         {
+            envFilePath = Path.Combine(Program.GetAppDataPath(), "welsonjs_default.env");
             this.parent = (ServiceMain)parent;
         }
 
