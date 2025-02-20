@@ -88,5 +88,22 @@ namespace WelsonJS.Launcher
 
             return path;
         }
+
+        public static string GetAppDataPath()
+        {
+            string path = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                "welsonjs"
+            );
+
+            Directory.CreateDirectory(path);
+
+            if (!Directory.Exists(path))
+            {
+                throw new IOException("Failed to create directory: " + path);
+            }
+
+            return path;
+        }
     }
 }

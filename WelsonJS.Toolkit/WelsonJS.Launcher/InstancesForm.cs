@@ -7,7 +7,7 @@ namespace WelsonJS.Launcher
 {
     public partial class InstancesForm : Form
     {
-        private readonly string instancesRoot = Path.GetTempPath();
+        private string instancesRoot;
         private string entryFileName;
         private string scriptName;
 
@@ -15,6 +15,7 @@ namespace WelsonJS.Launcher
         {
             InitializeComponent();
 
+            instancesRoot = Program.GetAppDataPath();
             entryFileName = "bootstrap.bat";
         }
 

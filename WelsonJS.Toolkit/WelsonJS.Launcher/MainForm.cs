@@ -69,7 +69,7 @@ namespace WelsonJS.Launcher
         private void ExtractAndRun(string filePath)
         {
             instanceId = Guid.NewGuid().ToString();
-            workingDirectory = Path.Combine(Path.GetTempPath(), instanceId);
+            workingDirectory = Path.Combine(Program.GetAppDataPath(), instanceId);
             scriptName = textBox1.Text;
 
             Task.Run(() =>
