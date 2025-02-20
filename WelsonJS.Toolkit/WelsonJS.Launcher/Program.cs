@@ -93,7 +93,7 @@ namespace WelsonJS.Launcher
         {
             string path = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "welsonjs"
+                "WelsonJS"
             );
 
             Directory.CreateDirectory(path);
