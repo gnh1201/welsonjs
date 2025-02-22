@@ -69,7 +69,7 @@ namespace WelsonJS.Launcher
         private void ExtractAndRun(string filePath)
         {
             instanceId = Guid.NewGuid().ToString();
-            workingDirectory = Path.Combine(Program.GetAppDataPath(), instanceId);
+            workingDirectory = Program.GetWorkingDirectory(instanceId);
             scriptName = textBox1.Text;
 
             Task.Run(() =>
@@ -88,8 +88,8 @@ namespace WelsonJS.Launcher
                     // record the first deploy time
                     RecordFirstDeployTime(workingDirectory);
 
-                    // If it is created the sub-directory
-                    workingDirectory = Program.GetFinalDirectory(workingDirectory);
+                    // follow the sub-directory
+                    workingDirectory = Program.GetWorkingDirectory(instanceId, true);
 
                     // Run the appliction
                     Program.RunCommandPrompt(workingDirectory, entryFileName, scriptName, checkBox1.Checked, checkBox2.Checked);

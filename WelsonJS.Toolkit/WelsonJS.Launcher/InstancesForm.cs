@@ -7,43 +7,55 @@ namespace WelsonJS.Launcher
 {
     public partial class InstancesForm : Form
     {
-        private string instancesRoot;
         private string entryFileName;
         private string scriptName;
+        private const string timestampFormat = "yyyy-MM-dd HH:mm:ss";
 
         public InstancesForm()
         {
             InitializeComponent();
 
-            instancesRoot = Program.GetAppDataPath();
             entryFileName = "bootstrap.bat";
         }
 
         private void InstancesForm_Load(object sender, EventArgs e)
         {
-            LoadInstances();
+            listView1.Items.Clear();
+            LoadInstances(Program.GetAppDataPath());
+            LoadInstances(Path.GetTempPath());
         }
 
-        private void LoadInstances()
+        private void LoadInstances(string instancesRoot)
         {
-            listView1.Items.Clear();
-
             if (!Directory.Exists(instancesRoot))
                 return;
 
             foreach (string dir in Directory.GetDirectories(instancesRoot))
             {
                 string timestampFile = Path.Combine(dir, ".welsonjs_first_deploy_time");
+                string entryScriptFile = Path.Combine(dir, "app.js");
+                string firstDeployTime = null;
 
-                if (File.Exists(timestampFile))
+                if (File.Exists(timestampFile)
+                    && DateTime.TryParse(File.ReadAllText(timestampFile).Trim(), out DateTime parsedTimestamp))
                 {
-                    string firstDeployTime = File.ReadAllText(timestampFile).Trim();
-                    ListViewItem item = new ListViewItem(new[] {
+                    firstDeployTime = parsedTimestamp.ToString(timestampFormat);
+                }
+                else if (File.Exists(entryScriptFile))
+                {
+                    firstDeployTime = File.GetCreationTime(entryScriptFile).ToString(timestampFormat);
+                }
+
+                if (firstDeployTime != null)
+                {
+                    listView1.Items.Add(new ListViewItem(new[]
+                    {
                         Path.GetFileName(dir),
                         firstDeployTime
+                    })
+                    {
+                        Tag = dir
                     });
-                    item.Tag = dir;
-                    listView1.Items.Add(item);
                 }
             }
         }
@@ -54,11 +66,8 @@ namespace WelsonJS.Launcher
             {
                 scriptName = textBox1.Text;
 
-                string selectedInstance = listView1.SelectedItems[0].Text;
-                string workingDirectory = Path.Combine(instancesRoot, selectedInstance);
-
-                // If it is created the sub-directory
-                workingDirectory = Program.GetFinalDirectory(workingDirectory);
+                string instanceId = listView1.SelectedItems[0].Text;
+                string workingDirectory = Program.GetWorkingDirectory(instanceId, true);
 
                 Task.Run(() =>
                 {
@@ -83,13 +92,21 @@ namespace WelsonJS.Launcher
         {
             if (listView1.SelectedItems.Count > 0)
             {
-                string selectedInstance = listView1.SelectedItems[0].Text;
-                string workingDirectory = Path.Combine(instancesRoot, selectedInstance);
+                string instanceId = listView1.SelectedItems[0].Text;
+                string workingDirectory = Program.GetWorkingDirectory(instanceId, false);
+
+                if (!Directory.Exists(workingDirectory))
+                {
+                    workingDirectory = Path.Combine(Path.GetTempPath(), instanceId);
+                }
 
                 if (Directory.Exists(workingDirectory))
                 {
                     Directory.Delete(workingDirectory, true);
-                    LoadInstances();
+
+                    listView1.Items.Clear();
+                    LoadInstances(Program.GetAppDataPath());
+                    LoadInstances(Path.GetTempPath());
                 }
             }
             else
@@ -102,8 +119,8 @@ namespace WelsonJS.Launcher
         {
             if (listView1.SelectedItems.Count > 0)
             {
-                string selectedInstance = listView1.SelectedItems[0].Text;
-                string workingDirectory = Path.Combine(instancesRoot, selectedInstance);
+                string instanceId = listView1.SelectedItems[0].Text;
+                string workingDirectory = Program.GetWorkingDirectory(instanceId, true);
 
                 if (Directory.Exists(workingDirectory))
                 {

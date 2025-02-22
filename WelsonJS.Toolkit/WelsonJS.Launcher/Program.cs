@@ -105,5 +105,22 @@ namespace WelsonJS.Launcher
 
             return path;
         }
+
+        public static string GetWorkingDirectory(string instanceId, bool followSubDirectory = false)
+        {
+            string workingDirectory = Path.Combine(GetAppDataPath(), instanceId);
+
+            if (followSubDirectory)
+            {
+                if (!Directory.Exists(workingDirectory))
+                {
+                    workingDirectory = Path.Combine(Path.GetTempPath(), instanceId);
+                }
+
+                workingDirectory = GetFinalDirectory(workingDirectory);
+            }
+
+            return workingDirectory;
+        }
     }
 }
