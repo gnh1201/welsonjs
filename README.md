@@ -183,6 +183,7 @@ The WelsonJS framework suggests the following application release methods:
 - :eyes: [GeekNews](https://news.hada.io/weekly/202441) in GeekNews Weekly (2024-09-30 ~ 2024-10-06)
 - :eyes: [daily.dev](https://app.daily.dev/posts/js-libraries-svg-tools-json-databases-8quregz3a)
 - :eyes: [PitchHut](https://www.pitchhut.com/project/proj_Ya136OLSW5at)
+- :eyes: [Disquiet](https://dis.qa/nv6T6)
 
 ## Related links
 - [gnh1201/wsh-js-gtk](https://github.com/gnh1201/wsh-js-gtk) - GTK GUI ported to Windows Scripting Host - Javascript (Microsoft JScript) (wsh-js)
