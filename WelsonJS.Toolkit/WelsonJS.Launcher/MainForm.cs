@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
+using System.Security.Principal;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -16,9 +17,14 @@ namespace WelsonJS.Launcher
 
         public MainForm()
         {
+            entryFileName = "bootstrap.bat";
+
             InitializeComponent();
 
-            entryFileName = "bootstrap.bat";
+            if (IsInAdministrator())
+            {
+                Text = Text + " (Administrator)";
+            }
         }
 
         private void EnableUI()
@@ -139,6 +145,19 @@ namespace WelsonJS.Launcher
             return filePath;
         }
 
+        private bool IsInAdministrator()
+        {
+            try
+            {
+                WindowsPrincipal wp = new WindowsPrincipal(WindowsIdentity.GetCurrent());
+                return wp.IsInRole(WindowsBuiltInRole.Administrator);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
         {
             textBox1.Enabled = checkBox1.Checked;
@@ -157,6 +176,34 @@ namespace WelsonJS.Launcher
         private void instancesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             (new InstancesForm()).Show();
+        }
+
+        private void runAsAdministratorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (!IsInAdministrator())
+            {
+                ProcessStartInfo procInfo = new ProcessStartInfo
+                {
+                    UseShellExecute = true,
+                    FileName = Application.ExecutablePath,
+                    WorkingDirectory = Environment.CurrentDirectory,
+                    Verb = "runas"
+                };
+
+                try
+                {
+                    Process.Start(procInfo);
+                    Application.Exit();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("Failed to run as administrator: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Already running as Administrator.");
+            }
         }
     }
 }
