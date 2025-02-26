@@ -53,39 +53,17 @@ WelsonJS is tailored for developers who need a reliable, lightweight JavaScript 
 
 ## Specifications
 - Built-in transpilers: [TypeScript](https://www.typescriptlang.org/), [Rescript](https://rescript-lang.org/), [CoffeeScript 2](https://coffeescript.org/), [LiveScript](https://livescript.net/)
-- Ready to use on Windows machine immediately. No require additional software installation.
-- ES5(ECMAScript 5), XML, JSON, YAML compatibility
-  - [github.com/zloirock/core-js](https://github.com/zloirock/core-js)
-  - [github.com/douglascrockford/JSON-js](https://github.com/douglascrockford/JSON-js) (aka. JSON2.js)
-  - [github.com/nodeca/js-yaml](https://github.com/nodeca/js-yaml)
-- HTML5, CSS3 compatibility
-  - [github.com/aFarkas/html5shiv](https://github.com/aFarkas/html5shiv)
-  - [github.com/parndt/jquery-html5-placeholder-shim](https://github.com/parndt/jquery-html5-placeholder-shim)
-  - [github.com/scottjehl/Respond](https://github.com/scottjehl/Respond)
-  - [github.com/keithclark/selectivizr](https://github.com/keithclark/selectivizr)
-  - [github.com/arv/ExplorerCanvas](https://github.com/arv/ExplorerCanvas)
-  - [github.com/Modernizr/Modernizr](https://github.com/Modernizr/Modernizr)
-- CSS Frameworks
-  - [github.com/jslegers/cascadeframework](https://github.com/jslegers/cascadeframework)
-  - [github.com/golden-layout/golden-layout](https://github.com/golden-layout/golden-layout)
-- WYSIWYG HTML Editor
-  - [github.com/summernote/summernote](https://github.com/summernote/summernote)
-- Included libraries
-  - [jQuery](https://jquery.com/)
-  - [jQuery UI](https://jqueryui.com/)
-  - [github.com/kamranahmedse/jquery-toast-plugin](https://github.com/kamranahmedse/jquery-toast-plugin) - Highly customizable jquery plugin to show toast messages
-  - [github.com/hiddentao/squel](https://github.com/hiddentao/squel) - SQL query string builder for Javascript
-  - [github.com/BorisMoore/jsrender](https://github.com/BorisMoore/jsrender) - A lightweight, powerful and highly extensible templating engine. In the browser or on Node.js, with or without jQuery.
-  - [github.com/mihaifm/linq](https://github.com/mihaifm/linq) - LINQ for JavaScript
-  - [github.com/pegjs/pegjs](https://github.com/pegjs/pegjs) - PEG.js: Parser generator for JavaScript
-  - [github.com/numbers/numbers.js](https://github.com/numbers/numbers.js) - Advanced Mathematics Library for Node.js and JavaScript
+- **Ready to use on Windows machine immediately. No require additional software installation.**
+- ES5(ECMAScript 5), XML, JSON, YAML compatibility: [core-js](https://github.com/zloirock/core-js), [JSON2.js](https://github.com/douglascrockford/JSON-js), [js-yaml](https://github.com/nodeca/js-yaml)
+- HTML5, CSS3 compatibility: ([html5shiv](https://github.com/aFarkas/html5shiv), [jquery-html5-placeholder-shim](https://github.com/parndt/jquery-html5-placeholder-shim), [Respond](https://github.com/scottjehl/Respond), [selectivizr](https://github.com/keithclark/selectivizr), [ExplorerCanvas](https://github.com/arv/ExplorerCanvas), [Modernizr](https://github.com/Modernizr/Modernizr))
+- CSS Frameworks: [cascadeframework](https://github.com/jslegers/cascadeframework), [golden-layout](https://github.com/golden-layout/golden-layout)
+- WYSIWYG HTML Editor: [summernote](https://github.com/summernote/summernote)
+- Included libraries: [jQuery](https://jquery.com/), [jQuery UI](https://jqueryui.com/), [jquery-toast-plugin](https://github.com/kamranahmedse/jquery-toast-plugin), [squel](https://github.com/hiddentao/squel), [jsrender](https://github.com/BorisMoore/jsrender), [linq](https://github.com/mihaifm/linq), [pegjs](https://github.com/pegjs/pegjs), [numbers.js](https://github.com/numbers/numbers.js)
 - [module.exports](https://nodejs.org/api/modules.html#moduleexports), CommonJS, UMD compatibility
 - [NPM](https://www.npmjs.com/) compatibility
 - [Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/) support
 - [ADB(Android Debug Bridge)](https://source.android.com/docs/setup/build/adb) support
-- RPC(Remote Procedure Call) protocol support
-  - [gRPC](https://grpc.io/)
-  - [JSON-RPC 2.0](https://www.jsonrpc.org/specification)
+- RPC(Remote Procedure Call) protocol support: [gRPC](https://grpc.io/), [JSON-RPC 2.0](https://www.jsonrpc.org/specification)
 
 ## Included modules
 - lib/std (Standard library)
