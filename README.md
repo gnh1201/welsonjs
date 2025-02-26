@@ -56,19 +56,17 @@ WelsonJS is tailored for developers who need a reliable, lightweight JavaScript 
 - **Ready to use on Windows machine immediately. No require additional software installation.**
 - ES5(ECMAScript 5), XML, JSON, YAML compatibility: [core-js](https://github.com/zloirock/core-js), [JSON2.js](https://github.com/douglascrockford/JSON-js), [js-yaml](https://github.com/nodeca/js-yaml)
 - HTML5, CSS3 compatibility: [html5shiv](https://github.com/aFarkas/html5shiv), [jquery-html5-placeholder-shim](https://github.com/parndt/jquery-html5-placeholder-shim), [Respond](https://github.com/scottjehl/Respond), [selectivizr](https://github.com/keithclark/selectivizr), [ExplorerCanvas](https://github.com/arv/ExplorerCanvas), [Modernizr](https://github.com/Modernizr/Modernizr)
-- CSS Frameworks: [cascadeframework](https://github.com/jslegers/cascadeframework), [golden-layout](https://github.com/golden-layout/golden-layout)
+- Classical CSS Frameworks: [cascadeframework](https://github.com/jslegers/cascadeframework), [golden-layout](https://github.com/golden-layout/golden-layout)
 - WYSIWYG HTML Editor: [summernote](https://github.com/summernote/summernote)
 - Included libraries: [jQuery](https://jquery.com/), [jQuery UI](https://jqueryui.com/), [jquery-toast-plugin](https://github.com/kamranahmedse/jquery-toast-plugin), [squel](https://github.com/hiddentao/squel), [jsrender](https://github.com/BorisMoore/jsrender), [linq](https://github.com/mihaifm/linq), [pegjs](https://github.com/pegjs/pegjs), [numbers.js](https://github.com/numbers/numbers.js)
-- [module.exports](https://nodejs.org/api/modules.html#moduleexports), CommonJS, UMD compatibility
-- [NPM](https://www.npmjs.com/) compatibility
-- [Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/) support
-- [ADB(Android Debug Bridge)](https://source.android.com/docs/setup/build/adb) support
-- RPC(Remote Procedure Call) protocol support: [gRPC](https://grpc.io/), [JSON-RPC 2.0](https://www.jsonrpc.org/specification)
+- Compatible with modern JavaScript specifications: [module.exports](https://nodejs.org/api/modules.html#moduleexports), CommonJS, UMD compatibility, [NPM(Node Pacakge Manager)](https://www.npmjs.com/) compatibility
+- Support a device debugging protocol clients: [Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/), [ADB(Android Debug Bridge)](https://source.android.com/docs/setup/build/adb)
+- RPC(Remote Procedure Call) protocol clients: [gRPC](https://grpc.io/), [JSON-RPC 2.0](https://www.jsonrpc.org/specification)
 - Various types of HTTP clients: [XHR(MSXML)](https://developer.mozilla.org/docs/Glossary/XMLHttpRequest), [cURL](https://curl.se/), [BITS](https://en.m.wikipedia.org/w/index.php?title=Background_Intelligent_Transfer_Service), [CERT](https://github.com/MicrosoftDocs/windowsserverdocs/blob/main/WindowsServerDocs/administration/windows-commands/certutil.md), [Web Proxy, SEO/SERP](https://catswords-oss.rdbl.io/5719744820/1706431912)
-- Native module (WelsonJS.Toolkit): Write a Windows Service Application with JavaScript, Control a window handle, Cryptography (e.g., [ISO/IEC 18033-3:2010](https://www.iso.org/standard/54531.html) aka. [HIGHT](https://seed.kisa.or.kr/kisa/algorithm/EgovHightInfo.do)), [Named Shared Memory](https://learn.microsoft.com/en-us/windows/win32/memory/creating-named-shared-memory) based [IPC](https://qiita.com/gnh1201/items/4e70dccdb7adacf0ace5), [NuGet package](https://www.nuget.org/packages/WelsonJS.Toolkit)
+- Native module (`WelsonJS.Toolkit`): Write a Windows Service Application with JavaScript, Control a window handle, Cryptography (e.g., [ISO/IEC 18033-3:2010](https://www.iso.org/standard/54531.html) aka. [HIGHT](https://seed.kisa.or.kr/kisa/algorithm/EgovHightInfo.do)), [Named Shared Memory](https://learn.microsoft.com/en-us/windows/win32/memory/creating-named-shared-memory) based [IPC](https://qiita.com/gnh1201/items/4e70dccdb7adacf0ace5), [NuGet package](https://www.nuget.org/packages/WelsonJS.Toolkit)
 - Generative AI integrations: [Multiple LLM and sLLM](https://catswords-oss.rdbl.io/5719744820/5510319392) (e.g., ChatGPT, Claude, ...)
-- Aviation Data ([AviationStack](https://aviationstack.com?utm_source=FirstPromoter&utm_medium=Affiliate&fpr=namhyeon71), [SearchApi Google Flight](https://www.searchapi.io/?via=namhyeon)) integrations
-- [OVFTool](https://developer.broadcom.com/tools/open-virtualization-format-ovf-tool/latest) for Broadcom/VMware virtualization infrastructures integration
+- Aviation Data integrations: ([AviationStack](https://aviationstack.com?utm_source=FirstPromoter&utm_medium=Affiliate&fpr=namhyeon71), [SearchApi Google Flight](https://www.searchapi.io/?via=namhyeon))
+- VM infrastucture tool integrations: [OVFTool for Broadcom/VMware infrastructures](https://developer.broadcom.com/tools/open-virtualization-format-ovf-tool/latest)
 - Everything you can imagine.
 
 ## Quick start
