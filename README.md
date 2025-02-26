@@ -63,7 +63,7 @@ WelsonJS is tailored for developers who need a reliable, lightweight JavaScript 
 - Support a device debugging protocol clients: [Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/), [ADB(Android Debug Bridge)](https://source.android.com/docs/setup/build/adb)
 - RPC(Remote Procedure Call) protocol clients: [gRPC](https://grpc.io/), [JSON-RPC 2.0](https://www.jsonrpc.org/specification)
 - Various types of HTTP clients: [XHR(MSXML)](https://developer.mozilla.org/docs/Glossary/XMLHttpRequest), [cURL](https://curl.se/), [BITS](https://en.m.wikipedia.org/w/index.php?title=Background_Intelligent_Transfer_Service), [CERT](https://github.com/MicrosoftDocs/windowsserverdocs/blob/main/WindowsServerDocs/administration/windows-commands/certutil.md), [Web Proxy, SEO/SERP](https://catswords-oss.rdbl.io/5719744820/1706431912)
-- Native module (`WelsonJS.Toolkit`): Write a Windows Service Application with JavaScript, Control a window handle, Cryptography (e.g., [ISO/IEC 18033-3:2010](https://www.iso.org/standard/54531.html) aka. [HIGHT](https://seed.kisa.or.kr/kisa/algorithm/EgovHightInfo.do)), [Named Shared Memory](https://learn.microsoft.com/en-us/windows/win32/memory/creating-named-shared-memory) based [IPC](https://qiita.com/gnh1201/items/4e70dccdb7adacf0ace5), [NuGet package](https://www.nuget.org/packages/WelsonJS.Toolkit)
+- The native toolkit for Windows environments: Write a Windows Service Application with JavaScript, Control a window handle, Cryptography (e.g., [ISO/IEC 18033-3:2010](https://www.iso.org/standard/54531.html) aka. [HIGHT](https://seed.kisa.or.kr/kisa/algorithm/EgovHightInfo.do)), [Named Shared Memory](https://learn.microsoft.com/en-us/windows/win32/memory/creating-named-shared-memory) based [IPC](https://qiita.com/gnh1201/items/4e70dccdb7adacf0ace5), [NuGet package](https://www.nuget.org/packages/WelsonJS.Toolkit)
 - Generative AI integrations: [Multiple LLM and sLLM](https://catswords-oss.rdbl.io/5719744820/5510319392) (e.g., ChatGPT, Claude, ...)
 - Aviation Data integrations: [AviationStack](https://aviationstack.com?utm_source=FirstPromoter&utm_medium=Affiliate&fpr=namhyeon71), [SearchApi Google Flight](https://www.searchapi.io/?via=namhyeon)
 - VM infrastucture tool integrations: [OVFTool for Broadcom/VMware infrastructures](https://developer.broadcom.com/tools/open-virtualization-format-ovf-tool/latest)
@@ -80,8 +80,8 @@ function say() {
 
 exports.say = say;
 
-exports.VERSIONINFO = "SayHello Library (sayhello.js) version 0.1";
-exports.AUTHOR = "abuse@catswords.net";   // e.g. YOUR EMAIL ADDRESS
+exports.VERSIONINFO = "SayHello (sayhello.js) version 0.1";
+exports.AUTHOR = "abuse@catswords.net";
 exports.global = global;
 exports.require = global.require;
 ```
@@ -102,7 +102,7 @@ exports.main = main;
 
 ### 3. Execute script on the console
 ```cmd
-C:\Users\knh94\Documents\GitHub\welsonjs> cscript app.js sayhello
+C:\Users\JohnDoe\Documents\GitHub\welsonjs> cscript app.js sayhello
 calling say()
 hello
 ended say()
@@ -111,8 +111,8 @@ ended say()
 ## How to release my application?
 The WelsonJS framework suggests the following application release methods:
 
-- **Compress to Zip, and use the launcher**: Compress the files and directories necessary for running the project into a Zip file, and distribute it along with the [WelsonJS.Launcher](https://catswords-oss.rdbl.io/5719744820/4131485779).
-- **Build a setup file**: Use [Inno Setup](https://jrsoftware.org/isinfo.php). Information needed to create the setup file (the `setup.iss` file) is already included.
+- **Compress to Zip, and use the launcher**: Compress the files and directories necessary for running the project into a Zip file, and distribute it along with the [WelsonJS Launcher](https://catswords-oss.rdbl.io/5719744820/4131485779).
+- **Build a setup file**: Use [Inno Setup](https://jrsoftware.org/isinfo.php). The setup profile (the `setup.iss` file) is already included.
 - **Copy all directories and files**: This is the simplest and most straightforward method.
 
 ## Screenshots
