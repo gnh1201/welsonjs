@@ -35,7 +35,7 @@ WelsonJS is an advanced JavaScript framework designed to operate in extreme cond
 ### Key Features
 * **Lightweight and Efficient**: Optimized for environments with limited computing power, WelsonJS delivers efficient script execution without unnecessary overhead.
 * **Windows ECMAScript Compatibility**: Designed to run seamlessly on Windows-based systems, adhering to the ECMAScript standard while maintaining lightweight execution.
-* **Standalone Execution**: Unlike well-known JavaScript runtimes, which requires external dependencies, WelsonJS can operate as a self-contained engine, making it suitable for embedded systems and isolated environments.
+* **Standalone Execution**: Unlike well-known JavaScript runtimes, which require external dependencies, a WelsonJS application can operate as a self-contained app, making it suitable for embedded systems and isolated environments.
 * **Security-Oriented**: Built with security in mind, ensuring controlled execution of scripts without compromising system integrity.
 * **Minimalist Design**: WelsonJS strips away unnecessary complexities, focusing on core functionalities that maximize performance and reliability.
 
@@ -43,7 +43,7 @@ WelsonJS is an advanced JavaScript framework designed to operate in extreme cond
 * **Legacy System Integration**: WelsonJS provides a practical solution for running JavaScript on older Windows environments where modern frameworks are not feasible.
 * **Automation and Scripting**: Ideal for executing scripts in constrained environments, enabling automated workflows and system-level scripting.
 * **Embedded Applications**: Suitable for devices and systems with strict resource constraints, such as industrial controllers and embedded platforms.
-* **Security-Focused Environments**: Useful in security-sensitive applications where controlling script execution is a priority.
+* **Security-Focused Environments**: Useful in security-sensitive applications where dependencies on external internet connections are limited.
 
 WelsonJS is tailored for developers who need a reliable, lightweight JavaScript framework in environments where traditional solutions are impractical. Whether working with legacy systems, embedded devices, or security-critical applications, WelsonJS ensures that JavaScript remains a viable and efficient option.
 
