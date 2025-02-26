@@ -205,5 +205,10 @@ namespace WelsonJS.Launcher
                 MessageBox.Show("Already running as Administrator.");
             }
         }
+
+        private void globalSettingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            (new GlobalSettingsForm()).Show();
+        }
     }
 }

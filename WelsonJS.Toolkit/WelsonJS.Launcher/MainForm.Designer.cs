@@ -40,6 +40,7 @@
             this.userdefinedVariablesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.instancesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.runAsAdministratorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.globalSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -131,7 +132,8 @@
             this.settingsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.userdefinedVariablesToolStripMenuItem,
             this.instancesToolStripMenuItem,
-            this.runAsAdministratorToolStripMenuItem});
+            this.runAsAdministratorToolStripMenuItem,
+            this.globalSettingsToolStripMenuItem});
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
             this.settingsToolStripMenuItem.Size = new System.Drawing.Size(62, 20);
             this.settingsToolStripMenuItem.Text = "Settings";
@@ -156,6 +158,13 @@
             this.runAsAdministratorToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.runAsAdministratorToolStripMenuItem.Text = "Run as Administrator...";
             this.runAsAdministratorToolStripMenuItem.Click += new System.EventHandler(this.runAsAdministratorToolStripMenuItem_Click);
+            // 
+            // globalSettingsToolStripMenuItem
+            // 
+            this.globalSettingsToolStripMenuItem.Name = "globalSettingsToolStripMenuItem";
+            this.globalSettingsToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
+            this.globalSettingsToolStripMenuItem.Text = "Global settings...";
+            this.globalSettingsToolStripMenuItem.Click += new System.EventHandler(this.globalSettingsToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -197,6 +206,7 @@
         private System.Windows.Forms.ToolStripMenuItem userdefinedVariablesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem instancesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem runAsAdministratorToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem globalSettingsToolStripMenuItem;
     }
 }
 
