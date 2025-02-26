@@ -35,7 +35,7 @@ WelsonJS is an advanced JavaScript framework designed to operate in extreme cond
 ### Key Features
 * **Lightweight and Efficient**: Optimized for environments with limited computing power, WelsonJS delivers efficient script execution without unnecessary overhead.
 * **Windows ECMAScript Compatibility**: Designed to run seamlessly on Windows-based systems, adhering to the ECMAScript standard while maintaining lightweight execution.
-* **Standalone Execution**: Unlike Node.js, which requires external dependencies, WelsonJS can operate as a self-contained engine, making it suitable for embedded systems and isolated environments.
+* **Standalone Execution**: Unlike well-known JavaScript runtimes, which requires external dependencies, WelsonJS can operate as a self-contained engine, making it suitable for embedded systems and isolated environments.
 * **Security-Oriented**: Built with security in mind, ensuring controlled execution of scripts without compromising system integrity.
 * **Minimalist Design**: WelsonJS strips away unnecessary complexities, focusing on core functionalities that maximize performance and reliability.
 
