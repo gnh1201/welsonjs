@@ -29,6 +29,24 @@ WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)*** + :h
 - <img src="https://ics.catswords.net/microsoft_logo.png" height="32" alt=""/> [Microsoft ISV Success Program](https://www.microsoft.com/en-us/isv/isv-success), Grow your business with powerful tools.
 - :zap: [Integrations](https://catswords-oss.rdbl.io/5719744820/8278298336) ([ScrapeOps](https://scrapeops.io?fpr=namhyeon75), [SearchApi](https://www.searchapi.io/?via=namhyeon), [AviationStack](https://aviationstack.com?utm_source=FirstPromoter&utm_medium=Affiliate&fpr=namhyeon71), [Coupang](https://link.coupang.com/a/b7HV3V)...)
 
+## Why Choose WelsonJS?
+WelsonJS is an advanced JavaScript framework designed to operate in extreme conditions where conventional solutions may fail. Unlike traditional JavaScript engines, WelsonJS focuses on executing scripts in constrained environments, ensuring reliable performance even with minimal system resources.
+
+### Key Features
+* **Lightweight and Efficient**: Optimized for environments with limited computing power, WelsonJS delivers efficient script execution without unnecessary overhead.
+* **Windows ECMAScript Compatibility**: Designed to run seamlessly on Windows-based systems, adhering to the ECMAScript standard while maintaining lightweight execution.
+* **Standalone Execution**: Unlike Node.js, which requires external dependencies, WelsonJS can operate as a self-contained engine, making it suitable for embedded systems and isolated environments.
+* **Security-Oriented**: Built with security in mind, ensuring controlled execution of scripts without compromising system integrity.
+* **Minimalist Design**: WelsonJS strips away unnecessary complexities, focusing on core functionalities that maximize performance and reliability.
+
+### Use Cases
+* **Legacy System Integration**: WelsonJS provides a practical solution for running JavaScript on older Windows environments where modern frameworks are not feasible.
+* **Automation and Scripting**: Ideal for executing scripts in constrained environments, enabling automated workflows and system-level scripting.
+* **Embedded Applications**: Suitable for devices and systems with strict resource constraints, such as industrial controllers and embedded platforms.
+* **Security-Focused Environments**: Useful in security-sensitive applications where controlling script execution is a priority.
+
+WelsonJS is tailored for developers who need a reliable, lightweight JavaScript framework in environments where traditional solutions are impractical. Whether working with legacy systems, embedded devices, or security-critical applications, WelsonJS ensures that JavaScript remains a viable and efficient option.
+
 ## Structure
 ![The structure of the WelsonJS framework can be extended based on whether it operates in a console (command prompt) environment, a GUI (with HTML/CSS) environment, or a service environment, with the `app.js` file at its core.](https://ics.catswords.net/structure.png)
 
@@ -105,7 +123,7 @@ WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)*** + :h
 - [OVFTool](https://developer.broadcom.com/tools/open-virtualization-format-ovf-tool/latest) for Broadcom/VMware virtualization infrastructures integration
 - Everything you can imagine.
 
-## Make your own `sayhello` example
+## Quick start
 
 ### 1. Write a file `lib/sayhello.js`
 ```js
@@ -136,7 +154,7 @@ function main() {
 exports.main = main;
 ```
 
-### 3. Execute file on the command prompt
+### 3. Execute script on the console
 ```cmd
 C:\Users\knh94\Documents\GitHub\welsonjs> cscript app.js sayhello
 calling say()
@@ -184,20 +202,6 @@ The WelsonJS framework suggests the following application release methods:
 - :eyes: [daily.dev](https://app.daily.dev/posts/js-libraries-svg-tools-json-databases-8quregz3a)
 - :eyes: [PitchHut](https://www.pitchhut.com/project/proj_Ya136OLSW5at)
 - :eyes: [Disquiet](https://dis.qa/nv6T6)
-
-## Related links
-- [gnh1201/wsh-js-gtk](https://github.com/gnh1201/wsh-js-gtk) - GTK GUI ported to Windows Scripting Host - Javascript (Microsoft JScript) (wsh-js)
-- [gnh1201/wsh-json](https://github.com/gnh1201/wsh-json) - JSON stringify/parse (encode/decode) for Windows Scripting Host
-- [redskyit/wsh-appjs](https://github.com/redskyit/wsh-appjs) - require-js and app framework for Windows Scripting Host JavaScript
-- [JohnLaTwC's gist](https://gist.github.com/JohnLaTwC/4315bbbd89da0996f5c08c032b391799) - JavaScript RAT
-- [JSMan-/JS-Framework](https://github.com/JSMan-/JS-Framework) - No description
-- [iconjack/setTimeout-for-windows-script-host](https://github.com/iconjack/setTimeout-for-windows-script-host) - Replacement for the missing setTimeout and clearTimeout function in Windows Script Host
-- [johnjohnsp1/WindowsScriptHostExtension](https://github.com/johnjohnsp1/WindowsScriptHostExtension) - Inject DLL Prototype using Microsoft.Windows.ACTCTX COM Object
-- [kuntashov/jsunit](https://github.com/kuntashov/jsunit) - JSUnit port for Windows Scripting Host
-- [nickdoth/WSHHttpServer](https://github.com/nickdoth/WSHHttpServer) - HTTP server based on Windows Script Host
-- [joncasey/modern-hta](https://github.com/joncasey/modern-hta) - Run modern code in an HTML Application
-- FOSSA report [HTML](https://ics.catswords.net/fossa_report.html) [CSV](https://ics.catswords.net/fossa_report.csv) [TXT](https://ics.catswords.net/fossa_report.txt)
-- [License attributions of a stock images](https://policy.catswords.social/stock_images.html)
 
 ## Report abuse
 - [GitHub Security Advisories (gnh1201/welsonjs)](https://github.com/gnh1201/welsonjs/security)
