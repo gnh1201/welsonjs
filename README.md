@@ -33,7 +33,8 @@ WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)*** + :h
 - :zap: [Integrations](https://catswords-oss.rdbl.io/5719744820/8278298336) ([ScrapeOps](https://scrapeops.io?fpr=namhyeon75), [SearchApi](https://www.searchapi.io/?via=namhyeon), [AviationStack](https://aviationstack.com?utm_source=FirstPromoter&utm_medium=Affiliate&fpr=namhyeon71), [Coupang](https://link.coupang.com/a/b7HV3V)...)
 
 ## System Requirements
-- Operating Systems: Windows XP SP3 or later (currently Windows 11 24H2). For Windows 2000 or earlier, please contact us.
+- **Operating Systems**: Windows XP SP3 or later (Currently, Windows 11 24H2)
+- For systems running Windows 2000 or earlier versions (e.g., 95, 98, Me), please contact us separately.
 
 ## Why Choose WelsonJS?
 WelsonJS is an advanced JavaScript framework designed to operate in extreme conditions where conventional solutions may fail. Unlike traditional JavaScript frameworks, WelsonJS focuses on executing scripts in constrained environments, ensuring reliable performance even with minimal system resources.
