@@ -210,5 +210,24 @@ namespace WelsonJS.Launcher
         {
             (new GlobalSettingsForm()).Show();
         }
+
+        private void startTheCodeEditorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (Program.resourceServer == null)
+            {
+                Program.resourceServer = new ResourceServer("http://localhost:3000/", "editor.html");
+            }
+
+            if (!Program.resourceServer.IsRunning())
+            {
+                Program.resourceServer.Start();
+                ((ToolStripMenuItem)sender).Text = "Stop the code editor...";
+            }
+            else
+            {
+                Program.resourceServer.Stop();
+                ((ToolStripMenuItem)sender).Text = "Start the code editor...";
+            }
+        }
     }
 }

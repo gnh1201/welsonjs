@@ -96,6 +96,7 @@
     <Compile Include="GlobalSettingsForm.Designer.cs">
       <DependentUpon>GlobalSettingsForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="ResourceServer.cs" />
     <EmbeddedResource Include="EnvForm.resx">
       <DependentUpon>EnvForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -150,6 +151,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\icon_start_32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="editor.html" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

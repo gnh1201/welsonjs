@@ -8,6 +8,8 @@ namespace WelsonJS.Launcher
 {
     internal static class Program
     {
+        public static ResourceServer resourceServer;
+
         [STAThread]
         static void Main()
         {

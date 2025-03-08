@@ -41,6 +41,7 @@
             this.instancesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.runAsAdministratorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.globalSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.startTheCodeEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -133,7 +134,8 @@
             this.userdefinedVariablesToolStripMenuItem,
             this.instancesToolStripMenuItem,
             this.runAsAdministratorToolStripMenuItem,
-            this.globalSettingsToolStripMenuItem});
+            this.globalSettingsToolStripMenuItem,
+            this.startTheCodeEditorToolStripMenuItem});
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
             this.settingsToolStripMenuItem.Size = new System.Drawing.Size(62, 20);
             this.settingsToolStripMenuItem.Text = "Settings";
@@ -165,6 +167,13 @@
             this.globalSettingsToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.globalSettingsToolStripMenuItem.Text = "Global settings...";
             this.globalSettingsToolStripMenuItem.Click += new System.EventHandler(this.globalSettingsToolStripMenuItem_Click);
+            // 
+            // startTheCodeEditorToolStripMenuItem
+            // 
+            this.startTheCodeEditorToolStripMenuItem.Name = "startTheCodeEditorToolStripMenuItem";
+            this.startTheCodeEditorToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
+            this.startTheCodeEditorToolStripMenuItem.Text = "Start the code editor...";
+            this.startTheCodeEditorToolStripMenuItem.Click += new System.EventHandler(this.startTheCodeEditorToolStripMenuItem_Click);
             // 
             // MainForm
             // 
@@ -207,6 +216,7 @@
         private System.Windows.Forms.ToolStripMenuItem instancesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem runAsAdministratorToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem globalSettingsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem startTheCodeEditorToolStripMenuItem;
     }
 }
 
