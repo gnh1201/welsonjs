@@ -1,26 +1,140 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
+    <title>WelsonJS Code Editor</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-    <link rel="stylesheet"
-          data-name="vs/editor/editor.main"
-          href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.css" />
+    <link rel="stylesheet" href="https://cdn.metroui.org.ua/current/metro.css">
+    <link rel="stylesheet" href="https://cdn.metroui.org.ua/current/icons.css">
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .ribbon-menu {
+            flex-shrink: 0;
+        }
+        #container {
+            flex-grow: 1;
+            border: 1px solid grey;
+            overflow: hidden;
+            display: flex;
+        }
+        .banner {
+            text-align: center;
+            padding: 10px;
+            background-color: #f1f1f1;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+    </style>
 </head>
 <body>
-    <h2>Monaco Editor Sync Loading Sample</h2>
-    <div id="container" style="width: 800px; height: 600px; border: 1px solid grey"></div>
-
+    <nav data-role="ribbonmenu">
+        <ul class="tabs-holder">
+            <li class="static"><a href="#">File</a></li>
+            <li><a href="#editor-tab">Editor</a></li>
+        </ul>
+        <div class="content-holder">
+            <div class="section" id="editor-tab">
+                <button class="ribbon-button" onclick="openFile()">
+                    <span class="icon mif-folder-open"></span>
+                    <span class="caption">Open File</span>
+                </button>
+                <button class="ribbon-button" onclick="saveFile()">
+                    <span class="icon mif-floppy-disk"></span>
+                    <span class="caption">Save File</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+    
+    <div id="container"></div>
+    <input type="file" id="fileInput" style="display: none" onchange="handleFileSelect(event)">
+    
+    <div class="banner"><a href="https://github.com/gnh1201/welsonjs">WelsonJS</a> Code Editor powered by <a href="https://github.com/microsoft/monaco-editor">Microsoft Monaco Editor</a>.</div>
+    
     <script>
-			var require = { paths: { vs: '../node_modules/monaco-editor/min/vs' } };
+        var require = { paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs' } };
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/loader.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.js"></script>
-
+    <script src="https://cdn.metroui.org.ua/current/metro.js"></script>
+    
     <script>
-			var editor = monaco.editor.create(document.getElementById('container'), {
-				value: ['function x() {', '\tconsole.log("Hello world!");', '}'].join('\n'),
-				language: 'javascript'
-			});
+        var editor;
+        function resizeEditor() {
+            if (editor) {
+                var ribbonHeight = document.querySelector('nav').offsetHeight;
+                var bannerHeight = document.querySelector('.banner').offsetHeight;
+                var containerHeight = document.documentElement.clientHeight - ribbonHeight - bannerHeight;
+                document.getElementById('container').style.height = containerHeight + 'px';
+                editor.layout();
+            }
+        }
+
+        require(["vs/editor/editor.main"], function() {
+            editor = monaco.editor.create(document.getElementById('container'), {
+                value: ['function x() {', '\tconsole.log("Hello world!");', '}'].join('\n'),
+                language: 'javascript'
+            });
+            resizeEditor();
+        });
+
+        window.addEventListener('resize', resizeEditor);
+
+        function openFile() {
+            document.getElementById('fileInput').click();
+        }
+
+        function getFileLanguage(fileName) {
+            var extension = fileName.split('.').pop().toLowerCase();
+            var languageMap = {
+                'js': 'javascript',
+                'ts': 'typescript',
+                'html': 'html',
+                'css': 'css',
+                'json': 'json',
+                'py': 'python',
+                'java': 'java',
+                'c': 'c',
+                'cpp': 'cpp',
+                'cs': 'csharp',
+                'php': 'php',
+                'rb': 'ruby',
+                'go': 'go',
+                'rs': 'rust'
+            };
+            return languageMap[extension] || 'plaintext';
+        }
+
+        function handleFileSelect(event) {
+            var file = event.target.files[0];
+            if (!file) return;
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                var language = getFileLanguage(file.name);
+                monaco.editor.setModelLanguage(editor.getModel(), language);
+                editor.setValue(e.target.result);
+            };
+            reader.readAsText(file);
+        }
+
+        function saveFile() {
+            var text = editor.getValue();
+            var blob = new Blob([text], { type: 'text/plain' });
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'code.js';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
     </script>
 </body>
 </html>
