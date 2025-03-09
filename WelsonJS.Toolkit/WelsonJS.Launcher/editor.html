@@ -73,7 +73,7 @@
 
         require(["vs/editor/editor.main"], function() {
             editor = monaco.editor.create(document.getElementById('container'), {
-                value: ['function x() {', '\tconsole.log("Hello world!");', '}'].join('\n'),
+                value: ['// lib/sayhello.js', 'function say() {', '    console.log("hello");', '}', '', 'exports.say = say;', '', 'exports.VERSIONINFO = "SayHello (sayhello.js) version 0.1";', 'exports.AUTHOR = "abuse@catswords.net";', 'exports.global = global;', 'exports.require = global.require;'].join('\n'),
                 language: 'javascript'
             });
         });
