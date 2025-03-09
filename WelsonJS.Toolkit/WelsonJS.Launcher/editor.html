@@ -12,25 +12,18 @@
             padding: 0;
             width: 100%;
             height: 100%;
-            display: flex;
-            flex-direction: column;
             overflow: hidden;
-        }
-        .ribbon-menu {
-            flex-shrink: 0;
         }
         #container {
-            flex-grow: 1;
             border: 1px solid grey;
+            height: calc(100% - 139px);
             overflow: hidden;
-            display: flex;
         }
         .banner {
             text-align: center;
             padding: 10px;
             background-color: #f1f1f1;
             font-size: 14px;
-            flex-shrink: 0;
         }
     </style>
 </head>
@@ -83,7 +76,6 @@
                 value: ['function x() {', '\tconsole.log("Hello world!");', '}'].join('\n'),
                 language: 'javascript'
             });
-            resizeEditor();
         });
 
         window.addEventListener('resize', resizeEditor);
