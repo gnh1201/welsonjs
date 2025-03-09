@@ -102,9 +102,18 @@ namespace WelsonJS.Launcher
 
         private byte[] GetResource(string resourceName)
         {
-            // Find a resource from Embedded Resource
+            // Try to fetch embedded resource.
+            byte[] data = GetEmbeddedResource(typeof(ResourceServer).Namespace + "." + resourceName);
+            if (data != null) return data;
+
+            // Fallback: Try to fetch resource from ResourceManager.
+            return GetResourceFromManager(resourceName);
+        }
+
+        private byte[] GetEmbeddedResource(string fullResourceName)
+        {
             Assembly assembly = Assembly.GetExecutingAssembly();
-            using (Stream stream = assembly.GetManifestResourceStream(typeof(ResourceServer).Namespace + "." + resourceName))
+            using (Stream stream = assembly.GetManifestResourceStream(fullResourceName))
             {
                 if (stream != null)
                 {
@@ -115,20 +124,21 @@ namespace WelsonJS.Launcher
                     }
                 }
             }
+            return null;
+        }
 
-            // Find a resource from Resources.resx
+        private byte[] GetResourceFromManager(string resourceName)
+        {
             object resourceObject = Properties.Resources.ResourceManager.GetObject(resourceName);
             switch (resourceObject)
             {
-                case byte[] resourceBytes:  // if the matched type is byte[]
+                case byte[] resourceBytes:
                     return resourceBytes;
-
-                case System.Drawing.Icon icon:  // if the matched type is System.Drawing.Icon
+                case System.Drawing.Icon icon:
                     return ConvertIconToBytes(icon);
+                default:
+                    return null;
             }
-
-            // If not found
-            return null;
         }
 
         private byte[] ConvertIconToBytes(System.Drawing.Icon icon)
