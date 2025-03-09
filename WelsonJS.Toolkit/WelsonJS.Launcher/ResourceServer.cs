@@ -24,7 +24,7 @@ namespace WelsonJS.Launcher
             _prefix = prefix;
             _listener = new HttpListener();
             _listener.Prefixes.Add(prefix);
-            _resourceName = typeof(ResourceServer).Namespace + "." + resourceName;
+            _resourceName = resourceName;
         }
 
         public void Start()
@@ -74,31 +74,70 @@ namespace WelsonJS.Launcher
 
         private void ProcessRequest(HttpListenerContext context)
         {
-            string responseString = GetEmbeddedResource();
+            string path = context.Request.Url.AbsolutePath.TrimStart('/');
 
-            byte[] buffer = Encoding.UTF8.GetBytes(responseString);
-            context.Response.ContentType = "text/html";
-            context.Response.ContentLength64 = buffer.Length;
-            context.Response.OutputStream.Write(buffer, 0, buffer.Length);
+            if ("favicon.ico".Equals(path, StringComparison.OrdinalIgnoreCase))
+            {
+                ServeResource(context, GetResource("favicon"), "image/x-icon");
+                return;
+            }
+
+            ServeResource(context, GetResource(_resourceName), "text/html");
+        }
+
+        private void ServeResource(HttpListenerContext context, byte[] data, string mimeType = "text/html")
+        {
+            if (data == null) {
+                data = "text/html".Equals(mimeType, StringComparison.OrdinalIgnoreCase) ?
+                    Encoding.UTF8.GetBytes("<html><body><h1>Could not find the resource.</h1></body></html>") :
+                    Encoding.UTF8.GetBytes("Could not find the resource.")
+                ;
+            }
+
+            context.Response.ContentType = mimeType;
+            context.Response.ContentLength64 = data.Length;
+            context.Response.OutputStream.Write(data, 0, data.Length);
             context.Response.OutputStream.Close();
         }
 
-        private string GetEmbeddedResource()
+        private byte[] GetResource(string resourceName)
         {
-            var assembly = Assembly.GetExecutingAssembly();
-            using (Stream stream = assembly.GetManifestResourceStream(_resourceName))
+            // Find a resource from Embedded Resource
+            Assembly assembly = Assembly.GetExecutingAssembly();
+            using (Stream stream = assembly.GetManifestResourceStream(typeof(ResourceServer).Namespace + "." + resourceName))
             {
-                if (stream == null)
+                if (stream != null)
                 {
-                    return "<html><body><h1>Could not find the resource.</h1></body></html>";
-                }
-
-                using (StreamReader reader = new StreamReader(stream, Encoding.UTF8))
-                {
-                    return reader.ReadToEnd();
+                    using (MemoryStream memoryStream = new MemoryStream())
+                    {
+                        stream.CopyTo(memoryStream);
+                        return memoryStream.ToArray();
+                    }
                 }
             }
+
+            // Find a resource from Resources.resx
+            object resourceObject = Properties.Resources.ResourceManager.GetObject(resourceName);
+            switch (resourceObject)
+            {
+                case byte[] resourceBytes:  // if the matched type is byte[]
+                    return resourceBytes;
+
+                case System.Drawing.Icon icon:  // if the matched type is System.Drawing.Icon
+                    return ConvertIconToBytes(icon);
+            }
+
+            // If not found
+            return null;
         }
 
+        private byte[] ConvertIconToBytes(System.Drawing.Icon icon)
+        {
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                icon.Save(memoryStream);
+                return memoryStream.ToArray();
+            }
+        }
     }
 }
