@@ -14,7 +14,7 @@ jobs:
         uses: Manav916/llm-code-review@main
         with:
           groq_api_key: ${{ secrets.GROQ_API_KEY }}
-          groq_model: 'llama-3.3-70b-versatile'
+          groq_model: 'gemma-2-9b-it'
           github_token: ${{ secrets.GITHUB_TOKEN }}
           # exclude_extensions: 'txt'
           repo_owner: ${{ github.repository_owner }}
