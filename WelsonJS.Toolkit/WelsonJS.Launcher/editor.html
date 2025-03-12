@@ -61,6 +61,8 @@
     
     <script>
         var editor;
+        var currentFileName = "sayhello.js";
+
         function resizeEditor() {
             if (editor) {
                 var ribbonHeight = document.querySelector('nav').offsetHeight;
@@ -108,6 +110,8 @@
         function handleFileSelect(event) {
             var file = event.target.files[0];
             if (!file) return;
+            
+            currentFileName = file.name;
             var reader = new FileReader();
             reader.onload = function(e) {
                 var language = getFileLanguage(file.name);
@@ -122,7 +126,7 @@
             var blob = new Blob([text], { type: 'text/plain' });
             var a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
-            a.download = 'code.js';
+            a.download = currentFileName;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
