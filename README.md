@@ -136,6 +136,8 @@ The WelsonJS framework suggests the following application release methods:
 
 ![(Screenshot 6) The Launcher for WelsonJS Application Packages](https://ics.catswords.net/screenshot6.png)
 
+![(Screenshot 7) Microsoft Monaco Editor on WelsonJS Launcher](https://ics.catswords.net/screenshot7.png)
+
 ## Thanks to
 - :heart: Artwork (Logo image): [@druidesse](https://github.com/druidesse)
 - :heart: Artwork (Cover image): [@_bag0@x.com](https://x.com/_bag0)
