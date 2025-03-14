@@ -140,8 +140,7 @@ namespace WelsonJS.Launcher
             context.Response.ContentLength64 = data.Length;
             using (Stream outputStream = context.Response.OutputStream)
             {
-                context.Response.OutputStream.Write(data, 0, data.Length);
-                context.Response.OutputStream.Close();
+                outputStream.Write(data, 0, data.Length);
             }
         }
 
@@ -162,8 +161,7 @@ namespace WelsonJS.Launcher
             context.Response.ContentLength64 = data.Length;
             using (Stream outputStream = context.Response.OutputStream)
             {
-                context.Response.OutputStream.Write(data, 0, data.Length);
-                context.Response.OutputStream.Close();
+                outputStream.Write(data, 0, data.Length);
             }
         }
 
