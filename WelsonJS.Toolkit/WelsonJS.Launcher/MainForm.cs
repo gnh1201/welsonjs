@@ -25,6 +25,35 @@ namespace WelsonJS.Launcher
             {
                 Text = Text + " (Administrator)";
             }
+
+            notifyIcon1.DoubleClick += OnShow;
+            openLauncherToolStripMenuItem.Click += OnShow;
+            exitToolStripMenuItem.Click += OnExit;
+        }
+
+        protected override void OnFormClosing(FormClosingEventArgs e)
+        {
+            if (e.CloseReason == CloseReason.UserClosing)
+            {
+                e.Cancel = true;
+                this.Hide();
+                notifyIcon1.Visible = true;
+            }
+            base.OnFormClosing(e);
+        }
+
+        private void OnShow(object sender, EventArgs e)
+        {
+            this.Show();
+            this.WindowState = FormWindowState.Normal;
+            this.Focus();
+            notifyIcon1.Visible = false;
+        }
+
+        private void OnExit(object sender, EventArgs e)
+        {
+            notifyIcon1.Visible = false;
+            Application.Exit();
         }
 
         private void EnableUI()
@@ -211,7 +240,7 @@ namespace WelsonJS.Launcher
             (new GlobalSettingsForm()).Show();
         }
 
-        private void startTheCodeEditorToolStripMenuItem_Click(object sender, EventArgs e)
+        private void startCodeEditorToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (Program.resourceServer == null)
             {
@@ -227,6 +256,18 @@ namespace WelsonJS.Launcher
             {
                 Program.resourceServer.Stop();
                 ((ToolStripMenuItem)sender).Text = "Start the code editor...";
+            }
+        }
+
+        private void openCodeEditorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (Program.resourceServer == null)
+            {
+                MessageBox.Show("A resource server is not running.");
+            }
+            else
+            {
+                Process.Start(Program.resourceServer.GetPrefix());
             }
         }
     }
