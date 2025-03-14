@@ -1,12 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Linq;
 
 namespace WelsonJS.Launcher
 {
@@ -18,6 +21,7 @@ namespace WelsonJS.Launcher
         private bool _isRunning;
         private string _prefix;
         private string _resourceName;
+        private ExecutablesCollector _executablesCollector;
 
         public ResourceServer(string prefix, string resourceName)
         {
@@ -25,6 +29,7 @@ namespace WelsonJS.Launcher
             _listener = new HttpListener();
             _listener.Prefixes.Add(prefix);
             _resourceName = resourceName;
+            _executablesCollector = new ExecutablesCollector();
         }
 
         public string GetPrefix()
@@ -81,13 +86,60 @@ namespace WelsonJS.Launcher
         {
             string path = context.Request.Url.AbsolutePath.TrimStart('/');
 
+            // Serve the favicon.ico file
             if ("favicon.ico".Equals(path, StringComparison.OrdinalIgnoreCase))
             {
                 ServeResource(context, GetResource("favicon"), "image/x-icon");
                 return;
             }
 
+            // Serve the code completion (word suggestion)
+            if (path.StartsWith("completion/", StringComparison.OrdinalIgnoreCase))
+            {
+                ServeCompletion(context, path.Substring("completion/".Length));
+                return;
+            }
+
+            // Serve a resource
             ServeResource(context, GetResource(_resourceName), "text/html");
+        }
+
+        private void ServeCompletion(HttpListenerContext context, string word)
+        {
+            int statusCode = 200;
+
+            List<string> executables = _executablesCollector.GetExecutables();
+
+            CompletionItem[] completionItems = executables
+                .Where(exec => exec.IndexOf(word, 0, StringComparison.OrdinalIgnoreCase) > -1)
+                .Select(exec => new CompletionItem
+                {
+                    label = Path.GetFileName(exec),
+                    kind = "Text",
+                    documentation = "An executable file",
+                    insertText = exec
+                })
+                .ToArray();
+
+            XElement response = new XElement("suggestions",
+                completionItems.Select(item => new XElement("item",
+                    new XElement("label", item.label),
+                    new XElement("kind", item.kind),
+                    new XElement("documentation", item.documentation),
+                    new XElement("insertText", item.insertText)
+                ))
+            );
+
+            byte[] data = Encoding.UTF8.GetBytes(
+                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n" +
+                response.ToString()
+            );
+
+            context.Response.StatusCode = statusCode;
+            context.Response.ContentType = "application/xml";
+            context.Response.ContentLength64 = data.Length;
+            context.Response.OutputStream.Write(data, 0, data.Length);
+            context.Response.OutputStream.Close();
         }
 
         private void ServeResource(HttpListenerContext context, byte[] data, string mimeType = "text/html")
@@ -158,5 +210,13 @@ namespace WelsonJS.Launcher
                 return memoryStream.ToArray();
             }
         }
+    }
+
+    public class CompletionItem
+    {
+        public string label { get; set; }
+        public string kind { get; set; }
+        public string documentation { get; set; }
+        public string insertText { get; set; }
     }
 }
