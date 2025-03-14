@@ -92,14 +92,17 @@ namespace WelsonJS.Launcher
 
         private void ServeResource(HttpListenerContext context, byte[] data, string mimeType = "text/html")
         {
+            int statusCode = 200;
+
             if (data == null) {
                 data = "text/html".Equals(mimeType, StringComparison.OrdinalIgnoreCase) ?
                     Encoding.UTF8.GetBytes("<html><body><h1>Could not find the resource.</h1></body></html>") :
                     Encoding.UTF8.GetBytes("Could not find the resource.")
                 ;
+                statusCode = 404;
             }
 
-            context.Response.StatusCode = 404;
+            context.Response.StatusCode = statusCode;
             context.Response.ContentType = mimeType;
             context.Response.ContentLength64 = data.Length;
             context.Response.OutputStream.Write(data, 0, data.Length);
