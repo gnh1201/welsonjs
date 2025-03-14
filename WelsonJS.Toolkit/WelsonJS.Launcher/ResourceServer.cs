@@ -108,39 +108,57 @@ namespace WelsonJS.Launcher
         {
             int statusCode = 200;
 
-            List<string> executables = _executablesCollector.GetExecutables();
-
-            CompletionItem[] completionItems = executables
-                .Where(exec => exec.IndexOf(word, 0, StringComparison.OrdinalIgnoreCase) > -1)
-                .Select(exec => new CompletionItem
-                {
-                    Label = Path.GetFileName(exec),
-                    Kind = "Text",
-                    Documentation = "An executable file",
-                    InsertText = exec
-                })
-                .ToArray();
-
-            XElement response = new XElement("suggestions",
-                completionItems.Select(item => new XElement("item",
-                    new XElement("label", item.Label),
-                    new XElement("kind", item.Kind),
-                    new XElement("documentation", item.Documentation),
-                    new XElement("insertText", item.InsertText)
-                ))
-            );
-
-            byte[] data = Encoding.UTF8.GetBytes(
-                "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n" +
-                response.ToString()
-            );
-
-            context.Response.StatusCode = statusCode;
-            context.Response.ContentType = "application/xml";
-            context.Response.ContentLength64 = data.Length;
-            using (Stream outputStream = context.Response.OutputStream)
+            try
             {
-                outputStream.Write(data, 0, data.Length);
+                List<string> executables = _executablesCollector.GetExecutables();
+
+                CompletionItem[] completionItems = executables
+                    .Where(exec => exec.IndexOf(word, 0, StringComparison.OrdinalIgnoreCase) > -1)
+                    .Take(100) // Limit results to prevent excessive response sizes
+                    .Select(exec => new CompletionItem
+                    {
+                        Label = Path.GetFileName(exec),
+                        Kind = "Text",
+                        Documentation = "An executable file",
+                        InsertText = exec
+                    })
+                    .ToArray();
+
+                XElement response = new XElement("suggestions",
+                    completionItems.Select(item => new XElement("item",
+                        new XElement("label", item.Label),
+                        new XElement("kind", item.Kind),
+                        new XElement("documentation", item.Documentation),
+                        new XElement("insertText", item.InsertText)
+                    ))
+                );
+
+                byte[] data = Encoding.UTF8.GetBytes(
+                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n" +
+                    response.ToString()
+                );
+
+                context.Response.StatusCode = statusCode;
+                context.Response.ContentType = "application/xml";
+                context.Response.ContentLength64 = data.Length;
+                using (Stream outputStream = context.Response.OutputStream)
+                {
+                    outputStream.Write(data, 0, data.Length);
+                }
+            }
+            catch (Exception ex)
+            {
+                byte[] errorData = Encoding.UTF8.GetBytes(
+                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n" +
+                    $"<error>Failed to process completion request. {ex.Message}</error>"
+                );
+                context.Response.StatusCode = 500;
+                context.Response.ContentType = "application/xml";
+                context.Response.ContentLength64 = errorData.Length;
+                using (Stream outputStream = context.Response.OutputStream)
+                {
+                    outputStream.Write(errorData, 0, errorData.Length);
+                }
             }
         }
 
