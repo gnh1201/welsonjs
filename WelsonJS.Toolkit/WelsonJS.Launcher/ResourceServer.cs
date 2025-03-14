@@ -1,12 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Linq;
 
 namespace WelsonJS.Launcher
 {
@@ -18,6 +21,7 @@ namespace WelsonJS.Launcher
         private bool _isRunning;
         private string _prefix;
         private string _resourceName;
+        private ExecutablesCollector _executablesCollector;
 
         public ResourceServer(string prefix, string resourceName)
         {
@@ -25,6 +29,7 @@ namespace WelsonJS.Launcher
             _listener = new HttpListener();
             _listener.Prefixes.Add(prefix);
             _resourceName = resourceName;
+            _executablesCollector = new ExecutablesCollector();
         }
 
         public string GetPrefix()
@@ -81,13 +86,80 @@ namespace WelsonJS.Launcher
         {
             string path = context.Request.Url.AbsolutePath.TrimStart('/');
 
+            // Serve the favicon.ico file
             if ("favicon.ico".Equals(path, StringComparison.OrdinalIgnoreCase))
             {
                 ServeResource(context, GetResource("favicon"), "image/x-icon");
                 return;
             }
 
+            // Serve the code completion (word suggestion)
+            if (path.StartsWith("completion/", StringComparison.OrdinalIgnoreCase))
+            {
+                ServeCompletion(context, path.Substring("completion/".Length));
+                return;
+            }
+
+            // Serve a resource
             ServeResource(context, GetResource(_resourceName), "text/html");
+        }
+
+        private void ServeCompletion(HttpListenerContext context, string word)
+        {
+            int statusCode = 200;
+
+            try
+            {
+                List<string> executables = _executablesCollector.GetExecutables();
+
+                CompletionItem[] completionItems = executables
+                    .Where(exec => exec.IndexOf(word, 0, StringComparison.OrdinalIgnoreCase) > -1)
+                    .Take(100) // Limit results to prevent excessive response sizes
+                    .Select(exec => new CompletionItem
+                    {
+                        Label = Path.GetFileName(exec),
+                        Kind = "Text",
+                        Documentation = "An executable file",
+                        InsertText = exec
+                    })
+                    .ToArray();
+
+                XElement response = new XElement("suggestions",
+                    completionItems.Select(item => new XElement("item",
+                        new XElement("label", item.Label),
+                        new XElement("kind", item.Kind),
+                        new XElement("documentation", item.Documentation),
+                        new XElement("insertText", item.InsertText)
+                    ))
+                );
+
+                byte[] data = Encoding.UTF8.GetBytes(
+                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n" +
+                    response.ToString()
+                );
+
+                context.Response.StatusCode = statusCode;
+                context.Response.ContentType = "application/xml";
+                context.Response.ContentLength64 = data.Length;
+                using (Stream outputStream = context.Response.OutputStream)
+                {
+                    outputStream.Write(data, 0, data.Length);
+                }
+            }
+            catch (Exception ex)
+            {
+                byte[] errorData = Encoding.UTF8.GetBytes(
+                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n" +
+                    $"<error>Failed to process completion request. {ex.Message}</error>"
+                );
+                context.Response.StatusCode = 500;
+                context.Response.ContentType = "application/xml";
+                context.Response.ContentLength64 = errorData.Length;
+                using (Stream outputStream = context.Response.OutputStream)
+                {
+                    outputStream.Write(errorData, 0, errorData.Length);
+                }
+            }
         }
 
         private void ServeResource(HttpListenerContext context, byte[] data, string mimeType = "text/html")
@@ -105,8 +177,10 @@ namespace WelsonJS.Launcher
             context.Response.StatusCode = statusCode;
             context.Response.ContentType = mimeType;
             context.Response.ContentLength64 = data.Length;
-            context.Response.OutputStream.Write(data, 0, data.Length);
-            context.Response.OutputStream.Close();
+            using (Stream outputStream = context.Response.OutputStream)
+            {
+                outputStream.Write(data, 0, data.Length);
+            }
         }
 
         private byte[] GetResource(string resourceName)
@@ -158,5 +232,13 @@ namespace WelsonJS.Launcher
                 return memoryStream.ToArray();
             }
         }
+    }
+
+    public class CompletionItem
+    {
+        public string Label { get; set; }
+        public string Kind { get; set; }
+        public string Documentation { get; set; }
+        public string InsertText { get; set; }
     }
 }
