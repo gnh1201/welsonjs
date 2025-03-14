@@ -114,19 +114,19 @@ namespace WelsonJS.Launcher
                 .Where(exec => exec.IndexOf(word, 0, StringComparison.OrdinalIgnoreCase) > -1)
                 .Select(exec => new CompletionItem
                 {
-                    label = Path.GetFileName(exec),
-                    kind = "Text",
-                    documentation = "An executable file",
-                    insertText = exec
+                    Label = Path.GetFileName(exec),
+                    Kind = "Text",
+                    Documentation = "An executable file",
+                    InsertText = exec
                 })
                 .ToArray();
 
             XElement response = new XElement("suggestions",
                 completionItems.Select(item => new XElement("item",
-                    new XElement("label", item.label),
-                    new XElement("kind", item.kind),
-                    new XElement("documentation", item.documentation),
-                    new XElement("insertText", item.insertText)
+                    new XElement("label", item.Label),
+                    new XElement("kind", item.Kind),
+                    new XElement("documentation", item.Documentation),
+                    new XElement("insertText", item.InsertText)
                 ))
             );
 
@@ -138,8 +138,11 @@ namespace WelsonJS.Launcher
             context.Response.StatusCode = statusCode;
             context.Response.ContentType = "application/xml";
             context.Response.ContentLength64 = data.Length;
-            context.Response.OutputStream.Write(data, 0, data.Length);
-            context.Response.OutputStream.Close();
+            using (Stream outputStream = context.Response.OutputStream)
+            {
+                context.Response.OutputStream.Write(data, 0, data.Length);
+                context.Response.OutputStream.Close();
+            }
         }
 
         private void ServeResource(HttpListenerContext context, byte[] data, string mimeType = "text/html")
@@ -157,8 +160,11 @@ namespace WelsonJS.Launcher
             context.Response.StatusCode = statusCode;
             context.Response.ContentType = mimeType;
             context.Response.ContentLength64 = data.Length;
-            context.Response.OutputStream.Write(data, 0, data.Length);
-            context.Response.OutputStream.Close();
+            using (Stream outputStream = context.Response.OutputStream)
+            {
+                context.Response.OutputStream.Write(data, 0, data.Length);
+                context.Response.OutputStream.Close();
+            }
         }
 
         private byte[] GetResource(string resourceName)
@@ -214,9 +220,9 @@ namespace WelsonJS.Launcher
 
     public class CompletionItem
     {
-        public string label { get; set; }
-        public string kind { get; set; }
-        public string documentation { get; set; }
-        public string insertText { get; set; }
+        public string Label { get; set; }
+        public string Kind { get; set; }
+        public string Documentation { get; set; }
+        public string InsertText { get; set; }
     }
 }

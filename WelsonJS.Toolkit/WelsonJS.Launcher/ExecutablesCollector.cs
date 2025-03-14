@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -61,7 +62,10 @@ namespace WelsonJS.Launcher
                                             .ToList();
                     executables.AddRange(executableFiles);
                 }
-                catch (Exception) { }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"Error enumerating executables in '{installLocation}': {ex}");
+                }
             }
 
             if (!string.IsNullOrEmpty(uninstallString))
@@ -77,7 +81,7 @@ namespace WelsonJS.Launcher
 
         private static bool TryParseExecutablePath(string s, out string path)
         {
-            Match match = Regex.Match(s, @"(?<=""|^)([a-zA-Z]:\\[^""\s]+\.exe)");
+            Match match = Regex.Match(s, @"(?<=""|^)([a-zA-Z]:\\[^""]+\.exe)", RegexOptions.IgnoreCase);
 
             if (match.Success)
             {
@@ -104,7 +108,10 @@ namespace WelsonJS.Launcher
                         {
                             executables.AddRange(Directory.GetFiles(path, "*.exe", SearchOption.TopDirectoryOnly));
                         }
-                        catch (Exception) { }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"Error enumerating executables in '{path}': {ex}");
+                        }
                     }
                 }
             }
