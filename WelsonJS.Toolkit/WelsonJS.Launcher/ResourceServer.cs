@@ -27,6 +27,11 @@ namespace WelsonJS.Launcher
             _resourceName = resourceName;
         }
 
+        public string GetPrefix()
+        {
+            return _prefix;
+        }
+
         public void Start()
         {
             if (_isRunning) return;
@@ -94,6 +99,7 @@ namespace WelsonJS.Launcher
                 ;
             }
 
+            context.Response.StatusCode = 404;
             context.Response.ContentType = mimeType;
             context.Response.ContentLength64 = data.Length;
             context.Response.OutputStream.Write(data, 0, data.Length);

@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.button1 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
@@ -41,16 +42,23 @@
             this.instancesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.runAsAdministratorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.globalSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.startTheCodeEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.startCodeEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
+            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.openCodeEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openLauncherToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
+            this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // button1
             // 
             this.button1.Image = global::WelsonJS.Launcher.Properties.Resources.icon_zip_128;
-            this.button1.Location = new System.Drawing.Point(24, 67);
+            this.button1.Location = new System.Drawing.Point(34, 100);
+            this.button1.Margin = new System.Windows.Forms.Padding(4);
             this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(200, 200);
+            this.button1.Size = new System.Drawing.Size(286, 300);
             this.button1.TabIndex = 0;
             this.button1.Text = "From ZIP file...";
             this.button1.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
@@ -60,9 +68,10 @@
             // button2
             // 
             this.button2.Image = global::WelsonJS.Launcher.Properties.Resources.icon_link_128;
-            this.button2.Location = new System.Drawing.Point(230, 67);
+            this.button2.Location = new System.Drawing.Point(329, 100);
+            this.button2.Margin = new System.Windows.Forms.Padding(4);
             this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(200, 200);
+            this.button2.Size = new System.Drawing.Size(286, 300);
             this.button2.TabIndex = 1;
             this.button2.Text = "From external link...";
             this.button2.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
@@ -72,18 +81,20 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(24, 41);
+            this.label1.Location = new System.Drawing.Point(34, 62);
+            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(312, 12);
+            this.label1.Size = new System.Drawing.Size(450, 18);
             this.label1.TabIndex = 2;
             this.label1.Text = "Choose the location of WelsonJS application package.";
             // 
             // linkLabel1
             // 
             this.linkLabel1.AutoSize = true;
-            this.linkLabel1.Location = new System.Drawing.Point(24, 345);
+            this.linkLabel1.Location = new System.Drawing.Point(34, 518);
+            this.linkLabel1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.linkLabel1.Name = "linkLabel1";
-            this.linkLabel1.Size = new System.Drawing.Size(219, 12);
+            this.linkLabel1.Size = new System.Drawing.Size(318, 18);
             this.linkLabel1.TabIndex = 3;
             this.linkLabel1.TabStop = true;
             this.linkLabel1.Text = "https://github.com/gnh1201/welsonjs";
@@ -92,9 +103,10 @@
             // checkBox1
             // 
             this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(26, 281);
+            this.checkBox1.Location = new System.Drawing.Point(37, 422);
+            this.checkBox1.Margin = new System.Windows.Forms.Padding(4);
             this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(184, 16);
+            this.checkBox1.Size = new System.Drawing.Size(256, 22);
             this.checkBox1.TabIndex = 4;
             this.checkBox1.Text = "I want to use specific script ";
             this.checkBox1.UseVisualStyleBackColor = true;
@@ -103,17 +115,19 @@
             // textBox1
             // 
             this.textBox1.Enabled = false;
-            this.textBox1.Location = new System.Drawing.Point(214, 278);
+            this.textBox1.Location = new System.Drawing.Point(306, 417);
+            this.textBox1.Margin = new System.Windows.Forms.Padding(4);
             this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(110, 21);
+            this.textBox1.Size = new System.Drawing.Size(155, 28);
             this.textBox1.TabIndex = 5;
             // 
             // checkBox2
             // 
             this.checkBox2.AutoSize = true;
-            this.checkBox2.Location = new System.Drawing.Point(26, 305);
+            this.checkBox2.Location = new System.Drawing.Point(37, 458);
+            this.checkBox2.Margin = new System.Windows.Forms.Padding(4);
             this.checkBox2.Name = "checkBox2";
-            this.checkBox2.Size = new System.Drawing.Size(254, 16);
+            this.checkBox2.Size = new System.Drawing.Size(352, 22);
             this.checkBox2.TabIndex = 6;
             this.checkBox2.Text = "This is an Interactive Service Application";
             this.checkBox2.UseVisualStyleBackColor = true;
@@ -124,7 +138,8 @@
             this.settingsToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(461, 24);
+            this.menuStrip1.Padding = new System.Windows.Forms.Padding(9, 3, 0, 3);
+            this.menuStrip1.Size = new System.Drawing.Size(659, 25);
             this.menuStrip1.TabIndex = 7;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -135,9 +150,9 @@
             this.instancesToolStripMenuItem,
             this.runAsAdministratorToolStripMenuItem,
             this.globalSettingsToolStripMenuItem,
-            this.startTheCodeEditorToolStripMenuItem});
+            this.startCodeEditorToolStripMenuItem});
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(62, 20);
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(62, 19);
             this.settingsToolStripMenuItem.Text = "Settings";
             // 
             // userdefinedVariablesToolStripMenuItem
@@ -168,18 +183,52 @@
             this.globalSettingsToolStripMenuItem.Text = "Global settings...";
             this.globalSettingsToolStripMenuItem.Click += new System.EventHandler(this.globalSettingsToolStripMenuItem_Click);
             // 
-            // startTheCodeEditorToolStripMenuItem
+            // startCodeEditorToolStripMenuItem
             // 
-            this.startTheCodeEditorToolStripMenuItem.Name = "startTheCodeEditorToolStripMenuItem";
-            this.startTheCodeEditorToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
-            this.startTheCodeEditorToolStripMenuItem.Text = "Start the code editor...";
-            this.startTheCodeEditorToolStripMenuItem.Click += new System.EventHandler(this.startTheCodeEditorToolStripMenuItem_Click);
+            this.startCodeEditorToolStripMenuItem.Name = "startCodeEditorToolStripMenuItem";
+            this.startCodeEditorToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
+            this.startCodeEditorToolStripMenuItem.Text = "Start the code editor...";
+            this.startCodeEditorToolStripMenuItem.Click += new System.EventHandler(this.startCodeEditorToolStripMenuItem_Click);
+            // 
+            // notifyIcon1
+            // 
+            this.notifyIcon1.ContextMenuStrip = this.contextMenuStrip1;
+            this.notifyIcon1.Icon = global::WelsonJS.Launcher.Properties.Resources.favicon;
+            this.notifyIcon1.Text = "notifyIcon1";
+            // 
+            // contextMenuStrip1
+            // 
+            this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.openLauncherToolStripMenuItem,
+            this.openCodeEditorToolStripMenuItem,
+            this.exitToolStripMenuItem});
+            this.contextMenuStrip1.Name = "contextMenuStrip1";
+            this.contextMenuStrip1.Size = new System.Drawing.Size(199, 92);
+            // 
+            // openCodeEditorToolStripMenuItem
+            // 
+            this.openCodeEditorToolStripMenuItem.Name = "openCodeEditorToolStripMenuItem";
+            this.openCodeEditorToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
+            this.openCodeEditorToolStripMenuItem.Text = "Open the code editor...";
+            this.openCodeEditorToolStripMenuItem.Click += new System.EventHandler(this.openCodeEditorToolStripMenuItem_Click);
+            // 
+            // exitToolStripMenuItem
+            // 
+            this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
+            this.exitToolStripMenuItem.Text = "Exit";
+            // 
+            // openLauncherToolStripMenuItem
+            // 
+            this.openLauncherToolStripMenuItem.Name = "openLauncherToolStripMenuItem";
+            this.openLauncherToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
+            this.openLauncherToolStripMenuItem.Text = "Open the launcher...";
             // 
             // MainForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 18F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(461, 382);
+            this.ClientSize = new System.Drawing.Size(659, 573);
             this.Controls.Add(this.checkBox2);
             this.Controls.Add(this.textBox1);
             this.Controls.Add(this.checkBox1);
@@ -191,11 +240,13 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = global::WelsonJS.Launcher.Properties.Resources.favicon;
             this.MainMenuStrip = this.menuStrip1;
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.MaximizeBox = false;
             this.Name = "MainForm";
             this.Text = "WelsonJS Application Launcher";
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            this.contextMenuStrip1.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -216,7 +267,12 @@
         private System.Windows.Forms.ToolStripMenuItem instancesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem runAsAdministratorToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem globalSettingsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem startTheCodeEditorToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem startCodeEditorToolStripMenuItem;
+        private System.Windows.Forms.NotifyIcon notifyIcon1;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
+        private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem openCodeEditorToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem openLauncherToolStripMenuItem;
     }
 }
 
