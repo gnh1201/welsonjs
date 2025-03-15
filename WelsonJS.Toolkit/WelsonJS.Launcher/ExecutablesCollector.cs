@@ -16,6 +16,7 @@ namespace WelsonJS.Launcher
         {
             executables.AddRange(GetInstalledSoftwareExecutables());
             executables.AddRange(GetExecutablesFromPath());
+            executables.AddRange(GetExecutablesFromNetFx());
         }
 
         public List<string> GetExecutables()
@@ -96,17 +97,50 @@ namespace WelsonJS.Launcher
         private List<string> GetExecutablesFromPath()
         {
             List<string> executables = new List<string>();
-            string pathEnv = Environment.GetEnvironmentVariable("PATH");
+            string[] paths = Environment.GetEnvironmentVariable("PATH")?.Split(';');
 
-            if (!string.IsNullOrEmpty(pathEnv))
+            if (paths != null)
             {
-                foreach (string path in pathEnv.Split(';'))
+                foreach (string path in paths)
                 {
                     if (Directory.Exists(path))
                     {
                         try
                         {
                             executables.AddRange(Directory.GetFiles(path, "*.exe", SearchOption.TopDirectoryOnly));
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"Error enumerating executables in '{path}': {ex}");
+                        }
+                    }
+                }
+            }
+
+            return executables;
+        }
+
+        private List<string> GetExecutablesFromNetFx()
+        {
+            List<string> executables = new List<string>();
+
+            string windir = Environment.GetEnvironmentVariable("WINDIR");
+
+            if (!string.IsNullOrEmpty(windir))
+            {
+                string[] paths = new string[]
+                {
+                    Path.Combine(windir, "Microsoft.NET", "Framework"),
+                    Path.Combine(windir, "Microsoft.NET", "Framework64")
+                };
+
+                foreach (string path in paths)
+                {
+                    if (Directory.Exists(path))
+                    {
+                        try
+                        {
+                            executables.AddRange(Directory.GetFiles(path, "*.exe", SearchOption.AllDirectories));
                         }
                         catch (Exception ex)
                         {
