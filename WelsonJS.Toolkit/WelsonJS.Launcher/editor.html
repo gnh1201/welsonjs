@@ -2,10 +2,10 @@
 <html>
 <head>
     <title>WelsonJS Code Editor</title>
-    <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.css" />
-    <link rel="stylesheet" href="https://cdn.metroui.org.ua/current/metro.css">
-    <link rel="stylesheet" href="https://cdn.metroui.org.ua/current/icons.css">
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <link rel="stylesheet" href="https://cdn.metroui.org.ua/dev/metro.css">
+    <link rel="stylesheet" href="https://cdn.metroui.org.ua/dev/icons.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.css">
     <style>
         html, body {
             margin: 0;
@@ -14,16 +14,26 @@
             height: 100%;
             overflow: hidden;
         }
+
         #container {
             border: 1px solid grey;
             height: calc(100% - 139px);
             overflow: hidden;
         }
+
+        #fileInput {
+            display: none;
+        }
+
         .banner {
             text-align: center;
             padding: 10px;
             background-color: #f1f1f1;
             font-size: 14px;
+        }
+
+        .overflowingOverlayWidgets {
+            z-index: 1;
         }
     </style>
 </head>
@@ -35,34 +45,39 @@
         </ul>
         <div class="content-holder">
             <div class="section" id="editor-tab">
-                <button class="ribbon-button" onclick="openFile()">
+                <button id="btnOpenFile" class="ribbon-button">
                     <span class="icon mif-folder-open"></span>
                     <span class="caption">Open File</span>
                 </button>
-                <button class="ribbon-button" onclick="saveFile()">
-                    <span class="icon mif-floppy-disk"></span>
+                <button id="btnSaveFile" class="ribbon-button">
+                    <span class="icon mif-floppy-disks"></span>
                     <span class="caption">Save File</span>
                 </button>
-                <button class="ribbon-button" onclick="navigate('https://github.com/sponsors/gnh1201')">
+                <button id="btnSponsor" class="ribbon-button">
                     <span class="icon mif-heart"></span>
                     <span class="caption">Sponsor</span>
                 </button>
             </div>
         </div>
     </nav>
-    
+
     <div id="container"></div>
-    <input type="file" id="fileInput" style="display: none" onchange="handleFileSelect(event)">
-    
+    <input type="file" id="fileInput">
+
     <div class="banner"><a href="https://github.com/gnh1201/welsonjs">WelsonJS</a> Code Editor powered by <a href="https://github.com/microsoft/monaco-editor">Microsoft Monaco Editor</a>.</div>
-    
+
     <script>
-        var require = { paths: { vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs' } };
+        var require = {
+            paths: {
+                vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs'
+            }
+        };
     </script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fast-xml-parser/4.5.1/fxparser.min.js"></script>
+    <script src="https://cdn.metroui.org.ua/dev/metro.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/loader.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.js"></script>
-    <script src="https://cdn.metroui.org.ua/current/metro.js"></script>
-    
     <script>
         var editor;
         var currentFileName = "sayhello.js";
@@ -77,18 +92,62 @@
             }
         }
 
-        require(["vs/editor/editor.main"], function() {
+        function getSuggestions(word, range) {
+            return axios.get("http://localhost:3000/completion/" + encodeURIComponent(word))
+                .then(function (response) {
+                    var parser = new XMLParser();
+                    var result = parser.parse(response.data);
+
+                    if (!result.suggestions || !result.suggestions.item) {
+                        return {
+                            suggestions: []
+                        };
+                    }
+
+                    var items = Array.isArray(result.suggestions.item) ? result.suggestions.item : [result.suggestions.item];
+                    var suggestions = items.map(function (item) {
+                        return {
+                            label: item.label,
+                            kind: monaco.languages.CompletionItemKind.Text,
+                            documentation: item.documentation || "",
+                            insertText: '"' + item.insertText + '"',
+                            range: range
+                        };
+                    });
+                    
+                    return {
+                        suggestions: suggestions
+                    };
+                })
+                .catch(function () {
+                    return {
+                        suggestions: []
+                    };
+                });
+        }
+
+        require(["vs/editor/editor.main"], function () {
             editor = monaco.editor.create(document.getElementById('container'), {
                 value: ['// lib/sayhello.js', 'function say() {', '    console.log("hello");', '}', '', 'exports.say = say;', '', 'exports.VERSIONINFO = "SayHello (sayhello.js) version 0.1";', 'exports.AUTHOR = "abuse@catswords.net";', 'exports.global = global;', 'exports.require = global.require;'].join('\n'),
                 language: 'javascript'
             });
+
+            monaco.languages.registerCompletionItemProvider('javascript', {
+                provideCompletionItems: function (model, position) {
+                    var word = model.getWordUntilPosition(position);
+                    var range = {
+                        startLineNumber: position.lineNumber,
+                        endLineNumber: position.lineNumber,
+                        startColumn: word.startColumn,
+                        endColumn: word.endColumn
+                    };
+
+                    return getSuggestions(word.word, range);
+                }
+            });
         });
 
         window.addEventListener('resize', resizeEditor);
-
-        function openFile() {
-            document.getElementById('fileInput').click();
-        }
 
         function getFileLanguage(fileName) {
             var extension = fileName.split('.').pop().toLowerCase();
@@ -111,21 +170,33 @@
             return languageMap[extension] || 'plaintext';
         }
 
-        function handleFileSelect(event) {
+        function navigate(href) {
+            var a = document.createElement("a");
+            a.href = href;
+            a.target = "_blank";
+            document.body.appendChild(a);
+            a.click();
+        }
+
+        document.getElementById("fileInput").onchange = function (event) {
             var file = event.target.files[0];
             if (!file) return;
-            
+
             currentFileName = file.name;
             var reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 var language = getFileLanguage(file.name);
                 monaco.editor.setModelLanguage(editor.getModel(), language);
                 editor.setValue(e.target.result);
             };
             reader.readAsText(file);
-        }
+        };
 
-        function saveFile() {
+        document.getElementById("btnOpenFile").onclick = function () {
+            document.getElementById('fileInput').click();
+        };
+
+        document.getElementById("btnSaveFile").onclick = function () {
             var text = editor.getValue();
             var fileName = prompt("Enter file name:", currentFileName);
             if (!fileName) return;
@@ -138,15 +209,11 @@
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
-        }
-        
-        function navigate(href) {
-            var a = document.createElement("a");
-            a.href = href;
-            a.target = "_blank";
-            document.body.appendChild(a);
-            a.click();
-        }
+        };
+
+        document.getElementById("btnSponsor").onclick = function () {
+            navigate('https://github.com/sponsors/gnh1201');
+        };
     </script>
 </body>
 </html>

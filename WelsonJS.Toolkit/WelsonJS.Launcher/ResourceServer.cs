@@ -114,7 +114,7 @@ namespace WelsonJS.Launcher
 
                 CompletionItem[] completionItems = executables
                     .Where(exec => exec.IndexOf(word, 0, StringComparison.OrdinalIgnoreCase) > -1)
-                    .Take(100) // Limit results to prevent excessive response sizes
+                    .Take(100) // Limit the number of results
                     .Select(exec => new CompletionItem
                     {
                         Label = Path.GetFileName(exec),
