@@ -119,7 +119,7 @@ namespace WelsonJS.Launcher
                     {
                         Label = Path.GetFileName(exec),
                         Kind = "Text",
-                        Documentation = "An executable file",
+                        Documentation = $"An executable file: {exec}",
                         InsertText = exec
                     })
                     .ToArray();
