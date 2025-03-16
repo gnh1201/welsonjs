@@ -131,6 +131,7 @@ namespace WelsonJS.Launcher
             string[] arguments = {
                 $"\"{url}\"",
                 "--remote-debugging-port=9222",
+                "--remote-allow-origins=*",
                 $"--user-data-dir=\"{userDataDir}\""
             };
 

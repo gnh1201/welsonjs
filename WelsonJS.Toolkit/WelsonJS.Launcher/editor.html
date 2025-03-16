@@ -53,6 +53,10 @@
                     <span class="icon mif-floppy-disks"></span>
                     <span class="caption">Save File</span>
                 </button>
+                <button id="btnGenerate" class="ribbon-button">
+                    <span class="icon mif-rocket"></span>
+                    <span class="caption">Generate</span>
+                </button>
                 <button id="btnSponsor" class="ribbon-button">
                     <span class="icon mif-heart"></span>
                     <span class="caption">Sponsor</span>
@@ -178,6 +182,16 @@
             a.click();
         }
 
+        function appendTextToEditor(text) {
+            const position = editor.getPosition();
+            const range = new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column);
+            editor.executeEdits("my-source", [{
+                range: range,
+                text: text + "\n",
+                forceMoveMarkers: true
+            }]);
+        }
+
         document.getElementById("fileInput").onchange = function (event) {
             var file = event.target.files[0];
             if (!file) return;
@@ -214,6 +228,83 @@
         document.getElementById("btnSponsor").onclick = function () {
             navigate('https://github.com/sponsors/gnh1201');
         };
+
+        document.getElementById("btnGenerate").onclick = function () {
+            const promptMessage = prompt("Enter a prompt message:", '');
+            if (!promptMessage || promptMessage.trim() == '') {
+                alert("A prompt message is required.");
+                return;
+            }
+
+            appendTextToEditor("// " + promptMessage + "... Generating...");
+
+            (async function () {
+                const targetWsUrl = await getTargetByUrl('copilot.microsoft.com');
+                if (targetWsUrl) {
+                    await sendPromptMessage(targetWsUrl, promptMessage);
+                } else {
+                    alert("Microsoft Copilot not running. Please visit copilot.microsoft.com first.");
+                }
+            })();
+        };
+
+        async function getTargetByUrl(urlPart) {
+            const response = await fetch('http://localhost:3000/devtools/json');
+            const targets = await response.json();
+
+            const target = targets.find(target => target.url.includes(urlPart));
+
+            if (target) {
+                console.log(`Found target: ${target.title} (${target.id})`);
+                return target.webSocketDebuggerUrl;
+            } else {
+                console.log('Target not found');
+                return null;
+            }
+        }
+
+        async function sendPromptMessage(wsUrl, promptMessage) {
+            const socket = new WebSocket(wsUrl);
+
+            socket.onopen = () => {
+                socket.send(JSON.stringify({
+                    id: 1,
+                    method: 'Input.insertText',
+                    params: {
+                        text: promptMessage
+                    }
+                }));
+
+                socket.send(JSON.stringify({
+                    id: 2,
+                    method: 'Input.dispatchKeyEvent',
+                    params: {
+                        type: 'keyDown',
+                        key: 'Enter',
+                        code: 'Enter'
+                    }
+                }));
+
+                setTimeout(() => {
+                    socket.send(JSON.stringify({
+                        id: 3,
+                        method: 'Runtime.evaluate',
+                        params: {
+                            expression: '((e)=>e[e.length-1].querySelector("code").innerText||e[e.length-1].innerText)(document.querySelectorAll("[data-content=ai-message]"))'
+                        }
+                    }))
+                }, 7000);
+            };
+
+            socket.onmessage = (event) => {
+                const response = JSON.parse(event.data);
+                console.log('Sent successfully:', response.result);
+
+                if (response.id == 3) {
+                    appendTextToEditor(response.result.result.value);
+                }
+            };
+        }
     </script>
 </body>
 </html>
