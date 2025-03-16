@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml;
 using System.Xml.Linq;
 
 namespace WelsonJS.Launcher
@@ -46,7 +47,7 @@ namespace WelsonJS.Launcher
             _listener.Start();
 
             // Open the web browser
-            Process.Start(_prefix);
+            Program.OpenWebBrowser(_prefix);
 
             // Run a task with cancellation token
             _serverTask = Task.Run(() => ListenLoop(_cts.Token));
@@ -94,9 +95,18 @@ namespace WelsonJS.Launcher
             }
 
             // Serve the code completion (word suggestion)
-            if (path.StartsWith("completion/", StringComparison.OrdinalIgnoreCase))
+            const string completionPrefix = "completion/";
+            if (path.StartsWith(completionPrefix, StringComparison.OrdinalIgnoreCase))
             {
-                ServeCompletion(context, path.Substring("completion/".Length));
+                ServeCompletion(context, path.Substring(completionPrefix.Length));
+                return;
+            }
+
+            // Serve the DevTools Protocol
+            const string devtoolsPrefix = "devtools/";
+            if (path.StartsWith(devtoolsPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                ServeDevTools(context, path.Substring(devtoolsPrefix.Length - 1));
                 return;
             }
 
@@ -106,8 +116,6 @@ namespace WelsonJS.Launcher
 
         private void ServeCompletion(HttpListenerContext context, string word)
         {
-            int statusCode = 200;
-
             try
             {
                 List<string> executables = _executablesCollector.GetExecutables();
@@ -133,44 +141,39 @@ namespace WelsonJS.Launcher
                     ))
                 );
 
-                byte[] data = Encoding.UTF8.GetBytes(
-                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n" +
-                    response.ToString()
-                );
+                ServeResource(context, response.ToString(), "application/xml");
+            }
+            catch (Exception ex)
+            {
+                ServeResource(context, $"<error>Failed to process completion request. {ex.Message}</error>", "application/xml", 500);
+            }
+        }
 
-                context.Response.StatusCode = statusCode;
-                context.Response.ContentType = "application/xml";
-                context.Response.ContentLength64 = data.Length;
-                using (Stream outputStream = context.Response.OutputStream)
+        private void ServeDevTools(HttpListenerContext context, string endpoint)
+        {
+            try
+            {
+                using (HttpClient client = new HttpClient())
                 {
-                    outputStream.Write(data, 0, data.Length);
+                    string url = "http://localhost:9222" + endpoint;
+                    string data = client.GetStringAsync(url).GetAwaiter().GetResult();
+
+                    ServeResource(context, data, "application/json");
                 }
             }
             catch (Exception ex)
             {
-                byte[] errorData = Encoding.UTF8.GetBytes(
-                    "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n" +
-                    $"<error>Failed to process completion request. {ex.Message}</error>"
-                );
-                context.Response.StatusCode = 500;
-                context.Response.ContentType = "application/xml";
-                context.Response.ContentLength64 = errorData.Length;
-                using (Stream outputStream = context.Response.OutputStream)
-                {
-                    outputStream.Write(errorData, 0, errorData.Length);
-                }
+                ServeResource(context, $"<error>Failed to process DevTools request. {ex.Message}</error>", "application/xml", 500);
             }
         }
 
-        private void ServeResource(HttpListenerContext context, byte[] data, string mimeType = "text/html")
+        private void ServeResource(HttpListenerContext context, byte[] data, string mimeType = "text/html", int statusCode = 200)
         {
-            int statusCode = 200;
+            string xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
             if (data == null) {
-                data = "text/html".Equals(mimeType, StringComparison.OrdinalIgnoreCase) ?
-                    Encoding.UTF8.GetBytes("<html><body><h1>Could not find the resource.</h1></body></html>") :
-                    Encoding.UTF8.GetBytes("Could not find the resource.")
-                ;
+                data = Encoding.UTF8.GetBytes(xmlHeader + "\r\n<error>Could not find the resource.</error>");
+                mimeType = "application/xml";
                 statusCode = 404;
             }
 
@@ -181,6 +184,24 @@ namespace WelsonJS.Launcher
             {
                 outputStream.Write(data, 0, data.Length);
             }
+        }
+
+        private void ServeResource(HttpListenerContext context, string data, string mimeType = "text/html", int statusCode = 200) 
+        {
+            string xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+
+            if (data == null)
+            {
+                data = xmlHeader + "\r\n<error>Could not find the resource.</error>";
+                mimeType = "application/xml";
+                statusCode = 404;
+            }
+            else if (mimeType == "application/xml" && !data.StartsWith("<?xml"))
+            {
+                data = xmlHeader + "\r\n" + data;
+            }
+
+            ServeResource(context, Encoding.UTF8.GetBytes(data), mimeType, statusCode);
         }
 
         private byte[] GetResource(string resourceName)
