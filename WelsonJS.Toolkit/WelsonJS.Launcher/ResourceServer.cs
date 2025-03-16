@@ -86,7 +86,6 @@ namespace WelsonJS.Launcher
         private void ProcessRequest(HttpListenerContext context)
         {
             string path = context.Request.Url.AbsolutePath.TrimStart('/');
-            string prefix;
 
             // Serve the favicon.ico file
             if ("favicon.ico".Equals(path, StringComparison.OrdinalIgnoreCase))
@@ -96,18 +95,18 @@ namespace WelsonJS.Launcher
             }
 
             // Serve the code completion (word suggestion)
-            prefix = "completion/";
-            if (path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            const string completionPrefix = "completion/";
+            if (path.StartsWith(completionPrefix, StringComparison.OrdinalIgnoreCase))
             {
-                ServeCompletion(context, path.Substring(prefix.Length));
+                ServeCompletion(context, path.Substring(completionPrefix.Length));
                 return;
             }
 
             // Serve the DevTools Protocol
-            prefix = "devtools/";
-            if (path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            const string devtoolsPrefix = "devtools/";
+            if (path.StartsWith(devtoolsPrefix, StringComparison.OrdinalIgnoreCase))
             {
-                ServeDevTools(context, path.Substring(prefix.Length - 1));
+                ServeDevTools(context, path.Substring(devtoolsPrefix.Length - 1));
                 return;
             }
 
@@ -154,15 +153,17 @@ namespace WelsonJS.Launcher
         {
             try
             {
-                HttpClient client = new HttpClient();
-                string url = "http://localhost:9222" + endpoint;
-                string data = Task.Run(async () => await client.GetStringAsync(url)).Result;
+                using (HttpClient client = new HttpClient())
+                {
+                    string url = "http://localhost:9222" + endpoint;
+                    string data = client.GetStringAsync(url).GetAwaiter().GetResult();
 
-                ServeResource(context, data, "application/json");
+                    ServeResource(context, data, "application/json");
+                }
             }
             catch (Exception ex)
             {
-                ServeResource(context, $"<error>Failed to process completion request. {ex.Message}</error>", "application/xml", 500);
+                ServeResource(context, $"<error>Failed to process DevTools request. {ex.Message}</error>", "application/xml", 500);
             }
         }
 
