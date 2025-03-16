@@ -270,5 +270,10 @@ namespace WelsonJS.Launcher
                 Process.Start(Program.resourceServer.GetPrefix());
             }
         }
+
+        private void openMicrosoftCopilotToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Program.OpenWebBrowser("https://copilot.microsoft.com/");
+        }
     }
 }

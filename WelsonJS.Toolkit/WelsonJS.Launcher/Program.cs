@@ -124,5 +124,22 @@ namespace WelsonJS.Launcher
 
             return workingDirectory;
         }
+
+        public static void OpenWebBrowser(string url)
+        {
+            string userDataDir = Path.Combine(GetAppDataPath(), "EdgeUserProfile");
+            string[] arguments = {
+                $"\"{url}\"",
+                "--remote-debugging-port=9222",
+                $"--user-data-dir=\"{userDataDir}\""
+            };
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = "msedge.exe",
+                Arguments = string.Join(" ", arguments),
+                UseShellExecute = true
+            });
+        }
     }
 }

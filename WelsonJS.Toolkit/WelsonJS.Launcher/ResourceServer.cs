@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Reflection;
 using System.Text;
 using System.Threading;
@@ -46,7 +46,7 @@ namespace WelsonJS.Launcher
             _listener.Start();
 
             // Open the web browser
-            Process.Start(_prefix);
+            Program.OpenWebBrowser(_prefix);
 
             // Run a task with cancellation token
             _serverTask = Task.Run(() => ListenLoop(_cts.Token));
@@ -85,6 +85,7 @@ namespace WelsonJS.Launcher
         private void ProcessRequest(HttpListenerContext context)
         {
             string path = context.Request.Url.AbsolutePath.TrimStart('/');
+            string prefix;
 
             // Serve the favicon.ico file
             if ("favicon.ico".Equals(path, StringComparison.OrdinalIgnoreCase))
@@ -94,9 +95,18 @@ namespace WelsonJS.Launcher
             }
 
             // Serve the code completion (word suggestion)
-            if (path.StartsWith("completion/", StringComparison.OrdinalIgnoreCase))
+            prefix = "completion/";
+            if (path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             {
-                ServeCompletion(context, path.Substring("completion/".Length));
+                ServeCompletion(context, path.Substring(prefix.Length));
+                return;
+            }
+
+            // Serve the DevTools Protocol
+            prefix = "devtools/";
+            if (path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            {
+                ServeDevTools(context, path.Substring(prefix.Length - 1));
                 return;
             }
 
@@ -159,6 +169,23 @@ namespace WelsonJS.Launcher
                 {
                     outputStream.Write(errorData, 0, errorData.Length);
                 }
+            }
+        }
+
+        private void ServeDevTools(HttpListenerContext context, string endpoint)
+        {
+            int statusCode = 200;
+
+            HttpClient client = new HttpClient();
+            string url = "http://localhost:9222" + endpoint;
+            byte[] data = Task.Run(async () => await client.GetByteArrayAsync(url)).Result;
+
+            context.Response.StatusCode = statusCode;
+            context.Response.ContentType = "application/json";
+            context.Response.ContentLength64 = data.Length;
+            using (Stream outputStream = context.Response.OutputStream)
+            {
+                outputStream.Write(data, 0, data.Length);
             }
         }
 
