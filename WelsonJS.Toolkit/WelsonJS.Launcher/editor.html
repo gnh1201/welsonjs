@@ -265,17 +265,15 @@
 
         async function sendPromptMessage(wsUrl, promptMessage) {
             const socket = new WebSocket(wsUrl);
-
-            socket.onopen = () => {
-                socket.send(JSON.stringify({
+            const steps = [
+                {
                     id: 1,
                     method: 'Input.insertText',
                     params: {
                         text: promptMessage
                     }
-                }));
-
-                socket.send(JSON.stringify({
+                },
+                {
                     id: 2,
                     method: 'Input.dispatchKeyEvent',
                     params: {
@@ -283,17 +281,26 @@
                         key: 'Enter',
                         code: 'Enter'
                     }
-                }));
+                },
+                {
+                    id: 3,
+                    method: 'Runtime.evaluate',
+                    params: {
+                        expression: '((e)=>e[e.length-1].querySelector("code").innerText||e[e.length-1].innerText)(document.querySelectorAll("[data-content=ai-message]"))'
+                    }
+                }
+            ];
 
-                setTimeout(() => {
-                    socket.send(JSON.stringify({
-                        id: 3,
-                        method: 'Runtime.evaluate',
-                        params: {
-                            expression: '((e)=>e[e.length-1].querySelector("code").innerText||e[e.length-1].innerText)(document.querySelectorAll("[data-content=ai-message]"))'
-                        }
-                    }))
-                }, 7000);
+            socket.onopen = () => {
+                steps.forEach((step) => {
+                    if (step.id == 3) {
+                        setTimeout(() => {
+                            socket.send(JSON.stringify(step));
+                        }, 7000);
+                    } else {
+                        socket.send(JSON.stringify(step));
+                    }
+                });
             };
 
             socket.onmessage = (event) => {

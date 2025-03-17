@@ -128,10 +128,11 @@ namespace WelsonJS.Launcher
         public static void OpenWebBrowser(string url)
         {
             string userDataDir = Path.Combine(GetAppDataPath(), "EdgeUserProfile");
+            string remoteAllowOrigins = "http://localhost:3000";
             string[] arguments = {
                 $"\"{url}\"",
                 "--remote-debugging-port=9222",
-                "--remote-allow-origins=*",
+                $"--remote-allow-origins={remoteAllowOrigins}",  // for security reason
                 $"--user-data-dir=\"{userDataDir}\""
             };
 
