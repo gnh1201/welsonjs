@@ -184,9 +184,10 @@
             const range = new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column);
             editor.executeEdits("my-source", [{
                 range: range,
-                text: text + "\n",
+                text: text,
                 forceMoveMarkers: true
             }]);
+            resizeEditor();
         }
 
         document.getElementById("fileInput").onchange = function (event) {
