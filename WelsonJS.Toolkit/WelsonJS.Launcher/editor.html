@@ -233,7 +233,7 @@
                 return;
             }
 
-            appendTextToEditor("// " + promptMessage + "... Generating...");
+            appendTextToEditor("\n\n// " + promptMessage + "... Thinking with Generative AI...");
 
             (async function () {
                 const targetWsUrl = await getTargetByUrl('copilot.microsoft.com');
