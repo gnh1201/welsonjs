@@ -31,10 +31,6 @@
             background-color: #f1f1f1;
             font-size: 14px;
         }
-
-        .overflowingOverlayWidgets {
-            z-index: 1;
-        }
     </style>
 </head>
 <body>
@@ -85,6 +81,7 @@
     <script>
         var editor;
         var currentFileName = "sayhello.js";
+        var serverBaseUrl = "http://localhost:3000";
 
         function resizeEditor() {
             if (editor) {
@@ -97,7 +94,7 @@
         }
 
         function getSuggestions(word, range) {
-            return axios.get("http://localhost:3000/completion/" + encodeURIComponent(word))
+            return axios.get(serverBaseUrl + "/completion/" + encodeURIComponent(word))
                 .then(function (response) {
                     var parser = new XMLParser();
                     var result = parser.parse(response.data);
@@ -249,7 +246,7 @@
         };
 
         async function getTargetByUrl(urlPart) {
-            const response = await fetch('http://localhost:3000/devtools/json');
+            const response = await fetch(serverBaseUrl + "/devtools/json");
             const targets = await response.json();
 
             const target = targets.find(target => target.url.includes(urlPart));
@@ -286,7 +283,7 @@
                     id: 3,
                     method: 'Runtime.evaluate',
                     params: {
-                        expression: '((e)=>e[e.length-1].querySelector("code").innerText||e[e.length-1].innerText)(document.querySelectorAll("[data-content=ai-message]"))'
+                        expression: '((e)=>e[e.length-1].querySelector("code")?.innerText||e[e.length-1].innerText)(document.querySelectorAll("[data-content=ai-message]"))'
                     }
                 }
             ];
@@ -296,7 +293,7 @@
                     if (step.id == 3) {
                         setTimeout(() => {
                             socket.send(JSON.stringify(step));
-                        }, 7000);
+                        }, 9000);
                     } else {
                         socket.send(JSON.stringify(step));
                     }
