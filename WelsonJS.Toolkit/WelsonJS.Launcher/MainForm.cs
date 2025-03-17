@@ -250,12 +250,11 @@ namespace WelsonJS.Launcher
             if (!Program.resourceServer.IsRunning())
             {
                 Program.resourceServer.Start();
-                ((ToolStripMenuItem)sender).Text = "Stop the code editor...";
+                ((ToolStripMenuItem)sender).Text = "Open the code editor...";
             }
             else
             {
-                Program.resourceServer.Stop();
-                ((ToolStripMenuItem)sender).Text = "Start the code editor...";
+                Program.OpenWebBrowser(Program.resourceServer.GetPrefix());
             }
         }
 
@@ -267,7 +266,7 @@ namespace WelsonJS.Launcher
             }
             else
             {
-                Process.Start(Program.resourceServer.GetPrefix());
+                Program.OpenWebBrowser(Program.resourceServer.GetPrefix());
             }
         }
 
