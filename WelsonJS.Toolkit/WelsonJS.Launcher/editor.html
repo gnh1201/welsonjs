@@ -287,7 +287,7 @@
                     id: 3,
                     method: 'Runtime.evaluate',
                     params: {
-                        expression: "((e)=>e[e.length-1].querySelector('code')?.innerText||['/*\n',e[e.length-1].innerText,'\n*/'].join(''))(document.querySelectorAll('[data-content=ai-message]'))"
+                        expression: '((e)=>e[e.length-1].querySelector("code")?.innerText||e[e.length-1].innerText)(document.querySelectorAll("[data-content=ai-message]"))'
                     }
                 }
             ];
@@ -297,7 +297,7 @@
                     if (step.id == 3) {
                         setTimeout(() => {
                             socket.send(JSON.stringify(step));
-                        }, 7000);
+                        }, 9000);
                     } else {
                         socket.send(JSON.stringify(step));
                     }
