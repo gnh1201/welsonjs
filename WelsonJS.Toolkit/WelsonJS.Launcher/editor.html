@@ -184,7 +184,7 @@
             const range = new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column);
             editor.executeEdits("my-source", [{
                 range: range,
-                text: text,
+                text: "\n" + text,
                 forceMoveMarkers: true
             }]);
             resizeEditor();
@@ -234,7 +234,7 @@
                 return;
             }
 
-            appendTextToEditor("\n\n// " + promptMessage + "... Thinking with Generative AI...");
+            appendTextToEditor("\n// " + promptMessage + "... Thinking with Generative AI...");
 
             (async function () {
                 const targetWsUrl = await getTargetByUrl('copilot.microsoft.com');
