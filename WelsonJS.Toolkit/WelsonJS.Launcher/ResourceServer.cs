@@ -117,6 +117,14 @@ namespace WelsonJS.Launcher
                 return;
             }
 
+            // Serve DNS Query request (use Google DNS server)
+            const string dnsQueryPrefix = "dns-query/";
+            if (path.StartsWith(dnsQueryPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                ServeDnsQueryRequest(context, path.Substring(dnsQueryPrefix.Length));
+                return;
+            }
+
             // Serve a resource
             ServeResource(context, GetResource(_resourceName), "text/html");
         }
@@ -208,6 +216,38 @@ namespace WelsonJS.Launcher
                 {
                     ServeResource(context, $"<error>Failed to process WHOIS request. {ex.Message}</error>", "application/xml", 500);
                 }
+            }
+        }
+
+        private void ServeDnsQueryRequest(HttpListenerContext context, string query)
+        {
+            if (string.IsNullOrWhiteSpace(query) || query.Length > 255)
+            {
+                ServeResource(context, "<error>Invalid query parameter</error>", "application/xml", 400);
+                return;
+            }
+
+            try
+            {
+                DnsQuery dns = new DnsQuery();
+                Dictionary<string, List<string>> allRecords = dns.QueryAll(query);
+
+                StringBuilder result = new StringBuilder();
+                foreach (var recordType in allRecords.Keys)
+                {
+                    result.AppendLine($"\n{recordType} Records:");
+                    foreach (var record in allRecords[recordType])
+                    {
+                        result.AppendLine(record);
+                    }
+                }
+
+                string data = result.ToString();
+                ServeResource(context, data, "text/plain", 200);
+            }
+            catch (Exception ex)
+            {
+                ServeResource(context, $"<error>Failed to process DNS query. {ex.Message}</error>", "application/xml", 500);
             }
         }
 

@@ -66,8 +66,12 @@
                         <span class="icon mif-earth"></span>
                         <span class="caption">Whois</span>
                     </button>
+                    <button id="btnDnsQuery" class="ribbon-button">
+                        <span class="icon mif-earth"></span>
+                        <span class="caption">DNS</span>
+                    </button>
 
-                    <span class="title">Specific</span>
+                    <span class="title">Network tools</span>
                 </div>
             </div>
         </div>
@@ -269,6 +273,21 @@
             axios.get(`${serverBaseUrl}/whois/${hostname}`).then(response => {
                 const responseText = DOMPurify.sanitize(response.data, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
 
+                appendTextToEditor(`/*\n${responseText}\n*/`);
+            }).catch(error => {
+                console.error(error);
+            });
+        };
+
+        document.getElementById("btnDnsQuery").onclick = function () {
+            const hostname = prompt("Enter a hostname or IP address:", '');
+            if (!hostname || hostname.trim() == '') {
+                alert("A hostname or IP address is required.");
+                return;
+            }
+
+            axios.get(`${serverBaseUrl}/dns-query/${hostname}`).then(response => {
+                const responseText = response.data;
                 appendTextToEditor(`/*\n${responseText}\n*/`);
             }).catch(error => {
                 console.error(error);
