@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Xml;
 using System.Xml.Linq;
 
 namespace WelsonJS.Launcher
@@ -73,7 +72,7 @@ namespace WelsonJS.Launcher
             {
                 try
                 {
-                    ProcessRequest(await _listener.GetContextAsync());
+                    await ProcessRequest(await _listener.GetContextAsync());
                 }
                 catch (Exception ex)
                 {
@@ -83,7 +82,7 @@ namespace WelsonJS.Launcher
             }
         }
 
-        private void ProcessRequest(HttpListenerContext context)
+        private async Task ProcessRequest(HttpListenerContext context)
         {
             string path = context.Request.Url.AbsolutePath.TrimStart('/');
 
@@ -106,7 +105,15 @@ namespace WelsonJS.Launcher
             const string devtoolsPrefix = "devtools/";
             if (path.StartsWith(devtoolsPrefix, StringComparison.OrdinalIgnoreCase))
             {
-                ServeDevTools(context, path.Substring(devtoolsPrefix.Length - 1));
+                await ServeDevTools(context, path.Substring(devtoolsPrefix.Length - 1));
+                return;
+            }
+
+            // Serve WHOIS request (use KRNIC server)
+            const string whoisPrefix = "whois/";
+            if (path.StartsWith(whoisPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                await ServeWhoisRequest(context, path.Substring(whoisPrefix.Length));
                 return;
             }
 
@@ -149,14 +156,14 @@ namespace WelsonJS.Launcher
             }
         }
 
-        private void ServeDevTools(HttpListenerContext context, string endpoint)
+        private async Task ServeDevTools(HttpListenerContext context, string endpoint)
         {
             try
             {
                 using (HttpClient client = new HttpClient())
                 {
                     string url = "http://localhost:9222" + endpoint;
-                    string data = client.GetStringAsync(url).GetAwaiter().GetResult();
+                    string data = await client.GetStringAsync(url);
 
                     ServeResource(context, data, "application/json");
                 }
@@ -164,6 +171,43 @@ namespace WelsonJS.Launcher
             catch (Exception ex)
             {
                 ServeResource(context, $"<error>Failed to process DevTools request. {ex.Message}</error>", "application/xml", 500);
+            }
+        }
+
+        private async Task ServeWhoisRequest(HttpListenerContext context, string query)
+        {
+            if (string.IsNullOrWhiteSpace(query) || query.Length > 255)
+            {
+                ServeResource(context, "<error>Invalid query parameter</error>", "application/xml", 400);
+                return;
+            }
+
+            string whoisServerUrl = "https://xn--c79as89aj0e29b77z.xn--3e0b707e";
+
+            using (var client = new HttpClient())
+            {
+                client.Timeout = TimeSpan.FromSeconds(10);
+
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{whoisServerUrl}/kor/whois.jsc")
+                {
+                    Content = new StringContent($"query={Uri.EscapeDataString(query)}&ip=141.101.82.1", Encoding.UTF8, "application/x-www-form-urlencoded")
+                };
+
+                request.Headers.Add("Accept", "*/*");
+                request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.3124.77");
+                client.DefaultRequestHeaders.Referrer = new Uri($"{whoisServerUrl}/kor/whois/whois.jsp");
+
+                try
+                {
+                    HttpResponseMessage response = await client.SendAsync(request);
+                    string responseBody = await response.Content.ReadAsStringAsync();
+                    
+                    ServeResource(context, responseBody, "text/plain", (int)response.StatusCode);
+                }
+                catch (Exception ex)
+                {
+                    ServeResource(context, $"<error>Failed to process WHOIS request. {ex.Message}</error>", "application/xml", 500);
+                }
             }
         }
 

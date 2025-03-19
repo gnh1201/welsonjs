@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>WelsonJS Code Editor</title>
+    <title>WelsonJS Editor</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
     <link rel="stylesheet" href="https://cdn.metroui.org.ua/dev/metro.css">
     <link rel="stylesheet" href="https://cdn.metroui.org.ua/dev/icons.css">
@@ -36,27 +36,39 @@
 <body>
     <nav data-role="ribbonmenu">
         <ul class="tabs-holder">
-            <li class="static"><a href="#">File</a></li>
+            <li class="static"><a href="#">WelsonJS</a></li>
             <li><a href="#editor-tab">Editor</a></li>
         </ul>
         <div class="content-holder">
             <div class="section" id="editor-tab">
-                <button id="btnOpenFile" class="ribbon-button">
-                    <span class="icon mif-folder-open"></span>
-                    <span class="caption">Open File</span>
-                </button>
-                <button id="btnSaveFile" class="ribbon-button">
-                    <span class="icon mif-floppy-disks"></span>
-                    <span class="caption">Save File</span>
-                </button>
-                <button id="btnGenerate" class="ribbon-button">
-                    <span class="icon mif-rocket"></span>
-                    <span class="caption">Generate</span>
-                </button>
-                <button id="btnSponsor" class="ribbon-button">
-                    <span class="icon mif-heart"></span>
-                    <span class="caption">Sponsor</span>
-                </button>
+                <div class="group">
+                    <button id="btnOpenFile" class="ribbon-button">
+                        <span class="icon mif-folder-open"></span>
+                        <span class="caption">Open File</span>
+                    </button>
+                    <button id="btnSaveFile" class="ribbon-button">
+                        <span class="icon mif-floppy-disks"></span>
+                        <span class="caption">Save File</span>
+                    </button>
+                    <button id="btnGenerate" class="ribbon-button">
+                        <span class="icon mif-rocket"></span>
+                        <span class="caption">Generate</span>
+                    </button>
+                    <button id="btnSponsor" class="ribbon-button">
+                        <span class="icon mif-heart"></span>
+                        <span class="caption">Sponsor</span>
+                    </button>
+
+                    <span class="title">Common</span>
+                </div>
+                <div class="group">
+                    <button id="btnWhois" class="ribbon-button">
+                        <span class="icon mif-earth"></span>
+                        <span class="caption">Whois</span>
+                    </button>
+
+                    <span class="title">Specific</span>
+                </div>
             </div>
         </div>
     </nav>
@@ -75,6 +87,7 @@
     </script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fast-xml-parser/4.5.1/fxparser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.2.4/purify.min.js"></script>
     <script src="https://cdn.metroui.org.ua/dev/metro.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/loader.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.js"></script>
@@ -94,7 +107,7 @@
         }
 
         function getSuggestions(word, range) {
-            return axios.get(serverBaseUrl + "/completion/" + encodeURIComponent(word))
+            return axios.get(`${serverBaseUrl}/completion/${encodeURIComponent(word)}`)
                 .then(function (response) {
                     var parser = new XMLParser();
                     var result = parser.parse(response.data);
@@ -234,7 +247,7 @@
                 return;
             }
 
-            appendTextToEditor("\n// " + promptMessage + "... Thinking with Generative AI...");
+            appendTextToEditor(`\n//${promptMessage}... Thinking with Generative AI...`);
 
             (async function () {
                 const targetWsUrl = await getTargetByUrl('copilot.microsoft.com');
@@ -246,8 +259,24 @@
             })();
         };
 
+        document.getElementById("btnWhois").onclick = function () {
+            const hostname = prompt("Enter a hostname or IP address:", '');
+            if (!hostname || hostname.trim() == '') {
+                alert("A hostname or IP address is required.");
+                return;
+            }
+
+            axios.get(`${serverBaseUrl}/whois/${hostname}`).then(response => {
+                const responseText = DOMPurify.sanitize(response.data, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+
+                appendTextToEditor(`/*\n${responseText}\n*/`);
+            }).catch(error => {
+                console.error(error);
+            });
+        };
+
         async function getTargetByUrl(urlPart) {
-            const response = await fetch(serverBaseUrl + "/devtools/json");
+            const response = await fetch(`${serverBaseUrl}/devtools/json`);
             const targets = await response.json();
 
             const target = targets.find(target => target.url.includes(urlPart));
@@ -303,10 +332,11 @@
 
             socket.onmessage = (event) => {
                 const response = JSON.parse(event.data);
-                console.log('Sent successfully:', response.result);
+                console.log("Sent successfully:", response.result);
 
                 if (response.id == 3) {
                     appendTextToEditor(response.result.result.value);
+                    socket.close();
                 }
             };
         }

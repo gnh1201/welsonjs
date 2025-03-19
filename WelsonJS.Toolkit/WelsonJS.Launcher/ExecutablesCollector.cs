@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace WelsonJS.Launcher
 {
@@ -14,9 +15,12 @@ namespace WelsonJS.Launcher
 
         public ExecutablesCollector()
         {
-            executables.AddRange(GetInstalledSoftwareExecutables());
-            executables.AddRange(GetExecutablesFromPath());
-            executables.AddRange(GetExecutablesFromNetFx());
+            new Task(() =>
+            {
+                executables.AddRange(GetInstalledSoftwareExecutables());
+                executables.AddRange(GetExecutablesFromPath());
+                executables.AddRange(GetExecutablesFromNetFx());
+            }).Start();
         }
 
         public List<string> GetExecutables()
