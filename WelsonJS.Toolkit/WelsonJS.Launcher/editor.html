@@ -338,6 +338,7 @@
 
                 if (response.id == 3) {
                     appendTextToEditor(response.result.result.value);
+                    socket.close();
                 }
             };
         }

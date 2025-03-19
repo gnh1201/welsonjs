@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Xml;
 using System.Xml.Linq;
 
 namespace WelsonJS.Launcher
@@ -106,7 +105,7 @@ namespace WelsonJS.Launcher
             const string devtoolsPrefix = "devtools/";
             if (path.StartsWith(devtoolsPrefix, StringComparison.OrdinalIgnoreCase))
             {
-                ServeDevTools(context, path.Substring(devtoolsPrefix.Length - 1));
+                ServeDevTools(context, path.Substring(devtoolsPrefix.Length - 1)).GetAwaiter().GetResult(); ;
                 return;
             }
 
@@ -114,7 +113,7 @@ namespace WelsonJS.Launcher
             const string whoisPrefix = "whois/";
             if (path.StartsWith(whoisPrefix, StringComparison.OrdinalIgnoreCase))
             {
-                ServeWhoisRequest(context, path.Substring(whoisPrefix.Length)).Wait();
+                ServeWhoisRequest(context, path.Substring(whoisPrefix.Length)).GetAwaiter().GetResult();
                 return;
             }
 
@@ -157,14 +156,14 @@ namespace WelsonJS.Launcher
             }
         }
 
-        private void ServeDevTools(HttpListenerContext context, string endpoint)
+        private async Task ServeDevTools(HttpListenerContext context, string endpoint)
         {
             try
             {
                 using (HttpClient client = new HttpClient())
                 {
                     string url = "http://localhost:9222" + endpoint;
-                    string data = client.GetStringAsync(url).GetAwaiter().GetResult();
+                    string data = await client.GetStringAsync(url);
 
                     ServeResource(context, data, "application/json");
                 }
