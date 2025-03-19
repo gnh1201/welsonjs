@@ -110,6 +110,14 @@ namespace WelsonJS.Launcher
                 return;
             }
 
+            // Serve WHOIS request (use KRNIC server)
+            const string whoisPrefix = "whois/";
+            if (path.StartsWith(whoisPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                ServeWhoisRequest(context, path.Substring(whoisPrefix.Length)).Wait();
+                return;
+            }
+
             // Serve a resource
             ServeResource(context, GetResource(_resourceName), "text/html");
         }
@@ -164,6 +172,35 @@ namespace WelsonJS.Launcher
             catch (Exception ex)
             {
                 ServeResource(context, $"<error>Failed to process DevTools request. {ex.Message}</error>", "application/xml", 500);
+            }
+        }
+
+        private async Task ServeWhoisRequest(HttpListenerContext context, string query)
+        {
+            string whoisServerUrl = "https://xn--c79as89aj0e29b77z.xn--3e0b707e";
+
+            using (var client = new HttpClient())
+            {
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{whoisServerUrl}/kor/whois.jsc")
+                {
+                    Content = new StringContent($"query={query}&ip=141.101.82.1", Encoding.UTF8, "application/x-www-form-urlencoded")
+                };
+
+                request.Headers.Add("Accept", "*/*");
+                request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.3124.77");
+                client.DefaultRequestHeaders.Referrer = new Uri($"{whoisServerUrl}/kor/whois/whois.jsp");
+
+                try
+                {
+                    HttpResponseMessage response = await client.SendAsync(request);
+                    string responseBody = await response.Content.ReadAsStringAsync();
+                    
+                    ServeResource(context, responseBody, "text/html", (int)response.StatusCode);
+                }
+                catch (Exception ex)
+                {
+                    ServeResource(context, $"<error>Failed to process WHOIS request. {ex.Message}</error>", "application/xml", 500);
+                }
             }
         }
 
