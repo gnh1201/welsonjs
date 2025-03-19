@@ -72,7 +72,7 @@ namespace WelsonJS.Launcher
             {
                 try
                 {
-                    ProcessRequest(await _listener.GetContextAsync());
+                    await ProcessRequest(await _listener.GetContextAsync());
                 }
                 catch (Exception ex)
                 {
@@ -82,7 +82,7 @@ namespace WelsonJS.Launcher
             }
         }
 
-        private void ProcessRequest(HttpListenerContext context)
+        private async Task ProcessRequest(HttpListenerContext context)
         {
             string path = context.Request.Url.AbsolutePath.TrimStart('/');
 
@@ -105,7 +105,7 @@ namespace WelsonJS.Launcher
             const string devtoolsPrefix = "devtools/";
             if (path.StartsWith(devtoolsPrefix, StringComparison.OrdinalIgnoreCase))
             {
-                ServeDevTools(context, path.Substring(devtoolsPrefix.Length - 1)).GetAwaiter().GetResult(); ;
+                await ServeDevTools(context, path.Substring(devtoolsPrefix.Length - 1));
                 return;
             }
 
@@ -113,7 +113,7 @@ namespace WelsonJS.Launcher
             const string whoisPrefix = "whois/";
             if (path.StartsWith(whoisPrefix, StringComparison.OrdinalIgnoreCase))
             {
-                ServeWhoisRequest(context, path.Substring(whoisPrefix.Length)).GetAwaiter().GetResult();
+                await ServeWhoisRequest(context, path.Substring(whoisPrefix.Length));
                 return;
             }
 
@@ -176,13 +176,21 @@ namespace WelsonJS.Launcher
 
         private async Task ServeWhoisRequest(HttpListenerContext context, string query)
         {
+            if (string.IsNullOrWhiteSpace(query) || query.Length > 255)
+            {
+                ServeResource(context, "<error>Invalid query parameter</error>", "application/xml", 400);
+                return;
+            }
+
             string whoisServerUrl = "https://xn--c79as89aj0e29b77z.xn--3e0b707e";
 
             using (var client = new HttpClient())
             {
+                client.Timeout = TimeSpan.FromSeconds(10);
+
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{whoisServerUrl}/kor/whois.jsc")
                 {
-                    Content = new StringContent($"query={query}&ip=141.101.82.1", Encoding.UTF8, "application/x-www-form-urlencoded")
+                    Content = new StringContent($"query={Uri.EscapeDataString(query)}&ip=141.101.82.1", Encoding.UTF8, "application/x-www-form-urlencoded")
                 };
 
                 request.Headers.Add("Accept", "*/*");
@@ -194,7 +202,7 @@ namespace WelsonJS.Launcher
                     HttpResponseMessage response = await client.SendAsync(request);
                     string responseBody = await response.Content.ReadAsStringAsync();
                     
-                    ServeResource(context, responseBody, "text/html", (int)response.StatusCode);
+                    ServeResource(context, responseBody, "text/plain", (int)response.StatusCode);
                 }
                 catch (Exception ex)
                 {

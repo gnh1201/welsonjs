@@ -87,6 +87,7 @@
     </script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/fast-xml-parser/4.5.1/fxparser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.2.4/purify.min.js"></script>
     <script src="https://cdn.metroui.org.ua/dev/metro.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/loader.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.js"></script>
@@ -266,10 +267,7 @@
             }
 
             axios.get(`${serverBaseUrl}/whois/${hostname}`).then(response => {
-                const responseText = response.data
-                    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-                    .replace(/<\/?[^>]+(>|$)/g, '')
-                    .replace(/^[\r\n]+|[\r\n]+$/g, '');
+                const responseText = DOMPurify.sanitize(response.data, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
 
                 appendTextToEditor(`/*\n${responseText}\n*/`);
             }).catch(error => {
