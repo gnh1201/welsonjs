@@ -4,10 +4,11 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
-namespace WelsonJS.Launcher
+namespace WelsonJS.Launcher.Tools
 {
     public class DnsQuery
     {
+        private static readonly Random _random = new Random();
         private readonly string _dnsServer;
         private const int DnsPort = 53;
         private const int Timeout = 5000;
@@ -76,11 +77,10 @@ namespace WelsonJS.Launcher
 
         private byte[] CreateDnsQuery(string domain, ushort type)
         {
-            Random rand = new Random();
             byte[] query = new byte[512];
 
-            query[0] = (byte)rand.Next(0, 256);
-            query[1] = (byte)rand.Next(0, 256);
+            query[0] = (byte)_random.Next(0, 256);
+            query[1] = (byte)_random.Next(0, 256);
             query[2] = 0x01;
             query[3] = 0x00;
             query[4] = 0x00;

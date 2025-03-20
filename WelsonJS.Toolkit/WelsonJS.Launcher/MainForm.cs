@@ -5,6 +5,7 @@ using System.IO.Compression;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using WelsonJS.Launcher.Tools;
 
 namespace WelsonJS.Launcher
 {

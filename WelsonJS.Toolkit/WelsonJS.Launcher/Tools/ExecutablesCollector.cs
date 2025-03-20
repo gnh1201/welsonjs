@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace WelsonJS.Launcher
+namespace WelsonJS.Launcher.Tools
 {
     public class ExecutablesCollector
     {

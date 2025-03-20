@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
 
-namespace WelsonJS.Launcher
+namespace WelsonJS.Launcher.Tools
 {
     public class ResourceServer
     {
