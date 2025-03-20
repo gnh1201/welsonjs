@@ -1,5 +1,5 @@
 ; @created_on 2020-06-26
-; @updated_on 2024-07-30
+; @updated_on 2025-03-20
 ; @author Namhyeon Go (Catswords Research) <abuse@catswords.net>
 
 [Setup]
@@ -41,8 +41,10 @@ Source: "*.md"; DestDir: "{app}";
 Source: "bootstrap.bat"; DestDir: "{app}";
 Source: "uriloader.js"; DestDir: "{app}";
 Source: "webloader.js"; DestDir: "{app}";
+Source: "testloader.js"; DestDir: "{app}";
 Source: "bootstrap.js"; DestDir: "{app}";
-Source: "scriptcontrol.js"; DestDir: "{app}";
+Source: "settings.example.ini"; DestDir: "{app}";
+Source: "defaultService.example.js"; DestDir: "{app}";
 Source: "app\*"; DestDir: "{app}/app"; Flags: ignoreversion recursesubdirs;
 Source: "lib\*"; DestDir: "{app}/lib"; Flags: ignoreversion recursesubdirs;
 Source: "bin\*"; DestDir: "{app}/bin"; Flags: ignoreversion recursesubdirs;
@@ -53,16 +55,22 @@ Source: "data\*"; DestDir: "{app}/data"; Flags: ignoreversion recursesubdirs;
 [Dirs]
 Name: "{app}\tmp";
 
+[InstallDelete]
+Type: files; Name: "{app}\settings.ini"
+Type: files; Name: "{app}\defaultService.js"
+
 [Icons]
-Name: "{group}\Start {cm:AppName}"; Filename: "{app}\bootstrap.bat"; AfterInstall: SetElevationBit('{group}\Start {cm:AppName}.lnk');
+Name: "{group}\{cm:AppName} Launcher"; Filename: "{app}\bin\x86\WelsonJS.Launcher.exe"; AfterInstall: SetElevationBit('{group}\{cm:AppName} Launcher.lnk');
 Name: "{group}\Uninstall {cm:AppName}"; Filename: "{uninstallexe}"; AfterInstall: SetElevationBit('{group}\Uninstall {cm:AppName}.lnk');
 
 [Run]
 ; Filename: {app}\bin\gtk2-runtime-2.24.33-2021-01-30-ts-win64.exe;
 ; Filename: {app}\bin\nmap-7.92\VC_redist.x86.exe;
 ; Filename: {app}\bin\nmap-7.92\npcap-1.50.exe;
+Filename: "{cmd}"; Parameters: "/C rename "{app}\settings.example.ini" "settings.ini""; Flags: runhidden
+Filename: "{cmd}"; Parameters: "/C rename "{app}\defaultService.example.js" "defaultService.js""; Flags: runhidden
 Filename: {app}\installService.bat;
-Filename: {app}\bootstrap.bat;
+Filename: {app}\bin\x86\WelsonJS.Launcher.exe;
 
 [UninstallRun]
 ; Filename: {code:GetProgramFiles}\GTK2-Runtime Win64\gtk2_runtime_uninst.exe;

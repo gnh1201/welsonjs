@@ -43,12 +43,12 @@
             this.runAsAdministratorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.globalSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.startCodeEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openMicrosoftCopilotToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.openLauncherToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openCodeEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.openMicrosoftCopilotToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -184,11 +184,18 @@
             this.startCodeEditorToolStripMenuItem.Text = "Start the code editor...";
             this.startCodeEditorToolStripMenuItem.Click += new System.EventHandler(this.startCodeEditorToolStripMenuItem_Click);
             // 
+            // openMicrosoftCopilotToolStripMenuItem
+            // 
+            this.openMicrosoftCopilotToolStripMenuItem.Name = "openMicrosoftCopilotToolStripMenuItem";
+            this.openMicrosoftCopilotToolStripMenuItem.Size = new System.Drawing.Size(210, 22);
+            this.openMicrosoftCopilotToolStripMenuItem.Text = "Open Microsoft Copilot...";
+            this.openMicrosoftCopilotToolStripMenuItem.Click += new System.EventHandler(this.openMicrosoftCopilotToolStripMenuItem_Click);
+            // 
             // notifyIcon1
             // 
             this.notifyIcon1.ContextMenuStrip = this.contextMenuStrip1;
             this.notifyIcon1.Icon = global::WelsonJS.Launcher.Properties.Resources.favicon;
-            this.notifyIcon1.Text = "notifyIcon1";
+            this.notifyIcon1.Text = "WelsonJS Launcher";
             // 
             // contextMenuStrip1
             // 
@@ -217,13 +224,6 @@
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
             this.exitToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
             this.exitToolStripMenuItem.Text = "Exit";
-            // 
-            // openMicrosoftCopilotToolStripMenuItem
-            // 
-            this.openMicrosoftCopilotToolStripMenuItem.Name = "openMicrosoftCopilotToolStripMenuItem";
-            this.openMicrosoftCopilotToolStripMenuItem.Size = new System.Drawing.Size(210, 22);
-            this.openMicrosoftCopilotToolStripMenuItem.Text = "Open Microsoft Copilot...";
-            this.openMicrosoftCopilotToolStripMenuItem.Click += new System.EventHandler(this.openMicrosoftCopilotToolStripMenuItem_Click);
             // 
             // MainForm
             // 

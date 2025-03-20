@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Linq;
 
-namespace WelsonJS.Launcher
+namespace WelsonJS.Launcher.Tools
 {
     public class ResourceServer
     {
@@ -291,7 +291,7 @@ namespace WelsonJS.Launcher
         private byte[] GetResource(string resourceName)
         {
             // Try to fetch embedded resource.
-            byte[] data = GetEmbeddedResource(typeof(ResourceServer).Namespace + "." + resourceName);
+            byte[] data = GetEmbeddedResource(typeof(Program).Namespace + "." + resourceName);
             if (data != null) return data;
 
             // Fallback: Try to fetch resource from ResourceManager.

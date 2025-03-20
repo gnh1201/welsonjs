@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Linq;
 
-namespace WelsonJS.Launcher
+namespace WelsonJS.Launcher.Tools
 {
     public class DnsQuery
     {
+        private static readonly Random _random = new Random();
         private readonly string _dnsServer;
         private const int DnsPort = 53;
         private const int Timeout = 5000;
@@ -52,6 +54,21 @@ namespace WelsonJS.Launcher
         {
             List<string> records = new List<string>();
 
+            // Validate domain format
+            if (string.IsNullOrWhiteSpace(domain))
+            {
+                records.Add("Error: Domain cannot be empty");
+                return records;
+            }
+
+            // Basic domain format validation
+            if (domain.Length > 255 || 
+                !domain.Split('.').All(part => part.Length > 0 && part.Length <= 63))
+            {
+                records.Add("Error: Invalid domain format");
+                return records;
+            }
+
             try
             {
                 UdpClient udpClient = new UdpClient(_dnsServer, DnsPort);
@@ -76,11 +93,10 @@ namespace WelsonJS.Launcher
 
         private byte[] CreateDnsQuery(string domain, ushort type)
         {
-            Random rand = new Random();
             byte[] query = new byte[512];
 
-            query[0] = (byte)rand.Next(0, 256);
-            query[1] = (byte)rand.Next(0, 256);
+            query[0] = (byte)_random.Next(0, 256);
+            query[1] = (byte)_random.Next(0, 256);
             query[2] = 0x01;
             query[3] = 0x00;
             query[4] = 0x00;
@@ -113,6 +129,24 @@ namespace WelsonJS.Launcher
         private List<string> ParseDnsResponse(byte[] response, ushort queryType)
         {
             List<string> results = new List<string>();
+
+            // Check response code from DNS server
+            int responseCode = response[3] & 0x0F;
+            if (responseCode != 0)
+            {
+                string errorMessage = "DNS server returned error: ";
+                switch (responseCode)
+                {
+                    case 1: errorMessage += "Format Error"; break;
+                    case 2: errorMessage += "Server Failure"; break;
+                    case 3: errorMessage += "Name Error (Domain does not exist)"; break;
+                    case 4: errorMessage += "Not Implemented"; break;
+                    case 5: errorMessage += "Refused"; break;
+                    default: errorMessage += $"Unknown Error ({responseCode})"; break;
+                }
+                results.Add(errorMessage);
+                return results;
+            }
 
             int answerCount = (response[6] << 8) | response[7];
             if (answerCount == 0)
@@ -193,10 +227,38 @@ namespace WelsonJS.Launcher
                         results.Add($"SRV: Priority {prioritySrv}, Weight {weight}, Port {port}, Target {target}");
                         break;
                     case 35:
-                        results.Add($"NAPTR: {BitConverter.ToString(data)}");
+                        if (data.Length >= 7)
+                        {
+                            ushort order = (ushort)((data[0] << 8) | data[1]);
+                            ushort preference = (ushort)((data[2] << 8) | data[3]);
+                            // Extract flags, services, regexp and replacement
+                            results.Add($"NAPTR: Order {order}, Preference {preference}");
+                        }
+                        else
+                        {
+                            results.Add($"NAPTR: Invalid data length: {BitConverter.ToString(data)}");
+                        }
                         break;
                     case 257:
-                        results.Add($"CAA: {BitConverter.ToString(data)}");
+                        if (data.Length >= 2)
+                        {
+                            byte flags = data[0];
+                            int tagLen = data[1];
+                            if (data.Length >= 2 + tagLen)
+                            {
+                                string tag = Encoding.ASCII.GetString(data, 2, tagLen);
+                                string value = Encoding.ASCII.GetString(data, 2 + tagLen, data.Length - 2 - tagLen);
+                                results.Add($"CAA: Flags {flags}, Tag {tag}, Value {value}");
+                            }
+                            else
+                            {
+                                results.Add($"CAA: Invalid data length: {BitConverter.ToString(data)}");
+                            }
+                        }
+                        else
+                        {
+                            results.Add($"CAA: Invalid data length: {BitConverter.ToString(data)}");
+                        }
                         break;
                     default:
                         results.Add($"Unknown Type {recordType}: {BitConverter.ToString(data)}");
