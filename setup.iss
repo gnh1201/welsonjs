@@ -61,6 +61,7 @@ Type: files; Name: "{app}\defaultService.js"
 
 [Icons]
 Name: "{group}\{cm:AppName} Launcher"; Filename: "{app}\bin\x86\WelsonJS.Launcher.exe"; AfterInstall: SetElevationBit('{group}\{cm:AppName} Launcher.lnk');
+Name: "{group}\Start {cm:AppName} (Main)"; Filename: "{app}\bootstrap.bat"; AfterInstall: SetElevationBit('{group}\Start {cm:AppName} (Main).lnk');
 Name: "{group}\Uninstall {cm:AppName}"; Filename: "{uninstallexe}"; AfterInstall: SetElevationBit('{group}\Uninstall {cm:AppName}.lnk');
 
 [Run]
