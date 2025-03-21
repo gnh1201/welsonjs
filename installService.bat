@@ -26,7 +26,7 @@ REM sc config "%SERVICE_NAME%" start= auto
 REM sc description "%SERVICE_NAME%" "Service installed via InstallUtil.exe"
 
 REM Add parameters to the ImagePath registry key
-REG ADD "HKLM\SYSTEM\CurrentControlSet\Services\%SERVICE_NAME%" /v ImagePath /t REG_EXPAND_SZ /d "\"%EXE_PATH%\" --working-directory=%CURRENT_DIR% --script-name=defaultService" /f
+REG ADD "HKLM\SYSTEM\CurrentControlSet\Services\%SERVICE_NAME%" /v ImagePath /t REG_EXPAND_SZ /d "\"%EXE_PATH%\" --working-directory=\"%CURRENT_DIR%\" --script-name=defaultService" /f
 
 echo Service "%SERVICE_NAME%" installed and configured successfully.
 
