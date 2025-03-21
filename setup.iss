@@ -49,10 +49,10 @@ Source: "defaultService.example.js"; DestDir: "{app}";
 Source: "installService.bat"; DestDir: "{app}";
 Source: "uninstallService.bat"; DestDir: "{app}";
 Source: "helloworld.*"; DestDir: "{app}";
-Source: "app\*"; Excludes: "*img\_templates,tessdata\*,tessdata_best\*,tessdata_fast\*"; DestDir: "{app}/app"; Flags: ignoreversion recursesubdirs;
+Source: "app\*"; Excludes: "assets\img\_templates,assets\tessdata\*,assets\tessdata_best\*,assets\tessdata_fast\*"; DestDir: "{app}/app"; Flags: ignoreversion recursesubdirs;
 Source: "lib\*"; DestDir: "{app}/lib"; Flags: ignoreversion recursesubdirs;
 Source: "bin\*"; Excludes: "installer\*"; DestDir: "{app}/bin"; Flags: ignoreversion recursesubdirs;
-Source: "data\*"; DestDir: "{app}/data"; Flags: ignoreversion recursesubdirs;
+Source: "data\*"; Excludes: "*-apikey.txt"; DestDir: "{app}/data"; Flags: ignoreversion recursesubdirs;
 ; Source: "node_modules\*"; DestDir: "{app}/node_modules"; Flags: ignoreversion recursesubdirs;
 ; Source: "bower_components\*"; DestDir: "{app}/node_modules"; Flags: ignoreversion recursesubdirs;
 
