@@ -125,6 +125,14 @@ namespace WelsonJS.Launcher.Tools
                 return;
             }
 
+            // Serve TFA request
+            const string tfaPrefix = "tfa/";
+            if (path.StartsWith(tfaPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                ServeTfaRequest(context, path.Substring(tfaPrefix.Length - 1));
+                return;
+            }
+
             // Serve a resource
             ServeResource(context, GetResource(_resourceName), "text/html");
         }
@@ -249,6 +257,24 @@ namespace WelsonJS.Launcher.Tools
             {
                 ServeResource(context, $"<error>Failed to process DNS query. {ex.Message}</error>", "application/xml", 500);
             }
+        }
+
+        private void ServeTfaRequest(HttpListenerContext context, string endpoint)
+        {
+            Tfa _tfa = new Tfa();
+
+            if (endpoint.Equals("/pubkey"))
+            {
+                ServeResource(context, _tfa.GetPubKey(), "text/plain", 200);
+                return;
+            }
+
+            ServeResource(context);
+        }
+
+        private void ServeResource(HttpListenerContext context)
+        {
+            ServeResource(context, "<error>Not Found</error>", "application/xml", 404);
         }
 
         private void ServeResource(HttpListenerContext context, byte[] data, string mimeType = "text/html", int statusCode = 200)
