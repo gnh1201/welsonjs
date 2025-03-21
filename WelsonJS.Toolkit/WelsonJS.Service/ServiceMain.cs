@@ -35,7 +35,6 @@ using WelsonJS.TinyINIController;
 using System.Collections;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using WelsonJS.Service.Logging;
 
 namespace WelsonJS.Service
 {
@@ -442,7 +441,7 @@ namespace WelsonJS.Service
                     if (index > 2)
                     {
                         var key = arg.Substring(2, index - 2);
-                        var value = arg.Substring(index + 1);
+                        var value = arg.Substring(index + 1).Trim('"');
                         arguments[key] = value;
                     }
                     else

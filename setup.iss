@@ -7,7 +7,7 @@ AppName=WelsonJS
 AppVersion=0.2.7
 WizardStyle=modern
 ; DefaultDirName={pf}\{cm:AppName}
-DefaultDirName={commonpf}\{cm:AppName}
+DefaultDirName={commonpf32}\{cm:AppName}
 DefaultGroupName={cm:AppName}
 ; UninstallDisplayIcon={app}\UnInst.exe
 UninstallDisplayIcon={app}\unins000.exe
@@ -15,7 +15,7 @@ Compression=lzma2
 SolidCompression=yes
 OutputDir=bin\installer
 PrivilegesRequired=admin
-ArchitecturesInstallIn64BitMode=x64
+; ArchitecturesInstallIn64BitMode=x64
 RestartIfNeededByRun=no
 DisableStartupPrompt=true
 DisableFinishedPage=true
@@ -42,12 +42,16 @@ Source: "bootstrap.bat"; DestDir: "{app}";
 Source: "uriloader.js"; DestDir: "{app}";
 Source: "webloader.js"; DestDir: "{app}";
 Source: "testloader.js"; DestDir: "{app}";
+Source: "encryptor.js"; DestDir: "{app}";
 Source: "bootstrap.js"; DestDir: "{app}";
 Source: "settings.example.ini"; DestDir: "{app}";
 Source: "defaultService.example.js"; DestDir: "{app}";
+Source: "installService.bat"; DestDir: "{app}";
+Source: "uninstallService.bat"; DestDir: "{app}";
+Source: "helloworld.*"; DestDir: "{app}";
 Source: "app\*"; Excludes: "*img\_templates,tessdata\*,tessdata_best\*,tessdata_fast\*"; DestDir: "{app}/app"; Flags: ignoreversion recursesubdirs;
 Source: "lib\*"; DestDir: "{app}/lib"; Flags: ignoreversion recursesubdirs;
-Source: "bin\*"; DestDir: "{app}/bin"; Flags: ignoreversion recursesubdirs;
+Source: "bin\*"; Excludes: "installer\*"; DestDir: "{app}/bin"; Flags: ignoreversion recursesubdirs;
 Source: "data\*"; DestDir: "{app}/data"; Flags: ignoreversion recursesubdirs;
 ; Source: "node_modules\*"; DestDir: "{app}/node_modules"; Flags: ignoreversion recursesubdirs;
 ; Source: "bower_components\*"; DestDir: "{app}/node_modules"; Flags: ignoreversion recursesubdirs;
@@ -60,20 +64,19 @@ Type: files; Name: "{app}\settings.ini"
 Type: files; Name: "{app}\defaultService.js"
 
 [Icons]
-Name: "{group}\{cm:AppName} Launcher"; Filename: "{app}\bin\x86\WelsonJS.Launcher.exe"; AfterInstall: SetElevationBit('{group}\{cm:AppName} Launcher.lnk');
-Name: "{group}\Start {cm:AppName} (Main)"; Filename: "{app}\bootstrap.bat"; AfterInstall: SetElevationBit('{group}\Start {cm:AppName} (Main).lnk');
+Name: "{group}\Start {cm:AppName} Launcher"; Filename: "{app}\bin\x86\WelsonJS.Launcher.exe"; AfterInstall: SetElevationBit('{group}\Start {cm:AppName} Launcher.lnk');
+Name: "{group}\Test {cm:AppName}"; Filename: "{app}\bootstrap.bat"; AfterInstall: SetElevationBit('{group}\Test {cm:AppName}.lnk');
 Name: "{group}\Uninstall {cm:AppName}"; Filename: "{uninstallexe}"; AfterInstall: SetElevationBit('{group}\Uninstall {cm:AppName}.lnk');
 
 [Run]
 ; Filename: {app}\bin\gtk2-runtime-2.24.33-2021-01-30-ts-win64.exe;
 ; Filename: {app}\bin\nmap-7.92\VC_redist.x86.exe;
 ; Filename: {app}\bin\nmap-7.92\npcap-1.50.exe;
-Filename: "{cmd}"; Parameters: "/C rename {app}\settings.example.ini settings.ini"; Flags: runhidden
-Filename: "{cmd}"; Parameters: "/C rename {app}\defaultService.example.js defaultService.js"; Flags: runhidden
-Filename: {app}\installService.bat;
-Filename: {app}\bin\x86\WelsonJS.Launcher.exe;
+Filename: {app}\installService.bat; Flags: nowait
+Filename: {app}\bin\x86\WelsonJS.Launcher.exe; Flags: nowait
 
 [UninstallRun]
+Filename: {app}\uninstallService.bat;
 ; Filename: {code:GetProgramFiles}\GTK2-Runtime Win64\gtk2_runtime_uninst.exe;
 ; Filename: {code:GetProgramFiles}\Npcap\Uninstall.exe;
 ; Filename: {app}\bin\nmap-7.92\VC_redist.x86.exe;
@@ -119,3 +122,13 @@ begin
   if CurUninstallStep = usDone then
     ShellExec('open', UninstSiteURL, '', '', SW_SHOW, ewNoWait, ErrorCode);
 end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+begin
+  if CurStep = ssPostInstall then
+  begin
+    CopyFile(ExpandConstant('{app}\settings.example.ini'), ExpandConstant('{app}\settings.ini'), False);
+    CopyFile(ExpandConstant('{app}\defaultService.example.js'), ExpandConstant('{app}\defaultService.js'), False);
+  end;
+end;
+
