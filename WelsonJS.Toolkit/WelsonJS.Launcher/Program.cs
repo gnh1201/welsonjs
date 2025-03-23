@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Windows.Forms;
 using WelsonJS.Launcher.Tools;
 
@@ -9,14 +10,24 @@ namespace WelsonJS.Launcher
 {
     internal static class Program
     {
+        static Mutex mutex;
         public static ResourceServer resourceServer;
 
         [STAThread]
         static void Main()
         {
+            mutex = new Mutex(true, "WelsonJS.Launcher.Mutex", out bool isMutexNotExists);
+            if (!isMutexNotExists)
+            {
+                MessageBox.Show("WelsonJS Launcher already running.");
+                return;
+            }
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new MainForm());
+
+            mutex.ReleaseMutex();
         }
 
         public static void RunCommandPrompt(string workingDirectory, string entryFileName, string scriptName, bool isConsoleApplication = false, bool isInteractiveServiceAapplication = false)
