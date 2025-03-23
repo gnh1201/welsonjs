@@ -32,13 +32,19 @@ namespace WelsonJS.Launcher.Tools
 
         public string GetPubKey()
         {
-            var rand = new Random();
-            var key = new char[16];
-            for (int i = 0; i < 16; i++)
+            using (var rng = RandomNumberGenerator.Create())
             {
-                key[i] = Base32Chars[rand.Next(Base32Chars.Length)];
+                var key = new char[16];
+                var randomBytes = new byte[16];
+                rng.GetBytes(randomBytes);
+
+                for (int i = 0; i < 16; i++)
+                {
+                    key[i] = Base32Chars[randomBytes[i] % Base32Chars.Length];
+                }
+
+                return string.Join(" ", Enumerable.Range(0, 4).Select(i => new string(key, i * 4, 4)));
             }
-            return string.Join(" ", Enumerable.Range(0, 4).Select(i => new string(key, i * 4, 4)));
         }
 
         private static byte[] DecodeBase32(string key)

@@ -105,7 +105,7 @@ namespace WelsonJS.Launcher.Tools
             const string devtoolsPrefix = "devtools/";
             if (path.StartsWith(devtoolsPrefix, StringComparison.OrdinalIgnoreCase))
             {
-                await ServeDevTools(context, path.Substring(devtoolsPrefix.Length - 1));
+                await ServeDevTools(context, path.Substring(devtoolsPrefix.Length));
                 return;
             }
 
@@ -129,7 +129,7 @@ namespace WelsonJS.Launcher.Tools
             const string tfaPrefix = "tfa/";
             if (path.StartsWith(tfaPrefix, StringComparison.OrdinalIgnoreCase))
             {
-                ServeTfaRequest(context, path.Substring(tfaPrefix.Length - 1));
+                ServeTfaRequest(context, path.Substring(tfaPrefix.Length));
                 return;
             }
 
@@ -178,7 +178,7 @@ namespace WelsonJS.Launcher.Tools
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    string url = "http://localhost:9222" + endpoint;
+                    string url = "http://localhost:9222/" + endpoint;
                     string data = await client.GetStringAsync(url);
 
                     ServeResource(context, data, "application/json");
@@ -263,7 +263,7 @@ namespace WelsonJS.Launcher.Tools
         {
             Tfa _tfa = new Tfa();
 
-            if (endpoint.Equals("/pubkey"))
+            if (endpoint.Equals("pubkey"))
             {
                 ServeResource(context, _tfa.GetPubKey(), "text/plain", 200);
                 return;

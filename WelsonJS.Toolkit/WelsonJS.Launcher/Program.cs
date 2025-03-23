@@ -28,6 +28,7 @@ namespace WelsonJS.Launcher
             Application.Run(new MainForm());
 
             mutex.ReleaseMutex();
+            mutex.Dispose();
         }
 
         public static void RunCommandPrompt(string workingDirectory, string entryFileName, string scriptName, bool isConsoleApplication = false, bool isInteractiveServiceAapplication = false)
