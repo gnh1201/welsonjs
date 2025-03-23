@@ -101,6 +101,7 @@
       <DependentUpon>GlobalSettingsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Tools\ResourceServer.cs" />
+    <Compile Include="Tools\Tfa.cs" />
     <EmbeddedResource Include="EnvForm.resx">
       <DependentUpon>EnvForm.cs</DependentUpon>
     </EmbeddedResource>

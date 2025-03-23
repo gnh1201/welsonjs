@@ -38,6 +38,7 @@ namespace WelsonJS.Launcher
             {
                 e.Cancel = true;
                 this.Hide();
+                this.ShowInTaskbar = false;
                 notifyIcon1.Visible = true;
             }
             base.OnFormClosing(e);
@@ -47,6 +48,7 @@ namespace WelsonJS.Launcher
         {
             this.Show();
             this.WindowState = FormWindowState.Normal;
+            this.ShowInTaskbar = true;
             this.Focus();
             notifyIcon1.Visible = false;
         }

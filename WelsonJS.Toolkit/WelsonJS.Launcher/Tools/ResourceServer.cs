@@ -105,7 +105,7 @@ namespace WelsonJS.Launcher.Tools
             const string devtoolsPrefix = "devtools/";
             if (path.StartsWith(devtoolsPrefix, StringComparison.OrdinalIgnoreCase))
             {
-                await ServeDevTools(context, path.Substring(devtoolsPrefix.Length - 1));
+                await ServeDevTools(context, path.Substring(devtoolsPrefix.Length));
                 return;
             }
 
@@ -122,6 +122,14 @@ namespace WelsonJS.Launcher.Tools
             if (path.StartsWith(dnsQueryPrefix, StringComparison.OrdinalIgnoreCase))
             {
                 ServeDnsQueryRequest(context, path.Substring(dnsQueryPrefix.Length));
+                return;
+            }
+
+            // Serve TFA request
+            const string tfaPrefix = "tfa/";
+            if (path.StartsWith(tfaPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                ServeTfaRequest(context, path.Substring(tfaPrefix.Length));
                 return;
             }
 
@@ -170,7 +178,7 @@ namespace WelsonJS.Launcher.Tools
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    string url = "http://localhost:9222" + endpoint;
+                    string url = "http://localhost:9222/" + endpoint;
                     string data = await client.GetStringAsync(url);
 
                     ServeResource(context, data, "application/json");
@@ -249,6 +257,24 @@ namespace WelsonJS.Launcher.Tools
             {
                 ServeResource(context, $"<error>Failed to process DNS query. {ex.Message}</error>", "application/xml", 500);
             }
+        }
+
+        private void ServeTfaRequest(HttpListenerContext context, string endpoint)
+        {
+            Tfa _tfa = new Tfa();
+
+            if (endpoint.Equals("pubkey"))
+            {
+                ServeResource(context, _tfa.GetPubKey(), "text/plain", 200);
+                return;
+            }
+
+            ServeResource(context);
+        }
+
+        private void ServeResource(HttpListenerContext context)
+        {
+            ServeResource(context, "<error>Not Found</error>", "application/xml", 404);
         }
 
         private void ServeResource(HttpListenerContext context, byte[] data, string mimeType = "text/html", int statusCode = 200)
