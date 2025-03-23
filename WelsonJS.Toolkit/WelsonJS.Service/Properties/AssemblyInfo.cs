@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 // 제어됩니다. 어셈블리와 관련된 정보를 수정하려면
 // 이러한 특성 값을 변경하세요.
 [assembly: AssemblyTitle("WelsonJS.Service")]
-[assembly: AssemblyDescription("Windows Service for WelsonJS framework")]
+[assembly: AssemblyDescription("Windows Service for WelsonJS framework based applications")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Catswords")]
 [assembly: AssemblyProduct("WelsonJS")]
-[assembly: AssemblyCopyright("Catswords OSS, Opensource licensed under GPLv3")]
+[assembly: AssemblyCopyright("Catswords OSS, GPLv3 or Ms-RL")]
 [assembly: AssemblyTrademark("WelsonJS")]
 [assembly: AssemblyCulture("")]
 
@@ -32,5 +32,5 @@ using System.Runtime.InteropServices;
 // 모든 값을 지정하거나 아래와 같이 '*'를 사용하여 빌드 번호 및 수정 번호를
 // 기본값으로 할 수 있습니다.
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("0.2.7.49")]
-[assembly: AssemblyFileVersion("0.2.7.49")]
+[assembly: AssemblyVersion("0.2.7.54")]
+[assembly: AssemblyFileVersion("0.2.7.54")]
