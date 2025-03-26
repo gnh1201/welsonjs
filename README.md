@@ -20,7 +20,8 @@ Now, You can build a Windows desktop app with JavaScript, TypeScript, CoffeeScri
 
 WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)*** + :heart:[Contributions](https://github.com/sponsors/gnh1201)
 
-:kissing_cat: [Download Latest WelsonJS Launcher (ics.catswords.net)](https://ics.catswords.net/welsonjs_launcher_latest.zip) 
+* :kissing_cat: [Download Latest WelsonJS Launcher (ics.catswords.net)](https://ics.catswords.net/welsonjs_launcher_latest.zip)
+* :rocket: [Launch the WelsonJS environment on Microsoft Azure (azuremarketplace.microsoft.com)](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/catswords.catswords-welsonjs-feb2025-02?tab=Overview)
 
 **Note**: The default license for this project is GPL 3.0. However, if the GPL 3.0 license is not compatible with Microsoft products, it is subject to the MS-RL license.
 
