@@ -5,8 +5,9 @@ REM Source code available: https://github.com/gnh1201/welsonjs
 pushd %~dp0
 
 :: Define variables
-set TOOLKIT_URL=https://ics.catswords.net/welsonjs_toolkit.cab
-set TOOLKIT_PATH=%APPDATA%\welsonjs\welsonjs_toolkit.cab
+set BLOB_SAS_TOKEN=sp=r^&st=2025-03-27T08:40:39Z^&se=2027-03-27T16:40:39Z^&spr=https^&sv=2024-11-04^&sr=b^&sig=4U4u72PN8BjSYDW6bNAGpjp6Y6M%%2F24OK18iNS1t4Kv0%%3D
+set TOOLKIT_URL="https://catswords.blob.core.windows.net/welsonjs/welsonjs_toolkit_latest.cab?%BLOB_SAS_TOKEN%"
+set TOOLKIT_PATH=%APPDATA%\welsonjs\welsonjs_toolkit_latest.cab
 set TOOLKIT_EXTRACT_PATH=%APPDATA%\welsonjs
 set REGASM_PATH=%WINDIR%\Microsoft.NET\Framework\v2.0.50727\RegAsm.exe
 set LOCAL_TOOLKIT_DLL=bin\x86\WelsonJS.Toolkit.dll
