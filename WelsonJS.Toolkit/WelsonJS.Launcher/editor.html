@@ -3,9 +3,9 @@
 <head>
     <title>WelsonJS Editor</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-    <link rel="stylesheet" href="https://cdn.metroui.org.ua/dev/metro.css">
-    <link rel="stylesheet" href="https://cdn.metroui.org.ua/dev/icons.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.css">
+    <link rel="stylesheet" href="https://catswords.blob.core.windows.net/welsonjs/ajax/libs/metroui/dev/lib/metro.css" integrity="sha384-4XgOiXH2ZMaWt5s5B35yKi7EAOabhZvx7wO8Jr71q2vZ+uONdRza/6CsK2kpyocd" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://catswords.blob.core.windows.net/welsonjs/ajax/libs/metroui/dev/lib/icons.css" integrity="sha384-FuLND994etg+RtnpPSPMyNBvL+fEz+xGhbN61WUWuDEeZ+wJzcQ8SGqAMuI5hWrt" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://catswords.blob.core.windows.net/welsonjs/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.css" integrity="sha384-06yHXpYRlHEPaR4AS0fB/W+lMN09Zh5e1XMtfkNQdHV38OlhfkOEW5M+pCj3QskC" crossorigin="anonymous">
     <style>
         html, body {
             margin: 0;
@@ -85,16 +85,15 @@
     <script>
         var require = {
             paths: {
-                vs: 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs'
+                vs: 'https://catswords.blob.core.windows.net/welsonjs/ajax/libs/monaco-editor/0.52.2/min/vs'
             }
         };
     </script>
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/fast-xml-parser/4.5.1/fxparser.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.2.4/purify.min.js"></script>
-    <script src="https://cdn.metroui.org.ua/dev/metro.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/loader.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.js"></script>
+    <script src="https://catswords.blob.core.windows.net/welsonjs/ajax/libs/axios/1.8.4/axios.min.js" integrity="sha384-06w+raHvkSL3+E7mbQ2X6DZwI5A3veU8Ba+NLrAPxxRGw4Xy78sihHDHQMustMM4" crossorigin="anonymous"></script>
+    <script src="https://catswords.blob.core.windows.net/welsonjs/ajax/libs/fast-xml-parser/4.5.1/fxparser.min.js" integrity="sha384-ae/HepOQ8hiJ/VA6yGwPMGXQXOkT/lJpjlcQ7EUgibUcfnBltuozgNj4IgOZ9QLc" crossorigin="anonymous"></script>
+    <script src="https://catswords.blob.core.windows.net/welsonjs/ajax/libs/dompurify/3.2.4/purify.min.js" integrity="sha384-eEu5CTj3qGvu9PdJuS+YlkNi7d2XxQROAFYOr59zgObtlcux1ae1Il3u7jvdCSWu" crossorigin="anonymous"></script>
+    <script src="https://catswords.blob.core.windows.net/welsonjs/ajax/libs/metroui/dev/lib/metro.js" integrity="sha384-grz4KlnFmdCd5ELenGIdPkUL/l+44UC4SniSke/OZQyRYXaQ1EDlGigacn6z4hGB" crossorigin="anonymous"></script>
+    <script src="https://catswords.blob.core.windows.net/welsonjs/ajax/libs/monaco-editor/0.52.2/min/vs/loader.js" integrity="sha384-pHG02SG8pId94Np3AbPmBEJ1yPqaH0IkJGLSNGXYmuGhkazT8Lr/57WYpbkGjJtu" crossorigin="anonymous"></script>
     <script>
         var editor;
         var currentFileName = "sayhello.js";
