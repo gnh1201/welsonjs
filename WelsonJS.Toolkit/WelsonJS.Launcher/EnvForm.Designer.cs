@@ -70,7 +70,7 @@
             this.lvUserDefinedVariables.Size = new System.Drawing.Size(386, 129);
             this.lvUserDefinedVariables.TabIndex = 0;
             this.lvUserDefinedVariables.UseCompatibleStateImageBehavior = false;
-            this.lvUserDefinedVariables.SelectedIndexChanged += new System.EventHandler(this.ListView1_SelectedIndexChanged);
+            this.lvUserDefinedVariables.SelectedIndexChanged += new System.EventHandler(this.lvUserDefinedVariables_SelectedIndexChanged);
             // 
             // columnHeader1
             // 

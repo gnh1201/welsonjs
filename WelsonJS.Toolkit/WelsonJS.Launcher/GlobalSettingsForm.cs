@@ -32,17 +32,24 @@ namespace WelsonJS.Launcher
 
         private void btnOkMaxScriptStatements_Click(object sender, EventArgs e)
         {
-            if (int.TryParse(txtMaxScriptStatements.Text, out int maxStatements))
+            try
             {
-                using (RegistryKey key = Registry.CurrentUser.CreateSubKey(RegistryPath))
+                if (int.TryParse(txtMaxScriptStatements.Text, out int maxStatements))
                 {
-                    key.SetValue(RegistryKey, maxStatements, RegistryValueKind.DWord);
+                    using (RegistryKey key = Registry.CurrentUser.CreateSubKey(RegistryPath))
+                    {
+                        key.SetValue(RegistryKey, maxStatements, RegistryValueKind.DWord);
+                    }
+                    MessageBox.Show($"MaxScriptStatements setting has been changed to {maxStatements}.", "Confirmation", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
-                MessageBox.Show($"MaxScriptStatements setting has been changed to {maxStatements}.", "Confirmation", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            else
+                else
+                {
+                    MessageBox.Show("Please enter a valid number within the DWORD range.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            } 
+            catch (Exception ex)
             {
-                MessageBox.Show("Please enter a valid number within the DWORD range.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"An error occurred while trying to change the MaxScriptStatements setting: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

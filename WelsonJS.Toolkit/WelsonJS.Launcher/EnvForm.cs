@@ -30,7 +30,7 @@ namespace WelsonJS.Launcher
             lvUserDefinedVariables.FullRowSelect = true;
             lvUserDefinedVariables.Columns[0].Width = 150;
             lvUserDefinedVariables.Columns[1].Width = 220;
-            lvUserDefinedVariables.SelectedIndexChanged += ListView1_SelectedIndexChanged;
+            lvUserDefinedVariables.SelectedIndexChanged += lvUserDefinedVariables_SelectedIndexChanged;
         }
 
         // Load user-defined variables from the temporary folder in .env format
@@ -98,7 +98,7 @@ namespace WelsonJS.Launcher
         }
 
         // Handle ListView selection change
-        private void ListView1_SelectedIndexChanged(object sender, EventArgs e)
+        private void lvUserDefinedVariables_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (lvUserDefinedVariables.SelectedItems.Count > 0)
             {

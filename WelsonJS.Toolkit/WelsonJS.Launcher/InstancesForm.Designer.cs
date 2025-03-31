@@ -116,7 +116,7 @@
             this.cbUseSpecificScript.TabIndex = 7;
             this.cbUseSpecificScript.Text = "I want to use specific script ";
             this.cbUseSpecificScript.UseVisualStyleBackColor = true;
-            this.cbUseSpecificScript.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
+            this.cbUseSpecificScript.CheckedChanged += new System.EventHandler(this.cbUseSpecificScript_CheckedChanged);
             // 
             // btnStart
             // 

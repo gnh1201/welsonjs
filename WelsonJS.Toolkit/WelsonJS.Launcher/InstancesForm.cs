@@ -133,7 +133,7 @@ namespace WelsonJS.Launcher
             }
         }
 
-        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        private void cbUseSpecificScript_CheckedChanged(object sender, EventArgs e)
         {
             txtUseSpecificScript.Enabled = cbUseSpecificScript.Checked;
         }
