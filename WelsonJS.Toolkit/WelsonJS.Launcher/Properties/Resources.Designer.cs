@@ -179,7 +179,7 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
-        ///   http://localhost:3000과(와) 유사한 지역화된 문자열을 찾습니다.
+        ///   http://localhost:3000/과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string ResourceServerPrefix {
             get {
