@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -62,43 +63,54 @@ namespace WelsonJS.Launcher
         private void EnableUI()
         {
             label1.Text = "Choose the location of WelsonJS application package.";
-            button1.Enabled = true;
-            button2.Enabled = true;
-            checkBox1.Enabled = true;
-            checkBox2.Enabled = true;
-            if (checkBox1.Checked)
+            btnRunFromZipFile.Enabled = true;
+            btnRunFromExternalLink.Enabled = true;
+            cbUseSpecificScript.Enabled = true;
+            cbInteractiveServiceApp.Enabled = true;
+            if (cbUseSpecificScript.Checked)
             {
-                textBox1.Enabled = true;
+                txtUseSpecificScript.Enabled = true;
             }
         }
 
         private void DisableUI()
         {
             label1.Text = "Please wait...";
-            button1.Enabled = false;
-            button2.Enabled = false;
-            checkBox1.Enabled = false;
-            checkBox2.Enabled = false;
-            textBox1.Enabled = false;
+            btnRunFromZipFile.Enabled = false;
+            btnRunFromExternalLink.Enabled = false;
+            cbUseSpecificScript.Enabled = false;
+            cbInteractiveServiceApp.Enabled = false;
+            txtUseSpecificScript.Enabled = false;
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private void SafeInvoke(Action action)
+        {
+            if (InvokeRequired)
+            {
+                Invoke(action);
+            }
+            else
+            {
+                action();
+            }
+        }
+
+        private void btnRunFromExternalLink_Click(object sender, EventArgs e)
         {
             MessageBox.Show("Comming soon...!");
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void btnRunFromZipFile_Click(object sender, EventArgs e)
         {
-            string filePath = OpenFileDialog();
-            if (filePath != null)
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
             {
-                string fileExtension = Path.GetExtension(filePath);
-                if (fileExtension != ".zip")
+                openFileDialog.Filter = "zip files (*.zip)|*.zip|All files (*.*)|*.*";
+                openFileDialog.FilterIndex = 2;
+                openFileDialog.RestoreDirectory = true;
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    MessageBox.Show("It doesn't seems to a ZIP file.");
-                }
-                else
-                {
+                    string filePath = openFileDialog.FileName;
                     ExtractAndRun(filePath);
                 }
             }
@@ -108,7 +120,7 @@ namespace WelsonJS.Launcher
         {
             instanceId = Guid.NewGuid().ToString();
             workingDirectory = Program.GetWorkingDirectory(instanceId);
-            scriptName = textBox1.Text;
+            scriptName = txtUseSpecificScript.Text;
 
             Task.Run(() =>
             {
@@ -130,15 +142,18 @@ namespace WelsonJS.Launcher
                     workingDirectory = Program.GetWorkingDirectory(instanceId, true);
 
                     // Run the appliction
-                    Program.RunCommandPrompt(workingDirectory, entryFileName, scriptName, checkBox1.Checked, checkBox2.Checked);
+                    Program.RunCommandPrompt(workingDirectory, entryFileName, scriptName, cbUseSpecificScript.Checked, cbInteractiveServiceApp.Checked);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show(ex.Message);
+                    SafeInvoke(() =>
+                    {
+                        MessageBox.Show("Error: " + ex.Message);
+                    });
                 }
 
                 // Enable UI
-                label1.Invoke((MethodInvoker)delegate {
+                SafeInvoke(() => {
                     EnableUI();
                 });
             });
@@ -161,22 +176,6 @@ namespace WelsonJS.Launcher
             }
         }
 
-        private string OpenFileDialog()
-        {
-            string filePath = null;
-
-            using (OpenFileDialog fileDialog = new OpenFileDialog())
-            {
-                if (fileDialog.ShowDialog() == DialogResult.OK)
-                {
-                    // Get the path of specified file
-                    filePath = fileDialog.FileName;
-                }
-            }
-
-            return filePath;
-        }
-
         private bool IsInAdministrator()
         {
             try
@@ -190,14 +189,14 @@ namespace WelsonJS.Launcher
             }
         }
 
-        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        private void cbUseSpecificScript_CheckedChanged(object sender, EventArgs e)
         {
-            textBox1.Enabled = checkBox1.Checked;
+            txtUseSpecificScript.Enabled = cbUseSpecificScript.Checked;
         }
 
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            Process.Start("https://github.com/gnh1201/welsonjs");
+            Program.OpenWebBrowser(ConfigurationManager.AppSettings["RepositoryUrl"]);
         }
 
         private void userdefinedVariablesToolStripMenuItem_Click(object sender, EventArgs e)
@@ -247,7 +246,7 @@ namespace WelsonJS.Launcher
         {
             if (Program.resourceServer == null)
             {
-                Program.resourceServer = new ResourceServer("http://localhost:3000/", "editor.html");
+                Program.resourceServer = new ResourceServer(ConfigurationManager.AppSettings["ResourceServerPrefix"], "editor.html");
             }
 
             if (!Program.resourceServer.IsRunning())
@@ -273,9 +272,9 @@ namespace WelsonJS.Launcher
             }
         }
 
-        private void openMicrosoftCopilotToolStripMenuItem_Click(object sender, EventArgs e)
+        private void openCopilotToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Program.OpenWebBrowser("https://copilot.microsoft.com/");
+            Program.OpenWebBrowser(ConfigurationManager.AppSettings["CopilotUrl"]);
         }
     }
 }
