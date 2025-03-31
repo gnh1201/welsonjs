@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -196,7 +195,7 @@ namespace WelsonJS.Launcher
 
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            Program.OpenWebBrowser(ConfigurationManager.AppSettings["RepositoryUrl"]);
+            Program.OpenWebBrowser(Properties.Resources.RepositoryUrl);
         }
 
         private void userdefinedVariablesToolStripMenuItem_Click(object sender, EventArgs e)
@@ -246,7 +245,7 @@ namespace WelsonJS.Launcher
         {
             if (Program.resourceServer == null)
             {
-                Program.resourceServer = new ResourceServer(ConfigurationManager.AppSettings["ResourceServerPrefix"], "editor.html");
+                Program.resourceServer = new ResourceServer(Properties.Resources.ResourceServerPrefix, "editor.html");
             }
 
             if (!Program.resourceServer.IsRunning())
@@ -274,7 +273,7 @@ namespace WelsonJS.Launcher
 
         private void openCopilotToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Program.OpenWebBrowser(ConfigurationManager.AppSettings["CopilotUrl"]);
+            Program.OpenWebBrowser(Properties.Resources.CopilotUrl);
         }
     }
 }

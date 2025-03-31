@@ -61,6 +61,15 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
+        ///   https://copilot.microsoft.com/과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string CopilotUrl {
+            get {
+                return ResourceManager.GetString("CopilotUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   (아이콘)과(와) 유사한 System.Drawing.Icon 형식의 지역화된 리소스를 찾습니다.
         /// </summary>
         internal static System.Drawing.Icon favicon {
@@ -157,6 +166,24 @@ namespace WelsonJS.Launcher.Properties {
             get {
                 object obj = ResourceManager.GetObject("icon_zip_128", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   https://github.com/gnh1201/welsonjs과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string RepositoryUrl {
+            get {
+                return ResourceManager.GetString("RepositoryUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   http://localhost:3000과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string ResourceServerPrefix {
+            get {
+                return ResourceManager.GetString("ResourceServerPrefix", resourceCulture);
             }
         }
     }
