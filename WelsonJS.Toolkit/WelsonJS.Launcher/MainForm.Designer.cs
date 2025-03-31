@@ -29,13 +29,13 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            this.button1 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
+            this.btnRunFromZipFile = new System.Windows.Forms.Button();
+            this.btnRunFromExternalLink = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.linkLabel1 = new System.Windows.Forms.LinkLabel();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.checkBox2 = new System.Windows.Forms.CheckBox();
+            this.cbUseSpecificScript = new System.Windows.Forms.CheckBox();
+            this.txtUseSpecificScript = new System.Windows.Forms.TextBox();
+            this.cbInteractiveServiceApp = new System.Windows.Forms.CheckBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.userdefinedVariablesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -43,7 +43,7 @@
             this.runAsAdministratorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.globalSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.startCodeEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.openMicrosoftCopilotToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openCopilotToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.openLauncherToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -53,29 +53,29 @@
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
-            // button1
+            // btnRunFromZipFile
             // 
-            this.button1.Image = global::WelsonJS.Launcher.Properties.Resources.icon_zip_128;
-            this.button1.Location = new System.Drawing.Point(24, 67);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(200, 200);
-            this.button1.TabIndex = 0;
-            this.button1.Text = "From ZIP file...";
-            this.button1.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
+            this.btnRunFromZipFile.Image = global::WelsonJS.Launcher.Properties.Resources.icon_zip_128;
+            this.btnRunFromZipFile.Location = new System.Drawing.Point(24, 67);
+            this.btnRunFromZipFile.Name = "btnRunFromZipFile";
+            this.btnRunFromZipFile.Size = new System.Drawing.Size(200, 200);
+            this.btnRunFromZipFile.TabIndex = 0;
+            this.btnRunFromZipFile.Text = "From ZIP file...";
+            this.btnRunFromZipFile.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            this.btnRunFromZipFile.UseVisualStyleBackColor = true;
+            this.btnRunFromZipFile.Click += new System.EventHandler(this.btnRunFromZipFile_Click);
             // 
-            // button2
+            // btnRunFromExternalLink
             // 
-            this.button2.Image = global::WelsonJS.Launcher.Properties.Resources.icon_link_128;
-            this.button2.Location = new System.Drawing.Point(230, 67);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(200, 200);
-            this.button2.TabIndex = 1;
-            this.button2.Text = "From external link...";
-            this.button2.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
+            this.btnRunFromExternalLink.Image = global::WelsonJS.Launcher.Properties.Resources.icon_link_128;
+            this.btnRunFromExternalLink.Location = new System.Drawing.Point(230, 67);
+            this.btnRunFromExternalLink.Name = "btnRunFromExternalLink";
+            this.btnRunFromExternalLink.Size = new System.Drawing.Size(200, 200);
+            this.btnRunFromExternalLink.TabIndex = 1;
+            this.btnRunFromExternalLink.Text = "From external link...";
+            this.btnRunFromExternalLink.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            this.btnRunFromExternalLink.UseVisualStyleBackColor = true;
+            this.btnRunFromExternalLink.Click += new System.EventHandler(this.btnRunFromExternalLink_Click);
             // 
             // label1
             // 
@@ -97,34 +97,34 @@
             this.linkLabel1.Text = "https://github.com/gnh1201/welsonjs";
             this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
             // 
-            // checkBox1
+            // cbUseSpecificScript
             // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.Location = new System.Drawing.Point(26, 281);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(184, 16);
-            this.checkBox1.TabIndex = 4;
-            this.checkBox1.Text = "I want to use specific script ";
-            this.checkBox1.UseVisualStyleBackColor = true;
-            this.checkBox1.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
+            this.cbUseSpecificScript.AutoSize = true;
+            this.cbUseSpecificScript.Location = new System.Drawing.Point(26, 281);
+            this.cbUseSpecificScript.Name = "cbUseSpecificScript";
+            this.cbUseSpecificScript.Size = new System.Drawing.Size(184, 16);
+            this.cbUseSpecificScript.TabIndex = 4;
+            this.cbUseSpecificScript.Text = "I want to use specific script ";
+            this.cbUseSpecificScript.UseVisualStyleBackColor = true;
+            this.cbUseSpecificScript.CheckedChanged += new System.EventHandler(this.cbUseSpecificScript_CheckedChanged);
             // 
-            // textBox1
+            // txtUseSpecificScript
             // 
-            this.textBox1.Enabled = false;
-            this.textBox1.Location = new System.Drawing.Point(214, 278);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(110, 21);
-            this.textBox1.TabIndex = 5;
+            this.txtUseSpecificScript.Enabled = false;
+            this.txtUseSpecificScript.Location = new System.Drawing.Point(214, 278);
+            this.txtUseSpecificScript.Name = "txtUseSpecificScript";
+            this.txtUseSpecificScript.Size = new System.Drawing.Size(110, 21);
+            this.txtUseSpecificScript.TabIndex = 5;
             // 
-            // checkBox2
+            // cbInteractiveServiceApp
             // 
-            this.checkBox2.AutoSize = true;
-            this.checkBox2.Location = new System.Drawing.Point(26, 305);
-            this.checkBox2.Name = "checkBox2";
-            this.checkBox2.Size = new System.Drawing.Size(254, 16);
-            this.checkBox2.TabIndex = 6;
-            this.checkBox2.Text = "This is an Interactive Service Application";
-            this.checkBox2.UseVisualStyleBackColor = true;
+            this.cbInteractiveServiceApp.AutoSize = true;
+            this.cbInteractiveServiceApp.Location = new System.Drawing.Point(26, 305);
+            this.cbInteractiveServiceApp.Name = "cbInteractiveServiceApp";
+            this.cbInteractiveServiceApp.Size = new System.Drawing.Size(254, 16);
+            this.cbInteractiveServiceApp.TabIndex = 6;
+            this.cbInteractiveServiceApp.Text = "This is an Interactive Service Application";
+            this.cbInteractiveServiceApp.UseVisualStyleBackColor = true;
             // 
             // menuStrip1
             // 
@@ -144,7 +144,7 @@
             this.runAsAdministratorToolStripMenuItem,
             this.globalSettingsToolStripMenuItem,
             this.startCodeEditorToolStripMenuItem,
-            this.openMicrosoftCopilotToolStripMenuItem});
+            this.openCopilotToolStripMenuItem});
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
             this.settingsToolStripMenuItem.Size = new System.Drawing.Size(62, 20);
             this.settingsToolStripMenuItem.Text = "Settings";
@@ -152,44 +152,44 @@
             // userdefinedVariablesToolStripMenuItem
             // 
             this.userdefinedVariablesToolStripMenuItem.Name = "userdefinedVariablesToolStripMenuItem";
-            this.userdefinedVariablesToolStripMenuItem.Size = new System.Drawing.Size(210, 22);
+            this.userdefinedVariablesToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.userdefinedVariablesToolStripMenuItem.Text = "User-defined variables";
             this.userdefinedVariablesToolStripMenuItem.Click += new System.EventHandler(this.userdefinedVariablesToolStripMenuItem_Click);
             // 
             // instancesToolStripMenuItem
             // 
             this.instancesToolStripMenuItem.Name = "instancesToolStripMenuItem";
-            this.instancesToolStripMenuItem.Size = new System.Drawing.Size(210, 22);
+            this.instancesToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.instancesToolStripMenuItem.Text = "Instances";
             this.instancesToolStripMenuItem.Click += new System.EventHandler(this.instancesToolStripMenuItem_Click);
             // 
             // runAsAdministratorToolStripMenuItem
             // 
             this.runAsAdministratorToolStripMenuItem.Name = "runAsAdministratorToolStripMenuItem";
-            this.runAsAdministratorToolStripMenuItem.Size = new System.Drawing.Size(210, 22);
+            this.runAsAdministratorToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.runAsAdministratorToolStripMenuItem.Text = "Run as Administrator...";
             this.runAsAdministratorToolStripMenuItem.Click += new System.EventHandler(this.runAsAdministratorToolStripMenuItem_Click);
             // 
             // globalSettingsToolStripMenuItem
             // 
             this.globalSettingsToolStripMenuItem.Name = "globalSettingsToolStripMenuItem";
-            this.globalSettingsToolStripMenuItem.Size = new System.Drawing.Size(210, 22);
+            this.globalSettingsToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.globalSettingsToolStripMenuItem.Text = "Global settings...";
             this.globalSettingsToolStripMenuItem.Click += new System.EventHandler(this.globalSettingsToolStripMenuItem_Click);
             // 
             // startCodeEditorToolStripMenuItem
             // 
             this.startCodeEditorToolStripMenuItem.Name = "startCodeEditorToolStripMenuItem";
-            this.startCodeEditorToolStripMenuItem.Size = new System.Drawing.Size(210, 22);
+            this.startCodeEditorToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.startCodeEditorToolStripMenuItem.Text = "Start the code editor...";
             this.startCodeEditorToolStripMenuItem.Click += new System.EventHandler(this.startCodeEditorToolStripMenuItem_Click);
             // 
-            // openMicrosoftCopilotToolStripMenuItem
+            // openCopilotToolStripMenuItem
             // 
-            this.openMicrosoftCopilotToolStripMenuItem.Name = "openMicrosoftCopilotToolStripMenuItem";
-            this.openMicrosoftCopilotToolStripMenuItem.Size = new System.Drawing.Size(210, 22);
-            this.openMicrosoftCopilotToolStripMenuItem.Text = "Open Microsoft Copilot...";
-            this.openMicrosoftCopilotToolStripMenuItem.Click += new System.EventHandler(this.openMicrosoftCopilotToolStripMenuItem_Click);
+            this.openCopilotToolStripMenuItem.Name = "openCopilotToolStripMenuItem";
+            this.openCopilotToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
+            this.openCopilotToolStripMenuItem.Text = "Open the Copilot...";
+            this.openCopilotToolStripMenuItem.Click += new System.EventHandler(this.openCopilotToolStripMenuItem_Click);
             // 
             // notifyIcon1
             // 
@@ -230,13 +230,13 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(461, 382);
-            this.Controls.Add(this.checkBox2);
-            this.Controls.Add(this.textBox1);
-            this.Controls.Add(this.checkBox1);
+            this.Controls.Add(this.cbInteractiveServiceApp);
+            this.Controls.Add(this.txtUseSpecificScript);
+            this.Controls.Add(this.cbUseSpecificScript);
             this.Controls.Add(this.linkLabel1);
             this.Controls.Add(this.label1);
-            this.Controls.Add(this.button2);
-            this.Controls.Add(this.button1);
+            this.Controls.Add(this.btnRunFromExternalLink);
+            this.Controls.Add(this.btnRunFromZipFile);
             this.Controls.Add(this.menuStrip1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = global::WelsonJS.Launcher.Properties.Resources.favicon;
@@ -254,13 +254,13 @@
 
         #endregion
 
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button btnRunFromZipFile;
+        private System.Windows.Forms.Button btnRunFromExternalLink;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.LinkLabel linkLabel1;
-        private System.Windows.Forms.CheckBox checkBox1;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.CheckBox checkBox2;
+        private System.Windows.Forms.CheckBox cbUseSpecificScript;
+        private System.Windows.Forms.TextBox txtUseSpecificScript;
+        private System.Windows.Forms.CheckBox cbInteractiveServiceApp;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem userdefinedVariablesToolStripMenuItem;
@@ -273,7 +273,7 @@
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openCodeEditorToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openLauncherToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem openMicrosoftCopilotToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem openCopilotToolStripMenuItem;
     }
 }
 

@@ -21,28 +21,35 @@ namespace WelsonJS.Launcher
             {
                 if (key != null)
                 {
-                    object value = key.GetValue(RegistryKey);
-                    if (value != null && value is int maxStatements)
+                    string value = key.GetValue(RegistryKey)?.ToString();
+                    if (value != null && int.TryParse(value, out int maxStatements))
                     {
-                        textBox1.Text = maxStatements.ToString();
+                        txtMaxScriptStatements.Text = maxStatements.ToString();
                     }
                 }
             }
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private void btnOkMaxScriptStatements_Click(object sender, EventArgs e)
         {
-            if (uint.TryParse(textBox1.Text, out uint maxStatements))
+            try
             {
-                using (RegistryKey key = Registry.CurrentUser.CreateSubKey(RegistryPath))
+                if (int.TryParse(txtMaxScriptStatements.Text, out int maxStatements))
                 {
-                    key.SetValue(RegistryKey, (int)maxStatements, RegistryValueKind.DWord);
+                    using (RegistryKey key = Registry.CurrentUser.CreateSubKey(RegistryPath))
+                    {
+                        key.SetValue(RegistryKey, maxStatements, RegistryValueKind.DWord);
+                    }
+                    MessageBox.Show($"MaxScriptStatements setting has been changed to {maxStatements}.", "Confirmation", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
-                MessageBox.Show($"MaxScriptStatements setting has been changed to {maxStatements}.", "Confirmation", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            }
-            else
+                else
+                {
+                    MessageBox.Show("Please enter a valid number within the DWORD range.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            } 
+            catch (Exception ex)
             {
-                MessageBox.Show("Please enter a valid number within the DWORD range.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show($"An error occurred while trying to change the MaxScriptStatements setting: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
     }

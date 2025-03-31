@@ -20,7 +20,7 @@ namespace WelsonJS.Launcher
 
         private void InstancesForm_Load(object sender, EventArgs e)
         {
-            listView1.Items.Clear();
+            lvInstances.Items.Clear();
             LoadInstances(Program.GetAppDataPath());
             LoadInstances(Path.GetTempPath());
         }
@@ -48,7 +48,7 @@ namespace WelsonJS.Launcher
 
                 if (firstDeployTime != null)
                 {
-                    listView1.Items.Add(new ListViewItem(new[]
+                    lvInstances.Items.Add(new ListViewItem(new[]
                     {
                         Path.GetFileName(dir),
                         firstDeployTime
@@ -62,11 +62,11 @@ namespace WelsonJS.Launcher
 
         private void btnStart_Click(object sender, EventArgs e)
         {
-            if (listView1.SelectedItems.Count > 0)
+            if (lvInstances.SelectedItems.Count > 0)
             {
-                scriptName = textBox1.Text;
+                scriptName = txtUseSpecificScript.Text;
 
-                string instanceId = listView1.SelectedItems[0].Text;
+                string instanceId = lvInstances.SelectedItems[0].Text;
                 string workingDirectory = Program.GetWorkingDirectory(instanceId, true);
 
                 Task.Run(() =>
@@ -74,7 +74,7 @@ namespace WelsonJS.Launcher
                     try
                     {
                         // Run the appliction
-                        Program.RunCommandPrompt(workingDirectory, entryFileName, scriptName, checkBox1.Checked, checkBox2.Checked);
+                        Program.RunCommandPrompt(workingDirectory, entryFileName, scriptName, cbUseSpecificScript.Checked, cbInteractiveServiceApp.Checked);
                     }
                     catch (Exception ex)
                     {
@@ -90,9 +90,9 @@ namespace WelsonJS.Launcher
 
         private void btnDelete_Click(object sender, EventArgs e)
         {
-            if (listView1.SelectedItems.Count > 0)
+            if (lvInstances.SelectedItems.Count > 0)
             {
-                string instanceId = listView1.SelectedItems[0].Text;
+                string instanceId = lvInstances.SelectedItems[0].Text;
                 string workingDirectory = Program.GetWorkingDirectory(instanceId, false);
 
                 if (!Directory.Exists(workingDirectory))
@@ -104,7 +104,7 @@ namespace WelsonJS.Launcher
                 {
                     Directory.Delete(workingDirectory, true);
 
-                    listView1.Items.Clear();
+                    lvInstances.Items.Clear();
                     LoadInstances(Program.GetAppDataPath());
                     LoadInstances(Path.GetTempPath());
                 }
@@ -117,9 +117,9 @@ namespace WelsonJS.Launcher
 
         private void btnOpenWithExplorer_Click(object sender, EventArgs e)
         {
-            if (listView1.SelectedItems.Count > 0)
+            if (lvInstances.SelectedItems.Count > 0)
             {
-                string instanceId = listView1.SelectedItems[0].Text;
+                string instanceId = lvInstances.SelectedItems[0].Text;
                 string workingDirectory = Program.GetWorkingDirectory(instanceId, true);
 
                 if (Directory.Exists(workingDirectory))
@@ -133,9 +133,9 @@ namespace WelsonJS.Launcher
             }
         }
 
-        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        private void cbUseSpecificScript_CheckedChanged(object sender, EventArgs e)
         {
-            textBox1.Enabled = checkBox1.Checked;
+            txtUseSpecificScript.Enabled = cbUseSpecificScript.Checked;
         }
     }
 }
