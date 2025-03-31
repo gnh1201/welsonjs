@@ -97,7 +97,7 @@ namespace WelsonJS.Launcher
 
         private void btnRunFromExternalLink_Click(object sender, EventArgs e)
         {
-            MessageBox.Show("Comming soon...!");
+            MessageBox.Show("Coming soon...!");
         }
 
         private void btnRunFromZipFile_Click(object sender, EventArgs e)
