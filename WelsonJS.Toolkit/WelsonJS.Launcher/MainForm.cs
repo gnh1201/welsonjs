@@ -195,7 +195,7 @@ namespace WelsonJS.Launcher
 
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            Program.OpenWebBrowser(Properties.Resources.RepositoryUrl);
+            Program.OpenWebBrowser(Program.GetAppConfig("RepositoryUrl"));
         }
 
         private void userdefinedVariablesToolStripMenuItem_Click(object sender, EventArgs e)
@@ -245,7 +245,7 @@ namespace WelsonJS.Launcher
         {
             if (Program.resourceServer == null)
             {
-                Program.resourceServer = new ResourceServer(Properties.Resources.ResourceServerPrefix, "editor.html");
+                Program.resourceServer = new ResourceServer(Program.GetAppConfig("ResourceServerPrefix"), "editor.html");
             }
 
             if (!Program.resourceServer.IsRunning())
@@ -273,7 +273,7 @@ namespace WelsonJS.Launcher
 
         private void openCopilotToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Program.OpenWebBrowser(Properties.Resources.CopilotUrl);
+            Program.OpenWebBrowser(Program.GetAppConfig("CopilotUrl"));
         }
     }
 }
