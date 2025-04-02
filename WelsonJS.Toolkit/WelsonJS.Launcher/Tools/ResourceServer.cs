@@ -133,6 +133,14 @@ namespace WelsonJS.Launcher.Tools
                 return;
             }
 
+            // Serve a value of App Config request
+            const string configPrefix = "config/";
+            if (path.StartsWith(configPrefix, StringComparison.OrdinalIgnoreCase))
+            {
+                ServeConfigRequest(context, path.Substring(configPrefix.Length));
+                return;
+            }
+
             // Serve a resource
             ServeResource(context, GetResource(_resourceName), "text/html");
         }
@@ -266,6 +274,18 @@ namespace WelsonJS.Launcher.Tools
             if (endpoint.Equals("pubkey"))
             {
                 ServeResource(context, _tfa.GetPubKey(), "text/plain", 200);
+                return;
+            }
+
+            ServeResource(context);
+        }
+
+        public void ServeConfigRequest(HttpListenerContext context, string key)
+        {
+            string value = Program.GetAppConfig(key);
+            if (!String.IsNullOrEmpty(value))
+            {
+                ServeResource(context, value, "text/plain", 200);
                 return;
             }
 

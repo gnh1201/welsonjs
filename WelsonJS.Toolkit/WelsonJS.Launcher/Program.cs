@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
+using System.Configuration;
 using WelsonJS.Launcher.Tools;
 
 namespace WelsonJS.Launcher
@@ -155,6 +156,23 @@ namespace WelsonJS.Launcher
                 Arguments = string.Join(" ", arguments),
                 UseShellExecute = true
             });
+        }
+
+        public static string GetAppConfig(string key)
+        {
+            string value = ConfigurationManager.AppSettings[key];
+            if (!string.IsNullOrEmpty(value))
+            {
+                return value;
+            }
+
+            value = Properties.Resources.ResourceManager.GetString(key);
+            if (!string.IsNullOrEmpty(value))
+            {
+                return value;
+            }
+
+            return null;
         }
     }
 }
