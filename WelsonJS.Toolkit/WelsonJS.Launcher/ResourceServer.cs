@@ -22,7 +22,7 @@ namespace WelsonJS.Launcher
         private string _resourceName;
         private List<IResourceTool> _tools = new List<IResourceTool>();
         private const int _blobTimeout = 5000;
-        private static readonly HttpClient _blobClient = new HttpClient();
+        private readonly HttpClient _blobClient = new HttpClient();
 
         public ResourceServer(string prefix, string resourceName)
         {
