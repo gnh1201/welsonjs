@@ -2,12 +2,41 @@
 using System.Linq;
 using System.Security.Cryptography;
 using System.Collections.Generic;
+using System.Net;
+using System.Threading.Tasks;
 
-namespace WelsonJS.Launcher.Tools
+namespace WelsonJS.Launcher.ResourceTools
 {
-    public class Tfa
+    public class Tfa : IResourceTool
     {
+        private ResourceServer Server;
+        private const string Prefix = "tfa/";
         private const string Base32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+
+        public Tfa(ResourceServer server)
+        {
+            Server = server;
+        }
+
+        public bool CanHandle(string path)
+        {
+            return path.StartsWith(Prefix, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public async Task HandleAsync(HttpListenerContext context, string path)
+        {
+            string endpoint = path.Substring(Prefix.Length);
+
+            if (endpoint.Equals("pubkey"))
+            {
+                Server.ServeResource(context, GetPubKey(), "text/plain", 200);
+                return;
+            }
+
+            Server.ServeResource(context);
+
+            await Task.Delay(0);
+        }
 
         public int GetOtp(string key)
         {

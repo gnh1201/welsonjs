@@ -61,11 +61,47 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
+        ///   과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string AzureAiServiceApiKey {
+            get {
+                return ResourceManager.GetString("AzureAiServiceApiKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   https://ai-catswords656881030318.services.ai.azure.com/models/chat/completions?api-version=2024-05-01-preview과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string AzureAiServiceUrl {
+            get {
+                return ResourceManager.GetString("AzureAiServiceUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   https://copilot.microsoft.com/과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string CopilotUrl {
             get {
                 return ResourceManager.GetString("CopilotUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   http://localhost:9222/과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string DevToolsPrefix {
+            get {
+                return ResourceManager.GetString("DevToolsPrefix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   1.1.1.1과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string DnsServerAddress {
+            get {
+                return ResourceManager.GetString("DnsServerAddress", resourceCulture);
             }
         }
         
@@ -184,6 +220,42 @@ namespace WelsonJS.Launcher.Properties {
         internal static string ResourceServerPrefix {
             get {
                 return ResourceManager.GetString("ResourceServerPrefix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   141.101.82.1과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string WhoisClientAddress {
+            get {
+                return ResourceManager.GetString("WhoisClientAddress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   https://xn--c79as89aj0e29b77z.xn--3e0b707e/kor/whois/whois.jsp과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string WhoisReferrerUrl {
+            get {
+                return ResourceManager.GetString("WhoisReferrerUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   https://xn--c79as89aj0e29b77z.xn--3e0b707e/kor/whois.jsc과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string WhoisServerUrl {
+            get {
+                return ResourceManager.GetString("WhoisServerUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.3124.77과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string WhoisUserAgent {
+            get {
+                return ResourceManager.GetString("WhoisUserAgent", resourceCulture);
             }
         }
     }
