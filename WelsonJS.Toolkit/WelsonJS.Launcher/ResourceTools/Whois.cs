@@ -44,7 +44,7 @@ namespace WelsonJS.Launcher.ResourceTools
                 };
 
                 request.Headers.Add("Accept", "*/*");
-                request.Headers.Add("User-Agent", Program.GetAppConfig("WhoisUserAgent"));
+                request.Headers.Add("User-Agent", context.Request.UserAgent);
                 client.DefaultRequestHeaders.Referrer = new Uri(Program.GetAppConfig("WhoisReferrerUrl"));
 
                 try

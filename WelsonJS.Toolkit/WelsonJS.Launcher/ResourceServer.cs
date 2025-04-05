@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
@@ -9,7 +9,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Xml.Linq;
 
 namespace WelsonJS.Launcher
 {
@@ -21,7 +20,9 @@ namespace WelsonJS.Launcher
         private bool _isRunning;
         private string _prefix;
         private string _resourceName;
-        private List<IResourceTool> _resourceTools = new List<IResourceTool>();
+        private List<IResourceTool> _tools = new List<IResourceTool>();
+        private const int _blobTimeout = 5000;
+        private readonly HttpClient _blobClient = new HttpClient();
 
         public ResourceServer(string prefix, string resourceName)
         {
@@ -29,14 +30,15 @@ namespace WelsonJS.Launcher
             _listener = new HttpListener();
             _listener.Prefixes.Add(prefix);
             _resourceName = resourceName;
+            _blobClient.Timeout = TimeSpan.FromMilliseconds(_blobTimeout);
 
             // Add resource tools
-            _resourceTools.Add(new ResourceTools.Completion(this));
-            _resourceTools.Add(new ResourceTools.Config(this));
-            _resourceTools.Add(new ResourceTools.DevTools(this));
-            _resourceTools.Add(new ResourceTools.DnsQuery(this));
-            _resourceTools.Add(new ResourceTools.Tfa(this));
-            _resourceTools.Add(new ResourceTools.Whois(this));
+            _tools.Add(new ResourceTools.Completion(this));
+            _tools.Add(new ResourceTools.Config(this));
+            _tools.Add(new ResourceTools.DevTools(this));
+            _tools.Add(new ResourceTools.DnsQuery(this));
+            _tools.Add(new ResourceTools.Tfa(this));
+            _tools.Add(new ResourceTools.Whois(this));
         }
 
         public string GetPrefix()
@@ -93,6 +95,13 @@ namespace WelsonJS.Launcher
         {
             string path = context.Request.Url.AbsolutePath.TrimStart('/');
 
+            // Serve from a resource name
+            if (String.IsNullOrEmpty(path))
+            {
+                ServeResource(context, GetResource(_resourceName), "text/html");
+                return;
+            }
+
             // Serve the favicon.ico file
             if ("favicon.ico".Equals(path, StringComparison.OrdinalIgnoreCase))
             {
@@ -101,18 +110,51 @@ namespace WelsonJS.Launcher
             }
 
             // Serve from a resource tool
-            foreach(var tool in _resourceTools)
+            foreach (var tool in _tools)
             {
-
-               if (tool.CanHandle(path))
+                if (tool.CanHandle(path))
                 {
                     await tool.HandleAsync(context, path);
                     return;
                 }
             }
 
-            // Serve from a resource name
+            // Serve from the blob server
+            if (await ServeBlob(context, path)) return;
+
+            // Fallback to serve from a resource name
             ServeResource(context, GetResource(_resourceName), "text/html");
+        }
+
+        private async Task<bool> ServeBlob(HttpListenerContext context, string path)
+        {
+            try
+            {
+                string blobServerPrefix = Program.GetAppConfig("BlobServerPrefix");
+                string url = $"{blobServerPrefix}{path}";
+
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
+                request.Headers.UserAgent.ParseAdd(context.Request.UserAgent);
+                HttpResponseMessage response = await _blobClient.SendAsync(request);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    Trace.TraceError($"Failed to serve blob. Status: {response.StatusCode}");
+                    return false;
+                }
+
+                byte[] data = await response.Content.ReadAsByteArrayAsync();
+                string mimeType = response.Content.Headers.ContentType?.MediaType ?? "application/octet-stream";
+
+                ServeResource(context, data, mimeType);
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError($"Failed to serve blob. Exception: {ex.ToString()}");
+                return false;
+            }
         }
 
         public void ServeResource(HttpListenerContext context)

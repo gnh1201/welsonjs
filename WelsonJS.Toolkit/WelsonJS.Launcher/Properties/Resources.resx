@@ -178,7 +178,7 @@
   <data name="WhoisServerUrl" xml:space="preserve">
     <value>https://xn--c79as89aj0e29b77z.xn--3e0b707e/kor/whois.jsc</value>
   </data>
-  <data name="WhoisUserAgent" xml:space="preserve">
-    <value>Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.3124.77</value>
+  <data name="BlobServerPrefix" xml:space="preserve">
+    <value>https://catswords.blob.core.windows.net/welsonjs/</value>
   </data>
 </root>
