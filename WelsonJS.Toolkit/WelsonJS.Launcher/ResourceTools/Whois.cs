@@ -10,6 +10,7 @@ namespace WelsonJS.Launcher.ResourceTools
     {
         private ResourceServer Server;
         private const string Prefix = "whois/";
+        private const int Timeout = 5000;
 
         public Whois(ResourceServer server)
         {
@@ -31,20 +32,20 @@ namespace WelsonJS.Launcher.ResourceTools
                 return;
             }
 
-            string whoisServerUrl = "https://xn--c79as89aj0e29b77z.xn--3e0b707e";
-
             using (var client = new HttpClient())
             {
-                client.Timeout = TimeSpan.FromSeconds(10);
+                client.Timeout = TimeSpan.FromMilliseconds(Timeout);
 
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, $"{whoisServerUrl}/kor/whois.jsc")
+                string clientAddress = Program.GetAppConfig("WhoisClientAddress");
+
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, Program.GetAppConfig("WhoisServerUrl"))
                 {
-                    Content = new StringContent($"query={Uri.EscapeDataString(query)}&ip=141.101.82.1", Encoding.UTF8, "application/x-www-form-urlencoded")
+                    Content = new StringContent($"query={Uri.EscapeDataString(query)}&ip={clientAddress}", Encoding.UTF8, "application/x-www-form-urlencoded")
                 };
 
                 request.Headers.Add("Accept", "*/*");
-                request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.3124.77");
-                client.DefaultRequestHeaders.Referrer = new Uri($"{whoisServerUrl}/kor/whois/whois.jsp");
+                request.Headers.Add("User-Agent", Program.GetAppConfig("WhoisUserAgent"));
+                client.DefaultRequestHeaders.Referrer = new Uri(Program.GetAppConfig("WhoisReferrerUrl"));
 
                 try
                 {

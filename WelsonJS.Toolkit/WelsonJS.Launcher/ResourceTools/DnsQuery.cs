@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace WelsonJS.Launcher.ResourceTools
 {
-    public class DnsQuery
+    public class DnsQuery : IResourceTool
     {
         private ResourceServer Server;
         private const string Prefix = "dns-query/";
@@ -17,10 +17,10 @@ namespace WelsonJS.Launcher.ResourceTools
         private const int Timeout = 5000;
         private static readonly Random _random = new Random();
 
-        public DnsQuery(ResourceServer server, string dnsServer = "8.8.8.8")
+        public DnsQuery(ResourceServer server)
         {
             Server = server;
-            DnsServer = dnsServer;
+            DnsServer = Program.GetAppConfig("DnsServerAddress");
         }
 
         public bool CanHandle(string path)
@@ -115,17 +115,18 @@ namespace WelsonJS.Launcher.ResourceTools
 
             try
             {
-                UdpClient udpClient = new UdpClient(DnsServer, DnsPort);
-                udpClient.Client.ReceiveTimeout = Timeout;
+                using (UdpClient udpClient = new UdpClient(DnsServer, DnsPort))
+                {
+                    udpClient.Client.ReceiveTimeout = Timeout;
 
-                byte[] request = CreateDnsQuery(domain, type);
-                udpClient.Send(request, request.Length);
+                    byte[] request = CreateDnsQuery(domain, type);
+                    udpClient.Send(request, request.Length);
 
-                IPEndPoint remoteEP = new IPEndPoint(IPAddress.Any, DnsPort);
-                byte[] response = udpClient.Receive(ref remoteEP);
+                    IPEndPoint remoteEP = new IPEndPoint(IPAddress.Any, DnsPort);
+                    byte[] response = udpClient.Receive(ref remoteEP);
 
-                records.AddRange(ParseDnsResponse(response, type));
-                udpClient.Close();
+                    records.AddRange(ParseDnsResponse(response, type));
+                }
             }
             catch (Exception ex)
             {

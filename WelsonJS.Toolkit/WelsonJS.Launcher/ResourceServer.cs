@@ -34,6 +34,7 @@ namespace WelsonJS.Launcher
             _resourceTools.Add(new ResourceTools.Completion(this));
             _resourceTools.Add(new ResourceTools.Config(this));
             _resourceTools.Add(new ResourceTools.DevTools(this));
+            _resourceTools.Add(new ResourceTools.DnsQuery(this));
             _resourceTools.Add(new ResourceTools.Tfa(this));
             _resourceTools.Add(new ResourceTools.Whois(this));
         }

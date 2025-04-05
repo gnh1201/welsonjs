@@ -9,8 +9,10 @@ namespace WelsonJS.Launcher.ResourceTools
     {
         private ResourceServer Server;
         private const string Prefix = "devtools/";
+        private const double Timeout = 5000;
 
-        public DevTools(ResourceServer server) {
+        public DevTools(ResourceServer server)
+        {
             Server = server;
         }
 
@@ -27,6 +29,8 @@ namespace WelsonJS.Launcher.ResourceTools
             {
                 using (HttpClient client = new HttpClient())
                 {
+                    client.Timeout = TimeSpan.FromMilliseconds(Timeout);
+
                     string url = Program.GetAppConfig("DevToolsPrefix") + endpoint;
                     string data = await client.GetStringAsync(url);
 
