@@ -157,4 +157,7 @@
   <data name="ResourceServerPrefix" xml:space="preserve">
     <value>http://localhost:3000/</value>
   </data>
+  <data name="DevToolsPrefix" xml:space="preserve">
+    <value>http://localhost:9222/</value>
+  </data>
 </root>

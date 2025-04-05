@@ -3,29 +3,72 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 
-namespace WelsonJS.Launcher.Tools
+namespace WelsonJS.Launcher.ResourceTools
 {
-    public class ExecutablesCollector
+    public class Completion : IResourceTool
     {
-        private List<string> executables = new List<string>();
+        private ResourceServer Server;
+        private const string Prefix = "completion/";
+        private List<string> Executables = new List<string>();
 
-        public ExecutablesCollector()
+        public Completion(ResourceServer server)
         {
+            Server = server;
+
             new Task(() =>
             {
-                executables.AddRange(GetInstalledSoftwareExecutables());
-                executables.AddRange(GetExecutablesFromPath());
-                executables.AddRange(GetExecutablesFromNetFx());
+                Executables.AddRange(GetInstalledSoftwareExecutables());
+                Executables.AddRange(GetExecutablesFromPath());
+                Executables.AddRange(GetExecutablesFromNetFx());
             }).Start();
         }
 
-        public List<string> GetExecutables()
+        public bool CanHandle(string path)
         {
-            return executables;
+            return path.StartsWith(Prefix, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public async Task HandleAsync(HttpListenerContext context, string path)
+        {
+            string word = path.Substring(Prefix.Length);
+
+            try
+            {
+                CompletionItem[] completionItems = Executables
+                    .Where(exec => exec.IndexOf(word, 0, StringComparison.OrdinalIgnoreCase) > -1)
+                    .Take(100) // Limit the number of results
+                    .Select(exec => new CompletionItem
+                    {
+                        Label = Path.GetFileName(exec),
+                        Kind = "Text",
+                        Documentation = $"An executable file: {exec}",
+                        InsertText = exec
+                    })
+                    .ToArray();
+
+                XElement response = new XElement("suggestions",
+                    completionItems.Select(item => new XElement("item",
+                        new XElement("label", item.Label),
+                        new XElement("kind", item.Kind),
+                        new XElement("documentation", item.Documentation),
+                        new XElement("insertText", item.InsertText)
+                    ))
+                );
+
+                Server.ServeResource(context, response.ToString(), "application/xml");
+            }
+            catch (Exception ex)
+            {
+                Server.ServeResource(context, $"<error>Failed to process completion request. {ex.Message}</error>", "application/xml", 500);
+            }
+
+            await Task.Delay(0);
         }
 
         private List<string> GetInstalledSoftwareExecutables()
@@ -156,5 +199,13 @@ namespace WelsonJS.Launcher.Tools
 
             return executables;
         }
+    }
+
+    public class CompletionItem
+    {
+        public string Label { get; set; }
+        public string Kind { get; set; }
+        public string Documentation { get; set; }
+        public string InsertText { get; set; }
     }
 }

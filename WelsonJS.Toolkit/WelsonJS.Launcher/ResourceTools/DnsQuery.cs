@@ -1,22 +1,66 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Linq;
+using System.Threading.Tasks;
 
-namespace WelsonJS.Launcher.Tools
+namespace WelsonJS.Launcher.ResourceTools
 {
     public class DnsQuery
     {
-        private static readonly Random _random = new Random();
-        private readonly string _dnsServer;
+        private ResourceServer Server;
+        private const string Prefix = "dns-query/";
+        private string DnsServer;
         private const int DnsPort = 53;
         private const int Timeout = 5000;
+        private static readonly Random _random = new Random();
 
-        public DnsQuery(string dnsServer = "8.8.8.8")
+        public DnsQuery(ResourceServer server, string dnsServer = "8.8.8.8")
         {
-            _dnsServer = dnsServer;
+            Server = server;
+            DnsServer = dnsServer;
+        }
+
+        public bool CanHandle(string path)
+        {
+            return path.StartsWith(Prefix, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public async Task HandleAsync(HttpListenerContext context, string path)
+        {
+            string query = path.Substring(Prefix.Length);
+
+            if (string.IsNullOrWhiteSpace(query) || query.Length > 255)
+            {
+                Server.ServeResource(context, "<error>Invalid query parameter</error>", "application/xml", 400);
+                return;
+            }
+
+            try
+            {
+                Dictionary<string, List<string>> allRecords = QueryAll(query);
+
+                StringBuilder result = new StringBuilder();
+                foreach (var recordType in allRecords.Keys)
+                {
+                    result.AppendLine($"\n{recordType} Records:");
+                    foreach (var record in allRecords[recordType])
+                    {
+                        result.AppendLine(record);
+                    }
+                }
+
+                string data = result.ToString();
+                Server.ServeResource(context, data, "text/plain", 200);
+            }
+            catch (Exception ex)
+            {
+                Server.ServeResource(context, $"<error>Failed to process DNS query. {ex.Message}</error>", "application/xml", 500);
+            }
+
+            await Task.Delay(0);
         }
 
         public List<string> QueryA(string domain) => QueryDns(domain, 1);
@@ -62,7 +106,7 @@ namespace WelsonJS.Launcher.Tools
             }
 
             // Basic domain format validation
-            if (domain.Length > 255 || 
+            if (domain.Length > 255 ||
                 !domain.Split('.').All(part => part.Length > 0 && part.Length <= 63))
             {
                 records.Add("Error: Invalid domain format");
@@ -71,7 +115,7 @@ namespace WelsonJS.Launcher.Tools
 
             try
             {
-                UdpClient udpClient = new UdpClient(_dnsServer, DnsPort);
+                UdpClient udpClient = new UdpClient(DnsServer, DnsPort);
                 udpClient.Client.ReceiveTimeout = Timeout;
 
                 byte[] request = CreateDnsQuery(domain, type);

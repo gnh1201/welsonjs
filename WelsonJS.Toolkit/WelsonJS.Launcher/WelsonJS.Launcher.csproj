@@ -73,14 +73,19 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Tools\DnsQuery.cs" />
+    <Compile Include="IResourceTool.cs" />
+    <Compile Include="ResourceTools\Config.cs" />
+    <Compile Include="ResourceTools\Completion.cs" />
+    <Compile Include="ResourceTools\DevTools.cs" />
+    <Compile Include="ResourceTools\DnsQuery.cs" />
+    <Compile Include="ResourceTools\Tfa.cs" />
+    <Compile Include="ResourceTools\Whois.cs" />
     <Compile Include="EnvForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="EnvForm.Designer.cs">
       <DependentUpon>EnvForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Tools\ExecutablesCollector.cs" />
     <Compile Include="InstancesForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -101,8 +106,7 @@
     <Compile Include="GlobalSettingsForm.Designer.cs">
       <DependentUpon>GlobalSettingsForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Tools\ResourceServer.cs" />
-    <Compile Include="Tools\Tfa.cs" />
+    <Compile Include="ResourceServer.cs" />
     <EmbeddedResource Include="EnvForm.resx">
       <DependentUpon>EnvForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -161,5 +165,6 @@
   <ItemGroup>
     <EmbeddedResource Include="editor.html" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

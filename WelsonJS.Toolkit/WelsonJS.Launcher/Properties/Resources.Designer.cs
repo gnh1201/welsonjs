@@ -70,6 +70,15 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
+        ///   http://localhost:9222/과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string DevToolsPrefix {
+            get {
+                return ResourceManager.GetString("DevToolsPrefix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   (아이콘)과(와) 유사한 System.Drawing.Icon 형식의 지역화된 리소스를 찾습니다.
         /// </summary>
         internal static System.Drawing.Icon favicon {
