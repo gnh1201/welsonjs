@@ -29,7 +29,7 @@ WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)*** + :h
 - :octocat: [GitHub Sponsors](https://github.com/sponsors/gnh1201)
 - <img src="https://ics.catswords.net/logo_oss.gif" height="32" alt=""/> [Open SW Portal](https://oss.kr), Korea National Industry Promotion Agency<sup>(정보통신산업진흥원)</sup> - Awarded Prize
 - <img src="https://ics.catswords.net/signpath_logo.png" height="32" alt=""/> Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org/)
-- <img src="https://ics.catswords.net/f1security_logo.png" height="32" alt=""/> [F1Security<sup>(에프원시큐리티)</sup>](https://azuremarketplace.microsoft.com/ko-kr/marketplace/apps/1599123192819.uwss?tab=overview) provides web security services designed by [industry-leading experts](https://www.ksecurity.or.kr/kisis/subIndex/469.do).
+- <img src="https://ics.catswords.net/f1security_logo.png" height="32" alt=""/> [F1Security<sup>(에프원시큐리티)</sup>](https://azuremarketplace.microsoft.com/ko-kr/marketplace/apps/1599123192819.uwss?tab=overview) provides cybersecurity services designed by the [industry-leaders](https://www.ksecurity.or.kr/kisis/subIndex/469.do).
 - <img src="https://ics.catswords.net/microsoft_logo.png" height="32" alt=""/> [Microsoft ISV Success Program](https://www.microsoft.com/en-us/isv/isv-success), Grow your business with powerful tools.
 - :zap: [Integrations](https://catswords-oss.rdbl.io/5719744820/8278298336) ([ScrapeOps](https://scrapeops.io?fpr=namhyeon75), [SearchApi](https://www.searchapi.io/?via=namhyeon), [AviationStack](https://aviationstack.com?utm_source=FirstPromoter&utm_medium=Affiliate&fpr=namhyeon71), [Coupang](https://link.coupang.com/a/b7HV3V)...)
 
@@ -62,7 +62,7 @@ WelsonJS is tailored for developers who need a reliable, lightweight JavaScript 
 ## Specifications
 - Built-in transpilers: [TypeScript](https://www.typescriptlang.org/), [Rescript](https://rescript-lang.org/), [CoffeeScript 2](https://coffeescript.org/), [LiveScript](https://livescript.net/)
 - **Ready to use on Windows machine immediately. No require additional software installation.**
-- **WelsonJS Launcher**: Instance management (You can manage previously run apps), User-defined variable editor (You can pass user-defined variables if needed), [Microsoft Monaco Editor](https://github.com/microsoft/monaco-editor) (You can edit code without installing an additional editor).
+- **WelsonJS Launcher**: Manage an instances (Like a container), User-defined variable editor, [Microsoft Monaco Editor](https://github.com/microsoft/monaco-editor) (Pre-embedded rich code editor), [Microsoft Copilot](https://copilot.microsoft.com) on the code editor.
 - ES5(ECMAScript 5), XML, JSON, YAML compatibility: [core-js](https://github.com/zloirock/core-js), [JSON2.js](https://github.com/douglascrockford/JSON-js), [js-yaml](https://github.com/nodeca/js-yaml)
 - HTML5, CSS3 compatibility: [html5shiv](https://github.com/aFarkas/html5shiv), [jquery-html5-placeholder-shim](https://github.com/parndt/jquery-html5-placeholder-shim), [Respond](https://github.com/scottjehl/Respond), [selectivizr](https://github.com/keithclark/selectivizr), [ExplorerCanvas](https://github.com/arv/ExplorerCanvas), [Modernizr](https://github.com/Modernizr/Modernizr)
 - Classical CSS Frameworks: [cascadeframework](https://github.com/jslegers/cascadeframework), [golden-layout](https://github.com/golden-layout/golden-layout)
