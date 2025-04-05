@@ -21,6 +21,8 @@ namespace WelsonJS.Launcher.ResourceTools
 
         public async Task HandleAsync(HttpListenerContext context, string path)
         {
+            await Task.Delay(0);
+
             string configName = path.Substring(Prefix.Length);
 
             try
@@ -32,8 +34,6 @@ namespace WelsonJS.Launcher.ResourceTools
             {
                 Server.ServeResource(context, $"<error>Failed to process Config request. {ex.Message}</error>", "application/xml", 500);
             }
-
-            await Task.Delay(0);
         }
     }
 }
