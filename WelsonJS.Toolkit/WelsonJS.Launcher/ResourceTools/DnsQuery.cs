@@ -30,6 +30,8 @@ namespace WelsonJS.Launcher.ResourceTools
 
         public async Task HandleAsync(HttpListenerContext context, string path)
         {
+            await Task.Delay(0);
+
             string query = path.Substring(Prefix.Length);
 
             if (string.IsNullOrWhiteSpace(query) || query.Length > 255)
@@ -59,8 +61,6 @@ namespace WelsonJS.Launcher.ResourceTools
             {
                 Server.ServeResource(context, $"<error>Failed to process DNS query. {ex.Message}</error>", "application/xml", 500);
             }
-
-            await Task.Delay(0);
         }
 
         public List<string> QueryA(string domain) => QueryDns(domain, 1);

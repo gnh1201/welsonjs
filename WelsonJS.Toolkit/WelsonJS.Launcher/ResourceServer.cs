@@ -5,6 +5,7 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,6 +24,7 @@ namespace WelsonJS.Launcher
         private List<IResourceTool> _tools = new List<IResourceTool>();
         private const int _blobTimeout = 5000;
         private readonly HttpClient _blobClient = new HttpClient();
+        private readonly string _defaultMimeType = "application/octet-stream";
 
         public ResourceServer(string prefix, string resourceName)
         {
@@ -128,8 +130,28 @@ namespace WelsonJS.Launcher
 
         private async Task<bool> ServeBlob(HttpListenerContext context, string path)
         {
+            byte[] data;
+            string mimeType;
+
+            // Try serve data from the cached blob
+            if (TryGetCachedBlob(path, out mimeType, true))
+            {
+                if (TryGetCachedBlob(path, out data))
+                {
+                    if (String.IsNullOrEmpty(mimeType))
+                    {
+                        mimeType = _defaultMimeType;
+                    }
+
+                    ServeResource(context, data, mimeType);
+                    return true;
+                }
+            }
+
+            // If not cached yet
             try
             {
+                
                 string blobServerPrefix = Program.GetAppConfig("BlobServerPrefix");
                 string url = $"{blobServerPrefix}{path}";
 
@@ -143,16 +165,106 @@ namespace WelsonJS.Launcher
                     return false;
                 }
 
-                byte[] data = await response.Content.ReadAsByteArrayAsync();
-                string mimeType = response.Content.Headers.ContentType?.MediaType ?? "application/octet-stream";
+                data = await response.Content.ReadAsByteArrayAsync();
+                mimeType = response.Content.Headers.ContentType?.MediaType ?? _defaultMimeType;
 
                 ServeResource(context, data, mimeType);
+                _ = TrySaveCachedBlob(path, data, mimeType);
 
                 return true;
             }
             catch (Exception ex)
             {
-                Trace.TraceError($"Failed to serve blob. Exception: {ex.ToString()}");
+                Trace.TraceError($"Failed to serve blob. Exception: {ex.Message}");
+                return false;
+            }
+        }
+
+        private string GetCachedBlobPath(string path)
+        {
+            // Get a hash from the path
+            string hashedPath;
+            using (MD5 md5 = MD5.Create())
+            {
+                byte[] bHashedPath = md5.ComputeHash(Encoding.UTF8.GetBytes(path));
+                hashedPath = BitConverter.ToString(bHashedPath).Replace("-", "").ToLowerInvariant();
+            }
+
+            // Get a sub-directory paths from the hashed path
+            string[] subDirectoryPaths = new string[] {
+                hashedPath.Substring(0, 2),
+                hashedPath.Substring(2, 2),
+                hashedPath.Substring(4, 2)
+            };
+
+            // Return the cache path
+            return Path.Combine(Program.GetAppDataPath(), "BlobCache", String.Join("\\", subDirectoryPaths), hashedPath);
+        }
+
+        private bool TryGetCachedBlob(string path, out byte[] data, bool isMetadata = false)
+        {
+            string cachePath = GetCachedBlobPath(path);
+            if (isMetadata)
+            {
+                cachePath = $"{cachePath}.meta";
+            }
+
+            try
+            {
+                if (File.Exists(cachePath))
+                {
+                    data = File.ReadAllBytes(cachePath);
+                    return true;
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError($"Error: {ex.Message}");
+            }
+
+            data = null;
+            return false;
+        }
+
+        private bool TryGetCachedBlob(string path, out string data, bool isMetadata = false)
+        {
+            byte[] bData;
+            if (TryGetCachedBlob(path, out bData, isMetadata))
+            {
+                data = Encoding.UTF8.GetString(bData);
+                return true;
+            }
+
+            data = null;
+            return false;
+        }
+
+        private async Task<bool> TrySaveCachedBlob(string path, byte[] data, string mimeType)
+        {
+            await Task.Delay(0);
+
+            try
+            {
+                string cachePath = GetCachedBlobPath(path);
+                string cacheDirectory = Path.GetDirectoryName(cachePath);
+
+                // Is exists the cached blob directory
+                if (!Directory.Exists(cacheDirectory))
+                {
+                    Directory.CreateDirectory(cacheDirectory);
+                }
+
+                // Save the cache
+                File.WriteAllBytes(cachePath, data);
+
+                // Save the cache meta
+                File.WriteAllBytes($"{cachePath}.meta", Encoding.UTF8.GetBytes(mimeType));
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError($"Error: {ex.Message}");
                 return false;
             }
         }

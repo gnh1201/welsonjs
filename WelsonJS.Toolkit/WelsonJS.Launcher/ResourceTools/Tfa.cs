@@ -25,6 +25,8 @@ namespace WelsonJS.Launcher.ResourceTools
 
         public async Task HandleAsync(HttpListenerContext context, string path)
         {
+            await Task.Delay(0);
+
             string endpoint = path.Substring(Prefix.Length);
 
             if (endpoint.Equals("pubkey"))
@@ -34,8 +36,6 @@ namespace WelsonJS.Launcher.ResourceTools
             }
 
             Server.ServeResource(context);
-
-            await Task.Delay(0);
         }
 
         public int GetOtp(string key)
