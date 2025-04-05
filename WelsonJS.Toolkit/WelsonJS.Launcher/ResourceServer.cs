@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
@@ -9,7 +8,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Xml.Linq;
 
 namespace WelsonJS.Launcher
 {
@@ -132,8 +130,10 @@ namespace WelsonJS.Launcher
 
                     string blobServerPrefix = Program.GetAppConfig("BlobServerPrefix");
                     string url = $"{blobServerPrefix}{path}";
+                    string userAgent = Program.GetAppConfig("DefaultUserAgent");
 
                     HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
+                    request.Headers.UserAgent.ParseAdd(context.Request.UserAgent);
                     HttpResponseMessage response = await client.SendAsync(request);
 
                     if (!response.IsSuccessStatusCode)

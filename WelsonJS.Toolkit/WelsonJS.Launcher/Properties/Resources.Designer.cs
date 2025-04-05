@@ -258,14 +258,5 @@ namespace WelsonJS.Launcher.Properties {
                 return ResourceManager.GetString("WhoisServerUrl", resourceCulture);
             }
         }
-        
-        /// <summary>
-        ///   Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.3124.77과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string WhoisUserAgent {
-            get {
-                return ResourceManager.GetString("WhoisUserAgent", resourceCulture);
-            }
-        }
     }
 }
