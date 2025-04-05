@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -21,6 +22,7 @@ namespace WelsonJS.Launcher
         private string _resourceName;
         private List<IResourceTool> _tools = new List<IResourceTool>();
         private const int _blobTimeout = 5000;
+        private static readonly HttpClient _blobClient = new HttpClient();
 
         public ResourceServer(string prefix, string resourceName)
         {
@@ -28,6 +30,7 @@ namespace WelsonJS.Launcher
             _listener = new HttpListener();
             _listener.Prefixes.Add(prefix);
             _resourceName = resourceName;
+            _blobClient.Timeout = TimeSpan.FromMilliseconds(_blobTimeout);
 
             // Add resource tools
             _tools.Add(new ResourceTools.Completion(this));
@@ -92,31 +95,34 @@ namespace WelsonJS.Launcher
         {
             string path = context.Request.Url.AbsolutePath.TrimStart('/');
 
-            if (!String.IsNullOrEmpty(path))
+            // Serve from a resource name
+            if (String.IsNullOrEmpty(path))
             {
-                // Serve the favicon.ico file
-                if ("favicon.ico".Equals(path, StringComparison.OrdinalIgnoreCase))
-                {
-                    ServeResource(context, GetResource("favicon"), "image/x-icon");
-                    return;
-                }
-
-                // Serve from a resource tool
-                foreach (var tool in _tools)
-                {
-
-                    if (tool.CanHandle(path))
-                    {
-                        await tool.HandleAsync(context, path);
-                        return;
-                    }
-                }
-
-                // Serve from the blob server
-                if (await ServeBlob(context, path)) return;
+                ServeResource(context, GetResource(_resourceName), "text/html");
+                return;
             }
 
-            // Serve from a resource name
+            // Serve the favicon.ico file
+            if ("favicon.ico".Equals(path, StringComparison.OrdinalIgnoreCase))
+            {
+                ServeResource(context, GetResource("favicon"), "image/x-icon");
+                return;
+            }
+
+            // Serve from a resource tool
+            foreach (var tool in _tools)
+            {
+                if (tool.CanHandle(path))
+                {
+                    await tool.HandleAsync(context, path);
+                    return;
+                }
+            }
+
+            // Serve from the blob server
+            if (await ServeBlob(context, path)) return;
+
+            // Fallback to serve from a resource name
             ServeResource(context, GetResource(_resourceName), "text/html");
         }
 
@@ -124,33 +130,29 @@ namespace WelsonJS.Launcher
         {
             try
             {
-                using (HttpClient client = new HttpClient())
+                string blobServerPrefix = Program.GetAppConfig("BlobServerPrefix");
+                string url = $"{blobServerPrefix}{path}";
+
+                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
+                request.Headers.UserAgent.ParseAdd(context.Request.UserAgent);
+                HttpResponseMessage response = await _blobClient.SendAsync(request);
+
+                if (!response.IsSuccessStatusCode)
                 {
-                    client.Timeout = TimeSpan.FromMilliseconds(_blobTimeout);
-
-                    string blobServerPrefix = Program.GetAppConfig("BlobServerPrefix");
-                    string url = $"{blobServerPrefix}{path}";
-                    string userAgent = Program.GetAppConfig("DefaultUserAgent");
-
-                    HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
-                    request.Headers.UserAgent.ParseAdd(context.Request.UserAgent);
-                    HttpResponseMessage response = await client.SendAsync(request);
-
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        return false;
-                    }
-
-                    byte[] data = await response.Content.ReadAsByteArrayAsync();
-                    string mimeType = response.Content.Headers.ContentType?.MediaType ?? "application/octet-stream";
-
-                    ServeResource(context, data, mimeType);
-
-                    return true;
+                    Trace.TraceError($"Failed to serve blob. Status: {response.StatusCode}");
+                    return false;
                 }
+
+                byte[] data = await response.Content.ReadAsByteArrayAsync();
+                string mimeType = response.Content.Headers.ContentType?.MediaType ?? "application/octet-stream";
+
+                ServeResource(context, data, mimeType);
+
+                return true;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Trace.TraceError($"Failed to serve blob. Exception: {ex.ToString()}");
                 return false;
             }
         }
