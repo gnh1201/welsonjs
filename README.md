@@ -20,16 +20,16 @@ Now, You can build a Windows desktop app with JavaScript, TypeScript, CoffeeScri
 
 WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)*** + :heart:[Contributions](https://github.com/sponsors/gnh1201)
 
-:kissing_cat: [Download Latest WelsonJS Launcher (ics.catswords.net)](https://ics.catswords.net/welsonjs_launcher_latest.zip) 
+* :kissing_cat: [Download Latest WelsonJS Launcher (ics.catswords.net)](https://ics.catswords.net/welsonjs_launcher_latest.zip)
+* :rocket: [Launch the WelsonJS environment on Microsoft Azure (azuremarketplace.microsoft.com)](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/catswords.catswords-welsonjs-feb2025-02?tab=Overview)
 
 **Note**: The default license for this project is GPL 3.0. However, if the GPL 3.0 license is not compatible with Microsoft products, it is subject to the MS-RL license.
 
 ## Sponsors
-- :octocat: [GitHub Sponsors](https://github.com/sponsors/gnh1201)
-- :coffee: [Buy me a coffee](https://buymeacoffee.com/catswords)
-- <img src="https://ics.catswords.net/logo_oss.gif" height="32" alt=""/> [Open Software Portal](https://oss.kr), Korea National Industry Promotion Agency - Awarded Prize
+- :octocat: [GitHub Sponsors](https://github.com/sponsors/gnh1201), :coffee: [Buy me a coffee](https://buymeacoffee.com/catswords)
+- <img src="https://ics.catswords.net/logo_oss.gif" height="32" alt=""/> [Open SW Portal](https://oss.kr), NIPA National IT Industry Promotion Agency<sup>(정보통신산업진흥원)</sup>
 - <img src="https://ics.catswords.net/signpath_logo.png" height="32" alt=""/> Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org/)
-- <img src="https://ics.catswords.net/f1security_logo.png" height="32" alt=""/> [F1Security](https://f1security.co.kr/) provides [industry-leading]((https://www.ksecurity.or.kr/kisis/subIndex/469.do) web security services.
+- <img src="https://ics.catswords.net/f1security_logo.png" height="32" alt=""/> [F1Security<sup>(에프원시큐리티)</sup>](https://f1security.co.kr/) provides [industry-leading](https://www.ksecurity.or.kr/kisis/subIndex/469.do) web security services.
 - <img src="https://ics.catswords.net/microsoft_logo.png" height="32" alt=""/> [Microsoft ISV Success Program](https://www.microsoft.com/en-us/isv/isv-success), Grow your business with powerful tools.
 - :zap: [Integrations](https://catswords-oss.rdbl.io/5719744820/8278298336) ([ScrapeOps](https://scrapeops.io?fpr=namhyeon75), [SearchApi](https://www.searchapi.io/?via=namhyeon), [AviationStack](https://aviationstack.com?utm_source=FirstPromoter&utm_medium=Affiliate&fpr=namhyeon71), [Coupang](https://link.coupang.com/a/b7HV3V)...)
 
@@ -62,7 +62,7 @@ WelsonJS is tailored for developers who need a reliable, lightweight JavaScript 
 ## Specifications
 - Built-in transpilers: [TypeScript](https://www.typescriptlang.org/), [Rescript](https://rescript-lang.org/), [CoffeeScript 2](https://coffeescript.org/), [LiveScript](https://livescript.net/)
 - **Ready to use on Windows machine immediately. No require additional software installation.**
-- **WelsonJS Launcher**: Instance management (You can manage previously run apps), User-defined variable editor (You can pass user-defined variables if needed), [Microsoft Monaco Editor](https://github.com/microsoft/monaco-editor) (You can edit code without installing an additional editor).
+- **WelsonJS Launcher**: Manage an instances (Like a container), User-defined variable editor, [Microsoft Monaco Editor](https://github.com/microsoft/monaco-editor) (Pre-embedded rich code editor), [Microsoft Copilot](https://copilot.microsoft.com) on the code editor.
 - ES5(ECMAScript 5), XML, JSON, YAML compatibility: [core-js](https://github.com/zloirock/core-js), [JSON2.js](https://github.com/douglascrockford/JSON-js), [js-yaml](https://github.com/nodeca/js-yaml)
 - HTML5, CSS3 compatibility: [html5shiv](https://github.com/aFarkas/html5shiv), [jquery-html5-placeholder-shim](https://github.com/parndt/jquery-html5-placeholder-shim), [Respond](https://github.com/scottjehl/Respond), [selectivizr](https://github.com/keithclark/selectivizr), [ExplorerCanvas](https://github.com/arv/ExplorerCanvas), [Modernizr](https://github.com/Modernizr/Modernizr)
 - Classical CSS Frameworks: [cascadeframework](https://github.com/jslegers/cascadeframework), [golden-layout](https://github.com/golden-layout/golden-layout)
@@ -137,9 +137,12 @@ The WelsonJS framework suggests the following application release methods:
 
 ![(Screenshot 6) The Launcher for WelsonJS Application Packages](https://ics.catswords.net/screenshot6.png)
 
+![(Screenshot 7) Microsoft Monaco Editor on WelsonJS Launcher](https://ics.catswords.net/screenshot7.png)
+
 ## Thanks to
 - :heart: Artwork (Logo image): [@druidesse](https://github.com/druidesse)
 - :heart: Artwork (Cover image): [@_bag0@x.com](https://x.com/_bag0)
+- :heart: Special Contributor: [@hcho3](https://github.com/hcho3)
 - :sunglasses: Heavy-industry specialized CSP(Cloud Service Provider) in Republic of Korea - Use case establishment
 - :sunglasses: Live-commerce specialized online advertisement companies in Republic of Korea - Use case establishment
 - :sunglasses: Information security companies in Republic of Korea - Use case establishment
