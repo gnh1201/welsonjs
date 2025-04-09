@@ -10,9 +10,8 @@ namespace WelsonJS.Launcher.ResourceTools
     public class AzureAi : IResourceTool
     {
         private ResourceServer Server;
-        private static readonly HttpClient HttpClient = new HttpClient();
         private const string Prefix = "azure-ai/";
-        private const int StreamingBufferSize = 4096;
+        private const int ChunkSize = 4096;
         private readonly string AzureAiServiceUrl;
         private readonly string AzureAiServiceApiKey;
 
@@ -34,7 +33,7 @@ namespace WelsonJS.Launcher.ResourceTools
             string apiKey = AzureAiServiceApiKey;
             if (string.IsNullOrEmpty(apiKey))
             {
-                WriteError(context, "Missing 'api-key' header.", HttpStatusCode.BadRequest);
+                WriteError(context, "Missing the API key.", HttpStatusCode.BadRequest);
                 return;
             }
 
@@ -64,15 +63,18 @@ namespace WelsonJS.Launcher.ResourceTools
 
         private async Task<HttpResponseMessage> SendAzureRequestAsync(string apiKey, string requestBody, bool isStreaming)
         {
-            var requestMessage = new HttpRequestMessage(HttpMethod.Post, AzureAiServiceUrl);
-            requestMessage.Headers.Add("api-key", apiKey);
-            requestMessage.Content = new StringContent(requestBody, Encoding.UTF8, "application/json");
+            using (var client = new HttpClient())
+            {
+                var requestMessage = new HttpRequestMessage(HttpMethod.Post, AzureAiServiceUrl);
+                requestMessage.Headers.Add("api-key", apiKey);
+                requestMessage.Content = new StringContent(requestBody, Encoding.UTF8, "application/json");
 
-            var completionOption = isStreaming
-                ? HttpCompletionOption.ResponseHeadersRead
-                : HttpCompletionOption.ResponseContentRead;
+                var completionOption = isStreaming
+                    ? HttpCompletionOption.ResponseHeadersRead
+                    : HttpCompletionOption.ResponseContentRead;
 
-            return await HttpClient.SendAsync(requestMessage, completionOption);
+                return await client.SendAsync(requestMessage, completionOption);
+            }
         }
 
         private async Task ForwardResponseAsync(HttpListenerContext context, HttpResponseMessage response, bool isStreaming)
@@ -88,7 +90,7 @@ namespace WelsonJS.Launcher.ResourceTools
                     context.Response.Headers.Add("Transfer-Encoding", "chunked");
                     context.Response.Headers.Add("Cache-Control", "no-cache");
 
-                    byte[] buffer = new byte[StreamingBufferSize];
+                    byte[] buffer = new byte[ChunkSize];
                     int bytesRead;
                     while ((bytesRead = await responseStream.ReadAsync(buffer, 0, buffer.Length)) > 0)
                     {
