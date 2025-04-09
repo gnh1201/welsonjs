@@ -214,15 +214,7 @@ namespace WelsonJS.Launcher
             {
                 if (File.Exists(cachePath))
                 {
-                    byte[] raw = File.ReadAllBytes(cachePath);
-
-                    if (isMetadata)
-                    {
-                        data = raw;
-                        return true;
-                    }
-
-                    data = IsCompressed(raw) ? Decompress(raw) : raw;
+                    data = File.ReadAllBytes(cachePath);
                     return true;
                 }
             }
@@ -264,8 +256,7 @@ namespace WelsonJS.Launcher
                 }
 
                 // Save the cache
-                byte[] compressed = Compress(data);
-                File.WriteAllBytes(cachePath, compressed);
+                File.WriteAllBytes(cachePath, data);
 
                 // Save the cache meta
                 File.WriteAllBytes($"{cachePath}.meta", Encoding.UTF8.GetBytes(mimeType));
@@ -369,35 +360,6 @@ namespace WelsonJS.Launcher
                 icon.Save(memoryStream);
                 return memoryStream.ToArray();
             }
-        }
-
-        private byte[] Compress(byte[] data)
-        {
-            using (var output = new MemoryStream())
-            {
-                using (var gzip = new GZipStream(output, CompressionMode.Compress))
-                {
-                    gzip.Write(data, 0, data.Length);
-                }
-                return output.ToArray(); // includes GZip signature
-            }
-        }
-
-        private byte[] Decompress(byte[] data)
-        {
-            using (var input = new MemoryStream(data))
-            using (var gzip = new GZipStream(input, CompressionMode.Decompress))
-            using (var output = new MemoryStream())
-            {
-                gzip.CopyTo(output);
-                return output.ToArray();
-            }
-        }
-
-        private bool IsCompressed(byte[] data)
-        {
-            // GZip signature: 0x1F 0x8B
-            return data != null && data.Length >= 2 && data[0] == 0x1F && data[1] == 0x8B;
         }
     }
 }
