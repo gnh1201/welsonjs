@@ -74,6 +74,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IResourceTool.cs" />
+    <Compile Include="ResourceTools\AzureAi.cs" />
     <Compile Include="ResourceTools\Config.cs" />
     <Compile Include="ResourceTools\Completion.cs" />
     <Compile Include="ResourceTools\DevTools.cs" />
@@ -165,6 +166,5 @@
   <ItemGroup>
     <EmbeddedResource Include="editor.html" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

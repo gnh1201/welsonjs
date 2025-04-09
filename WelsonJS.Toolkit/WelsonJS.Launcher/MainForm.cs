@@ -242,10 +242,7 @@ namespace WelsonJS.Launcher
 
         private void startCodeEditorToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (Program.resourceServer == null)
-            {
-                Program.resourceServer = new ResourceServer(Program.GetAppConfig("ResourceServerPrefix"), "editor.html");
-            }
+            Program.StartResourceServer();
 
             if (!Program.resourceServer.IsRunning())
             {

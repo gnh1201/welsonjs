@@ -138,13 +138,24 @@ namespace WelsonJS.Launcher
             return workingDirectory;
         }
 
+        public static void StartResourceServer()
+        {
+            lock(typeof(Program))
+            {
+                if (resourceServer == null)
+                {
+                    resourceServer = new ResourceServer(GetAppConfig("ResourceServerPrefix"), "editor.html");
+                }
+            }
+        }
         public static void OpenWebBrowser(string url)
         {
             string userDataDir = Path.Combine(GetAppDataPath(), "EdgeUserProfile");
-            string remoteAllowOrigins = "http://localhost:3000";
+            string remoteAllowOrigins = GetAppConfig("ResourceServerPrefix");
+            int remoteDebuggingPort = new Uri(GetAppConfig("DevToolsPrefix")).Port;
             string[] arguments = {
                 $"\"{url}\"",
-                "--remote-debugging-port=9222",
+                $"--remote-debugging-port={remoteDebuggingPort}",
                 $"--remote-allow-origins={remoteAllowOrigins}",  // for security reason
                 $"--user-data-dir=\"{userDataDir}\""
             };

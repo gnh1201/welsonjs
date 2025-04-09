@@ -50,16 +50,14 @@
                         <span class="icon mif-floppy-disks"></span>
                         <span class="caption">Save File</span>
                     </button>
-                    <button id="btnGenerate" class="ribbon-button">
+                    <span class="title">File</span>
+                </div>
+                <div class="group">
+                    <button id="btnCopilot" class="ribbon-button">
                         <span class="icon mif-rocket"></span>
-                        <span class="caption">Generate</span>
+                        <span class="caption">Copilot</span>
                     </button>
-                    <button id="btnSponsor" class="ribbon-button">
-                        <span class="icon mif-heart"></span>
-                        <span class="caption">Sponsor</span>
-                    </button>
-
-                    <span class="title">Common</span>
+                    <span class="title">Generative</span>
                 </div>
                 <div class="group">
                     <button id="btnWhois" class="ribbon-button">
@@ -70,8 +68,7 @@
                         <span class="icon mif-earth"></span>
                         <span class="caption">DNS</span>
                     </button>
-
-                    <span class="title">Network tools</span>
+                    <span class="title">Network</span>
                 </div>
             </div>
         </div>
@@ -240,18 +237,14 @@
             document.body.removeChild(a);
         };
 
-        document.getElementById("btnSponsor").onclick = function () {
-            navigate('https://github.com/sponsors/gnh1201');
-        };
-
-        document.getElementById("btnGenerate").onclick = function () {
+        document.getElementById("btnCopilot").onclick = function () {
             const promptMessage = prompt("Enter a prompt message:", '');
             if (!promptMessage || promptMessage.trim() == '') {
                 alert("A prompt message is required.");
                 return;
             }
 
-            appendTextToEditor(`\n//${promptMessage}... Thinking with Generative AI...`);
+            appendTextToEditor(`\n//${promptMessage}... Generating text with Copilot...`);
 
             (async function () {
                 const targetWsUrl = await getTargetByUrl('copilot.microsoft.com');
