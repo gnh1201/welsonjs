@@ -140,12 +140,14 @@ namespace WelsonJS.Launcher
 
         public static void StartResourceServer()
         {
-            if (resourceServer == null)
+            lock(typeof(Program))
             {
-                resourceServer = new ResourceServer(GetAppConfig("ResourceServerPrefix"), "editor.html");
+                if (resourceServer == null)
+                {
+                    resourceServer = new ResourceServer(GetAppConfig("ResourceServerPrefix"), "editor.html");
+                }
             }
         }
-
         public static void OpenWebBrowser(string url)
         {
             string userDataDir = Path.Combine(GetAppDataPath(), "EdgeUserProfile");
