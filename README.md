@@ -61,7 +61,7 @@ WelsonJS is tailored for developers who need a reliable, lightweight JavaScript 
 
 ## Specifications
 * Built-in transpilers: [TypeScript](https://www.typescriptlang.org/), [Rescript](https://rescript-lang.org/), [CoffeeScript 2](https://coffeescript.org/), [LiveScript](https://livescript.net/)
-* **Ready to use on Windows machine immediately. No require additional software installation.**
+* **Ready to use on Windows machine immediately. No additional software installation is required.**
 * **WelsonJS Launcher**: Manage instances (Like a container), User-defined variable editor, [Microsoft Monaco Editor](https://github.com/microsoft/monaco-editor) (Pre-embedded rich code editor), [Microsoft Copilot](https://copilot.microsoft.com) on the code editor.
 * ES5(ECMAScript 5), XML, JSON, YAML compatibility: [core-js](https://github.com/zloirock/core-js), [JSON2.js](https://github.com/douglascrockford/JSON-js), [js-yaml](https://github.com/nodeca/js-yaml)
 * HTML5 compatibility on the bulit-in HTML rendering engine: [html5shiv](https://github.com/aFarkas/html5shiv), [jquery-html5-placeholder-shim](https://github.com/parndt/jquery-html5-placeholder-shim), [Respond](https://github.com/scottjehl/Respond), [selectivizr](https://github.com/keithclark/selectivizr), [ExplorerCanvas](https://github.com/arv/ExplorerCanvas), [Modernizr](https://github.com/Modernizr/Modernizr)
