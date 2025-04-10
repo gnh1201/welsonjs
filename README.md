@@ -34,8 +34,8 @@ WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)*** + :h
 * :zap: [Integrations](https://catswords-oss.rdbl.io/5719744820/8278298336) ([ScrapeOps](https://scrapeops.io?fpr=namhyeon75), [SearchApi](https://www.searchapi.io/?via=namhyeon), [AviationStack](https://aviationstack.com?utm_source=FirstPromoter&utm_medium=Affiliate&fpr=namhyeon71), [Coupang](https://link.coupang.com/a/b7HV3V)...)
 
 ## System Requirements
-- **Operating Systems**: Windows XP SP3 or later (Currently, Windows 11 24H2)
-- For systems running Windows 2000 or earlier versions (e.g., 95, 98, Me), please contact us separately.
+* **Operating Systems**: Windows XP SP3 or later (Currently, Windows 11 24H2)
+* For systems running Windows 2000 or earlier versions (e.g., 95, 98, Me), please contact us separately.
 
 ## Why Choose WelsonJS?
 WelsonJS is an advanced JavaScript framework designed to operate in extreme conditions where conventional solutions may fail. Unlike traditional JavaScript frameworks, WelsonJS focuses on executing scripts in constrained environments, ensuring reliable performance even with minimal system resources.
@@ -142,7 +142,7 @@ The WelsonJS framework suggests the following application release methods:
 ## Thanks to
 * :heart: Artwork (Logo image): [@druidesse](https://github.com/druidesse)
 * :heart: Artwork (Cover image): [@_bag0@x.com](https://x.com/_bag0)
-* :heart: Special Contributor: [@hcho3](https://github.com/hcho3)
+* :heart: Special Contributors: [@hcho3](https://github.com/hcho3), :octocat: [GitHub Sponsors](https://github.com/sponsors/gnh1201)
 * :sunglasses: Heavy-industry specialized CSP(Cloud Service Provider) in Republic of Korea - Use case establishment
 * :sunglasses: Live-commerce specialized online advertisement companies in Republic of Korea - Use case establishment
 * :sunglasses: Information security companies in Republic of Korea - Use case establishment
@@ -152,7 +152,7 @@ The WelsonJS framework suggests the following application release methods:
 * :eyes: Qiita - Knowledge-base about WSH environment
 * :sunglasses: Redsky Software - PoC(Proof of Concept) of the CommonJS on WSH environment
 * :sunglasses: Inspired by a small-sized JavaScript payload demonstrated by a cybersecurity related group.
-* :sunglasses: Inspired by the use of Named Shared Memory in an inter-language IPC implementation devised by an unidentified developer.
+* :sunglasses: Inspired by the use of Named Shared Memory in a cross-runtime IPC implementation written by the unidentified developer.
 * :eyes: Fediverse
 * :eyes: [Hacker News](https://news.ycombinator.com/item?id=41316782)
 * :eyes: [WebToolsWeekly](https://webtoolsweekly.com/archives/issue-585/)
@@ -163,7 +163,7 @@ The WelsonJS framework suggests the following application release methods:
 
 ## Report abuse
 * [GitHub Security Advisories (gnh1201/welsonjs)](https://github.com/gnh1201/welsonjs/security)
-* abuse@catswords.net
+* [abuse@catswords.net](mailto:abuse@catswords.net)
 
 ## Join the community
 I am always open. Collaboration, opportunities, and community activities are all welcome.

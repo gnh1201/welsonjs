@@ -50,7 +50,7 @@ This program is also known by the following names. These names are used solely f
 
 ## Report abuse
 * [GitHub Security Advisories](https://github.com/gnh1201/welsonjs/security)
-* abuse@catswords.net
+* [abuse@catswords.net](mailto:abuse@catswords.net)
 
 ## Join the community
 * ActivityPub [@catswords_oss@catswords.social](https://catswords.social/@catswords_oss)
