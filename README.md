@@ -26,12 +26,12 @@ WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)*** + :h
 **Note**: The default license for this project is GPL 3.0. However, if the GPL 3.0 license is not compatible with Microsoft products, it is subject to the MS-RL license.
 
 ## Sponsors
-- :octocat: [GitHub Sponsors](https://github.com/sponsors/gnh1201), :coffee: [Buy me a coffee](https://buymeacoffee.com/catswords)
-- <img src="https://ics.catswords.net/logo_oss.gif" height="32" alt=""/> [Open SW Portal](https://oss.kr), NIPA National IT Industry Promotion Agency<sup>(정보통신산업진흥원)</sup>
-- <img src="https://ics.catswords.net/signpath_logo.png" height="32" alt=""/> Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org/)
-- <img src="https://ics.catswords.net/f1security_logo.png" height="32" alt=""/> [F1Security<sup>(에프원시큐리티)</sup>](https://f1security.co.kr/) provides [industry-leading](https://www.ksecurity.or.kr/kisis/subIndex/469.do) web security services.
-- <img src="https://ics.catswords.net/microsoft_logo.png" height="32" alt=""/> [Microsoft ISV Success Program](https://www.microsoft.com/en-us/isv/isv-success), Grow your business with powerful tools.
-- :zap: [Integrations](https://catswords-oss.rdbl.io/5719744820/8278298336) ([ScrapeOps](https://scrapeops.io?fpr=namhyeon75), [SearchApi](https://www.searchapi.io/?via=namhyeon), [AviationStack](https://aviationstack.com?utm_source=FirstPromoter&utm_medium=Affiliate&fpr=namhyeon71), [Coupang](https://link.coupang.com/a/b7HV3V)...)
+* :octocat: [GitHub Sponsors](https://github.com/sponsors/gnh1201), :coffee: [Buy me a coffee](https://buymeacoffee.com/catswords)
+* <img src="https://ics.catswords.net/logo_oss.gif" height="32" alt=""/> [Open SW Portal](https://oss.kr), NIPA National IT Industry Promotion Agency<sup>(정보통신산업진흥원)</sup>
+* <img src="https://ics.catswords.net/signpath_logo.png" height="32" alt=""/> Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org/)
+* <img src="https://ics.catswords.net/f1security_logo.png" height="32" alt=""/> [F1Security<sup>(에프원시큐리티)</sup>](https://f1security.co.kr/) provides [industry-leading](https://www.ksecurity.or.kr/kisis/subIndex/469.do) web security services.
+* <img src="https://ics.catswords.net/microsoft_logo.png" height="32" alt=""/> [Microsoft ISV Success Program](https://www.microsoft.com/en-us/isv/isv-success), Grow your business with powerful tools.
+* :zap: [Integrations](https://catswords-oss.rdbl.io/5719744820/8278298336) ([ScrapeOps](https://scrapeops.io?fpr=namhyeon75), [SearchApi](https://www.searchapi.io/?via=namhyeon), [AviationStack](https://aviationstack.com?utm_source=FirstPromoter&utm_medium=Affiliate&fpr=namhyeon71), [Coupang](https://link.coupang.com/a/b7HV3V)...)
 
 ## System Requirements
 - **Operating Systems**: Windows XP SP3 or later (Currently, Windows 11 24H2)
@@ -60,23 +60,23 @@ WelsonJS is tailored for developers who need a reliable, lightweight JavaScript 
 ![The structure of the WelsonJS framework can be extended based on whether it operates in a console (command prompt) environment, a GUI (with HTML/CSS) environment, or a service environment, with the `app.js` file at its core.](https://ics.catswords.net/structure.png)
 
 ## Specifications
-- Built-in transpilers: [TypeScript](https://www.typescriptlang.org/), [Rescript](https://rescript-lang.org/), [CoffeeScript 2](https://coffeescript.org/), [LiveScript](https://livescript.net/)
-- **Ready to use on Windows machine immediately. No require additional software installation.**
-- **WelsonJS Launcher**: Manage instances (Like a container), User-defined variable editor, [Microsoft Monaco Editor](https://github.com/microsoft/monaco-editor) (Pre-embedded rich code editor), [Microsoft Copilot](https://copilot.microsoft.com) on the code editor.
-- ES5(ECMAScript 5), XML, JSON, YAML compatibility: [core-js](https://github.com/zloirock/core-js), [JSON2.js](https://github.com/douglascrockford/JSON-js), [js-yaml](https://github.com/nodeca/js-yaml)
-- HTML5, CSS3 compatibility: [html5shiv](https://github.com/aFarkas/html5shiv), [jquery-html5-placeholder-shim](https://github.com/parndt/jquery-html5-placeholder-shim), [Respond](https://github.com/scottjehl/Respond), [selectivizr](https://github.com/keithclark/selectivizr), [ExplorerCanvas](https://github.com/arv/ExplorerCanvas), [Modernizr](https://github.com/Modernizr/Modernizr)
-- Classical CSS Frameworks: [cascadeframework](https://github.com/jslegers/cascadeframework), [golden-layout](https://github.com/golden-layout/golden-layout)
-- WYSIWYG HTML Editor: [summernote](https://github.com/summernote/summernote)
-- Included libraries: [jQuery](https://jquery.com/), [jQuery UI](https://jqueryui.com/), [jquery-toast-plugin](https://github.com/kamranahmedse/jquery-toast-plugin), [squel](https://github.com/hiddentao/squel), [jsrender](https://github.com/BorisMoore/jsrender), [linq](https://github.com/mihaifm/linq), [pegjs](https://github.com/pegjs/pegjs), [numbers.js](https://github.com/numbers/numbers.js)
-- Compatible with modern JavaScript specifications: [module.exports](https://nodejs.org/api/modules.html#moduleexports), CommonJS, UMD compatibility, [NPM(Node Pacakge Manager)](https://www.npmjs.com/) compatibility
-- Support a device debugging protocol clients: [Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/), [ADB(Android Debug Bridge)](https://source.android.com/docs/setup/build/adb)
-- RPC(Remote Procedure Call) protocol clients: [gRPC](https://grpc.io/), [JSON-RPC 2.0](https://www.jsonrpc.org/specification)
-- Various types of HTTP clients: [XHR(MSXML)](https://developer.mozilla.org/docs/Glossary/XMLHttpRequest), [cURL](https://curl.se/), [BITS](https://en.m.wikipedia.org/w/index.php?title=Background_Intelligent_Transfer_Service), [CERT](https://github.com/MicrosoftDocs/windowsserverdocs/blob/main/WindowsServerDocs/administration/windows-commands/certutil.md), [Web Proxy, SEO/SERP](https://catswords-oss.rdbl.io/5719744820/1706431912)
-- The native toolkit for Windows environments: Write a Windows Service Application with JavaScript, Control a window handle, Cryptography (e.g., [ISO/IEC 18033-3:2010](https://www.iso.org/standard/54531.html) aka. [HIGHT](https://seed.kisa.or.kr/kisa/algorithm/EgovHightInfo.do)), [Named Shared Memory](https://learn.microsoft.com/en-us/windows/win32/memory/creating-named-shared-memory) based [IPC](https://qiita.com/gnh1201/items/4e70dccdb7adacf0ace5), [NuGet package](https://www.nuget.org/packages/WelsonJS.Toolkit)
-- Generative AI integrations: [Multiple LLM and sLLM](https://catswords-oss.rdbl.io/5719744820/5510319392) (e.g., ChatGPT, Claude, ...)
-- Aviation Data integrations: [AviationStack](https://aviationstack.com?utm_source=FirstPromoter&utm_medium=Affiliate&fpr=namhyeon71), [SearchApi Google Flight](https://www.searchapi.io/?via=namhyeon)
-- VM infrastucture tool integrations: [OVFTool for Broadcom/VMware infrastructures](https://developer.broadcom.com/tools/open-virtualization-format-ovf-tool/latest)
-- Everything you can imagine.
+* Built-in transpilers: [TypeScript](https://www.typescriptlang.org/), [Rescript](https://rescript-lang.org/), [CoffeeScript 2](https://coffeescript.org/), [LiveScript](https://livescript.net/)
+* **Ready to use on Windows machine immediately. No require additional software installation.**
+* **WelsonJS Launcher**: Manage instances (Like a container), User-defined variable editor, [Microsoft Monaco Editor](https://github.com/microsoft/monaco-editor) (Pre-embedded rich code editor), [Microsoft Copilot](https://copilot.microsoft.com) on the code editor.
+* ES5(ECMAScript 5), XML, JSON, YAML compatibility: [core-js](https://github.com/zloirock/core-js), [JSON2.js](https://github.com/douglascrockford/JSON-js), [js-yaml](https://github.com/nodeca/js-yaml)
+* HTML5 compatibility on the bulit-in rendering engine (MSHTML mode only): [html5shiv](https://github.com/aFarkas/html5shiv), [jquery-html5-placeholder-shim](https://github.com/parndt/jquery-html5-placeholder-shim), [Respond](https://github.com/scottjehl/Respond), [selectivizr](https://github.com/keithclark/selectivizr), [ExplorerCanvas](https://github.com/arv/ExplorerCanvas), [Modernizr](https://github.com/Modernizr/Modernizr)
+* Classical CSS Frameworks: [cascadeframework](https://github.com/jslegers/cascadeframework), [golden-layout](https://github.com/golden-layout/golden-layout)
+* WYSIWYG HTML Editor: [summernote](https://github.com/summernote/summernote)
+* Included libraries: [jQuery](https://jquery.com/), [jQuery UI](https://jqueryui.com/), [jquery-toast-plugin](https://github.com/kamranahmedse/jquery-toast-plugin), [squel](https://github.com/hiddentao/squel), [jsrender](https://github.com/BorisMoore/jsrender), [linq](https://github.com/mihaifm/linq), [pegjs](https://github.com/pegjs/pegjs), [numbers.js](https://github.com/numbers/numbers.js)
+* Compatible with modern JavaScript specifications: [module.exports](https://nodejs.org/api/modules.html#moduleexports), CommonJS, UMD compatibility, [NPM(Node Pacakge Manager)](https://www.npmjs.com/) compatibility
+* Support a device debugging protocol clients: [Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/), [ADB(Android Debug Bridge)](https://source.android.com/docs/setup/build/adb)
+* RPC(Remote Procedure Call) protocol clients: [gRPC](https://grpc.io/), [JSON-RPC 2.0](https://www.jsonrpc.org/specification)
+* Various types of HTTP clients: [XHR(MSXML)](https://developer.mozilla.org/docs/Glossary/XMLHttpRequest), [cURL](https://curl.se/), [BITS](https://en.m.wikipedia.org/w/index.php?title=Background_Intelligent_Transfer_Service), [CERT](https://github.com/MicrosoftDocs/windowsserverdocs/blob/main/WindowsServerDocs/administration/windows-commands/certutil.md), [Web Proxy, SEO/SERP](https://catswords-oss.rdbl.io/5719744820/1706431912)
+* The native toolkit for Windows environments: Write a Windows Service Application with JavaScript, Control a window handle, Cryptography (e.g., [ISO/IEC 18033-3:2010](https://www.iso.org/standard/54531.html) aka. [HIGHT](https://seed.kisa.or.kr/kisa/algorithm/EgovHightInfo.do)), [Named Shared Memory](https://learn.microsoft.com/en-us/windows/win32/memory/creating-named-shared-memory) based [IPC](https://qiita.com/gnh1201/items/4e70dccdb7adacf0ace5), [NuGet package](https://www.nuget.org/packages/WelsonJS.Toolkit)
+* Generative AI integrations: [Multiple LLM and sLLM](https://catswords-oss.rdbl.io/5719744820/5510319392) (e.g., ChatGPT, Claude, ...)
+* Aviation Data integrations: [AviationStack](https://aviationstack.com?utm_source=FirstPromoter&utm_medium=Affiliate&fpr=namhyeon71), [SearchApi Google Flight](https://www.searchapi.io/?via=namhyeon)
+* VM infrastucture tool integrations: [OVFTool for Broadcom/VMware infrastructures](https://developer.broadcom.com/tools/open-virtualization-format-ovf-tool/latest)
+* Everything you can imagine.
 
 ## Quick start
 
@@ -120,9 +120,9 @@ ended say()
 ## How to release my application?
 The WelsonJS framework suggests the following application release methods:
 
-- **Compress to Zip, and use the launcher**: Compress the files and directories necessary for running the project into a Zip file, and distribute it along with the [WelsonJS Launcher](https://catswords-oss.rdbl.io/5719744820/4131485779).
-- **Build a setup file**: Use [Inno Setup](https://jrsoftware.org/isinfo.php). The setup profile (the `setup.iss` file) is already included.
-- **Copy all directories and files**: This is the simplest and most straightforward method.
+* **Compress to Zip, and use the launcher**: Compress the files and directories necessary for running the project into a Zip file, and distribute it along with the [WelsonJS Launcher](https://catswords-oss.rdbl.io/5719744820/4131485779).
+* **Build a setup file**: Use [Inno Setup](https://jrsoftware.org/isinfo.php). The setup profile (the `setup.iss` file) is already included.
+* **Copy all directories and files**: This is the simplest and most straightforward method.
 
 ## Screenshots
 ![(Screenshot 1) GUI environment](https://ics.catswords.net/screenshot.png)
@@ -140,42 +140,42 @@ The WelsonJS framework suggests the following application release methods:
 ![(Screenshot 7) Microsoft Monaco Editor on WelsonJS Launcher](https://ics.catswords.net/screenshot7.png)
 
 ## Thanks to
-- :heart: Artwork (Logo image): [@druidesse](https://github.com/druidesse)
-- :heart: Artwork (Cover image): [@_bag0@x.com](https://x.com/_bag0)
-- :heart: Special Contributor: [@hcho3](https://github.com/hcho3)
-- :sunglasses: Heavy-industry specialized CSP(Cloud Service Provider) in Republic of Korea - Use case establishment
-- :sunglasses: Live-commerce specialized online advertisement companies in Republic of Korea - Use case establishment
-- :sunglasses: Information security companies in Republic of Korea - Use case establishment
-- :eyes: [Facebook Group "Javascript Programming"(javascript4u)](https://www.facebook.com/javascript4u/posts/build-a-windows-desktop-apps-with-javascript-html-and-cssmorioh-javascript-html-/1484014618472735/)
-- :eyes: [morioh.com](https://morioh.com/a/23c427a82bf1/build-a-windows-desktop-apps-with-javascript-html-and-css)
-- :eyes: CSDN
-- :eyes: Qiita - Knowledge-base about WSH environment
-- :sunglasses: Redsky Software - PoC(Proof of Concept) of the CommonJS on WSH environment
-- :sunglasses: Inspired by a small-sized JavaScript payload demonstrated by a cybersecurity related group.
-- :sunglasses: Inspired by the use of Named Shared Memory in an inter-language IPC implementation devised by an unidentified developer.
-- :eyes: Fediverse
-- :eyes: [Hacker News](https://news.ycombinator.com/item?id=41316782)
-- :eyes: [WebToolsWeekly](https://webtoolsweekly.com/archives/issue-585/)
-- :eyes: [GeekNews](https://news.hada.io/weekly/202441) in GeekNews Weekly (2024-09-30 ~ 2024-10-06)
-- :eyes: [daily.dev](https://app.daily.dev/posts/js-libraries-svg-tools-json-databases-8quregz3a)
-- :eyes: [PitchHut](https://www.pitchhut.com/project/proj_Ya136OLSW5at)
-- :eyes: [Disquiet](https://dis.qa/nv6T6)
+* :heart: Artwork (Logo image): [@druidesse](https://github.com/druidesse)
+* :heart: Artwork (Cover image): [@_bag0@x.com](https://x.com/_bag0)
+* :heart: Special Contributor: [@hcho3](https://github.com/hcho3)
+* :sunglasses: Heavy-industry specialized CSP(Cloud Service Provider) in Republic of Korea - Use case establishment
+* :sunglasses: Live-commerce specialized online advertisement companies in Republic of Korea - Use case establishment
+* :sunglasses: Information security companies in Republic of Korea - Use case establishment
+* :eyes: [Facebook Group "Javascript Programming"(javascript4u)](https://www.facebook.com/javascript4u/posts/build-a-windows-desktop-apps-with-javascript-html-and-cssmorioh-javascript-html-/1484014618472735/)
+* :eyes: [morioh.com](https://morioh.com/a/23c427a82bf1/build-a-windows-desktop-apps-with-javascript-html-and-css)
+* :eyes: CSDN
+* :eyes: Qiita - Knowledge-base about WSH environment
+* :sunglasses: Redsky Software - PoC(Proof of Concept) of the CommonJS on WSH environment
+* :sunglasses: Inspired by a small-sized JavaScript payload demonstrated by a cybersecurity related group.
+* :sunglasses: Inspired by the use of Named Shared Memory in an inter-language IPC implementation devised by an unidentified developer.
+* :eyes: Fediverse
+* :eyes: [Hacker News](https://news.ycombinator.com/item?id=41316782)
+* :eyes: [WebToolsWeekly](https://webtoolsweekly.com/archives/issue-585/)
+* :eyes: [GeekNews](https://news.hada.io/weekly/202441) in GeekNews Weekly (2024-09-30 ~ 2024-10-06)
+* :eyes: [daily.dev](https://app.daily.dev/posts/js-libraries-svg-tools-json-databases-8quregz3a)
+* :eyes: [PitchHut](https://www.pitchhut.com/project/proj_Ya136OLSW5at)
+* :eyes: [Disquiet](https://dis.qa/nv6T6)
 
 ## Report abuse
-- [GitHub Security Advisories (gnh1201/welsonjs)](https://github.com/gnh1201/welsonjs/security)
-- abuse@catswords.net
+* [GitHub Security Advisories (gnh1201/welsonjs)](https://github.com/gnh1201/welsonjs/security)
+* abuse@catswords.net
 
 ## Join the community
 I am always open. Collaboration, opportunities, and community activities are all welcome.
 
-- ActivityPub [@catswords_oss@catswords.social](https://catswords.social/@catswords_oss)
-- XMPP [catswords@conference.omemo.id](xmpp:catswords@conference.omemo.id?join)
-- [Join Catswords OSS on Microsoft Teams (teams.live.com)](https://teams.live.com/l/community/FEACHncAhq8ldnojAI)
-- [Join Catswords OSS #welsonjs on Discord (discord.gg)](https://discord.gg/XKG5CjtXEj)
+* ActivityPub [@catswords_oss@catswords.social](https://catswords.social/@catswords_oss)
+* XMPP [catswords@conference.omemo.id](xmpp:catswords@conference.omemo.id?join)
+* [Join Catswords OSS on Microsoft Teams (teams.live.com)](https://teams.live.com/l/community/FEACHncAhq8ldnojAI)
+* [Join Catswords OSS #welsonjs on Discord (discord.gg)](https://discord.gg/XKG5CjtXEj)
 
 ## Special channels
-- [A paid consultation channel (m.expert.naver.com)](https://m.expert.naver.com/mobile/expert/product/detail?storeId=100051156&productId=100144540) is available for Korean (한국어) region.
-- [Join the private operations channel (forms.gle)](https://forms.gle/ZKAAaGTiGamksHoo8) is available for all regions.
+* [A paid consultation channel (m.expert.naver.com)](https://m.expert.naver.com/mobile/expert/product/detail?storeId=100051156&productId=100144540) is available for Korean (한국어) region.
+* [Join the private operations channel (forms.gle)](https://forms.gle/ZKAAaGTiGamksHoo8) is available for all regions.
 
 ## License
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs?ref=badge_large)
