@@ -174,7 +174,7 @@ I am always open. Collaboration, opportunities, and community activities are all
 * [Join Catswords OSS #welsonjs on Discord (discord.gg)](https://discord.gg/XKG5CjtXEj)
 
 ## Special channels
-* [A paid consultation channel (m.expert.naver.com)](https://m.expert.naver.com/mobile/expert/product/detail?storeId=100051156&productId=100144540) is available for Korean (한국어) region.
+* [A paid consultation channel (m.expert.naver.com)](https://m.expert.naver.com/mobile/expert/product/detail?storeId=100051156&productId=100144540) is available for Korean<sup>(한국어)</sup> region.
 * [Join the private operations channel (forms.gle)](https://forms.gle/ZKAAaGTiGamksHoo8) is available for all regions.
 
 ## License
