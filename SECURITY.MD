@@ -9,17 +9,17 @@ This repository contains information on accessing Windows APIs and functions in 
 ## Known Use Cases
 WelsonJS is typically used for the following purposes:
 
-  * Testing web accessibility and compliance, including adherence to W3C standards (WEB-ARIA, WCAG), national laws (ADA/DDA, GDPR), and other relevant regulations.
-  * Exploring vulnerabilities of equipment within the local network.
-  * Improving the availability of VPN or proxy clients.
-  * Building automation, CI/CD (Continuous Integration/Continuous Delivery), DevOps, and SecOps.
-  * Asset evaluation (e.g., obtaining purchase history from online shopping and delivery websites).
-  * Online video streaming quality testing and improvement.
-  * Office automation and integration with LLM-based AI (e.g., ChatGPT) services.
+* Testing web accessibility and compliance, including adherence to W3C standards (WEB-ARIA, WCAG), national laws (ADA/DDA, GDPR), and other relevant regulations.
+* Exploring vulnerabilities of equipment within the local network.
+* Improving the availability of VPN or proxy clients.
+* Building automation, CI/CD (Continuous Integration/Continuous Delivery), DevOps, and SecOps.
+* Asset evaluation (e.g., obtaining purchase history from online shopping and delivery websites).
+* Online video streaming quality testing and improvement.
+* Office automation and integration with LLM-based AI (e.g., ChatGPT) services.
 
 ## Notes
-  1. If you plan to use WelsonJS for a purpose other than those mentioned above, please contact us beforehand.
-  2. If you are looking for ways to use WelsonJS more efficiently, referencing the [LOLBAS (Living Off The Land Binaries and Scripts)](https://lolbas-project.github.io/) list can be helpful.
+1. If you plan to use WelsonJS for a purpose other than those mentioned above, please contact us beforehand.
+2. If you are looking for ways to use WelsonJS more efficiently, referencing the [LOLBAS (Living Off The Land Binaries and Scripts)](https://lolbas-project.github.io/) list can be helpful.
 
 ## Guidelines
 
@@ -41,23 +41,23 @@ WelsonJS is a project inspired by the requirements of a cloud service provider t
 ## Alternative Names
 This program is also known by the following names. These names are used solely for the purpose of identifying the work and do not impact the license:
 
-- DOI [10.5281/zenodo.11382384](https://zenodo.org/doi/10.5281/zenodo.11382384)(2024) (CERN/OpenAIRE Zenodo)
-- ["284757291"](https://ics.catswords.net/1494315-Certificate%2BSoR-284757291.pdf)(2024) (Registered with the [UK Copyright Service](https://copyrightservice.co.uk/))
-- ["2025-02-08-1952"](https://ics.catswords.net/20250410092300005.pdf)(2025) (Technical Data Bailment System (Technology Escrow), "Korea Foundation for Cooperation of Large & Small Business, Rural Affairs"<sup>(대·중소기업·농어업협력재단)</sup>, Republic of Korea)
-- ["A0562"](https://www.oss.kr/dev_competition_activities/show/544723e6-850a-4956-9194-79640420c19a)(2023) (2023 Open-source Development Contest, NIPA National IT Industry Promotion Agency<sup>(정보통신산업진흥원)</sup>, Republic of Korea)
-- "C-2021-000237"(2021) (Copyright Registration Online System, Korea Copyright Commission<sup>(한국저작권위원회)</sup>, Republic of Korea)
-- "Codename Macadamia"(2020) (Heavy industry specialized CSP in the Republic of Korea)
+* DOI [10.5281/zenodo.11382384](https://zenodo.org/doi/10.5281/zenodo.11382384)(2024) (CERN/OpenAIRE Zenodo)
+* ["284757291"](https://ics.catswords.net/1494315-Certificate%2BSoR-284757291.pdf)(2024) (Registered with the [UK Copyright Service](https://copyrightservice.co.uk/))
+* ["A0562"](https://www.oss.kr/dev_competition_activities/show/544723e6-850a-4956-9194-79640420c19a)(2023) (2023 Open-source Development Contest, NIPA National IT Industry Promotion Agency<sup>(정보통신산업진흥원)</sup>, Republic of Korea)
+* ["2025-02-08-1952"](https://ics.catswords.net/20250410092300005.pdf)(2025) (Technical Data Bailment System (Technology Escrow), "Korea Foundation for Cooperation of Large & Small Business, Rural Affairs"<sup>(대·중소기업·농어업협력재단)</sup>, Republic of Korea)
+* "C-2021-000237"(2021) (Copyright Registration Online System, Korea Copyright Commission<sup>(한국저작권위원회)</sup>, Republic of Korea)
+* "Codename Macadamia"(2020) (Heavy industry specialized CSP in the Republic of Korea)
 
 ## Report abuse
-- [GitHub Security Advisories](https://github.com/gnh1201/welsonjs/security)
-- abuse@catswords.net
+* [GitHub Security Advisories](https://github.com/gnh1201/welsonjs/security)
+* [abuse@catswords.net](mailto:abuse@catswords.net)
 
 ## Join the community
-- ActivityPub [@catswords_oss@catswords.social](https://catswords.social/@catswords_oss)
-- XMPP [catswords@conference.omemo.id](xmpp:catswords@conference.omemo.id?join)
-- [Join Catswords OSS on Microsoft Teams (teams.live.com)](https://teams.live.com/l/community/FEACHncAhq8ldnojAI)
-- [Join Catswords OSS #welsonjs on Discord (discord.gg)](https://discord.gg/XKG5CjtXEj)
+* ActivityPub [@catswords_oss@catswords.social](https://catswords.social/@catswords_oss)
+* XMPP [catswords@conference.omemo.id](xmpp:catswords@conference.omemo.id?join)
+* [Join Catswords OSS on Microsoft Teams (teams.live.com)](https://teams.live.com/l/community/FEACHncAhq8ldnojAI)
+* [Join Catswords OSS #welsonjs on Discord (discord.gg)](https://discord.gg/XKG5CjtXEj)
 
 ## Special channels
-- [A paid consultation channel (m.expert.naver.com)](https://m.expert.naver.com/mobile/expert/product/detail?storeId=100051156&productId=100144540) is available for Korean (한국어) region.
-- [Join the private operations channel (forms.gle)](https://forms.gle/ZKAAaGTiGamksHoo8) is available for all regions.
+* [A paid consultation channel (m.expert.naver.com)](https://m.expert.naver.com/mobile/expert/product/detail?storeId=100051156&productId=100144540) is available for Korean<sup>(한국어)</sup> region.
+* [Join the private operations channel (forms.gle)](https://forms.gle/ZKAAaGTiGamksHoo8) is available for all regions.
