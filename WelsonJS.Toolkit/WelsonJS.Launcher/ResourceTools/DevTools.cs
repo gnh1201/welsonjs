@@ -8,12 +8,13 @@ namespace WelsonJS.Launcher.ResourceTools
     public class DevTools : IResourceTool
     {
         private ResourceServer Server;
+        private readonly HttpClient _httpClient;
         private const string Prefix = "devtools/";
-        private const double Timeout = 5000;
 
-        public DevTools(ResourceServer server)
+        public DevTools(ResourceServer server, HttpClient httpClient)
         {
             Server = server;
+            _httpClient = httpClient;
         }
 
         public bool CanHandle(string path)
@@ -27,15 +28,10 @@ namespace WelsonJS.Launcher.ResourceTools
 
             try
             {
-                using (HttpClient client = new HttpClient())
-                {
-                    client.Timeout = TimeSpan.FromMilliseconds(Timeout);
+                string url = Program.GetAppConfig("DevToolsPrefix") + endpoint;
+                string data = await _httpClient.GetStringAsync(url);
 
-                    string url = Program.GetAppConfig("DevToolsPrefix") + endpoint;
-                    string data = await client.GetStringAsync(url);
-
-                    Server.ServeResource(context, data, "application/json");
-                }
+                Server.ServeResource(context, data, "application/json");
             }
             catch (Exception ex)
             {

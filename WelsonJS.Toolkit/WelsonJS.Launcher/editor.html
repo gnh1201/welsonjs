@@ -57,7 +57,19 @@
                         <span class="icon mif-rocket"></span>
                         <span class="caption">Copilot</span>
                     </button>
-                    <span class="title">Generative</span>
+                    <button id="btnAzureAi" class="ribbon-button">
+                        <span class="icon mif-rocket"></span>
+                        <span class="caption">Azure AI</span>
+                    </button>
+                    <button id="btnSavePrompt" class="ribbon-button">
+                        <span class="icon mif-floppy-disks"></span>
+                        <span class="caption">Save</span>
+                    </button>
+                    <button id="btnLoadPrompt" class="ribbon-button">
+                        <span class="icon mif-file-upload"></span>
+                        <span class="caption">Load</span>
+                    </button>
+                    <span class="title">Generative AI</span>
                 </div>
                 <div class="group">
                     <button id="btnWhois" class="ribbon-button">
@@ -93,25 +105,36 @@
     <script src="http://localhost:3000/ajax/libs/monaco-editor/0.52.2/min/vs/loader.js" integrity="sha384-pHG02SG8pId94Np3AbPmBEJ1yPqaH0IkJGLSNGXYmuGhkazT8Lr/57WYpbkGjJtu" crossorigin="anonymous"></script>
     <script src="http://localhost:3000/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.js" integrity="sha384-fj9z+NUc93I3woCCy5IRQfrQ8Amu1E27tllwgb5gz3d9Vr1ymS13xcF6two3e4KH" crossorigin="anonymous"></script>
     <script>
-        var editor;
-        var currentFileName = "sayhello.js";
-        var serverBaseUrl = "http://localhost:3000";
+        let editor;
+        let currentFileName = "sayhello.js";
+        const serverPrefix = "http://localhost:3000/";
+        let settings = {};
+        let promptMessages = [];
+
+        function fetchSettings() {
+            axios.get(`${serverPrefix}settings`)
+                .then(response => {
+                    const parser = new XMLParser();
+                    const result = parser.parse(response.data);
+                    settings = result.settings;
+                });
+        }
 
         function resizeEditor() {
             if (editor) {
-                var ribbonHeight = document.querySelector('nav').offsetHeight;
-                var bannerHeight = document.querySelector('.banner').offsetHeight;
-                var containerHeight = document.documentElement.clientHeight - ribbonHeight - bannerHeight;
+                const ribbonHeight = document.querySelector('nav').offsetHeight;
+                const bannerHeight = document.querySelector('.banner').offsetHeight;
+                const containerHeight = document.documentElement.clientHeight - ribbonHeight - bannerHeight;
                 document.getElementById('container').style.height = containerHeight + 'px';
                 editor.layout();
             }
         }
 
         function getSuggestions(word, range) {
-            return axios.get(`${serverBaseUrl}/completion/${encodeURIComponent(word)}`)
-                .then(function (response) {
-                    var parser = new XMLParser();
-                    var result = parser.parse(response.data);
+            return axios.get(`${serverPrefix}completion/${encodeURIComponent(word)}`)
+                .then(response => {
+                    const parser = new XMLParser();
+                    const result = parser.parse(response.data);
 
                     if (!result.suggestions || !result.suggestions.item) {
                         return {
@@ -119,8 +142,8 @@
                         };
                     }
 
-                    var items = Array.isArray(result.suggestions.item) ? result.suggestions.item : [result.suggestions.item];
-                    var suggestions = items.map(function (item) {
+                    const items = Array.isArray(result.suggestions.item) ? result.suggestions.item : [result.suggestions.item];
+                    const suggestions = items.map(function (item) {
                         return {
                             label: item.label,
                             kind: monaco.languages.CompletionItemKind.Text,
@@ -141,6 +164,13 @@
                 });
         }
 
+        function pushPromptMessage(role, content) {
+            promptMessages.push({
+                role: role,
+                content: content
+            });
+        }
+
         require(["vs/editor/editor.main"], function () {
             editor = monaco.editor.create(document.getElementById('container'), {
                 value: ['// lib/sayhello.js', 'function say() {', '    console.log("hello");', '}', '', 'exports.say = say;', '', 'exports.VERSIONINFO = "SayHello (sayhello.js) version 0.1";', 'exports.AUTHOR = "abuse@catswords.net";', 'exports.global = global;', 'exports.require = global.require;'].join('\n'),
@@ -149,8 +179,8 @@
 
             monaco.languages.registerCompletionItemProvider('javascript', {
                 provideCompletionItems: function (model, position) {
-                    var word = model.getWordUntilPosition(position);
-                    var range = {
+                    const word = model.getWordUntilPosition(position);
+                    const range = {
                         startLineNumber: position.lineNumber,
                         endLineNumber: position.lineNumber,
                         startColumn: word.startColumn,
@@ -165,8 +195,8 @@
         window.addEventListener('resize', resizeEditor);
 
         function getFileLanguage(fileName) {
-            var extension = fileName.split('.').pop().toLowerCase();
-            var languageMap = {
+            const extension = fileName.split('.').pop().toLowerCase();
+            const languageMap = {
                 'js': 'javascript',
                 'ts': 'typescript',
                 'html': 'html',
@@ -186,7 +216,7 @@
         }
 
         function navigate(href) {
-            var a = document.createElement("a");
+            const a = document.createElement("a");
             a.href = href;
             a.target = "_blank";
             document.body.appendChild(a);
@@ -205,13 +235,14 @@
         }
 
         document.getElementById("fileInput").onchange = function (event) {
-            var file = event.target.files[0];
+            const file = event.target.files[0];
             if (!file) return;
 
             currentFileName = file.name;
-            var reader = new FileReader();
+
+            const reader = new FileReader();
             reader.onload = function (e) {
-                var language = getFileLanguage(file.name);
+                let language = getFileLanguage(file.name);
                 monaco.editor.setModelLanguage(editor.getModel(), language);
                 editor.setValue(e.target.result);
             };
@@ -223,13 +254,14 @@
         };
 
         document.getElementById("btnSaveFile").onclick = function () {
-            var text = editor.getValue();
-            var fileName = prompt("Enter file name:", currentFileName);
+            const text = editor.getValue();
+            const fileName = prompt("Enter file name:", currentFileName);
             if (!fileName) return;
 
             currentFileName = fileName;
-            var blob = new Blob([text], { type: 'text/plain' });
-            var a = document.createElement('a');
+
+            const blob = new Blob([text], { type: 'text/plain' });
+            const a = document.createElement('a');
             a.href = URL.createObjectURL(blob);
             a.download = fileName;
             document.body.appendChild(a);
@@ -244,7 +276,8 @@
                 return;
             }
 
-            appendTextToEditor(`\n//${promptMessage}... Generating text with Copilot...`);
+            appendTextToEditor(`\n// ${promptMessage}... Generating text with Copilot...`);
+            pushPromptMessage("user", promptMessage);
 
             (async function () {
                 const targetWsUrl = await getTargetByUrl('copilot.microsoft.com');
@@ -256,16 +289,87 @@
             })();
         };
 
-        document.getElementById("btnWhois").onclick = function () {
-            const hostname = prompt("Enter a hostname or IP address:", '');
-            if (!hostname || hostname.trim() == '') {
-                alert("A hostname or IP address is required.");
+        document.getElementById("btnAzureAi").onclick = function () {
+            const promptMessage = prompt("Enter a prompt message:", '');
+            if (!promptMessage || promptMessage.trim() == '') {
+                alert("A prompt message is required.");
                 return;
             }
 
-            axios.get(`${serverBaseUrl}/whois/${hostname}`).then(response => {
-                const responseText = DOMPurify.sanitize(response.data, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+            appendTextToEditor(`\n// ${promptMessage}... Generating text with Azure AI...`);
+            pushPromptMessage("user", promptMessage);
 
+            const apiKey = settings.AzureAiServiceApiKey;
+            const url = `${settings.AzureAiServicePrefix}models/chat/completions?api-version=${settings.AzureAiServiceApiVersion}`;
+
+            const data = {
+                messages: promptMessages,
+                max_tokens: 2048,
+                temperature: 0.8,
+                top_p: 0.1,
+                presence_penalty: 0,
+                frequency_penalty: 0,
+                model: 'Phi-4'
+            };
+
+            axios.post(url, data, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'api-key': apiKey
+                    }
+                })
+                .then(response => {
+                    response.data.choices.forEach(x => {
+                        const responseContent = x.message.content;
+                        pushPromptMessage("assistant", responseContent);
+
+                        const responseText = DOMPurify.sanitize(responseContent, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+                        appendTextToEditor(`/*\n${responseText}\n*/`);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error.response?.data || error.message);
+                });
+        };
+
+        document.getElementById("btnSavePrompt").onclick = function () {
+            const text = JSON.stringify(promptMessages, null, 4);
+            const blob = new Blob([text], { type: 'text/plain' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = "prompt.json";
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        };
+
+        document.getElementById("btnLoadPrompt").onclick = function () {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'file';
+            fileInput.accept = '.json';
+            fileInput.onchange = function (event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                let reader = new FileReader();
+                reader.onload = function (e) {
+                    promptMessages = JSON.parse(e.target.result);
+                    appendTextToEditor("\n//Prompt loaded successfully.");
+                };
+                reader.readAsText(file);
+            };
+            fileInput.click();
+        };
+
+        document.getElementById("btnWhois").onclick = function () {
+            const hostname = prompt("Enter a hostname or IP address:", '');
+            if (!hostname || hostname.trim() == '') {
+                appendTextToEditor("\n// A hostname or IP address is required.");
+                return;
+            }
+
+            axios.get(`${serverPrefix}whois/${hostname}`).then(response => {
+                const responseText = DOMPurify.sanitize(response.data, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
                 appendTextToEditor(`/*\n${responseText}\n*/`);
             }).catch(error => {
                 console.error(error);
@@ -275,11 +379,11 @@
         document.getElementById("btnDnsQuery").onclick = function () {
             const hostname = prompt("Enter a hostname or IP address:", '');
             if (!hostname || hostname.trim() == '') {
-                alert("A hostname or IP address is required.");
+                appendTextToEditor("\n// A hostname or IP address is required.");
                 return;
             }
 
-            axios.get(`${serverBaseUrl}/dns-query/${hostname}`).then(response => {
+            axios.get(`${serverPrefix}dns-query/${hostname}`).then(response => {
                 const responseText = response.data;
                 appendTextToEditor(`/*\n${responseText}\n*/`);
             }).catch(error => {
@@ -288,7 +392,7 @@
         };
 
         async function getTargetByUrl(urlPart) {
-            const response = await fetch(`${serverBaseUrl}/devtools/json`);
+            const response = await fetch(`${serverPrefix}devtools/json`);
             const targets = await response.json();
 
             const target = targets.find(target => target.url.includes(urlPart));
@@ -347,11 +451,17 @@
                 console.log("Sent successfully:", response.result);
 
                 if (response.id == 3) {
-                    appendTextToEditor(response.result.result.value);
+                    const responseContent = response.result.result.value;
+
+                    appendTextToEditor(responseContent);
+                    pushPromptMessage("assistant", responseContent);
+
                     socket.close();
                 }
             };
         }
+
+        fetchSettings();
     </script>
 </body>
 </html>

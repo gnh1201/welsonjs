@@ -70,11 +70,20 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
-        ///   https://ai-catswords656881030318.services.ai.azure.com/models/chat/completions?api-version=2024-05-01-preview과(와) 유사한 지역화된 문자열을 찾습니다.
+        ///   2024-05-01-preview과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
-        internal static string AzureAiServiceUrl {
+        internal static string AzureAiServiceApiVersion {
             get {
-                return ResourceManager.GetString("AzureAiServiceUrl", resourceCulture);
+                return ResourceManager.GetString("AzureAiServiceApiVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   https://ai-catswords656881030318.services.ai.azure.com/과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string AzureAiServicePrefix {
+            get {
+                return ResourceManager.GetString("AzureAiServicePrefix", resourceCulture);
             }
         }
         

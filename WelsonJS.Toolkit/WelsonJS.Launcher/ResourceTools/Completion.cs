@@ -8,18 +8,21 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using System.Net.Http;
 
 namespace WelsonJS.Launcher.ResourceTools
 {
     public class Completion : IResourceTool
     {
-        private ResourceServer Server;
+        private readonly ResourceServer Server;
+        private readonly HttpClient _httpClient;
         private const string Prefix = "completion/";
         private List<string> Executables = new List<string>();
 
-        public Completion(ResourceServer server)
+        public Completion(ResourceServer server, HttpClient httpClient)
         {
             Server = server;
+            _httpClient = httpClient;
 
             new Task(() =>
             {

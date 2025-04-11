@@ -163,8 +163,8 @@
   <data name="AzureAiServiceApiKey" xml:space="preserve">
     <value />
   </data>
-  <data name="AzureAiServiceUrl" xml:space="preserve">
-    <value>https://ai-catswords656881030318.services.ai.azure.com/models/chat/completions?api-version=2024-05-01-preview</value>
+  <data name="AzureAiServicePrefix" xml:space="preserve">
+    <value>https://ai-catswords656881030318.services.ai.azure.com/</value>
   </data>
   <data name="DnsServerAddress" xml:space="preserve">
     <value>1.1.1.1</value>
@@ -180,5 +180,8 @@
   </data>
   <data name="BlobServerPrefix" xml:space="preserve">
     <value>https://catswords.blob.core.windows.net/welsonjs/</value>
+  </data>
+  <data name="AzureAiServiceApiVersion" xml:space="preserve">
+    <value>2024-05-01-preview</value>
   </data>
 </root>

@@ -23,8 +23,8 @@ namespace WelsonJS.Launcher
         private string _prefix;
         private string _resourceName;
         private List<IResourceTool> _tools = new List<IResourceTool>();
-        private const int _blobTimeout = 5000;
-        private readonly HttpClient _blobClient = new HttpClient();
+        private const int _httpClientTimeout = 5000;
+        private readonly HttpClient _httpClient = new HttpClient();
         private readonly string _defaultMimeType = "application/octet-stream";
 
         public ResourceServer(string prefix, string resourceName)
@@ -33,15 +33,15 @@ namespace WelsonJS.Launcher
             _listener = new HttpListener();
             _listener.Prefixes.Add(prefix);
             _resourceName = resourceName;
-            _blobClient.Timeout = TimeSpan.FromMilliseconds(_blobTimeout);
+            _httpClient.Timeout = TimeSpan.FromMilliseconds(_httpClientTimeout);
 
             // Add resource tools
-            _tools.Add(new ResourceTools.Completion(this));
-            _tools.Add(new ResourceTools.Config(this));
-            _tools.Add(new ResourceTools.DevTools(this));
-            _tools.Add(new ResourceTools.DnsQuery(this));
-            _tools.Add(new ResourceTools.Tfa(this));
-            _tools.Add(new ResourceTools.Whois(this));
+            _tools.Add(new ResourceTools.Completion(this, _httpClient));
+            _tools.Add(new ResourceTools.Settings(this, _httpClient));
+            _tools.Add(new ResourceTools.DevTools(this, _httpClient));
+            _tools.Add(new ResourceTools.DnsQuery(this, _httpClient));
+            _tools.Add(new ResourceTools.Tfa(this, _httpClient));
+            _tools.Add(new ResourceTools.Whois(this, _httpClient));
         }
 
         public string GetPrefix()
@@ -158,7 +158,7 @@ namespace WelsonJS.Launcher
 
                 HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
                 request.Headers.UserAgent.ParseAdd(context.Request.UserAgent);
-                HttpResponseMessage response = await _blobClient.SendAsync(request);
+                HttpResponseMessage response = await _httpClient.SendAsync(request);
 
                 if (!response.IsSuccessStatusCode)
                 {
