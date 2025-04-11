@@ -49,12 +49,9 @@ namespace WelsonJS.Launcher.ResourceTools
             var resourceStrings = new Dictionary<string, string>();
             foreach (System.Collections.DictionaryEntry entry in resourceSet)
             {
-                string key = (string)entry.Key;
-                object value = entry.Value;
-
-                if (value is string strValue)
+                if (entry.Value is string strValue)
                 {
-                    resourceStrings[key] = strValue;
+                    resourceStrings[(string)entry.Key] = strValue;
                 }
             }
 
@@ -62,16 +59,11 @@ namespace WelsonJS.Launcher.ResourceTools
             var appConfig = ConfigurationManager.AppSettings.AllKeys
                 .ToDictionary(k => k, k => ConfigurationManager.AppSettings[k]);
 
-            // Merge keys from both sources (app.config has priority)
-            var allKeys = new HashSet<string>(resourceStrings.Keys.Concat(appConfig.Keys));
-            var finalConfig = new Dictionary<string, string>();
-
-            foreach (var key in allKeys)
+            // Merge by starting with resourceStrings and letting app.config override
+            var finalConfig = new Dictionary<string, string>(resourceStrings);
+            foreach (var kv in appConfig)
             {
-                if (appConfig.ContainsKey(key))
-                    finalConfig[key] = appConfig[key];
-                else if (resourceStrings.ContainsKey(key))
-                    finalConfig[key] = resourceStrings[key];
+                finalConfig[kv.Key] = kv.Value;
             }
 
             // Generate XML using XElement

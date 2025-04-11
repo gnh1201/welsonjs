@@ -164,6 +164,13 @@
                 });
         }
 
+        function pushPromptMessage(role, content) {
+            promptMessages.push({
+                role: role,
+                content: content
+            });
+        }
+
         require(["vs/editor/editor.main"], function () {
             editor = monaco.editor.create(document.getElementById('container'), {
                 value: ['// lib/sayhello.js', 'function say() {', '    console.log("hello");', '}', '', 'exports.say = say;', '', 'exports.VERSIONINFO = "SayHello (sayhello.js) version 0.1";', 'exports.AUTHOR = "abuse@catswords.net";', 'exports.global = global;', 'exports.require = global.require;'].join('\n'),
@@ -270,11 +277,7 @@
             }
 
             appendTextToEditor(`\n// ${promptMessage}... Generating text with Copilot...`);
-
-            promptMessages.push({
-                role: 'user',
-                content: promptMessage
-            })
+            pushPromptMessage("user", promptMessage);
 
             (async function () {
                 const targetWsUrl = await getTargetByUrl('copilot.microsoft.com');
@@ -294,14 +297,10 @@
             }
 
             appendTextToEditor(`\n// ${promptMessage}... Generating text with Azure AI...`);
+            pushPromptMessage("user", promptMessage);
 
             const apiKey = settings.AzureAiServiceApiKey;
             const url = `${settings.AzureAiServicePrefix}models/chat/completions?api-version=${settings.AzureAiServiceApiVersion}`;
-
-            promptMessages.push({
-                role: 'user',
-                content: promptMessage
-            })
 
             const data = {
                 messages: promptMessages,
@@ -322,10 +321,7 @@
                 .then(response => {
                     response.data.choices.forEach(x => {
                         const responseContent = x.message.content;
-                        promptMessages.push({
-                            role: 'assistant',
-                            content: responseContent
-                        });
+                        pushPromptMessage("assistant", responseContent);
 
                         const responseText = DOMPurify.sanitize(responseContent, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
                         appendTextToEditor(`/*\n${responseText}\n*/`);
@@ -457,12 +453,9 @@
                 if (response.id == 3) {
                     const responseContent = response.result.result.value;
 
-                    promptMessages.push({
-                        role: 'assistant',
-                        content: responseContent
-                    });
-
                     appendTextToEditor(responseContent);
+                    pushPromptMessage("assistant", responseContent);
+
                     socket.close();
                 }
             };
