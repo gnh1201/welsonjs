@@ -4,18 +4,21 @@ using System.Security.Cryptography;
 using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
+using System.Net.Http;
 
 namespace WelsonJS.Launcher.ResourceTools
 {
     public class Tfa : IResourceTool
     {
-        private ResourceServer Server;
+        private readonly ResourceServer Server;
+        private readonly HttpClient _httpClient;
         private const string Prefix = "tfa/";
         private const string Base32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
 
-        public Tfa(ResourceServer server)
+        public Tfa(ResourceServer server, HttpClient httpClient)
         {
             Server = server;
+            _httpClient = httpClient;
         }
 
         public bool CanHandle(string path)

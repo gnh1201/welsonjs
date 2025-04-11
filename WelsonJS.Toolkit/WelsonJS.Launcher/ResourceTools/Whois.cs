@@ -8,13 +8,14 @@ namespace WelsonJS.Launcher.ResourceTools
 {
     public class Whois : IResourceTool
     {
-        private ResourceServer Server;
+        private readonly ResourceServer Server;
+        private readonly HttpClient _httpClient;
         private const string Prefix = "whois/";
-        private const int Timeout = 5000;
 
-        public Whois(ResourceServer server)
+        public Whois(ResourceServer server, HttpClient httpClient)
         {
             Server = server;
+            _httpClient = httpClient;
         }
 
         public bool CanHandle(string path)
@@ -32,32 +33,27 @@ namespace WelsonJS.Launcher.ResourceTools
                 return;
             }
 
-            using (var client = new HttpClient())
+            string clientAddress = Program.GetAppConfig("WhoisClientAddress");
+
+            HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, Program.GetAppConfig("WhoisServerUrl"))
             {
-                client.Timeout = TimeSpan.FromMilliseconds(Timeout);
+                Content = new StringContent($"query={Uri.EscapeDataString(query)}&ip={clientAddress}", Encoding.UTF8, "application/x-www-form-urlencoded")
+            };
 
-                string clientAddress = Program.GetAppConfig("WhoisClientAddress");
+            request.Headers.Add("Accept", "*/*");
+            request.Headers.Add("User-Agent", context.Request.UserAgent);
+            _httpClient.DefaultRequestHeaders.Referrer = new Uri(Program.GetAppConfig("WhoisReferrerUrl"));
 
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Post, Program.GetAppConfig("WhoisServerUrl"))
-                {
-                    Content = new StringContent($"query={Uri.EscapeDataString(query)}&ip={clientAddress}", Encoding.UTF8, "application/x-www-form-urlencoded")
-                };
+            try
+            {
+                HttpResponseMessage response = await _httpClient.SendAsync(request);
+                string responseBody = await response.Content.ReadAsStringAsync();
 
-                request.Headers.Add("Accept", "*/*");
-                request.Headers.Add("User-Agent", context.Request.UserAgent);
-                client.DefaultRequestHeaders.Referrer = new Uri(Program.GetAppConfig("WhoisReferrerUrl"));
-
-                try
-                {
-                    HttpResponseMessage response = await client.SendAsync(request);
-                    string responseBody = await response.Content.ReadAsStringAsync();
-
-                    Server.ServeResource(context, responseBody, "text/plain", (int)response.StatusCode);
-                }
-                catch (Exception ex)
-                {
-                    Server.ServeResource(context, $"<error>Failed to process WHOIS request. {ex.Message}</error>", "application/xml", 500);
-                }
+                Server.ServeResource(context, responseBody, "text/plain", (int)response.StatusCode);
+            }
+            catch (Exception ex)
+            {
+                Server.ServeResource(context, $"<error>Failed to process WHOIS request. {ex.Message}</error>", "application/xml", 500);
             }
         }
     }

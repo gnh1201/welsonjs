@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,16 +11,19 @@ namespace WelsonJS.Launcher.ResourceTools
 {
     public class DnsQuery : IResourceTool
     {
-        private ResourceServer Server;
+        private readonly ResourceServer Server;
+        private readonly HttpClient _httpClient;
         private const string Prefix = "dns-query/";
         private string DnsServer;
         private const int DnsPort = 53;
         private const int Timeout = 5000;
         private static readonly Random _random = new Random();
 
-        public DnsQuery(ResourceServer server)
+        public DnsQuery(ResourceServer server, HttpClient httpClient)
         {
             Server = server;
+            _httpClient = httpClient;
+
             DnsServer = Program.GetAppConfig("DnsServerAddress");
         }
 

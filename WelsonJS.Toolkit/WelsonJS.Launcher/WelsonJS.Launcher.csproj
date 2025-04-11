@@ -74,8 +74,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IResourceTool.cs" />
-    <Compile Include="ResourceTools\AzureAi.cs" />
-    <Compile Include="ResourceTools\Config.cs" />
+    <Compile Include="ResourceTools\Settings.cs" />
     <Compile Include="ResourceTools\Completion.cs" />
     <Compile Include="ResourceTools\DevTools.cs" />
     <Compile Include="ResourceTools\DnsQuery.cs" />
