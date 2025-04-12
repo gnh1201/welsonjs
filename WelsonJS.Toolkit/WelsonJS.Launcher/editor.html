@@ -80,7 +80,7 @@
                         <span class="icon mif-earth"></span>
                         <span class="caption">DNS</span>
                     </button>
-                    <span class="title">Network</span>
+                    <span class="title">Network tools</span>
                 </div>
             </div>
         </div>
@@ -371,6 +371,7 @@
             axios.get(`${serverPrefix}whois/${hostname}`).then(response => {
                 const responseText = DOMPurify.sanitize(response.data, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
                 appendTextToEditor(`/*\n${responseText}\n*/`);
+                pushPromptMessage("system", responseText);
             }).catch(error => {
                 console.error(error);
             });
@@ -386,6 +387,7 @@
             axios.get(`${serverPrefix}dns-query/${hostname}`).then(response => {
                 const responseText = response.data;
                 appendTextToEditor(`/*\n${responseText}\n*/`);
+                pushPromptMessage("system", responseText);
             }).catch(error => {
                 console.error(error);
             });
