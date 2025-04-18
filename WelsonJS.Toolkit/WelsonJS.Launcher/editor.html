@@ -44,14 +44,14 @@
             }
         };
     </script>
-    <script src="http://localhost:3000/ajax/libs/jsoneditor/10.1.3/jsoneditor.min.js"></script>
-    <script src="http://localhost:3000/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
-    <script src="http://localhost:3000/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
-    <script src="http://localhost:3000/ajax/libs/axios/1.8.4/axios.min.js"></script>
-    <script src="http://localhost:3000/ajax/libs/fast-xml-parser/4.5.1/fxparser.min.js"></script>
-    <script src="http://localhost:3000/ajax/libs/dompurify/3.2.4/purify.min.js"></script>
-    <script src="http://localhost:3000/ajax/libs/monaco-editor/0.52.2/min/vs/loader.js"></script>
-    <script src="http://localhost:3000/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.js"></script>
+    <script src="http://localhost:3000/ajax/libs/jsoneditor/10.1.3/jsoneditor.min.js" integrity="sha384-NdVVc20Tze856ZAWEoJNCk0mL4zJrGztRwULc5Hz25HUXQQgYtmjFtgVAxR4p5dD" crossorigin="anonymous"></script>
+    <script src="http://localhost:3000/ajax/libs/react/18.3.1/umd/react.production.min.js" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
+    <script src="http://localhost:3000/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js" integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
+    <script src="http://localhost:3000/ajax/libs/axios/1.8.4/axios.min.js" integrity="sha384-06w+raHvkSL3+E7mbQ2X6DZwI5A3veU8Ba+NLrAPxxRGw4Xy78sihHDHQMustMM4" crossorigin="anonymous"></script>
+    <script src="http://localhost:3000/ajax/libs/fast-xml-parser/4.5.1/fxparser.min.js" integrity="sha384-ae/HepOQ8hiJ/VA6yGwPMGXQXOkT/lJpjlcQ7EUgibUcfnBltuozgNj4IgOZ9QLc" crossorigin="anonymous"></script>
+    <script src="http://localhost:3000/ajax/libs/dompurify/3.2.4/purify.min.js" integrity="sha384-eEu5CTj3qGvu9PdJuS+YlkNi7d2XxQROAFYOr59zgObtlcux1ae1Il3u7jvdCSWu" crossorigin="anonymous"></script>
+    <script src="http://localhost:3000/ajax/libs/monaco-editor/0.52.2/min/vs/loader.js" integrity="sha384-pHG02SG8pId94Np3AbPmBEJ1yPqaH0IkJGLSNGXYmuGhkazT8Lr/57WYpbkGjJtu" crossorigin="anonymous"></script>
+    <script src="http://localhost:3000/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.js" integrity="sha384-fj9z+NUc93I3woCCy5IRQfrQ8Amu1E27tllwgb5gz3d9Vr1ymS13xcF6two3e4KH" crossorigin="anonymous"></script>
     <script>
         function loadResource(url, mimeType, integrity) {
             mimeType = mimeType || 'application/javascript';
@@ -83,10 +83,10 @@
         }
 
         Promise.all([
-            loadResource("http://localhost:3000/ajax/libs/metroui/dev/lib/metro.css", "text/css"),
-            loadResource("http://localhost:3000/ajax/libs/metroui/dev/lib/icons.css", "text/css"),
-            loadResource("http://localhost:3000/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.css", "text/css"),
-            loadResource("http://localhost:3000/ajax/libs/jsoneditor/10.1.3/jsoneditor.min.css", "text/css")
+            loadResource("http://localhost:3000/ajax/libs/metroui/dev/lib/metro.css", "text/css", "sha384-4XgOiXH2ZMaWt5s5B35yKi7EAOabhZvx7wO8Jr71q2vZ+uONdRza/6CsK2kpyocd"),
+            loadResource("http://localhost:3000/ajax/libs/metroui/dev/lib/icons.css", "text/css", "sha384-FuLND994etg+RtnpPSPMyNBvL+fEz+xGhbN61WUWuDEeZ+wJzcQ8SGqAMuI5hWrt"),
+            loadResource("http://localhost:3000/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.css", "text/css", "sha384-06yHXpYRlHEPaR4AS0fB/W+lMN09Zh5e1XMtfkNQdHV38OlhfkOEW5M+pCj3QskC"),
+            loadResource("http://localhost:3000/ajax/libs/jsoneditor/10.1.3/jsoneditor.min.css", "text/css", "sha384-cj1rYBc4/dVYAknZMTkVCDRL6Knzugf32igVqsuFW0iRWFHKH8Ci8+ekC8gNsFZ+")
         ]).then(() => {
             const _e = React.createElement;
 
