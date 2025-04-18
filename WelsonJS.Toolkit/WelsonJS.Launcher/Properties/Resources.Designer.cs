@@ -90,9 +90,18 @@ namespace WelsonJS.Launcher.Properties {
         /// <summary>
         ///   https://catswords.blob.core.windows.net/welsonjs/과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
-        internal static string BlobServerPrefix {
+        internal static string BlobStoragePrefix {
             get {
-                return ResourceManager.GetString("BlobServerPrefix", resourceCulture);
+                return ResourceManager.GetString("BlobStoragePrefix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   https://cdnjs.cloudflare.com/과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string CdnJsPrefix {
+            get {
+                return ResourceManager.GetString("CdnJsPrefix", resourceCulture);
             }
         }
         

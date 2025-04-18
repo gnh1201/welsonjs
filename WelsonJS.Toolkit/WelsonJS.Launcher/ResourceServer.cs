@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Compression;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
@@ -23,7 +22,6 @@ namespace WelsonJS.Launcher
         private string _prefix;
         private string _resourceName;
         private List<IResourceTool> _tools = new List<IResourceTool>();
-        private const int _httpClientTimeout = 5000;
         private readonly HttpClient _httpClient = new HttpClient();
         private readonly string _defaultMimeType = "application/octet-stream";
 
@@ -33,7 +31,7 @@ namespace WelsonJS.Launcher
             _listener = new HttpListener();
             _listener.Prefixes.Add(prefix);
             _resourceName = resourceName;
-            _httpClient.Timeout = TimeSpan.FromMilliseconds(_httpClientTimeout);
+            _httpClient.Timeout = TimeSpan.FromSeconds(30);
 
             // Add resource tools
             _tools.Add(new ResourceTools.Completion(this, _httpClient));
@@ -129,56 +127,76 @@ namespace WelsonJS.Launcher
             ServeResource(context, GetResource(_resourceName), "text/html");
         }
 
-        private async Task<bool> ServeBlob(HttpListenerContext context, string path)
+        private async Task<bool> ServeBlob(HttpListenerContext context, string path, string prefix = null)
         {
             byte[] data;
             string mimeType;
 
-            // Try serve data from the cached blob
-            if (TryGetCachedBlob(path, out mimeType, true))
+            if (!String.IsNullOrEmpty(prefix))
             {
-                if (TryGetCachedBlob(path, out data))
-                {
-                    if (String.IsNullOrEmpty(mimeType))
-                    {
-                        mimeType = _defaultMimeType;
-                    }
+                string url = $"{prefix}{path}";
 
-                    ServeResource(context, data, mimeType);
+                try
+                {
+                    using (var client = new HttpClient())
+                    {
+                        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
+                        request.Headers.UserAgent.ParseAdd(context.Request.UserAgent);
+                        HttpResponseMessage response = await client.SendAsync(request);
+
+                        if (!response.IsSuccessStatusCode)
+                        {
+                            Trace.TraceError($"Failed to serve blob. URL: {url}, Status: {response.StatusCode}");
+                            return false;
+                        }
+
+                        data = await response.Content.ReadAsByteArrayAsync();
+                        mimeType = response.Content.Headers.ContentType?.MediaType ?? _defaultMimeType;
+
+                        ServeResource(context, data, mimeType);
+                        _ = TrySaveCachedBlob(path, data, mimeType);
+
+                        return true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Trace.TraceError($"Failed to serve blob. URL: {url}, Exception: {ex.Message}");
+                    return false;
+                }
+            }
+            else
+            {
+                // use the cached data
+                if (TryGetCachedBlob(path, out mimeType, true))
+                {
+                    if (TryGetCachedBlob(path, out data))
+                    {
+                        if (String.IsNullOrEmpty(mimeType))
+                        {
+                            mimeType = _defaultMimeType;
+                        }
+
+                        ServeResource(context, data, mimeType);
+                        return true;
+                    }
+                }
+
+                // use the cdn-js
+                if (path.StartsWith("ajax/libs/"))
+                {
+                    if (await ServeBlob(context, path, Program.GetAppConfig("CdnJsPrefix"))) {
+                        return true;
+                    }
+                }
+
+                // use the blob stroage
+                if (await ServeBlob(context, path, Program.GetAppConfig("BlobStoragePrefix"))) {
                     return true;
                 }
             }
 
-            // If not cached yet
-            try
-            {
-                
-                string blobServerPrefix = Program.GetAppConfig("BlobServerPrefix");
-                string url = $"{blobServerPrefix}{path}";
-
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
-                request.Headers.UserAgent.ParseAdd(context.Request.UserAgent);
-                HttpResponseMessage response = await _httpClient.SendAsync(request);
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    Trace.TraceError($"Failed to serve blob. Status: {response.StatusCode}");
-                    return false;
-                }
-
-                data = await response.Content.ReadAsByteArrayAsync();
-                mimeType = response.Content.Headers.ContentType?.MediaType ?? _defaultMimeType;
-
-                ServeResource(context, data, mimeType);
-                _ = TrySaveCachedBlob(path, data, mimeType);
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                Trace.TraceError($"Failed to serve blob. Exception: {ex.Message}");
-                return false;
-            }
+            return false;
         }
 
         private string GetCachedBlobPath(string path)
@@ -220,7 +238,7 @@ namespace WelsonJS.Launcher
             }
             catch (Exception ex)
             {
-                Trace.TraceError($"Error: {ex.Message}");
+                Trace.TraceError($"Cache Read Error: {ex.Message}");
             }
 
             data = null;
