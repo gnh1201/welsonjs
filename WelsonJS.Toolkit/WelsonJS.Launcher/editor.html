@@ -15,19 +15,16 @@
         #container {
             border: 1px solid grey;
             height: calc(100% - 167px);
+            display: flex;
             overflow: hidden;
         }
 
         #editor {
-            float: left;
-            width: 75%;
-            height: 100%;
+            flex: 3;
         }
 
         #promptEditor {
-            float: left;
-            width: 25%;
-            height: 100%;
+            flex: 1;
         }
 
         .banner {
@@ -224,7 +221,7 @@
                     }
                 };
 
-                const getSuggestions = () => axios.get(`${serverPrefix}completion/${encodeURIComponent(word)}`)
+                const getSuggestions = (word) => axios.get(`${serverPrefix}completion/${encodeURIComponent(word)}`)
                     .then(response => {
                         const parser = new XMLParser();
                         const result = parser.parse(response.data);
