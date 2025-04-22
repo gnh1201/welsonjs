@@ -395,7 +395,7 @@
                         if (response.id == 3) {
                             const responseContent = response.result.result.value;
 
-                            appendTextToEditor(responseContent);
+                            appendTextToEditor("/*\n" + responseContent + "\n*/");
                             pushPromptMessage("assistant", responseContent);
 
                             socket.close();
