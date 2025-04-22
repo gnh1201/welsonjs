@@ -155,6 +155,7 @@ namespace WelsonJS.Launcher
 
             string userDataDir = Path.Combine(GetAppDataPath(), "EdgeUserProfile");
             string remoteAllowOrigins = $"{resourceServerUri.Scheme}://{resourceServerUri.Host}:{resourceServerUri.Port}";
+            int remoteDebuggingPort = devToolsUri.Port;
             string[] arguments = {
                 $"\"{url}\"",
                 $"--remote-debugging-port={remoteDebuggingPort}",
