@@ -150,9 +150,11 @@ namespace WelsonJS.Launcher
         }
         public static void OpenWebBrowser(string url)
         {
+            Uri resourceServerUri = new Uri(GetAppConfig("ResourceServerPrefix"));
+            Uri devToolsUri = new Uri(GetAppConfig("DevToolsPrefix"));
+
             string userDataDir = Path.Combine(GetAppDataPath(), "EdgeUserProfile");
-            string remoteAllowOrigins = GetAppConfig("ResourceServerPrefix");
-            int remoteDebuggingPort = new Uri(GetAppConfig("DevToolsPrefix")).Port;
+            string remoteAllowOrigins = $"{resourceServerUri.Scheme}://{resourceServerUri.Host}:{resourceServerUri.Port}";
             string[] arguments = {
                 $"\"{url}\"",
                 $"--remote-debugging-port={remoteDebuggingPort}",
