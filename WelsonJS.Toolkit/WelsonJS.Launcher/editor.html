@@ -194,8 +194,12 @@
 
                     const invoke = () => {
                         try {
-                            const updated = promptEditorRef.current.get();
-                            promptMessagesRef.current = updated;
+                            if (promptEditorRef.current) {
+                                const updated = promptEditorRef.current.get();
+                                promptMessagesRef.current = updated;
+                            } else {
+                                throw new Error("promptEditorRef.current is null");
+                            }
                         } catch (e) {
                             console.error("Invalid JSON structure", e);
                         }
