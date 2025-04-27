@@ -2,7 +2,13 @@
 <html>
 <head>
     <title>WelsonJS Editor</title>
-    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
+    <meta name="title" content="WelsonJS Editor">
+    <meta name="description" content="WelsonJS can build a Windows app on the Windows built-in JavaScript engine.">
+    <meta name="keywords" content="ecmascript, javascript, windows">
+    <meta name="robots" content="noindex, nofollow">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="language" content="English">
+    <meta name="author" content="Namhyeon Go (abuse@catswords.net)">
     <style>
         html, body, #app, #app > .app {
             margin: 0;
@@ -44,6 +50,7 @@
             }
         };
     </script>
+    <script src="http://localhost:3000/ajax/libs/lodash/4.17.21/lodash.min.js" integrity="sha384-H6KKS1H1WwuERMSm+54dYLzjg0fKqRK5ZRyASdbrI/lwrCc6bXEmtGYr5SwvP1pZ"></script>
     <script src="http://localhost:3000/ajax/libs/jsoneditor/10.1.3/jsoneditor.min.js" integrity="sha384-NdVVc20Tze856ZAWEoJNCk0mL4zJrGztRwULc5Hz25HUXQQgYtmjFtgVAxR4p5dD" crossorigin="anonymous"></script>
     <script src="http://localhost:3000/ajax/libs/react/18.3.1/umd/react.production.min.js" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
     <script src="http://localhost:3000/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js" integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
@@ -185,11 +192,36 @@
                     if (!containerRef.current)
                         return;
 
-                    const options = {};
+                    const invoke = () => {
+                        try {
+                            const updated = promptEditorRef.current.get();
+                            promptMessagesRef.current = updated;
+                        } catch (e) {
+                            console.error("Invalid JSON structure", e);
+                        }
+                    };
+
+                    const throttledInvoke = _.throttle(invoke, 300, {
+                        leading: true,
+                        trailing: true
+                    });
+
+                    const options = {
+                        onChange: throttledInvoke
+                    };
+
                     const instance = new JSONEditor(containerRef.current, options);
                     instance.set(promptMessagesRef.current);
 
                     promptEditorRef.current = instance;
+
+                    return () => {
+                        if (instance) {
+                            throttledInvoke.flush();
+                            throttledInvoke.cancel();
+                            instance.destroy();
+                        }
+                    };
                 }, []);
 
                 return _e('div', { id: 'promptEditor', ref: containerRef });
