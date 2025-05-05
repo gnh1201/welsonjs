@@ -1,7 +1,13 @@
-﻿using System;
+﻿// ResourceServer.cs
+// A resource server of WelsonJS Editor (WelsonJS.Launcher)
+// Namhyeon Go <abuse@catswords.net>
+// https://github.com/gnh1201/welsonjs
+// 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
@@ -26,6 +32,21 @@ namespace WelsonJS.Launcher
         private readonly HttpClient _httpClient = new HttpClient();
         private static readonly string _defaultMimeType = "application/octet-stream";
         private static readonly Regex _nodePackageRegex = new Regex(@"^[^/@]+@[^/]+/", RegexOptions.Compiled);
+        private static readonly List<string[]> CDN_PREFIXES = new List<string[]> {
+            new[] { "ajax/libs/" },
+            new[] { "npm/", "gh/", "wp/" },
+            new[] { "jquery/" },
+            new[] { "polyfill/" },
+            new[] { "aspnet/" }
+        };
+        private enum CDN_TYPES: int
+        {
+            AjaxLibs = 0,
+            JsDeliver = 1,
+            Jquery = 2,
+            Polyfill = 3,
+            AspNet = 4
+        };
 
         public ResourceServer(string prefix, string resourceName)
         {
@@ -197,20 +218,29 @@ namespace WelsonJS.Launcher
         private async Task<bool> TryServeFromCdn(HttpListenerContext context, string path)
         {
             bool isNodePackageExpression = _nodePackageRegex.IsMatch(path);
+            Func<CDN_TYPES, bool> isPrefixMatched = (type) =>
+            {
+                if (CDN_PREFIXES[(int)type].Any(prefix => path.StartsWith(prefix)))
+                {
+                    return true;
+                }
+
+                return false;
+            };
 
             var sources = new (bool isMatch, string configKey, Func<string, string> transform)[]
             {
-                (path.StartsWith("ajax/libs/"), "CdnJsPrefix", p => p),
-                (path.StartsWith("ajax/libs/"), "GoogleApisPrefix", p => p),
+                (isPrefixMatched(CDN_TYPES.AjaxLibs), "CdnJsPrefix", p => p),
+                (isPrefixMatched(CDN_TYPES.AjaxLibs), "GoogleApisPrefix", p => p),
                 (isNodePackageExpression, "UnpkgPrefix", p => p),
                 (isNodePackageExpression, "SkypackPrefix", p => p),
                 (isNodePackageExpression, "EsmShPrefix", p => p),
                 (isNodePackageExpression, "EsmRunPrefix", p => p),
-                (path.StartsWith("npm/") || path.StartsWith("gh/") || path.StartsWith("wp/"), "JsDeliverPrefix", p => p),
-                (path.StartsWith("jquery/"), "JqueryCdnPrefix", p => p.Substring("jquery/".Length)),
-                (path.StartsWith("polyfill/"), "CdnJsPrefix", p => p), // polyfill.js from Cloudflare
-                (path.StartsWith("polyfill/"), "PolyfillPrefix", p => p.Substring("polyfill/".Length)), // polyfill.js from Fastly
-                (path.StartsWith("aspnet/"), "AspNetCdnPrefix", p => p.Substring("aspnet/".Length)),
+                (isPrefixMatched(CDN_TYPES.JsDeliver), "JsDeliverPrefix", p => p),
+                (isPrefixMatched(CDN_TYPES.Jquery), "JqueryCdnPrefix", p => p.Substring("jquery/".Length)),
+                (isPrefixMatched(CDN_TYPES.Polyfill), "CdnJsPrefix", p => p), // polyfill.js from Cloudflare
+                (isPrefixMatched(CDN_TYPES.Polyfill), "PolyfillPrefix", p => p.Substring("polyfill/".Length)), // polyfill.js from Fastly
+                (isPrefixMatched(CDN_TYPES.AspNet), "AspNetCdnPrefix", p => p.Substring("aspnet/".Length)),
                 (true, "BlobStoragePrefix", p => p) // fallback
             };
 
