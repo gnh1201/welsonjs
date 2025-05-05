@@ -296,6 +296,15 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
+        ///   https://raw.githubusercontent.com/과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string RawGitHubPrefix {
+            get {
+                return ResourceManager.GetString("RawGitHubPrefix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   https://github.com/gnh1201/welsonjs과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string RepositoryUrl {

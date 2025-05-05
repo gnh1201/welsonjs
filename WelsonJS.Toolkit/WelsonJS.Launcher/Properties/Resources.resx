@@ -214,4 +214,7 @@
   <data name="PolyfillPrefix" xml:space="preserve">
     <value>https://polyfill-fastly.io/</value>
   </data>
+  <data name="RawGitHubPrefix" xml:space="preserve">
+    <value>https://raw.githubusercontent.com/</value>
+  </data>
 </root>

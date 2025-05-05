@@ -37,7 +37,8 @@ namespace WelsonJS.Launcher
             new[] { "npm/", "gh/", "wp/" },
             new[] { "jquery/" },
             new[] { "polyfill/" },
-            new[] { "ajax/" } // https://learn.microsoft.com/en-us/aspnet/ajax/cdn/overview
+            new[] { "ajax/" }, // https://learn.microsoft.com/en-us/aspnet/ajax/cdn/overview
+            new[] { "raw/gh/"}
         };
         private enum CDN_TYPES: int
         {
@@ -45,7 +46,8 @@ namespace WelsonJS.Launcher
             JsDeliver = 1,
             Jquery = 2,
             Polyfill = 3,
-            Microsoft = 4
+            Microsoft = 4,
+            GitHub = 5
         };
 
         public ResourceServer(string prefix, string resourceName)
@@ -241,6 +243,7 @@ namespace WelsonJS.Launcher
                 (isPrefixMatched(CDN_TYPES.Polyfill), "CdnJsPrefix", p => p), // polyfill.js from Cloudflare
                 (isPrefixMatched(CDN_TYPES.Polyfill), "PolyfillPrefix", p => p.Substring("polyfill/".Length)), // polyfill.js from Fastly
                 (isPrefixMatched(CDN_TYPES.Microsoft), "AspNetCdnPrefix", p => p), // Libraries from Microsoft
+                (isPrefixMatched(CDN_TYPES.GitHub), "RawGitHubPrefix", p => p.Substring("raw/gh/".Length)),
                 (true, "BlobStoragePrefix", p => p) // fallback
             };
 
