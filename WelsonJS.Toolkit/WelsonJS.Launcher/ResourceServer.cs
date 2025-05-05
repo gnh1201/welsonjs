@@ -37,15 +37,15 @@ namespace WelsonJS.Launcher
             new[] { "npm/", "gh/", "wp/" },
             new[] { "jquery/" },
             new[] { "polyfill/" },
-            new[] { "aspnet/" }
+            new[] { "ajax/" } // https://learn.microsoft.com/en-us/aspnet/ajax/cdn/overview
         };
         private enum CDN_TYPES: int
         {
-            AjaxLibs = 0,
+            Cloudflare = 0,
             JsDeliver = 1,
             Jquery = 2,
             Polyfill = 3,
-            AspNet = 4
+            Microsoft = 4
         };
 
         public ResourceServer(string prefix, string resourceName)
@@ -230,8 +230,8 @@ namespace WelsonJS.Launcher
 
             var sources = new (bool isMatch, string configKey, Func<string, string> transform)[]
             {
-                (isPrefixMatched(CDN_TYPES.AjaxLibs), "CdnJsPrefix", p => p),
-                (isPrefixMatched(CDN_TYPES.AjaxLibs), "GoogleApisPrefix", p => p),
+                (isPrefixMatched(CDN_TYPES.Cloudflare), "CdnJsPrefix", p => p), // Libraries from Cloudflare
+                (isPrefixMatched(CDN_TYPES.Cloudflare), "GoogleApisPrefix", p => p), // Libraries from Google
                 (isNodePackageExpression, "UnpkgPrefix", p => p),
                 (isNodePackageExpression, "SkypackPrefix", p => p),
                 (isNodePackageExpression, "EsmShPrefix", p => p),
@@ -240,7 +240,7 @@ namespace WelsonJS.Launcher
                 (isPrefixMatched(CDN_TYPES.Jquery), "JqueryCdnPrefix", p => p.Substring("jquery/".Length)),
                 (isPrefixMatched(CDN_TYPES.Polyfill), "CdnJsPrefix", p => p), // polyfill.js from Cloudflare
                 (isPrefixMatched(CDN_TYPES.Polyfill), "PolyfillPrefix", p => p.Substring("polyfill/".Length)), // polyfill.js from Fastly
-                (isPrefixMatched(CDN_TYPES.AspNet), "AspNetCdnPrefix", p => p.Substring("aspnet/".Length)),
+                (isPrefixMatched(CDN_TYPES.Microsoft), "AspNetCdnPrefix", p => p), // Libraries from Microsoft
                 (true, "BlobStoragePrefix", p => p) // fallback
             };
 
