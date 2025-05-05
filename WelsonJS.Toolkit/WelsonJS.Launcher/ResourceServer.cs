@@ -1,12 +1,19 @@
-﻿using System;
+﻿// ResourceServer.cs
+// A resource server of WelsonJS Editor (WelsonJS.Launcher)
+// Namhyeon Go <abuse@catswords.net>
+// https://github.com/gnh1201/welsonjs
+// 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -23,7 +30,25 @@ namespace WelsonJS.Launcher
         private string _resourceName;
         private List<IResourceTool> _tools = new List<IResourceTool>();
         private readonly HttpClient _httpClient = new HttpClient();
-        private readonly string _defaultMimeType = "application/octet-stream";
+        private static readonly string _defaultMimeType = "application/octet-stream";
+        private static readonly Regex _nodePackageRegex = new Regex(@"^[^/@]+@[^/]+/", RegexOptions.Compiled);
+        private static readonly List<string[]> CDN_PREFIXES = new List<string[]> {
+            new[] { "ajax/libs/" },
+            new[] { "npm/", "gh/", "wp/" },
+            new[] { "jquery/" },
+            new[] { "polyfill/" },
+            new[] { "ajax/" }, // https://learn.microsoft.com/en-us/aspnet/ajax/cdn/overview
+            new[] { "raw/gh/"}
+        };
+        private enum CDN_TYPES: int
+        {
+            Cloudflare = 0,
+            JsDeliver = 1,
+            Jquery = 2,
+            Polyfill = 3,
+            Microsoft = 4,
+            GitHub = 5
+        };
 
         public ResourceServer(string prefix, string resourceName)
         {
@@ -182,17 +207,55 @@ namespace WelsonJS.Launcher
                     }
                 }
 
-                // use the cdn-js
-                if (path.StartsWith("ajax/libs/"))
+                // use CDN sources
+                if (await TryServeFromCdn(context, path))
                 {
-                    if (await ServeBlob(context, path, Program.GetAppConfig("CdnJsPrefix"))) {
-                        return true;
-                    }
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private async Task<bool> TryServeFromCdn(HttpListenerContext context, string path)
+        {
+            bool isNodePackageExpression = _nodePackageRegex.IsMatch(path);
+            bool isPrefixMatched(CDN_TYPES type)
+            {
+                if (CDN_PREFIXES[(int)type].Any(prefix => path.StartsWith(prefix)))
+                {
+                    return true;
                 }
 
-                // use the blob stroage
-                if (await ServeBlob(context, path, Program.GetAppConfig("BlobStoragePrefix"))) {
-                    return true;
+                return false;
+            }
+
+            var sources = new (bool isMatch, string configKey, Func<string, string> transform)[]
+            {
+                (isPrefixMatched(CDN_TYPES.Cloudflare), "CdnJsPrefix", p => p), // Libraries from Cloudflare
+                (isPrefixMatched(CDN_TYPES.Cloudflare), "GoogleApisPrefix", p => p), // Libraries from Google
+                (isNodePackageExpression, "UnpkgPrefix", p => p),
+                (isNodePackageExpression, "SkypackPrefix", p => p),
+                (isNodePackageExpression, "EsmShPrefix", p => p),
+                (isNodePackageExpression, "EsmRunPrefix", p => p),
+                (isPrefixMatched(CDN_TYPES.JsDeliver), "JsDeliverPrefix", p => p),
+                (isPrefixMatched(CDN_TYPES.Jquery), "JqueryCdnPrefix", p => p.Substring("jquery/".Length)),
+                (isPrefixMatched(CDN_TYPES.Polyfill), "CdnJsPrefix", p => p), // polyfill.js from Cloudflare
+                (isPrefixMatched(CDN_TYPES.Polyfill), "PolyfillPrefix", p => p.Substring("polyfill/".Length)), // polyfill.js from Fastly
+                (isPrefixMatched(CDN_TYPES.Microsoft), "AspNetCdnPrefix", p => p), // Libraries from Microsoft
+                (isPrefixMatched(CDN_TYPES.GitHub), "RawGitHubPrefix", p => p.Substring("raw/gh/".Length)),
+                (true, "BlobStoragePrefix", p => p) // fallback
+            };
+
+            foreach (var (isMatch, configKey, transform) in sources)
+            {
+                if (isMatch)
+                {
+                    string prefix = Program.GetAppConfig(configKey);
+                    if (await ServeBlob(context, transform(path), prefix))
+                    {
+                        return true;
+                    }
                 }
             }
 
