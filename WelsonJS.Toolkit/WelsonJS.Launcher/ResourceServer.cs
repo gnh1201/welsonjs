@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -182,17 +183,41 @@ namespace WelsonJS.Launcher
                     }
                 }
 
-                // use the cdn-js
-                if (path.StartsWith("ajax/libs/"))
+                // use CDN sources
+                if (await TryServeFromCdn(context, path))
                 {
-                    if (await ServeBlob(context, path, Program.GetAppConfig("CdnJsPrefix"))) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private async Task<bool> TryServeFromCdn(HttpListenerContext context, string path)
+        {
+            bool isNodePackageExpression = Regex.IsMatch(path, @"^[^/@]+@[^/]+/");
+
+            var sources = new (bool isMatch, string configKey, Func<string, string> transform)[]
+            {
+                (path.StartsWith("ajax/libs/"), "CdnJsPrefix", p => p),
+                (isNodePackageExpression, "UnpkgPrefix", p => p),
+                (isNodePackageExpression, "SkypackPrefix", p => p),
+                (isNodePackageExpression, "EsmShPrefix", p => p),
+                (isNodePackageExpression, "EsmRunPrefix", p => p),
+                (path.StartsWith("npm/") || path.StartsWith("gh/") || path.StartsWith("wp/"), "JsDeliverPrefix", p => p),
+                (path.StartsWith("jquery/"), "JqueryCdnPrefix", p => p.Substring("jquery/".Length)),
+                (true, "BlobStoragePrefix", p => p) // fallback
+            };
+
+            foreach (var (isMatch, configKey, transform) in sources)
+            {
+                if (isMatch)
+                {
+                    string prefix = Program.GetAppConfig(configKey);
+                    if (await ServeBlob(context, transform(path), prefix))
+                    {
                         return true;
                     }
-                }
-
-                // use the blob stroage
-                if (await ServeBlob(context, path, Program.GetAppConfig("BlobStoragePrefix"))) {
-                    return true;
                 }
             }
 
