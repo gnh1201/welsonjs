@@ -218,7 +218,7 @@ namespace WelsonJS.Launcher
         private async Task<bool> TryServeFromCdn(HttpListenerContext context, string path)
         {
             bool isNodePackageExpression = _nodePackageRegex.IsMatch(path);
-            Func<CDN_TYPES, bool> isPrefixMatched = (type) =>
+            bool isPrefixMatched(CDN_TYPES type)
             {
                 if (CDN_PREFIXES[(int)type].Any(prefix => path.StartsWith(prefix)))
                 {
@@ -226,7 +226,7 @@ namespace WelsonJS.Launcher
                 }
 
                 return false;
-            };
+            }
 
             var sources = new (bool isMatch, string configKey, Func<string, string> transform)[]
             {
