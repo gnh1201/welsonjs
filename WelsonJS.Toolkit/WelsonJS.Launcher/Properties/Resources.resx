@@ -205,4 +205,13 @@
   <data name="UnpkgPrefix" xml:space="preserve">
     <value>https://unpkg.com/</value>
   </data>
+  <data name="AspNetCdnPrefix" xml:space="preserve">
+    <value>https://ajax.aspnetcdn.com/</value>
+  </data>
+  <data name="GoogleApisPrefix" xml:space="preserve">
+    <value>https://ajax.googleapis.com/</value>
+  </data>
+  <data name="PolyfillPrefix" xml:space="preserve">
+    <value>https://polyfill-fastly.io/</value>
+  </data>
 </root>

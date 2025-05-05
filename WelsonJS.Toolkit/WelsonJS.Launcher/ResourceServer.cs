@@ -201,12 +201,16 @@ namespace WelsonJS.Launcher
             var sources = new (bool isMatch, string configKey, Func<string, string> transform)[]
             {
                 (path.StartsWith("ajax/libs/"), "CdnJsPrefix", p => p),
+                (path.StartsWith("ajax/libs/"), "GoogleApisPrefix", p => p),
                 (isNodePackageExpression, "UnpkgPrefix", p => p),
                 (isNodePackageExpression, "SkypackPrefix", p => p),
                 (isNodePackageExpression, "EsmShPrefix", p => p),
                 (isNodePackageExpression, "EsmRunPrefix", p => p),
                 (path.StartsWith("npm/") || path.StartsWith("gh/") || path.StartsWith("wp/"), "JsDeliverPrefix", p => p),
-                (path.StartsWith("jquery/") && path.Length > "jquery/".Length, "JqueryCdnPrefix", p => p.Substring("jquery/".Length)),
+                (path.StartsWith("jquery/"), "JqueryCdnPrefix", p => p.Substring("jquery/".Length)),
+                (path.StartsWith("polyfill/"), "CdnJsPrefix", p => p), // polyfill.js from Cloudflare
+                (path.StartsWith("polyfill/"), "PolyfillPrefix", p => p.Substring("polyfill/".Length)), // polyfill.js from Fastly
+                (path.StartsWith("aspnet/"), "AspNetCdnPrefix", p => p.Substring("aspnet/".Length)),
                 (true, "BlobStoragePrefix", p => p) // fallback
             };
 
