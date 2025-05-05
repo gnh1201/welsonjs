@@ -24,7 +24,8 @@ namespace WelsonJS.Launcher
         private string _resourceName;
         private List<IResourceTool> _tools = new List<IResourceTool>();
         private readonly HttpClient _httpClient = new HttpClient();
-        private readonly string _defaultMimeType = "application/octet-stream";
+        private static readonly string _defaultMimeType = "application/octet-stream";
+        private static readonly Regex _nodePackageRegex = new Regex(@"^[^/@]+@[^/]+/", RegexOptions.Compiled);
 
         public ResourceServer(string prefix, string resourceName)
         {
@@ -195,7 +196,7 @@ namespace WelsonJS.Launcher
 
         private async Task<bool> TryServeFromCdn(HttpListenerContext context, string path)
         {
-            bool isNodePackageExpression = Regex.IsMatch(path, @"^[^/@]+@[^/]+/");
+            bool isNodePackageExpression = _nodePackageRegex.IsMatch(path);
 
             var sources = new (bool isMatch, string configKey, Func<string, string> transform)[]
             {
@@ -205,7 +206,7 @@ namespace WelsonJS.Launcher
                 (isNodePackageExpression, "EsmShPrefix", p => p),
                 (isNodePackageExpression, "EsmRunPrefix", p => p),
                 (path.StartsWith("npm/") || path.StartsWith("gh/") || path.StartsWith("wp/"), "JsDeliverPrefix", p => p),
-                (path.StartsWith("jquery/"), "JqueryCdnPrefix", p => p.Substring("jquery/".Length)),
+                (path.StartsWith("jquery/") && path.Length > "jquery/".Length, "JqueryCdnPrefix", p => p.Substring("jquery/".Length)),
                 (true, "BlobStoragePrefix", p => p) // fallback
             };
 
