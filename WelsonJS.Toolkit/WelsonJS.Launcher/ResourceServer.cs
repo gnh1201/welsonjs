@@ -422,7 +422,7 @@ namespace WelsonJS.Launcher
             }
         }
 
-        private static async void FetchBlobConfig()
+        private static async Task FetchBlobConfig()
         {
             try
             {
