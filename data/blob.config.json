@@ -1,0 +1,74 @@
+{
+    "routes": [
+        {
+            "matches": [
+                "ajax/libs/"
+            ],
+            "prefixUrls": [
+                "https://cdnjs.cloudflare.com/",
+                "https://ajax.googleapis.com/"
+            ],
+            "stripPrefix": false
+        },
+        {
+            "matches": [
+                "npm/",
+                "gh/",
+                "wp/"
+            ],
+            "prefixUrls": [
+                "https://cdn.jsdelivr.net/"
+            ],
+            "stripPrefix": false
+        },
+        {
+            "matches": [
+                "^[^/@]+@[^/]+/"
+            ],
+            "prefixUrls": [
+                "https://unpkg.com/",
+                "https://www.skypack.dev/",
+                "https://esm.sh/",
+                "https://esm.run/"
+            ],
+            "stripPrefix": false
+        },
+        {
+            "matches": [
+                "jquery/"
+            ],
+            "prefixUrls": [
+                "https://code.jquery.com/"
+            ],
+            "stripPrefix": true
+        },
+        {
+            "matches": [
+                "polyfill/"
+            ],
+            "prefixUrls": [
+                "https://cdnjs.cloudflare.com/",
+                "https://polyfill-fastly.io/"
+            ],
+            "stripPrefix": true
+        },
+        {
+            "matches": [
+                "ajax/"
+            ],
+            "prefixUrls": [
+                "https://ajax.aspnetcdn.com/"
+            ],
+            "stripPrefix": true
+        },
+        {
+            "matches": [
+                "raw/gh/"
+            ],
+            "prefixUrls": [
+                "https://raw.githubusercontent.com/"
+            ],
+            "stripPrefix": true
+        }
+    ]
+}
