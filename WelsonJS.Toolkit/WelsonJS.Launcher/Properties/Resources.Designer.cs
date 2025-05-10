@@ -61,15 +61,6 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
-        ///   https://ajax.aspnetcdn.com/과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string AspNetCdnPrefix {
-            get {
-                return ResourceManager.GetString("AspNetCdnPrefix", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string AzureAiServiceApiKey {
@@ -97,20 +88,20 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
+        ///   https://catswords.blob.core.windows.net/welsonjs/blob.config.xml과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string BlobConfigUrl {
+            get {
+                return ResourceManager.GetString("BlobConfigUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   https://catswords.blob.core.windows.net/welsonjs/과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string BlobStoragePrefix {
             get {
                 return ResourceManager.GetString("BlobStoragePrefix", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   https://cdnjs.cloudflare.com/과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string CdnJsPrefix {
-            get {
-                return ResourceManager.GetString("CdnJsPrefix", resourceCulture);
             }
         }
         
@@ -142,24 +133,6 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
-        ///   https://esm.run/과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string EsmRunPrefix {
-            get {
-                return ResourceManager.GetString("EsmRunPrefix", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   https://esm.sh/과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string EsmShPrefix {
-            get {
-                return ResourceManager.GetString("EsmShPrefix", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   (아이콘)과(와) 유사한 System.Drawing.Icon 형식의 지역화된 리소스를 찾습니다.
         /// </summary>
         internal static System.Drawing.Icon favicon {
@@ -170,11 +143,11 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
-        ///   https://ajax.googleapis.com/과(와) 유사한 지역화된 문자열을 찾습니다.
+        ///   90과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
-        internal static string GoogleApisPrefix {
+        internal static string HttpClientTimeout {
             get {
-                return ResourceManager.GetString("GoogleApisPrefix", resourceCulture);
+                return ResourceManager.GetString("HttpClientTimeout", resourceCulture);
             }
         }
         
@@ -269,42 +242,6 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
-        ///   https://code.jquery.com/과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string JqueryCdnPrefix {
-            get {
-                return ResourceManager.GetString("JqueryCdnPrefix", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   https://cdn.jsdelivr.net/과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string JsDeliverPrefix {
-            get {
-                return ResourceManager.GetString("JsDeliverPrefix", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   https://polyfill-fastly.io/과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string PolyfillPrefix {
-            get {
-                return ResourceManager.GetString("PolyfillPrefix", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   https://raw.githubusercontent.com/과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string RawGitHubPrefix {
-            get {
-                return ResourceManager.GetString("RawGitHubPrefix", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   https://github.com/gnh1201/welsonjs과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string RepositoryUrl {
@@ -319,24 +256,6 @@ namespace WelsonJS.Launcher.Properties {
         internal static string ResourceServerPrefix {
             get {
                 return ResourceManager.GetString("ResourceServerPrefix", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   https://www.skypack.dev/과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string SkypackPrefix {
-            get {
-                return ResourceManager.GetString("SkypackPrefix", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   https://unpkg.com/과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string UnpkgPrefix {
-            get {
-                return ResourceManager.GetString("UnpkgPrefix", resourceCulture);
             }
         }
         

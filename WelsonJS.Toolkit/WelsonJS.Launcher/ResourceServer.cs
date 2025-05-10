@@ -17,6 +17,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Serialization;
 
 namespace WelsonJS.Launcher
 {
@@ -29,26 +30,19 @@ namespace WelsonJS.Launcher
         private string _prefix;
         private string _resourceName;
         private List<IResourceTool> _tools = new List<IResourceTool>();
-        private readonly HttpClient _httpClient = new HttpClient();
+        private static readonly HttpClient _httpClient = new HttpClient();
         private static readonly string _defaultMimeType = "application/octet-stream";
-        private static readonly Regex _nodePackageRegex = new Regex(@"^[^/@]+@[^/]+/", RegexOptions.Compiled);
-        private static readonly List<string[]> CDN_PREFIXES = new List<string[]> {
-            new[] { "ajax/libs/" },
-            new[] { "npm/", "gh/", "wp/" },
-            new[] { "jquery/" },
-            new[] { "polyfill/" },
-            new[] { "ajax/" }, // https://learn.microsoft.com/en-us/aspnet/ajax/cdn/overview
-            new[] { "raw/gh/"}
-        };
-        private enum CDN_TYPES: int
+        private static BlobConfig _blobConfig;
+
+        static ResourceServer()
         {
-            Cloudflare = 0,
-            JsDeliver = 1,
-            Jquery = 2,
-            Polyfill = 3,
-            Microsoft = 4,
-            GitHub = 5
-        };
+            // Set timeout
+            int timeout = int.TryParse(Program.GetAppConfig("HttpClientTimeout"), out timeout) ? timeout : 90;
+            _httpClient.Timeout = TimeSpan.FromSeconds(timeout);
+
+            // Fetch a blob config from Internet
+            FetchBlobConfig();
+        }
 
         public ResourceServer(string prefix, string resourceName)
         {
@@ -56,7 +50,6 @@ namespace WelsonJS.Launcher
             _listener = new HttpListener();
             _listener.Prefixes.Add(prefix);
             _resourceName = resourceName;
-            _httpClient.Timeout = TimeSpan.FromSeconds(30);
 
             // Add resource tools
             _tools.Add(new ResourceTools.Completion(this, _httpClient));
@@ -100,7 +93,7 @@ namespace WelsonJS.Launcher
         {
             return _isRunning;
         }
-        
+
         private async Task ListenLoop(CancellationToken token)
         {
             while (!token.IsCancellationRequested && _isRunning)
@@ -207,8 +200,8 @@ namespace WelsonJS.Launcher
                     }
                 }
 
-                // use CDN sources
-                if (await TryServeFromCdn(context, path))
+                // use a blob source
+                if (await TryServeFromBlob(context, path))
                 {
                     return true;
                 }
@@ -217,47 +210,32 @@ namespace WelsonJS.Launcher
             return false;
         }
 
-        private async Task<bool> TryServeFromCdn(HttpListenerContext context, string path)
+        private async Task<bool> TryServeFromBlob(HttpListenerContext context, string path)
         {
-            bool isNodePackageExpression = _nodePackageRegex.IsMatch(path);
-            bool isPrefixMatched(CDN_TYPES type)
+            if (_blobConfig != null)
             {
-                if (CDN_PREFIXES[(int)type].Any(prefix => path.StartsWith(prefix)))
+                foreach (var route in _blobConfig.Routes)
                 {
-                    return true;
-                }
-
-                return false;
-            }
-
-            var sources = new (bool isMatch, string configKey, Func<string, string> transform)[]
-            {
-                (isPrefixMatched(CDN_TYPES.Cloudflare), "CdnJsPrefix", p => p), // Libraries from Cloudflare
-                (isPrefixMatched(CDN_TYPES.Cloudflare), "GoogleApisPrefix", p => p), // Libraries from Google
-                (isNodePackageExpression, "UnpkgPrefix", p => p),
-                (isNodePackageExpression, "SkypackPrefix", p => p),
-                (isNodePackageExpression, "EsmShPrefix", p => p),
-                (isNodePackageExpression, "EsmRunPrefix", p => p),
-                (isPrefixMatched(CDN_TYPES.JsDeliver), "JsDeliverPrefix", p => p),
-                (isPrefixMatched(CDN_TYPES.Jquery), "JqueryCdnPrefix", p => p.Substring("jquery/".Length)),
-                (isPrefixMatched(CDN_TYPES.Polyfill), "CdnJsPrefix", p => p), // polyfill.js from Cloudflare
-                (isPrefixMatched(CDN_TYPES.Polyfill), "PolyfillPrefix", p => p.Substring("polyfill/".Length)), // polyfill.js from Fastly
-                (isPrefixMatched(CDN_TYPES.Microsoft), "AspNetCdnPrefix", p => p), // Libraries from Microsoft
-                (isPrefixMatched(CDN_TYPES.GitHub), "RawGitHubPrefix", p => p.Substring("raw/gh/".Length)),
-                (true, "BlobStoragePrefix", p => p) // fallback
-            };
-
-            foreach (var (isMatch, configKey, transform) in sources)
-            {
-                if (isMatch)
-                {
-                    string prefix = Program.GetAppConfig(configKey);
-                    if (await ServeBlob(context, transform(path), prefix))
+                    foreach (var (regex, index) in route.RegexConditions.Select((r, i) => (r, i)))
                     {
-                        return true;
+                        if (!regex.Compiled.IsMatch(path)) continue;
+
+                        var match = (index < route.Matches.Count) ? route.Matches[index] : route.Matches.First();
+                        var _path = route.StripPrefix ? path.Substring(match.Length) : path;
+
+                        foreach (var prefixUrl in route.PrefixUrls)
+                        {
+                            if (await ServeBlob(context, _path, prefixUrl))
+                                return true;
+                        }
                     }
                 }
             }
+
+            // fallback
+            string prefix = Program.GetAppConfig("BlobStoragePrefix");
+            if (await ServeBlob(context, path, prefix))
+                return true;
 
             return false;
         }
@@ -360,7 +338,8 @@ namespace WelsonJS.Launcher
         {
             string xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
-            if (data == null) {
+            if (data == null)
+            {
                 data = Encoding.UTF8.GetBytes(xmlHeader + "\r\n<error>Could not find the resource.</error>");
                 mimeType = "application/xml";
                 statusCode = 404;
@@ -375,7 +354,7 @@ namespace WelsonJS.Launcher
             }
         }
 
-        public void ServeResource(HttpListenerContext context, string data, string mimeType = "text/html", int statusCode = 200) 
+        public void ServeResource(HttpListenerContext context, string data, string mimeType = "text/html", int statusCode = 200)
         {
             string xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
@@ -442,5 +421,80 @@ namespace WelsonJS.Launcher
                 return memoryStream.ToArray();
             }
         }
+
+        private static async void FetchBlobConfig()
+        {
+            try
+            {
+                string url = Program.GetAppConfig("BlobConfigUrl");
+                var response = await _httpClient.GetStreamAsync(url);
+
+                var serializer = new XmlSerializer(typeof(BlobConfig));
+                using (var reader = new StreamReader(response))
+                {
+                    _blobConfig = (BlobConfig)serializer.Deserialize(reader);
+                }
+
+                _blobConfig?.Compile();
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError($"Failed to fetch a blob config. Exception: {ex.Message}");
+            }
+        }
+    }
+
+    [XmlRoot("blobConfig")]
+    public class BlobConfig
+    {
+        [XmlArray("routes")]
+        [XmlArrayItem("route")]
+        public List<BlobRoute> Routes { get; set; } = new List<BlobRoute>();
+
+        public void Compile()
+        {
+            foreach (var route in Routes)
+            {
+                if (route.Matches == null) continue;
+
+                route.RegexConditions = new List<RegexCondition>();
+                foreach (var match in route.Matches)
+                {
+                    route.RegexConditions.Add(new RegexCondition
+                    {
+                        Pattern = match,
+                        Compiled = new Regex(
+                            match.StartsWith("^") ? match : "^" + Regex.Escape(match),
+                            RegexOptions.Compiled)
+                    });
+                }
+            }
+        }
+    }
+
+    public class BlobRoute
+    {
+        [XmlArray("matches")]
+        [XmlArrayItem("match")]
+        public List<string> Matches { get; set; }
+
+        [XmlArray("prefixUrls")]
+        [XmlArrayItem("url")]
+        public List<string> PrefixUrls { get; set; }
+
+        [XmlAttribute("stripPrefix")]
+        public bool StripPrefix { get; set; }
+
+        [XmlIgnore]
+        public List<RegexCondition> RegexConditions { get; set; }
+    }
+
+    public class RegexCondition
+    {
+        [XmlIgnore]
+        public string Pattern { get; set; }
+
+        [XmlIgnore]
+        public Regex Compiled { get; set; }
     }
 }
