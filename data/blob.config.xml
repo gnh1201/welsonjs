@@ -10,18 +10,9 @@
                 <url>https://ajax.googleapis.com/</url>
             </prefixUrls>
         </route>
-        <route stripPrefix="true">
-            <matches>
-                <match>ajax/libs/bootstrap/</match>
-            </matches>
-            <prefixUrls>
-                <url>https://maxcdn.bootstrapcdn.com/bootstrap/</url>
-                <url>https://stackpath.bootstrapcdn.com/bootstrap/</url>
-                <url>https://cdnjs.cloudflare.com/ajax/libs/bootstrap/<url>
-            </prefixUrls>
-        </route>
         <route stripPrefix="false">
             <matches>
+                <match>npm/</match>
                 <match>gh/</match>
                 <match>wp/</match>
             </matches>
@@ -31,14 +22,21 @@
         </route>
         <route stripPrefix="false">
             <matches>
-                <match>^(?:@[^/]+/)?[^/@]+@[^/]+/</match>
+                <match>^[^/@]+@[^/]+/</match>
             </matches>
             <prefixUrls>
-                <url>https://cdn.jsdelivr.net/npm/</url>
                 <url>https://unpkg.com/</url>
                 <url>https://www.skypack.dev/</url>
                 <url>https://esm.sh/</url>
                 <url>https://esm.run/</url>
+            </prefixUrls>
+        </route>
+        <route stripPrefix="true">
+            <matches>
+                <match>jquery/</match>
+            </matches>
+            <prefixUrls>
+                <url>https://code.jquery.com/</url>
             </prefixUrls>
         </route>
         <route stripPrefix="true">
@@ -52,26 +50,10 @@
         </route>
         <route stripPrefix="true">
             <matches>
-                <match>ajax/jquery/</match>
-            </matches>
-            <prefixUrls>
-                <url>https://code.jquery.com/</url>
-            </prefixUrls>
-        </route>
-        <route stripPrefix="true">
-            <matches>
-                <match>ajax/aspnet/</match>
+                <match>ajax/</match>
             </matches>
             <prefixUrls>
                 <url>https://ajax.aspnetcdn.com/</url>
-            </prefixUrls>
-        </route>
-        <route stripPrefix="true">
-            <matches>
-                <match>ajax/ckeditor5/</match>
-            </matches>
-            <prefixUrls>
-                <url>https://cdn.ckeditor.com/ckeditor5/</url>
             </prefixUrls>
         </route>
         <route stripPrefix="true">

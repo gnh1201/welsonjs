@@ -12,17 +12,7 @@
         },
         {
             "matches": [
-                "ajax/libs/bootstrap/"
-            ],
-            "prefixUrls": [
-                "https://cdnjs.cloudflare.com/ajax/libs/bootstrap/",
-                "https://maxcdn.bootstrapcdn.com/bootstrap/",
-                "https://stackpath.bootstrapcdn.com/bootstrap/"
-            ],
-            "stripPrefix": true
-        },
-        {
-            "matches": [
+                "npm/",
                 "gh/",
                 "wp/"
             ],
@@ -33,16 +23,24 @@
         },
         {
             "matches": [
-                "^(?:@[^/]+/)?[^/@]+@[^/]+/"
+                "^[^/@]+@[^/]+/"
             ],
             "prefixUrls": [
-                "https://cdn.jsdelivr.net/npm/",
                 "https://unpkg.com/",
                 "https://www.skypack.dev/",
                 "https://esm.sh/",
                 "https://esm.run/"
             ],
             "stripPrefix": false
+        },
+        {
+            "matches": [
+                "jquery/"
+            ],
+            "prefixUrls": [
+                "https://code.jquery.com/"
+            ],
+            "stripPrefix": true
         },
         {
             "matches": [
@@ -56,28 +54,10 @@
         },
         {
             "matches": [
-                "ajax/jquery/"
-            ],
-            "prefixUrls": [
-                "https://code.jquery.com/"
-            ],
-            "stripPrefix": true
-        },
-        {
-            "matches": [
-                "ajax/aspnet/"
+                "ajax/"
             ],
             "prefixUrls": [
                 "https://ajax.aspnetcdn.com/"
-            ],
-            "stripPrefix": true
-        },
-        {
-            "matches": [
-                "ajax/ckeditor5/"
-            ],
-            "prefixUrls": [
-                "https://cdn.ckeditor.com/ckeditor5/"
             ],
             "stripPrefix": true
         },
