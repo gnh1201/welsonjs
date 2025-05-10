@@ -1137,7 +1137,7 @@ var test_implements = {
             job.setHostName("example.org");
             job.setResourceName(resourceName);
             job.saveTo("D:\\");
-        };
+        });
     }
 };
 
