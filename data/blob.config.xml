@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<blobConfig>
+    <routes>
+        <route stripPrefix="false">
+            <matches>
+                <match>ajax/libs/</match>
+            </matches>
+            <prefixUrls>
+                <url>https://cdnjs.cloudflare.com/</url>
+                <url>https://ajax.googleapis.com/</url>
+            </prefixUrls>
+        </route>
+        <route stripPrefix="false">
+            <matches>
+                <match>npm/</match>
+                <match>gh/</match>
+                <match>wp/</match>
+            </matches>
+            <prefixUrls>
+                <url>https://cdn.jsdelivr.net/</url>
+            </prefixUrls>
+        </route>
+        <route stripPrefix="false">
+            <matches>
+                <match>^[^/@]+@[^/]+/</match>
+            </matches>
+            <prefixUrls>
+                <url>https://unpkg.com/</url>
+                <url>https://www.skypack.dev/</url>
+                <url>https://esm.sh/</url>
+                <url>https://esm.run/</url>
+            </prefixUrls>
+        </route>
+        <route stripPrefix="true">
+            <matches>
+                <match>jquery/</match>
+            </matches>
+            <prefixUrls>
+                <url>https://code.jquery.com/</url>
+            </prefixUrls>
+        </route>
+        <route stripPrefix="true">
+            <matches>
+                <match>polyfill/</match>
+            </matches>
+            <prefixUrls>
+                <url>https://cdnjs.cloudflare.com/</url>
+                <url>https://polyfill-fastly.io/</url>
+            </prefixUrls>
+        </route>
+        <route stripPrefix="true">
+            <matches>
+                <match>ajax/</match>
+            </matches>
+            <prefixUrls>
+                <url>https://ajax.aspnetcdn.com/</url>
+            </prefixUrls>
+        </route>
+        <route stripPrefix="true">
+            <matches>
+                <match>raw/gh/</match>
+            </matches>
+            <prefixUrls>
+                <url>https://raw.githubusercontent.com/</url>
+            </prefixUrls>
+        </route>
+    </routes>
+</blobConfig>

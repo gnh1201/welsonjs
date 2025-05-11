@@ -184,37 +184,10 @@
   <data name="AzureAiServiceApiVersion" xml:space="preserve">
     <value>2024-05-01-preview</value>
   </data>
-  <data name="CdnJsPrefix" xml:space="preserve">
-    <value>https://cdnjs.cloudflare.com/</value>
+  <data name="BlobConfigUrl" xml:space="preserve">
+    <value>https://catswords.blob.core.windows.net/welsonjs/blob.config.xml</value>
   </data>
-  <data name="EsmRunPrefix" xml:space="preserve">
-    <value>https://esm.run/</value>
-  </data>
-  <data name="EsmShPrefix" xml:space="preserve">
-    <value>https://esm.sh/</value>
-  </data>
-  <data name="JqueryCdnPrefix" xml:space="preserve">
-    <value>https://code.jquery.com/</value>
-  </data>
-  <data name="JsDeliverPrefix" xml:space="preserve">
-    <value>https://cdn.jsdelivr.net/</value>
-  </data>
-  <data name="SkypackPrefix" xml:space="preserve">
-    <value>https://www.skypack.dev/</value>
-  </data>
-  <data name="UnpkgPrefix" xml:space="preserve">
-    <value>https://unpkg.com/</value>
-  </data>
-  <data name="AspNetCdnPrefix" xml:space="preserve">
-    <value>https://ajax.aspnetcdn.com/</value>
-  </data>
-  <data name="GoogleApisPrefix" xml:space="preserve">
-    <value>https://ajax.googleapis.com/</value>
-  </data>
-  <data name="PolyfillPrefix" xml:space="preserve">
-    <value>https://polyfill-fastly.io/</value>
-  </data>
-  <data name="RawGitHubPrefix" xml:space="preserve">
-    <value>https://raw.githubusercontent.com/</value>
+  <data name="HttpClientTimeout" xml:space="preserve">
+    <value>90</value>
   </data>
 </root>
