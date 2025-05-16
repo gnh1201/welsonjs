@@ -92,9 +92,6 @@ namespace WelsonJS.Launcher
 
         private bool IsValidFile(string filePath)
         {
-            if (!File.Exists(filePath))
-                throw new FileNotFoundException("File does not exist.", filePath);
-
             byte[] signature = new byte[4];
 
             using (var fs = File.OpenRead(filePath))
@@ -165,17 +162,15 @@ namespace WelsonJS.Launcher
         private bool ExtractUsingShell(string filePath, string workingDirectory)
         {
             var shellAppType = Type.GetTypeFromProgID("Shell.Application");
-
             if (shellAppType == null)
                 return false;
 
             dynamic shell = Activator.CreateInstance(shellAppType);
             if (shell == null)
                 return false;
+
             dynamic zip = shell.NameSpace(filePath);
             dynamic dest = shell.NameSpace(workingDirectory);
-            dynamic dest = shell.NameSpace(workingDirectory);
-
             if (zip == null || dest == null)
                 return false;
 
