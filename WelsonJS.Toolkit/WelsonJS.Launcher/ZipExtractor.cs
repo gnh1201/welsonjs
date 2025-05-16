@@ -176,13 +176,19 @@ namespace WelsonJS.Launcher
             if (zip == null || dest == null)
                 return false;
 
+            int expected = zip.Items().Count;
             dest.CopyHere(zip.Items(), 16);
-
+            
+            // wait (max 30 s) until all files appear
+            var sw = Stopwatch.StartNew();
+            while (dest.Items().Count < expected && sw.Elapsed < TimeSpan.FromSeconds(30))
+                System.Threading.Thread.Sleep(200);
+            
             Marshal.ReleaseComObject(zip);
             Marshal.ReleaseComObject(dest);
             Marshal.ReleaseComObject(shell);
-
-            return true;
+            
+            return dest.Items().Count == expected;
         }
     }
 }
