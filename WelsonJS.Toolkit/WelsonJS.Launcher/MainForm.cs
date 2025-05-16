@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Compression;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -12,11 +11,14 @@ namespace WelsonJS.Launcher
     {
         private string workingDirectory;
         private string instanceId;
-        private string entryFileName;
+        private readonly string entryFileName;
         private string scriptName;
+        private readonly ZipExtractor zipExtractor;
 
         public MainForm()
         {
+            zipExtractor = new ZipExtractor();
+
             entryFileName = "bootstrap.bat";
 
             InitializeComponent();
@@ -130,17 +132,18 @@ namespace WelsonJS.Launcher
                         Directory.Delete(workingDirectory, true);
                     }
 
-                    // try to extact ZIP file
-                    ZipFile.ExtractToDirectory(filePath, workingDirectory);
+                    // try to extact ZIP compressed file
+                    if (zipExtractor.Extract(filePath, workingDirectory))
+                    {
+                        // record the first deploy time
+                        RecordFirstDeployTime(workingDirectory);
 
-                    // record the first deploy time
-                    RecordFirstDeployTime(workingDirectory);
+                        // follow the sub-directory
+                        workingDirectory = Program.GetWorkingDirectory(instanceId, true);
 
-                    // follow the sub-directory
-                    workingDirectory = Program.GetWorkingDirectory(instanceId, true);
-
-                    // Run the appliction
-                    Program.RunCommandPrompt(workingDirectory, entryFileName, scriptName, cbUseSpecificScript.Checked, cbInteractiveServiceApp.Checked);
+                        // Run the appliction
+                        Program.RunCommandPrompt(workingDirectory, entryFileName, scriptName, cbUseSpecificScript.Checked, cbInteractiveServiceApp.Checked);
+                    }
                 }
                 catch (Exception ex)
                 {
