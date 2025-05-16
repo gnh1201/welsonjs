@@ -79,10 +79,12 @@ namespace WelsonJS.Launcher
 
             Directory.CreateDirectory(workingDirectory);
 
-            var extractor = AvailableExtractors.FirstOrDefault(e => e.Path != null);
-            if (extractor != null)
+            foreach (var extractor in AvailableExtractors.Where(e => e.Path != null))
             {
-                return RunProcess(extractor.Path, extractor.ExtractCommand(filePath, workingDirectory));
+                if (RunProcess(extractor.Path, extractor.ExtractCommand(filePath, workingDirectory)))
+                {
+                    return true;
+                }
             }
 
             return ExtractUsingShell(filePath, workingDirectory);
@@ -110,19 +112,20 @@ namespace WelsonJS.Launcher
 
         private string FindExecutable(string executableFileName)
         {
-            var paths = (Environment.GetEnvironmentVariable("PATH") ?? "").Split(';');
+            var paths = (Environment.GetEnvironmentVariable("PATH") ?? "").Split(Path.PathSeparator);
             foreach (var dir in paths)
             {
-                var full = Path.Combine(dir.Trim(), executableFileName);
-                if (File.Exists(full))
-                    return full;
+                var fullpath = Path.Combine(dir.Trim(), executableFileName);
+                if (File.Exists(fullpath))
+                    return fullpath;
             }
 
             // Check common install locations
             var programDirs = new[]
             {
                 Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
-                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)
+                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+                Path.Combine(Program.GetAppDataPath(), "bin")  // find an extractor from APPDATA directory
             };
 
             foreach (var dir in programDirs)
@@ -139,11 +142,11 @@ namespace WelsonJS.Launcher
             return null;
         }
 
-        private bool RunProcess(string filePath, string arguments)
+        private bool RunProcess(string executableFilePath, string arguments)
         {
             var psi = new ProcessStartInfo
             {
-                FileName = filePath,
+                FileName = executableFilePath,
                 Arguments = arguments,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
@@ -151,24 +154,21 @@ namespace WelsonJS.Launcher
                 CreateNoWindow = true
             };
 
-            using (var process = Process.Start(psi))
+            using (var process = new Process { StartInfo = psi, EnableRaisingEvents = true })
             {
+                process.Start();
                 process.WaitForExit();
-
-                if (process.ExitCode != 0)
-                {
-                    string errorOutput = process.StandardError.ReadToEnd();
-                    throw new InvalidOperationException(
-                        $"Process '{filePath}' exited with code {process.ExitCode}. Error output: {errorOutput}");
-                }
+                return process.ExitCode == 0;
             }
-
-            return true;
         }
 
         private bool ExtractUsingShell(string filePath, string workingDirectory)
         {
             var shellAppType = Type.GetTypeFromProgID("Shell.Application");
+
+            if (shellAppType == null)
+                return false;
+
             dynamic shell = Activator.CreateInstance(shellAppType);
             dynamic zip = shell.NameSpace(filePath);
             dynamic dest = shell.NameSpace(workingDirectory);

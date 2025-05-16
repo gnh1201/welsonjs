@@ -141,7 +141,7 @@ namespace WelsonJS.Launcher
                         // follow the sub-directory
                         workingDirectory = Program.GetWorkingDirectory(instanceId, true);
 
-                        // Run the appliction
+                        // Run the application
                         Program.RunCommandPrompt(workingDirectory, entryFileName, scriptName, cbUseSpecificScript.Checked, cbInteractiveServiceApp.Checked);
                     }
                 }
