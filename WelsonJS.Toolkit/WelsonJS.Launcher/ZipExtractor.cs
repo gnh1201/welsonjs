@@ -170,7 +170,10 @@ namespace WelsonJS.Launcher
                 return false;
 
             dynamic shell = Activator.CreateInstance(shellAppType);
+            if (shell == null)
+                return false;
             dynamic zip = shell.NameSpace(filePath);
+            dynamic dest = shell.NameSpace(workingDirectory);
             dynamic dest = shell.NameSpace(workingDirectory);
 
             if (zip == null || dest == null)
