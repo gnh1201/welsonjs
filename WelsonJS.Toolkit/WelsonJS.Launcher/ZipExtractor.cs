@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace WelsonJS.Launcher
 {
@@ -11,9 +12,10 @@ namespace WelsonJS.Launcher
     {
         class Extractor
         {
-            public string Name;
-            public string Path;
-            public Func<string, string, string> ExtractCommand;
+            public string Name { get; set; }
+            public string FileName { get; set; }
+            public string Path { get; set; }
+            public Func<string, string, string> ExtractCommand { get; set; }
         }
 
         private readonly List<Extractor> AvailableExtractors;
@@ -24,46 +26,48 @@ namespace WelsonJS.Launcher
                 new Extractor
                 {
                     Name = "7z",
-                    Path = FindExecutable("7z.exe"),
+                    FileName = "7z.exe",
                     ExtractCommand = (src, dest) => $"x \"{src}\" -o\"{dest}\" -y"
                 },
                 new Extractor
                 {
                     Name = "WinRAR",
-                    Path = FindExecutable("rar.exe"),
+                    FileName = "rar.exe",
                     ExtractCommand = (src, dest) => $"x -o+ \"{src}\" \"{dest}\\\""
                 },
                 new Extractor
                 {
                     Name = "PeaZip",
-                    Path = FindExecutable("peazip.exe"),
+                    FileName = "peazip.exe",
                     ExtractCommand = (src, dest) => $"-ext2simple \"{src}\" \"{dest}\""
                 },
                 new Extractor
                 {
                     Name = "tar (Windows)",
-                    Path = FindExecutable("tar.exe"),
+                    FileName = "tar.exe",
                     ExtractCommand = (src, dest) => $"-xf \"{src}\" -C \"{dest}\""
                 },
                 new Extractor
                 {
                     Name = "WinZip",
-                    Path = FindExecutable("wzunzip.exe"),
+                    FileName = "wzunzip.exe",
                     ExtractCommand = (src, dest) => $"-d \"{dest}\" \"{src}\""
                 },
                 new Extractor
                 {
                     Name = "ALZip",
-                    Path = FindExecutable("ALZipcon.exe"),
+                    FileName = "ALZipcon.exe",
                     ExtractCommand = (src, dest) => $"-x \"{src}\" \"{dest}\""
                 },
                 new Extractor
                 {
                     Name = "Bandizip",
-                    Path = FindExecutable("Bandizip.exe"),
+                    FileName = "Bandizip.exe",
                     ExtractCommand = (src, dest) => $"x -o:\"{dest}\" \"{src}\" -y"
                 }
             };
+
+            Task.Run(() => CheckAvailableExtractors());
         }
 
         public bool Extract(string filePath, string workingDirectory)
@@ -107,36 +111,54 @@ namespace WelsonJS.Launcher
             return signature.SequenceEqual(new byte[] { 0x50, 0x4B, 0x03, 0x04 });
         }
 
-        private string FindExecutable(string executableFileName)
+        private void CheckAvailableExtractors()
         {
+            var fileNames = AvailableExtractors.Select(e => e.FileName).ToList();
+
+            // Check PATH environment variable
             var paths = (Environment.GetEnvironmentVariable("PATH") ?? "").Split(Path.PathSeparator);
             foreach (var dir in paths)
             {
-                var fullpath = Path.Combine(dir.Trim(), executableFileName);
-                if (File.Exists(fullpath))
-                    return fullpath;
+                foreach (var fileName in fileNames)
+                {
+                    var path = Path.Combine(dir.Trim(), fileName);
+                    if (File.Exists(path))
+                    {
+                        var index = fileNames.IndexOf(fileName);
+                        var extractor = AvailableExtractors[index];
+                        extractor.Path = path;
+                    }
+                }
             }
 
             // Check common install locations
             var programDirs = new[]
             {
+                Path.Combine(Program.GetAppDataPath(), "bin"),  // find an extractor from APPDATA directory
                 Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
-                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
-                Path.Combine(Program.GetAppDataPath(), "bin")  // find an extractor from APPDATA directory
+                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)
             };
 
-            foreach (var dir in programDirs)
+            foreach (var rootDir in programDirs)
             {
+                if (!Directory.Exists(rootDir))
+                    continue;
+
                 try
                 {
-                    var found = Directory.EnumerateFiles(dir, executableFileName, SearchOption.AllDirectories).FirstOrDefault();
-                    if (found != null)
-                        return found;
+                    foreach (var file in Directory.EnumerateFiles(rootDir, "*", SearchOption.AllDirectories))
+                    {
+                        var fileName = Path.GetFileName(file);
+                        if (fileNames.Contains(fileName))
+                        {
+                            var index = fileNames.IndexOf(fileName);
+                            var extractor = AvailableExtractors[index];
+                            extractor.Path = file;
+                        }
+                    }
                 }
                 catch { }
             }
-
-            return null;
         }
 
         private bool RunProcess(string executableFilePath, string arguments)
