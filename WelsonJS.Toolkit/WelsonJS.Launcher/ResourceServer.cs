@@ -56,6 +56,7 @@ namespace WelsonJS.Launcher
             _tools.Add(new ResourceTools.Settings(this, _httpClient));
             _tools.Add(new ResourceTools.DevTools(this, _httpClient));
             _tools.Add(new ResourceTools.DnsQuery(this, _httpClient));
+            _tools.Add(new ResourceTools.CitiQuery(this, _httpClient));
             _tools.Add(new ResourceTools.Tfa(this, _httpClient));
             _tools.Add(new ResourceTools.Whois(this, _httpClient));
         }
@@ -367,6 +368,11 @@ namespace WelsonJS.Launcher
             else if (mimeType == "application/xml" && !data.StartsWith("<?xml"))
             {
                 data = xmlHeader + "\r\n" + data;
+            }
+            else if (mimeType == "application/json")
+            {
+                data = xmlHeader + "\r\n<json><![CDATA[" + data + "]]></json>";
+                mimeType = "application/xml";
             }
 
             ServeResource(context, Encoding.UTF8.GetBytes(data), mimeType, statusCode);
