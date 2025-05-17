@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace WelsonJS.Launcher
@@ -16,6 +17,7 @@ namespace WelsonJS.Launcher
             public string FileName { get; set; }
             public string Path { get; set; }
             public Func<string, string, string> ExtractCommand { get; set; }
+            public bool UseCmd { get; set; } = false;
         }
 
         private readonly List<Extractor> AvailableExtractors;
@@ -61,6 +63,13 @@ namespace WelsonJS.Launcher
                 },
                 new Extractor
                 {
+                    Name = "jar (Java SDK)",
+                    FileName = "jar.exe",
+                    ExtractCommand = (src, dest) => $"jar xf \"{src}\"",
+                    UseCmd = true
+                },
+                new Extractor
+                {
                     Name = "tar (Windows)",  // Windows 10 build 17063 or later
                     FileName = "tar.exe",
                     ExtractCommand = (src, dest) => $"-xf \"{src}\" -C \"{dest}\""
@@ -91,7 +100,7 @@ namespace WelsonJS.Launcher
 
             foreach (var extractor in AvailableExtractors.Where(e => e.Path != null))
             {
-                if (RunProcess(extractor.Path, extractor.ExtractCommand(filePath, workingDirectory)))
+                if (RunProcess(extractor.Path, extractor, workingDirectory))
                     return true;
             }
 
@@ -167,18 +176,28 @@ namespace WelsonJS.Launcher
                         }
                     }
                 }
-                catch {
-                    // ignore an exception
+                catch (Exception ex)
+                {
+                    Trace.TraceInformation($"Ignored file or directory: {ex.Message}");
                 }
             }
         }
 
-        private bool RunProcess(string executableFilePath, string arguments)
+        private bool RunProcess(string executableFilePath, string arguments, string workingDirectory, bool useCmd = false)
         {
+            var fileName = executableFilePath;
+            var adjustedArguments = arguments;
+
+            if (useCmd && !String.IsNullOrEmpty(workingDirectory))
+            {
+                fileName = "cmd.exe";
+                adjustedArguments = $"/c cd /d \"{workingDirectory}\" && {arguments}";
+            }
+
             var psi = new ProcessStartInfo
             {
-                FileName = executableFilePath,
-                Arguments = arguments,
+                FileName = fileName,
+                Arguments = adjustedArguments,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
@@ -193,13 +212,22 @@ namespace WelsonJS.Launcher
             }
         }
 
+        private bool RunProcess(string executableFilePath, Extractor extractor, string workingDirectory)
+        {
+            return RunProcess(executableFilePath,
+                extractor.ExtractCommand(extractor.FileName, workingDirectory),
+                workingDirectory,
+                extractor.UseCmd
+            );
+        }
+
         private bool ExtractUsingPowerShell(string filePath, string workingDirectory)
         {
             var escapedSrc = filePath.Replace("'", "''");
             var escapedDest = workingDirectory.Replace("'", "''");
             var script = $"Expand-Archive -LiteralPath '{escapedSrc}' -DestinationPath '{escapedDest}' -Force";
 
-            return RunProcess("powershell.exe", $"-NoProfile -Command \"{script}\"");
+            return RunProcess("powershell.exe", $"-NoProfile -Command \"{script}\"", workingDirectory);
         }
 
         private bool ExtractUsingShell(string filePath, string workingDirectory)
