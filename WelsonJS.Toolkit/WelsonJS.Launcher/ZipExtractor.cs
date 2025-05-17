@@ -194,14 +194,8 @@ namespace WelsonJS.Launcher
         {
             int exitCode = -1;
 
-            string fileName = execFilePath;
-            string adjustedArguments = arguments;
-
-            if (useCmd && !String.IsNullOrEmpty(workingDirectory))
-            {
-                fileName = "cmd.exe";
-                adjustedArguments = $"/c cd /d \"{workingDirectory}\" && \"{execFilePath}\" {arguments}";
-            }
+            string fileName = useCmd ? "cmd.exe" : execFilePath;
+            string adjustedArguments = useCmd ? $"/c \"{execFilePath}\" {arguments}" : arguments;
 
             var psi = new ProcessStartInfo
             {
@@ -222,13 +216,9 @@ namespace WelsonJS.Launcher
             }
 
             if (exitCode != 0)
-            {
                 Trace.TraceWarning($"{fileName} exit with code {exitCode}");
-            }
             else
-            {
                 Trace.TraceInformation($"{fileName} finished successfully");
-            }
 
             return exitCode == 0;
         }
