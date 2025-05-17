@@ -64,7 +64,7 @@ namespace WelsonJS.Launcher
                 {
                     Name = "jar (Java SDK)",
                     FileName = "jar.exe",
-                    ExtractCommand = (src, dest) => $"jar xf \"{src}\"",
+                    ExtractCommand = (src, dest) => $"xf \"{src}\"",
                     UseCmd = true
                 },
                 new Extractor
@@ -190,7 +190,7 @@ namespace WelsonJS.Launcher
             if (useCmd && !String.IsNullOrEmpty(workingDirectory))
             {
                 fileName = "cmd.exe";
-                adjustedArguments = $"/c cd /d \"{workingDirectory}\" && {arguments}";
+                adjustedArguments = $"/c cd /d \"{workingDirectory}\" && \"{executableFilePath}\" {arguments}";
             }
 
             var psi = new ProcessStartInfo
