@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace WelsonJS.Launcher
 {
@@ -23,6 +24,7 @@ namespace WelsonJS.Launcher
 
         public ZipExtractor()
         {
+            // Searches the computer for any known third-party ZIP utilities.
             AvailableExtractors = new List<Extractor>{
                 new Extractor
                 {
@@ -59,6 +61,12 @@ namespace WelsonJS.Launcher
                     Name = "Bandizip",
                     FileName = "Bandizip.exe",
                     ExtractCommand = (src, dest) => $"x -o:\"{dest}\" \"{src}\" -y"
+                },
+                new Extractor
+                {
+                    Name = "IZArc",
+                    FileName = "izarce.exe",
+                    ExtractCommand = (src, dest) => $"-d -p\"{dest}\" \"{src}\""
                 },
                 new Extractor
                 {
@@ -99,14 +107,14 @@ namespace WelsonJS.Launcher
 
             foreach (var extractor in AvailableExtractors.Where(e => e.Path != null))
             {
-                if (RunProcess(extractor.Path, extractor, workingDirectory))
+                if (RunProcess(extractor, filePath, workingDirectory, true))
                     return true;
             }
 
-            if (ExtractUsingPowerShell(filePath, workingDirectory))
+            if (ExtractUsingPowerShell(filePath, workingDirectory, true))
                 return true;
 
-            if (ExtractUsingShell(filePath, workingDirectory))
+            if (ExtractUsingShell(filePath, workingDirectory, true))
                 return true;
 
             return false;
@@ -182,45 +190,60 @@ namespace WelsonJS.Launcher
             }
         }
 
-        private bool RunProcess(string executableFilePath, string arguments, string workingDirectory, bool useCmd = false)
+        private bool RunProcess(string execFilePath, string arguments, string workingDirectory, bool useCmd = false, bool showConsole = false)
         {
-            var fileName = executableFilePath;
-            var adjustedArguments = arguments;
+            int exitCode = -1;
+
+            string fileName = execFilePath;
+            string adjustedArguments = arguments;
 
             if (useCmd && !String.IsNullOrEmpty(workingDirectory))
             {
                 fileName = "cmd.exe";
-                adjustedArguments = $"/c cd /d \"{workingDirectory}\" && \"{executableFilePath}\" {arguments}";
+                adjustedArguments = $"/c cd /d \"{workingDirectory}\" && \"{execFilePath}\" {arguments}";
             }
 
             var psi = new ProcessStartInfo
             {
                 FileName = fileName,
                 Arguments = adjustedArguments,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
+                WorkingDirectory = workingDirectory,
+                RedirectStandardOutput = !showConsole,
+                RedirectStandardError = !showConsole,
+                UseShellExecute = showConsole,
+                CreateNoWindow = !showConsole
             };
 
             using (var process = new Process { StartInfo = psi, EnableRaisingEvents = true })
             {
                 process.Start();
                 process.WaitForExit();
-                return process.ExitCode == 0;
+                exitCode = process.ExitCode;
             }
+
+            if (exitCode != 0)
+            {
+                Trace.TraceWarning($"{fileName} exit with code {exitCode}");
+            }
+            else
+            {
+                Trace.TraceInformation($"{fileName} finished successfully");
+            }
+
+            return exitCode == 0;
         }
 
-        private bool RunProcess(string executableFilePath, Extractor extractor, string workingDirectory)
+        private bool RunProcess(Extractor extractor, string filePath, string workingDirectory, bool showConsole = false)
         {
-            return RunProcess(executableFilePath,
-                extractor.ExtractCommand(extractor.FileName, workingDirectory),
+            return RunProcess(extractor.Path,
+                extractor.ExtractCommand(filePath, workingDirectory),
                 workingDirectory,
-                extractor.UseCmd
+                extractor.UseCmd,
+                showConsole
             );
         }
 
-        private bool ExtractUsingPowerShell(string filePath, string workingDirectory)
+        private bool ExtractUsingPowerShell(string filePath, string workingDirectory, bool showConsole = false)
         {
             var escapedSrc = filePath.Replace("'", "''");
             var escapedDest = workingDirectory.Replace("'", "''");
@@ -229,7 +252,7 @@ namespace WelsonJS.Launcher
             return RunProcess("powershell.exe", $"-NoProfile -Command \"{script}\"", workingDirectory);
         }
 
-        private bool ExtractUsingShell(string filePath, string workingDirectory)
+        private bool ExtractUsingShell(string filePath, string workingDirectory, bool showConsole = false)
         {
             var shellAppType = Type.GetTypeFromProgID("Shell.Application");
             if (shellAppType == null)
