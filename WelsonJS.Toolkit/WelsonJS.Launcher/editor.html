@@ -119,7 +119,8 @@
 
             function RibbonMenu({
                 onOpenFileClick, onSaveFileClick, onCopliotClick, onAzureAiClick,
-                onSavePromptClick, onLoadPromptClick, onQueryWhoisClick, onQueryDnsClick
+                onSavePromptClick, onLoadPromptClick, onQueryWhoisClick, onQueryDnsClick,
+                onQueryCitiClick
             }) {
                 const fileButtons = [
                     {
@@ -145,7 +146,8 @@
 
                 const networkToolsButtons = [
                     { id: 'btnWhois', icon: 'mif-earth', caption: 'Whois', onClick: onQueryWhoisClick },
-                    { id: 'btnDnsQuery', icon: 'mif-earth', caption: 'DNS', onClick: onQueryDnsClick }
+                    { id: 'btnQueryDns', icon: 'mif-earth', caption: 'DNS', onClick: onQueryDnsClick },
+                    { id: 'btnQueryCiti', icon: 'mif-user-secret', caption: 'IP', onClick: onQueryCitiClick }
                 ];
 
                 return _e(
@@ -465,6 +467,11 @@
                     pushPromptMessage("user", promptMessage);
 
                     const apiKey = settingsRef.current.AzureAiServiceApiKey;
+                    if (!apiKey || apiKey.trim() == '') {
+                        alert("Azure AI API key is not set.");
+                        return;
+                    }
+
                     const url = `${settingsRef.current.AzureAiServicePrefix}models/chat/completions?api-version=${settingsRef.current.AzureAiServiceApiVersion}`;
 
                     const data = {
@@ -537,7 +544,7 @@
 
                     axios.get(`${serverPrefix}whois/${hostname}`).then(response => {
                         const responseText = DOMPurify.sanitize(response.data, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
-                        appendTextToEditor(`/*\n${responseText}\n*/`);
+                        appendTextToEditor(`/*\nHostname:${hostname}\n\n${responseText}\n*/`);
                         pushPromptMessage("system", responseText);
                     }).catch(error => {
                         console.error(error);
@@ -553,10 +560,75 @@
 
                     axios.get(`${serverPrefix}dns-query/${hostname}`).then(response => {
                         const responseText = response.data;
-                        appendTextToEditor(`/*\n${responseText}\n*/`);
+                        appendTextToEditor(`/*\nHostname:${hostname}\n\n${responseText}\n*/`);
                         pushPromptMessage("system", responseText);
                     }).catch(error => {
                         console.error(error);
+                    });
+                };
+
+                const queryCiti = () => {
+                    const hostname = prompt("Enter IP address:", '');
+                    if (!hostname || hostname.trim() === '') {
+                        appendTextToEditor("\n// IP address is required.");
+                        return;
+                    }
+
+                    const apiKey = settingsRef.current.CitiApiKey;
+                    if (!apiKey || apiKey.trim() === '') {
+                        appendTextToEditor("\n// Criminal IP API key is not set.");
+                        return;
+                    }
+
+                    const apiPrefix = settingsRef.current.CitiApiPrefix;
+                    const ip = encodeURIComponent(hostname.trim());
+
+                    axios.get(`${serverPrefix}citi-query/${hostname}`).then(response => {
+                        const parser = new XMLParser();
+                        const result = parser.parse(response.data);
+                        const data = JSON.parse(result.json);
+                        if (!data) {
+                            appendTextToEditor("\n// No data returned from Criminal IP.");
+                            return;
+                        }
+
+                        const lines = [];
+                        lines.push(`/*\nCriminal IP Report: ${hostname}\n`);
+                        
+                        // network port data
+                        lines.push(`## Network ports:`);
+                        if (data.port.data.length == 0) {
+                            lines.push(`* No open ports found.`);
+                        } else {
+                            data.port.data.forEach(x => {
+                                lines.push(`### ${x.open_port_no}/${x.socket}`);
+                                lines.push(`* Application: ${x.app_name} ${x.app_version}`);
+                                lines.push(`* Discovered hostnames: ${x.dns_names}`);
+                                lines.push(`* Confirmed Time: ${x.confirmed_time}`);
+                            });
+                        }
+
+                        // vulnerability data
+                        lines.push(`## Vulnerabilities:`);
+                        if (data.vulnerability.data.length == 0) {
+                            lines.push(`* No vulnerabilities found.`);
+                        } else {
+                            data.vulnerability.data.forEach(x => {
+                                lines.push(`### ${x.cve_id}`);
+                                lines.push(`* ${x.cve_description}`);
+                                lines.push(`* CVSSV2 Score: ${x.cvssv2_score}`);
+                                lines.push(`* CVSSV3 Score: ${x.cvssv3_score}`);
+                            });
+                        }
+
+                        lines.push(`*/\n`);
+                        const report = lines.join('\n');
+
+                        appendTextToEditor(report);
+                        pushPromptMessage("system", report);
+                    }).catch(error => {
+                        console.error(error);
+                        appendTextToEditor(`\n// Failed to query Criminal IP: ${error.message}`);
                     });
                 };
 
@@ -578,7 +650,8 @@
                         onSavePromptClick: savePromptMessages,
                         onLoadPromptClick: loadPromptMessages,
                         onQueryWhoisClick: queryWhois,
-                        onQueryDnsClick: queryDns
+                        onQueryDnsClick: queryDns,
+                        onQueryCitiClick: queryCiti
                     }),
                     _e('div', { id: 'container' },
                         _e(Editor, { editorRef }),

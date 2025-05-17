@@ -69,6 +69,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="IResourceTool.cs" />
+    <Compile Include="ResourceTools\CitiQuery.cs" />
     <Compile Include="ResourceTools\Settings.cs" />
     <Compile Include="ResourceTools\Completion.cs" />
     <Compile Include="ResourceTools\DevTools.cs" />

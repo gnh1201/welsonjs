@@ -106,6 +106,24 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
+        ///   과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string CitiApiKey {
+            get {
+                return ResourceManager.GetString("CitiApiKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   https://api.criminalip.io/v1/과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string CitiApiPrefix {
+            get {
+                return ResourceManager.GetString("CitiApiPrefix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   https://copilot.microsoft.com/과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string CopilotUrl {

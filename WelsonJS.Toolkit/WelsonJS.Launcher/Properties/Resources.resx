@@ -190,4 +190,10 @@
   <data name="HttpClientTimeout" xml:space="preserve">
     <value>90</value>
   </data>
+  <data name="CitiApiKey" xml:space="preserve">
+    <value />
+  </data>
+  <data name="CitiApiPrefix" xml:space="preserve">
+    <value>https://api.criminalip.io/v1/</value>
+  </data>
 </root>
