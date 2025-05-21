@@ -144,10 +144,6 @@ namespace WelsonJS.Launcher
                         // Run the application
                         Program.RunCommandPrompt(workingDirectory, entryFileName, scriptName, cbUseSpecificScript.Checked, cbInteractiveServiceApp.Checked);
                     }
-                    else
-                    {
-                        MessageBox.Show("Failed to extract the ZIP file.");
-                    }
                 }
                 catch (Exception ex)
                 {
