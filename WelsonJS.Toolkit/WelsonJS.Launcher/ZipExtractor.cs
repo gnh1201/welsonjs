@@ -43,6 +43,12 @@ namespace WelsonJS.Launcher
                 },
                 new Extractor
                 {
+                    Name = "tar (Windows)",
+                    FileName = "tar.exe",
+                    ExtractCommand = (src, dest) => $"-xf \"{src}\" -C \"{dest}\""
+                },
+                new Extractor
+                {
                     Name = "WinZip",
                     FileName = "wzunzip.exe",
                     ExtractCommand = (src, dest) => $"-d \"{dest}\" \"{src}\""
@@ -58,18 +64,6 @@ namespace WelsonJS.Launcher
                     Name = "Bandizip",
                     FileName = "Bandizip.exe",
                     ExtractCommand = (src, dest) => $"x -o:\"{dest}\" \"{src}\" -y"
-                },
-                new Extractor
-                {
-                    Name = "tar (Windows)",  // Windows 10 build 17063 or later
-                    FileName = "tar.exe",
-                    ExtractCommand = (src, dest) => $"-xf \"{src}\" -C \"{dest}\""
-                },
-                new Extractor
-                {
-                    Name = "unzip",  // Info-ZIP, Cygwin
-                    FileName = "unzip.exe",
-                    ExtractCommand = (src, dest) => $"\"{src}\" -d \"{dest}\" -o"
                 }
             };
 
@@ -92,16 +86,12 @@ namespace WelsonJS.Launcher
             foreach (var extractor in AvailableExtractors.Where(e => e.Path != null))
             {
                 if (RunProcess(extractor.Path, extractor.ExtractCommand(filePath, workingDirectory)))
+                {
                     return true;
+                }
             }
 
-            if (ExtractUsingPowerShell(filePath, workingDirectory))
-                return true;
-
-            if (ExtractUsingShell(filePath, workingDirectory))
-                return true;
-
-            return false;
+            return ExtractUsingShell(filePath, workingDirectory);
         }
 
         private bool IsValidFile(string filePath)
@@ -167,9 +157,7 @@ namespace WelsonJS.Launcher
                         }
                     }
                 }
-                catch {
-                    // ignore an exception
-                }
+                catch { }
             }
         }
 
@@ -191,15 +179,6 @@ namespace WelsonJS.Launcher
                 process.WaitForExit();
                 return process.ExitCode == 0;
             }
-        }
-
-        private bool ExtractUsingPowerShell(string filePath, string workingDirectory)
-        {
-            var escapedSrc = filePath.Replace("'", "''");
-            var escapedDest = workingDirectory.Replace("'", "''");
-            var script = $"Expand-Archive -LiteralPath '{escapedSrc}' -DestinationPath '{escapedDest}' -Force";
-
-            return RunProcess("powershell.exe", $"-NoProfile -Command \"{script}\"");
         }
 
         private bool ExtractUsingShell(string filePath, string workingDirectory)
