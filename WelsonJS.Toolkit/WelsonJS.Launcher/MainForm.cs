@@ -109,10 +109,10 @@ namespace WelsonJS.Launcher
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     string filePath = openFileDialog.FileName;
+
+                    DisableUI();
                     Task.Run(() => ExtractAndRun(filePath));
                 }
-
-                DisableUI();
             }
         }
 
