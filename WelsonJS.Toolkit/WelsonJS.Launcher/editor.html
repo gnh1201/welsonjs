@@ -170,6 +170,31 @@
             function Editor({ editorRef }) {
                 const containerRef = React.useRef(null);
 
+                const getSuggestions = (word, range) => axios.get(`/completion/${encodeURIComponent(word)}`)
+                    .then(response => {
+                        const parser = new XMLParser();
+                        const result = parser.parse(response.data);
+
+                        const suggestions = ((item) => Array.isArray(item) ? item : [item])(result.suggestions.item).map((item) => {
+                            return {
+                                label: item.label,
+                                kind: monaco.languages.CompletionItemKind.Text,
+                                documentation: item.documentation || "",
+                                insertText: '"' + item.insertText + '"',
+                                range: range
+                            };
+                        });
+
+                        return {
+                            suggestions: suggestions
+                        };
+                    })
+                    .catch(function () {
+                        return {
+                            suggestions: []
+                        };
+                    });
+
                 React.useEffect(() => {
                     if (!containerRef.current)
                         return;
@@ -178,6 +203,20 @@
                         const instance = monaco.editor.create(containerRef.current, {
                             value: ['// lib/sayhello.js', 'function say() {', '    console.log("hello");', '}', '', 'exports.say = say;', '', 'exports.VERSIONINFO = "SayHello (sayhello.js) version 0.1";', 'exports.AUTHOR = "abuse@catswords.net";', 'exports.global = global;', 'exports.require = global.require;'].join('\n'),
                             language: 'javascript'
+                        });
+
+                        monaco.languages.registerCompletionItemProvider('javascript', {
+                            provideCompletionItems: function (model, position) {
+                                const word = model.getWordUntilPosition(position);
+                                const range = {
+                                    startLineNumber: position.lineNumber,
+                                    endLineNumber: position.lineNumber,
+                                    startColumn: word.startColumn,
+                                    endColumn: word.endColumn
+                                };
+
+                                return getSuggestions(word.word, range);
+                            }
                         });
 
                         editorRef.current = instance;
@@ -234,14 +273,13 @@
             }
 
             function App() {
-                const serverPrefix = "http://localhost:3000/";
                 const editorRef = React.useRef(null);
                 const promptEditorRef = React.useRef(null);
                 const settingsRef = React.useRef({});
                 const fileNameRef = React.useRef('sayhello.js');
                 const promptMessagesRef = React.useRef([]);
 
-                const fetchSettings = () => axios.get(`${serverPrefix}settings`)
+                const fetchSettings = () => axios.get(`/settings`)
                     .then(response => {
                         const parser = new XMLParser();
                         const result = parser.parse(response.data);
@@ -258,38 +296,6 @@
                         if (editorRef.current) editorRef.current.layout();
                     }
                 };
-
-                const getSuggestions = (word) => axios.get(`${serverPrefix}completion/${encodeURIComponent(word)}`)
-                    .then(response => {
-                        const parser = new XMLParser();
-                        const result = parser.parse(response.data);
-
-                        if (!result.suggestions || !result.suggestions.item) {
-                            return {
-                                suggestions: []
-                            };
-                        }
-
-                        const items = Array.isArray(result.suggestions.item) ? result.suggestions.item : [result.suggestions.item];
-                        const suggestions = items.map(function (item) {
-                            return {
-                                label: item.label,
-                                kind: monaco.languages.CompletionItemKind.Text,
-                                documentation: item.documentation || "",
-                                insertText: '"' + item.insertText + '"',
-                                range: range
-                            };
-                        });
-
-                        return {
-                            suggestions: suggestions
-                        };
-                    })
-                    .catch(function () {
-                        return {
-                            suggestions: []
-                        };
-                    });
 
                 const pushPromptMessage = (role, content) => {
                     promptMessagesRef.current.push({
@@ -442,7 +448,7 @@
                 };
 
                 const getTargetByUrl = async (urlPart) => {
-                    const response = await fetch(`${serverPrefix}devtools/json`);
+                    const response = await fetch(`/devtools/json`);
                     const targets = await response.json();
 
                     const target = targets.find(target => target.url.includes(urlPart));
@@ -542,7 +548,7 @@
                         return;
                     }
 
-                    axios.get(`${serverPrefix}whois/${hostname}`).then(response => {
+                    axios.get(`/whois/${hostname}`).then(response => {
                         const responseText = DOMPurify.sanitize(response.data, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
                         appendTextToEditor(`/*\nHostname:${hostname}\n\n${responseText}\n*/`);
                         pushPromptMessage("system", responseText);
@@ -558,7 +564,7 @@
                         return;
                     }
 
-                    axios.get(`${serverPrefix}dns-query/${hostname}`).then(response => {
+                    axios.get(`/dns-query/${hostname}`).then(response => {
                         const responseText = response.data;
                         appendTextToEditor(`/*\nHostname:${hostname}\n\n${responseText}\n*/`);
                         pushPromptMessage("system", responseText);
@@ -583,7 +589,7 @@
                     const apiPrefix = settingsRef.current.CitiApiPrefix;
                     const ip = encodeURIComponent(hostname.trim());
 
-                    axios.get(`${serverPrefix}citi-query/${hostname}`).then(response => {
+                    axios.get(`/citi-query/${hostname}`).then(response => {
                         const parser = new XMLParser();
                         const result = parser.parse(response.data);
                         const data = JSON.parse(result.json);

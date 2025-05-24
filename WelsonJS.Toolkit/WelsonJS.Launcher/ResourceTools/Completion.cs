@@ -17,19 +17,16 @@ namespace WelsonJS.Launcher.ResourceTools
         private readonly ResourceServer Server;
         private readonly HttpClient _httpClient;
         private const string Prefix = "completion/";
-        private List<string> Executables = new List<string>();
+        private List<string> DiscoverdExecutables = new List<string>();
 
         public Completion(ResourceServer server, HttpClient httpClient)
         {
             Server = server;
             _httpClient = httpClient;
 
-            new Task(() =>
-            {
-                Executables.AddRange(GetInstalledSoftwareExecutables());
-                Executables.AddRange(GetExecutablesFromPath());
-                Executables.AddRange(GetExecutablesFromNetFx());
-            }).Start();
+            Task.Run(() => DiscoverFromInstalledSoftware());
+            Task.Run(() => DiscoverFromPathVariable());
+            Task.Run(() => DiscoverFromProgramDirectories());
         }
 
         public bool CanHandle(string path)
@@ -45,7 +42,7 @@ namespace WelsonJS.Launcher.ResourceTools
 
             try
             {
-                CompletionItem[] completionItems = Executables
+                CompletionItem[] completionItems = DiscoverdExecutables
                     .Where(exec => exec.IndexOf(word, 0, StringComparison.OrdinalIgnoreCase) > -1)
                     .Take(100) // Limit the number of results
                     .Select(exec => new CompletionItem
@@ -70,137 +67,109 @@ namespace WelsonJS.Launcher.ResourceTools
             }
             catch (Exception ex)
             {
-                Server.ServeResource(context, $"<error>Failed to process completion request. {ex.Message}</error>", "application/xml", 500);
+                Server.ServeResource(context, $"<error>Failed to try completion. {ex.Message}</error>", "application/xml", 500);
             }
         }
 
-        private List<string> GetInstalledSoftwareExecutables()
+        private void DiscoverFromInstalledSoftware()
         {
-            List<string> executables = new List<string>();
-            string registryKey = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
+            const string registryPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
 
-            using (RegistryKey key = Registry.LocalMachine.OpenSubKey(registryKey))
+            using (RegistryKey key = Registry.LocalMachine.OpenSubKey(registryPath))
             {
-                if (key != null)
-                {
-                    foreach (string subKeyName in key.GetSubKeyNames())
-                    {
-                        using (RegistryKey subKey = key.OpenSubKey(subKeyName))
-                        {
-                            string installLocation = subKey?.GetValue("InstallLocation") as string;
-                            string uninstallString = subKey?.GetValue("UninstallString") as string;
+                if (key == null) return;
 
-                            List<string> executablePaths = FindExecutables(installLocation, uninstallString);
-                            executables.AddRange(executablePaths);
+                foreach (string subKeyName in key.GetSubKeyNames())
+                {
+                    RegistryKey subKey = key.OpenSubKey(subKeyName);
+                    if (subKey == null) continue;
+
+                    using (subKey)
+                    {
+                        string installLocation = subKey.GetValue("InstallLocation") as string;
+                        if (!string.IsNullOrEmpty(installLocation))
+                        {
+                            SearchAllExecutables(installLocation);
+                        }
+
+                        string uninstallString = subKey.GetValue("UninstallString") as string;
+                        if (!string.IsNullOrEmpty(uninstallString))
+                        {
+                            var match = Regex.Match(uninstallString, @"(?<=""|^)([a-zA-Z]:\\[^""]+\.exe)", RegexOptions.IgnoreCase);
+                            if (match.Success && File.Exists(match.Value))
+                            {
+                                DiscoverdExecutables.Add(match.Value);
+                            }
                         }
                     }
                 }
             }
-
-            return executables;
         }
 
-        private List<string> FindExecutables(string installLocation, string uninstallString)
-        {
-            List<string> executables = new List<string>();
+        private void DiscoverFromPathVariable() {
+            var paths = (Environment.GetEnvironmentVariable("PATH") ?? string.Empty)
+                .Split(';')
+                .Select(p => p.Trim())
+                .Where(p => !string.IsNullOrEmpty(p));
 
-            if (!string.IsNullOrEmpty(installLocation) && Directory.Exists(installLocation))
+            foreach (string path in paths)
             {
-                try
-                {
-                    List<string> executableFiles = Directory.GetFiles(installLocation, "*.exe", SearchOption.AllDirectories)
-                                            .OrderByDescending(f => new FileInfo(f).Length)
-                                            .ToList();
-                    executables.AddRange(executableFiles);
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine($"Error enumerating executables in '{installLocation}': {ex}");
-                }
+                SearchAllExecutables(path, SearchOption.TopDirectoryOnly);
             }
-
-            if (!string.IsNullOrEmpty(uninstallString))
-            {
-                if (TryParseExecutablePath(uninstallString, out string executablePath))
-                {
-                    executables.Add(executablePath);
-                }
-            }
-
-            return executables;
         }
 
-        private static bool TryParseExecutablePath(string s, out string path)
+        private void DiscoverFromProgramDirectories()
         {
-            Match match = Regex.Match(s, @"(?<=""|^)([a-zA-Z]:\\[^""]+\.exe)", RegexOptions.IgnoreCase);
-
-            if (match.Success)
-            {
-                path = match.Value;
-                return true;
-            }
-
-            path = null;
-            return false;
-        }
-
-        private List<string> GetExecutablesFromPath()
-        {
-            List<string> executables = new List<string>();
-            string[] paths = Environment.GetEnvironmentVariable("PATH")?.Split(';');
-
-            if (paths != null)
-            {
-                foreach (string path in paths)
-                {
-                    if (Directory.Exists(path))
-                    {
-                        try
-                        {
-                            executables.AddRange(Directory.GetFiles(path, "*.exe", SearchOption.TopDirectoryOnly));
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.WriteLine($"Error enumerating executables in '{path}': {ex}");
-                        }
-                    }
-                }
-            }
-
-            return executables;
-        }
-
-        private List<string> GetExecutablesFromNetFx()
-        {
-            List<string> executables = new List<string>();
-
             string windir = Environment.GetEnvironmentVariable("WINDIR");
+            string programData = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
+            string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
-            if (!string.IsNullOrEmpty(windir))
+            var paths = new[]
             {
-                string[] paths = new string[]
-                {
-                    Path.Combine(windir, "Microsoft.NET", "Framework"),
-                    Path.Combine(windir, "Microsoft.NET", "Framework64")
-                };
+                // Default directory
+                Path.Combine(Program.GetAppDataPath(), "bin"),
 
-                foreach (string path in paths)
-                {
-                    if (Directory.Exists(path))
-                    {
-                        try
-                        {
-                            executables.AddRange(Directory.GetFiles(path, "*.exe", SearchOption.AllDirectories));
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.WriteLine($"Error enumerating executables in '{path}': {ex}");
-                        }
-                    }
-                }
+                // Standard program installation directories
+                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+                Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+
+                // .NET Framework directories
+                Path.Combine(windir, "Microsoft.NET", "Framework"),
+                Path.Combine(windir, "Microsoft.NET", "Framework64"),
+
+                // Chocolatey package directory
+                Path.Combine(programData, "chocolatey", "lib"),
+
+                // Scoop apps directory
+                Path.Combine(userProfile, "scoop", "apps")
+            };
+
+            foreach (string path in paths)
+            {
+                SearchAllExecutables(path);
+            }
+        }
+
+        private void SearchAllExecutables(string path, SearchOption searchOption = SearchOption.AllDirectories)
+        {
+            if (!Directory.Exists(path))
+            {
+                Trace.TraceWarning("Directory does not exist: {0}", path);
+                return;
             }
 
-            return executables;
+            try
+            {
+                var executableFiles = Directory.GetFiles(path, "*.exe", searchOption)
+                                               .OrderByDescending(f => new FileInfo(f).Length)
+                                               .ToList();
+
+                DiscoverdExecutables.AddRange(executableFiles);
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceWarning("Error enumerating executables in '{0}': {1}", path, ex.Message);
+            }
         }
     }
 
