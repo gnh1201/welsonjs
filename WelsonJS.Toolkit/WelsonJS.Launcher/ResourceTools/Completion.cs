@@ -9,6 +9,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Net.Http;
+using System.Collections.Concurrent;
 
 namespace WelsonJS.Launcher.ResourceTools
 {
@@ -17,7 +18,7 @@ namespace WelsonJS.Launcher.ResourceTools
         private readonly ResourceServer Server;
         private readonly HttpClient _httpClient;
         private const string Prefix = "completion/";
-        private List<string> DiscoverdExecutables = new List<string>();
+        private readonly ConcurrentBag<string> DiscoveredExecutables = new ConcurrentBag<string>();
 
         public Completion(ResourceServer server, HttpClient httpClient)
         {
@@ -42,7 +43,7 @@ namespace WelsonJS.Launcher.ResourceTools
 
             try
             {
-                CompletionItem[] completionItems = DiscoverdExecutables
+                List<CompletionItem> completionItems = DiscoveredExecutables.ToList()
                     .Where(exec => exec.IndexOf(word, 0, StringComparison.OrdinalIgnoreCase) > -1)
                     .Take(100) // Limit the number of results
                     .Select(exec => new CompletionItem
@@ -52,7 +53,7 @@ namespace WelsonJS.Launcher.ResourceTools
                         Documentation = $"An executable file: {exec}",
                         InsertText = exec
                     })
-                    .ToArray();
+                    .ToList();
 
                 XElement response = new XElement("suggestions",
                     completionItems.Select(item => new XElement("item",
@@ -98,7 +99,7 @@ namespace WelsonJS.Launcher.ResourceTools
                             var match = Regex.Match(uninstallString, @"(?<=""|^)([a-zA-Z]:\\[^""]+\.exe)", RegexOptions.IgnoreCase);
                             if (match.Success && File.Exists(match.Value))
                             {
-                                DiscoverdExecutables.Add(match.Value);
+                                AddDiscoveredExecutables(new List<string> { match.Value });
                             }
                         }
                     }
@@ -154,7 +155,7 @@ namespace WelsonJS.Launcher.ResourceTools
         {
             if (!Directory.Exists(path))
             {
-                Trace.TraceWarning("Directory does not exist: {0}", path);
+                Trace.TraceInformation("Directory does not exist: {0}", path);
                 return;
             }
 
@@ -164,11 +165,19 @@ namespace WelsonJS.Launcher.ResourceTools
                                                .OrderByDescending(f => new FileInfo(f).Length)
                                                .ToList();
 
-                DiscoverdExecutables.AddRange(executableFiles);
+                AddDiscoveredExecutables(executableFiles);
             }
             catch (Exception ex)
             {
-                Trace.TraceWarning("Error enumerating executables in '{0}': {1}", path, ex.Message);
+                Trace.TraceInformation("Error enumerating executables in '{0}': {1}", path, ex.Message);
+            }
+        }
+
+        private void AddDiscoveredExecutables(List<string> executableFiles)
+        {
+            foreach (var executableFile in executableFiles)
+            {
+                DiscoveredExecutables.Add(executableFile);
             }
         }
     }
