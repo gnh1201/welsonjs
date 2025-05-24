@@ -19,7 +19,6 @@ namespace WelsonJS.Launcher.ResourceTools
         private readonly HttpClient _httpClient;
         private const string Prefix = "completion/";
         private readonly ConcurrentBag<string> DiscoveredExecutables = new ConcurrentBag<string>();
-        private const int SearchMaxResults = 200;
 
         public Completion(ResourceServer server, HttpClient httpClient)
         {
@@ -44,9 +43,9 @@ namespace WelsonJS.Launcher.ResourceTools
 
             try
             {
-                List<CompletionItem> completionItems = DiscoveredExecutables.ToList()
+                List<CompletionItem> completionItems = DiscoveredExecutables
                     .Where(exec => exec.IndexOf(word, 0, StringComparison.OrdinalIgnoreCase) > -1)
-                    .Take(SearchMaxResults) // Limit the number of results
+                    .Take(100) // Limit the number of results
                     .Select(exec => new CompletionItem
                     {
                         Label = Path.GetFileName(exec),
@@ -152,7 +151,7 @@ namespace WelsonJS.Launcher.ResourceTools
             }
         }
 
-        private void SearchAllExecutables(string path, SearchOption searchOption = SearchOption.AllDirectories)
+        private void SearchAllExecutables(string path, SearchOption searchOption = SearchOption.AllDirectories, int maxFiles = 1000)
         {
             if (!Directory.Exists(path))
             {
@@ -163,7 +162,7 @@ namespace WelsonJS.Launcher.ResourceTools
             try
             {
                 var executableFiles = Directory.GetFiles(path, "*.exe", searchOption)
-                    .Take(SearchMaxResults)
+                    .Take(maxFiles)
                     .OrderByDescending(f => new FileInfo(f).Length)
                     .ToList();
 
