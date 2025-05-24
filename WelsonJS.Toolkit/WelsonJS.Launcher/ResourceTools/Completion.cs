@@ -26,9 +26,9 @@ namespace WelsonJS.Launcher.ResourceTools
             Server = server;
             _httpClient = httpClient;
 
-            Task.Run(() => DiscoverFromInstalledSoftware());
-            Task.Run(() => DiscoverFromPathVariable());
-            Task.Run(() => DiscoverFromProgramDirectories());
+            Task.Run(async () => await SafeDiscoverAsync(DiscoverFromInstalledSoftware));
+            Task.Run(async () => await SafeDiscoverAsync(DiscoverFromPathVariable));
+            Task.Run(async () => await SafeDiscoverAsync(DiscoverFromProgramDirectories));
         }
 
         public bool CanHandle(string path)
@@ -180,6 +180,18 @@ namespace WelsonJS.Launcher.ResourceTools
             foreach (var executableFile in executableFiles)
             {
                 DiscoveredExecutables.Add(executableFile);
+            }
+        }
+
+        private async Task SafeDiscoverAsync(Action discoveryMethod)
+        {
+            try
+            {
+                await Task.Run(discoveryMethod);
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError($"Discovery failed: {ex.Message}");
             }
         }
     }
