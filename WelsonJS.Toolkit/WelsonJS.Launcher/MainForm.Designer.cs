@@ -91,10 +91,10 @@
             this.linkLabel1.AutoSize = true;
             this.linkLabel1.Location = new System.Drawing.Point(24, 345);
             this.linkLabel1.Name = "linkLabel1";
-            this.linkLabel1.Size = new System.Drawing.Size(219, 12);
+            this.linkLabel1.Size = new System.Drawing.Size(327, 12);
             this.linkLabel1.TabIndex = 3;
             this.linkLabel1.TabStop = true;
-            this.linkLabel1.Text = "https://github.com/gnh1201/welsonjs";
+            this.linkLabel1.Text = "WelsonJS is open-source software. Join our community!";
             this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
             // 
             // cbUseSpecificScript
