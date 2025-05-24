@@ -124,7 +124,7 @@ namespace WelsonJS.Launcher
 
             try
             {
-                // try to validate GUID
+                // check if the working directory exists
                 if (Directory.Exists(workingDirectory))
                 {
                     throw new InvalidOperationException("GUID validation failed. Directory already exists.");
@@ -139,7 +139,7 @@ namespace WelsonJS.Launcher
                 // follow the sub-directory
                 workingDirectory = Program.GetWorkingDirectory(instanceId, true);
 
-                // Run the appliction
+                // Run the application
                 Program.RunCommandPrompt(workingDirectory, entryFileName, scriptName, cbUseSpecificScript.Checked, cbInteractiveServiceApp.Checked);
             }
             catch (Exception ex)
