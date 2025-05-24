@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Security.Principal;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -13,19 +14,16 @@ namespace WelsonJS.Launcher
         private string instanceId;
         private readonly string entryFileName;
         private string scriptName;
-        private readonly ZipExtractor zipExtractor;
 
         public MainForm()
         {
-            zipExtractor = new ZipExtractor();
-
             entryFileName = "bootstrap.bat";
 
             InitializeComponent();
 
             if (IsInAdministrator())
             {
-                Text = Text + " (Administrator)";
+                Text += " (Administrator)";
             }
 
             notifyIcon1.DoubleClick += OnShow;
@@ -111,7 +109,9 @@ namespace WelsonJS.Launcher
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     string filePath = openFileDialog.FileName;
-                    ExtractAndRun(filePath);
+
+                    DisableUI();
+                    Task.Run(() => ExtractAndRun(filePath));
                 }
             }
         }
@@ -122,48 +122,33 @@ namespace WelsonJS.Launcher
             workingDirectory = Program.GetWorkingDirectory(instanceId);
             scriptName = txtUseSpecificScript.Text;
 
-            Task.Run(() =>
+            try
             {
-                try
+                // check if the working directory exists
+                if (Directory.Exists(workingDirectory))
                 {
-                    // If exists, delete all
-                    if (Directory.Exists(workingDirectory))
-                    {
-                        Directory.Delete(workingDirectory, true);
-                    }
-
-                    // try to extact ZIP compressed file
-                    if (zipExtractor.Extract(filePath, workingDirectory))
-                    {
-                        // record the first deploy time
-                        RecordFirstDeployTime(workingDirectory);
-
-                        // follow the sub-directory
-                        workingDirectory = Program.GetWorkingDirectory(instanceId, true);
-
-                        // Run the application
-                        Program.RunCommandPrompt(workingDirectory, entryFileName, scriptName, cbUseSpecificScript.Checked, cbInteractiveServiceApp.Checked);
-                    }
-                    else
-                    {
-                        MessageBox.Show("Failed to extract the ZIP file.");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    SafeInvoke(() =>
-                    {
-                        MessageBox.Show("Error: " + ex.Message);
-                    });
+                    throw new InvalidOperationException("GUID validation failed. Directory already exists.");
                 }
 
-                // Enable UI
-                SafeInvoke(() => {
-                    EnableUI();
-                });
-            });
+                // try to extract ZIP file
+                ZipFile.ExtractToDirectory(filePath, workingDirectory);
 
-            DisableUI();
+                // record the first deploy time
+                RecordFirstDeployTime(workingDirectory);
+
+                // follow the sub-directory
+                workingDirectory = Program.GetWorkingDirectory(instanceId, true);
+
+                // Run the application
+                Program.RunCommandPrompt(workingDirectory, entryFileName, scriptName, cbUseSpecificScript.Checked, cbInteractiveServiceApp.Checked);
+            }
+            catch (Exception ex)
+            {
+                SafeInvoke(() =>  MessageBox.Show($"Extraction failed: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error));
+            }
+
+            // Enable UI
+            SafeInvoke(() => EnableUI());
         }
 
         private void RecordFirstDeployTime(string directory)
@@ -188,8 +173,9 @@ namespace WelsonJS.Launcher
                 WindowsPrincipal wp = new WindowsPrincipal(WindowsIdentity.GetCurrent());
                 return wp.IsInRole(WindowsBuiltInRole.Administrator);
             }
-            catch
+            catch (Exception ex)
             {
+                Trace.TraceInformation($"The current user is not an administrator, or the check failed: {ex.Message}");
                 return false;
             }
         }
@@ -233,7 +219,7 @@ namespace WelsonJS.Launcher
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Failed to run as administrator: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show($"Failed to run as Administrator: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             else
