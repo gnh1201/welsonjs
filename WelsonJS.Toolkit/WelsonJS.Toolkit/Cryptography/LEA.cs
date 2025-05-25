@@ -1,34 +1,10 @@
-﻿/*
- * WelsonJS.Toolkit: WelsonJS native component
- * 
- *     filename:
- *         LEA.cs
- * 
- *     description:
- *         LEA(KS X 3246:2016) cryptography algorithm implementation (Experimental)
- * 
- *     website:
- *         - https://github.com/gnh1201/welsonjs
- *         - https://catswords.social/@catswords_oss
- *         - https://teams.live.com/l/community/FEACHncAhq8ldnojAI
- *         - https://discord.gg/XKG5CjtXEj
- * 
- *     authors:
- *         - Namhyeon Go (@gnh1201) <abuse@catswords.net>
- *         - KISA(Korea Internet & Security Agency) (kisa.or.kr)
- *         - National Security Research Institute (NSRI)
- *     
- *     references:
- *         - https://seed.kisa.or.kr/kisa/Board/20/detailView.do
- *         - https://committee.tta.or.kr/data/standard_view.jsp?order=t.kor_standard&by=asc&pk_num=TTAK.KO-12.0223&commit_code=TC5
- *         - https://ics.catswords.net/LEA%20A%20128-Bit%20Block%20Cipher%20Datasheets-Korean.pdf
- *         - https://ics.catswords.net/LEA%20A%20128-Bit%20Block%20Cipher%20for%20Fast%20Encryption%20on%20Common%20Processors-English.pdf
- *         - https://ics.catswords.net/LEA-sourcecode-explanation.pdf
- *
- *     license:
- *         GPLv3 or MS-RL(Microsoft Reciprocal License)
- * 
- */
+﻿// LEA.cs
+// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
+// https://github.com/gnh1201/welsonjs
+// 
+// LEA(KS X 3246:2016) cryptography algorithm implementation (Experimental)
+// 
 using System;
 using System.Security.Cryptography;
 using System.Text;
@@ -347,3 +323,16 @@ namespace WelsonJS.Cryptography
         }
     }
 }
+
+/* References:
+ * [1] KISA(Korea Internet & Security Agency) - 블록암호 LEA
+ *     https://seed.kisa.or.kr/kisa/Board/20/detailView.do
+ * [2] TTA(Telecommunications Technology Association) - TTAK.KO-12.0223, TTA표준화 위원회
+ *     https://committee.tta.or.kr/data/standard_view.jsp?order=t.kor_standard&by=asc&pk_num=TTAK.KO-12.0223&commit_code=TC5
+ * [3] NSRI(National Security Research Institute) - 128비트 블록암호 LEA 규격서
+ *     https://ics.catswords.net/LEA%20A%20128-Bit%20Block%20Cipher%20Datasheets-Korean.pdf
+ * [4] ETRI, Pusan National University - LEA: A 128-Bit Block Cipher for Fast Encryption on Common Processors
+ *     https://ics.catswords.net/LEA%20A%20128-Bit%20Block%20Cipher%20for%20Fast%20Encryption%20on%20Common%20Processors-English.pdf
+ * [5] NSRI(National Security Research Institute) - 블록암호 LEA 소스코드 사용 매뉴얼
+ *     https://ics.catswords.net/LEA-sourcecode-explanation.pdf
+ */
