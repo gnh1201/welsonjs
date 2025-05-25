@@ -1,6 +1,8 @@
 ﻿// FileEventMonitor.cs
-// Namhyeon Go <abuse@catswords.net>
+// SPDX-License-Identifier: MS-RL
+// SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
 // https://github.com/gnh1201/welsonjs
+// 
 using ClamAV.Net.Client;
 using ClamAV.Net.Client.Results;
 using Microsoft.Extensions.Logging;

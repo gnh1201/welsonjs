@@ -1,12 +1,14 @@
-﻿using System;
+﻿// iniFile.cs
+// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX - FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
+// https://github.com/gnh1201/welsonjs
+// 
+using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 
-// TinyINIController
-// Original source code: https://github.com/niklyadov/tiny-ini-file-class
-
-namespace WelsonJS.TinyINIController
+namespace WelsonJS
 {
     public class IniFile
     {
@@ -72,3 +74,8 @@ namespace WelsonJS.TinyINIController
         }
     }
 }
+
+/* References:
+ * [1] GitHub - A simple class on C# for read/write ini files, niklyadov/tiny-ini-file-class
+ *     https://github.com/niklyadov/tiny-ini-file-class
+ */

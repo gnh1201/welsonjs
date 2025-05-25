@@ -1,29 +1,8 @@
-﻿/*
- * WelsonJS.Service 
- * 
- *     filename:
- *         ServiceMain.cs
- * 
- *     description:
- *         WelsonJS - Build a Windows app on the Windows built-in JavaScript engine
- * 
- *     website:
- *         - https://github.com/gnh1201/welsonjs
- *         - https://catswords.social/@catswords_oss
- *         - https://teams.live.com/l/community/FEACHncAhq8ldnojAI
- * 
- *     author:
- *         Namhyeon Go <abuse@catswords.net>
- *
- *     license:
- *         GPLv3 or MS-RL(Microsoft Reciprocal License)
- * 
- *     references:
- *         - https://learn.microsoft.com/en-us/dotnet/framework/windows-services/how-to-debug-windows-service-applications
- *         - https://stackoverflow.com/questions/6490979/how-to-pass-parameters-to-windows-service
- *         - https://stackoverflow.com/questions/42812333/pass-an-argument-to-a-windows-service-at-automatic-startup
- *         - https://learn.microsoft.com/ko-kr/windows/win32/api/winuser/nf-winuser-getsystemmetrics
- */
+﻿// ServiceMain.cs
+// SPDX-License-Identifier: MS-RL
+// SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
+// https://github.com/gnh1201/welsonjs
+// 
 using System;
 using System.ServiceProcess;
 using System.Timers;
@@ -31,7 +10,6 @@ using System.Runtime.InteropServices;
 using MSScriptControl;
 using System.IO;
 using System.Collections.Generic;
-using WelsonJS.TinyINIController;
 using System.Collections;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -494,3 +472,14 @@ namespace WelsonJS.Service
         }
     }
 }
+
+/* References:
+ * [1] MSDN - How to: Debug Windows Service Applications
+ *     https://learn.microsoft.com/en-us/dotnet/framework/windows-services/how-to-debug-windows-service-applications
+ * [2] StackOverflow - How to pass parameters to Windows Service?
+ *     https://stackoverflow.com/questions/6490979/how-to-pass-parameters-to-windows-service
+ * [3] StackOverflow - Pass an argument to a Windows Service at automatic startup
+ *     https://stackoverflow.com/questions/42812333/pass-an-argument-to-a-windows-service-at-automatic-startup
+ * [4] MSDN - GetSystemMetrics function (winuser.h)
+ *     https://learn.microsoft.com/ko-kr/windows/win32/api/winuser/nf-winuser-getsystemmetrics
+ */
