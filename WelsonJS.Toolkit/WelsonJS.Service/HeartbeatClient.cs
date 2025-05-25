@@ -1,6 +1,8 @@
 ﻿// HeartbeatClient.cs
-// Namhyeon Go <abuse@catswords.net>
+// SPDX-License-Identifier: MS-RL
+// SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
 // https://github.com/gnh1201/welsonjs
+// 
 using Grpc.Core;
 using System.Threading.Tasks;
 using System;

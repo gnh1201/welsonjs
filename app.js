@@ -1,13 +1,10 @@
 // app.js
+// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
+// https://github.com/gnh1201/welsonjs
+
 // Bootstrap code for running a javascript app in windows.  Run as:
 // cscript.js app.js <appname> <app arguments> ...
-// 
-// Author: Namhyeon Go <abuse@catswords.net>
-// Repository: https://github.com/gnh1201/welsonjs
-// License: GPLv3 or MS-RL (Opensource)
-// Report abuse: abuse@catswords.net
-// Latest news: ActivityPub @catswords_oss@catswords.social
-// Join our team: https://teams.live.com/l/community/FEACHncAhq8ldnojAI
 // 
 "use strict";
 

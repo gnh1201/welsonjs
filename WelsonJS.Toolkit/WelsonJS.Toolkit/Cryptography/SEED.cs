@@ -1,33 +1,10 @@
-﻿/*
- * WelsonJS.Toolkit: WelsonJS native component
- * 
- *     filename:
- *         SEED.cs
- * 
- *     description:
- *         SEED(ISO/IEC 18033-3) cryptography algorithm implementation (Experimental)
- * 
- *     website:
- *         - https://github.com/gnh1201/welsonjs
- *         - https://catswords.social/@catswords_oss
- *         - https://teams.live.com/l/community/FEACHncAhq8ldnojAI
- *         - https://discord.gg/XKG5CjtXEj
- * 
- *     author:
- *         - Namhyeon Go (@gnh1201) <abuse@catswords.net>
- *         - KISA(Korea Internet & Security Agency) (kisa.or.kr)
- *     
- *     references:
- *         - https://seed.kisa.or.kr/kisa/Board/17/detailView.do
- *         - https://www.iso.org/standard/54531.html
- *         - https://ics.catswords.net/SEED%2B128_Specification_english_M.pdf
- *         - https://ics.catswords.net/SEED_Algorithm_Specification_korean_M.pdf
- *         - https://ics.catswords.net/SEED_sourcecode_explanation_korean.pdf
- *
- *     license:
- *         GPLv3 or MS-RL(Microsoft Reciprocal License)
- * 
- */
+﻿// SEED.cs
+// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
+// https://github.com/gnh1201/welsonjs
+// 
+// SEED(ISO/IEC 18033-3) cryptography algorithm implementation (Experimental)
+// 
 using System;
 
 namespace WelsonJS.Cryptography
@@ -753,3 +730,16 @@ namespace WelsonJS.Cryptography
         }
     }
 }
+
+/* References:
+ * [1] KISA(Korea Internet & Security Agency) - SEED
+ *     https://seed.kisa.or.kr/kisa/algorithm/EgovSeedInfo.do
+ * [2] ISO - ISO/IEC 18033-3:2010 - Information technology — Security techniques — Encryption algorithms - Part 3: Block ciphers
+ *     https://www.iso.org/standard/54531.html
+ * [3] KISA(Korea Internet & Security Agency) - SEED 128 Algorithm Specification
+ *     https://ics.catswords.net/SEED%2B128_Specification_english_M.pdf
+ * [4] KISA(Korea Internet & Security Agency) - SEED 128 알고리즘 상세 명세서
+ *     https://ics.catswords.net/SEED_Algorithm_Specification_korean_M.pdf
+ * [5] KISA(Korea Internet & Security Agency) - SEED 블록암호 알고리즘에 대한 소스코드 활용 매뉴얼
+ *     https://ics.catswords.net/SEED_sourcecode_explanation_korean.pdf
+ */

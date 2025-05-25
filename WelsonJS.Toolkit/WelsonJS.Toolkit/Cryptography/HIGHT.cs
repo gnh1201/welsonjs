@@ -1,37 +1,10 @@
-﻿/*
- * WelsonJS.Toolkit: WelsonJS native component
- * 
- *     filename:
- *         HIGHT.cs
- * 
- *     description:
- *         HIGHT(ISO/IEC 18033-3) cryptography algorithm implementation
- * 
- *     website:
- *         - https://github.com/gnh1201/welsonjs
- *         - https://catswords.social/@catswords_oss
- *         - https://teams.live.com/l/community/FEACHncAhq8ldnojAI
- *         - https://discord.gg/XKG5CjtXEj
- * 
- *     authors:
- *         - Namhyeon Go (@gnh1201) <abuse@catswords.net>
- *         - @chandong83 (github.com)
- *         - KISA(Korea Internet & Security Agency) (kisa.or.kr)
- *         - Korea Unversity (www.korea.ac.kr)
- *     
- *     references:
- *         - https://seed.kisa.or.kr/kisa/algorithm/EgovHightInfo.do
- *         - https://github.com/chandong83/csharp_crypto_hight_ecb_examples
- *         - https://blog.naver.com/chandong83/222198351602
- *         - https://www.iso.org/standard/54531.html
- *         - https://ics.catswords.net/HIGHT-algorithm-specification-english.pdf
- *         - https://ics.catswords.net/HIGHT-algorithm-specification-korean.pdf
- *         - https://ics.catswords.net/HIGHT-sourcecode-explanation.pdf
- *
- *     license:
- *         GPLv3 or MS-RL(Microsoft Reciprocal License)
- * 
- */
+﻿// HIGHT.cs
+// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
+// https://github.com/gnh1201/welsonjs
+// 
+// HIGHT(ISO/IEC 18033-3) cryptography algorithm implementation
+// 
 using System;
 
 namespace WelsonJS.Cryptography
@@ -387,3 +360,20 @@ namespace WelsonJS.Cryptography
         }
     }
 }
+
+/* References:
+ * [1] KISA(Korea Internet & Security Agency) - HIGHT
+ *     https://seed.kisa.or.kr/kisa/algorithm/EgovHightInfo.do
+ * [2] GitHub - crypto hight ecb examples for csharp (chandong83/csharp_crypto_hight_ecb_examples)
+ *     https://github.com/chandong83/csharp_crypto_hight_ecb_examples
+ * [3] Naver Blog - C#(CSharp) - HIGHT ECB 암/복호화 알고리즘 소스 코드 (@chandong83)
+ *     https://blog.naver.com/chandong83/222198351602
+ * [4] ISO - ISO/IEC 18033-3:2010 Information technology — Security techniques — Encryption algorithms - Part 3: Block ciphers
+ *     https://www.iso.org/standard/54531.html
+ * [5] KISA(Korea Internet & Security Agency) - HIGHT Algorithm Specification(2009. 07.)
+ *     https://ics.catswords.net/HIGHT-algorithm-specification-english.pdf
+ * [6] HIGHT 블록암호 알고리즘 사양 및 세부 명세서(2009. 07.)
+ *     https://ics.catswords.net/HIGHT-algorithm-specification-korean.pdf
+ * [7] HIGHT 블록암호 알고리즘에 대한 소스코드 활용 메뉴얼(2009. 07.)
+ *     https://ics.catswords.net/HIGHT-sourcecode-explanation.pdf
+ */

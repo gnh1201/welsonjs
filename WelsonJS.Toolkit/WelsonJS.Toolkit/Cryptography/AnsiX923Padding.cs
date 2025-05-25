@@ -1,30 +1,8 @@
-﻿/*
- * WelsonJS.Toolkit: WelsonJS native component
- * 
- *     filename:
- *         AnsiX923Padding.cs
- * 
- *     description:
- *         AnsiX923Padding implementation
- * 
- *     website:
- *         - https://github.com/gnh1201/welsonjs
- *         - https://catswords.social/@catswords_oss
- *         - https://teams.live.com/l/community/FEACHncAhq8ldnojAI
- *         - https://discord.gg/XKG5CjtXEj
- * 
- *     authors:
- *         - Namhyeon Go (@gnh1201) <abuse@catswords.net>
- *     
- *     references:
- *         - https://github.com/eGovFrame/egovframework.rte.root/blob/master/Foundation/egovframework.rte.fdl.crypto/src/main/java/egovframework/rte/fdl/cryptography/impl/aria/AnsiX923Padding.java
- *         - ChatGPT prompt "AnsiX923Padding with C#" (chatgpt.com)
- *         - ChatGPT prompt "AnsiX923Padding with C#, Add a flag to decide how to handle possible errors when removing padding." (chatgpt.com)
- *         
- *     license:
- *         GPLv3 or MS-RL(Microsoft Reciprocal License)
- * 
- */
+﻿// AnsiX923Padding.cs
+// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
+// https://github.com/gnh1201/welsonjs
+// 
 using System;
 
 namespace WelsonJS.Cryptography
@@ -130,3 +108,10 @@ namespace WelsonJS.Cryptography
         }
     }
 }
+
+/* References:
+ * [1] GitHub - 표준프레임워크의 실행환경 (eGovFrame/egovframework.rte.root)
+ *     https://github.com/eGovFrame/egovframework.rte.root/blob/master/Foundation/egovframework.rte.fdl.crypto/src/main/java/egovframework/rte/fdl/cryptography/impl/aria/AnsiX923Padding.java
+ * [2] ChatGPT - The prompt "AnsiX923Padding with C#"
+ * [3] ChatGPT - The prompt "AnsiX923Padding with C#, Add a flag to decide how to handle possible errors when removing padding."
+ */

@@ -1,4 +1,9 @@
-﻿using System;
+﻿// Settings.cs
+// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
+// https://github.com/gnh1201/welsonjs
+// 
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;

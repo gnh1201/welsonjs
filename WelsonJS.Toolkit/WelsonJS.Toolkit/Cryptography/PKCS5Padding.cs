@@ -1,29 +1,8 @@
-﻿/*
- * WelsonJS.Toolkit: WelsonJS native component
- * 
- *     filename:
- *         PKCS5Padding.cs
- * 
- *     description:
- *         PKCS5Padding implementation
- * 
- *     website:
- *         - https://github.com/gnh1201/welsonjs
- *         - https://catswords.social/@catswords_oss
- *         - https://teams.live.com/l/community/FEACHncAhq8ldnojAI
- *         - https://discord.gg/XKG5CjtXEj
- * 
- *     authors:
- *         - Namhyeon Go (@gnh1201) <abuse@catswords.net>
- *     
- *     references:
- *         - ChatGPT prompt "PKCS5Padding with C#" (chatgpt.com)
- *         - ChatGPT prompt "PKCS5Padding with C#, Add a flag to decide how to handle possible errors when removing padding." (chatgpt.com)
- *         
- *     license:
- *         GPLv3 or MS-RL(Microsoft Reciprocal License)
- * 
- */
+﻿// PKCS5Padding.cs
+// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
+// https://github.com/gnh1201/welsonjs
+// 
 using System;
 
 namespace WelsonJS.Cryptography
@@ -116,3 +95,8 @@ namespace WelsonJS.Cryptography
         }
     }
 }
+
+/* References:
+ * [1] ChatGPT - The prompt "PKCS5Padding with C#"
+ * [2] ChatGPT - The prompt "PKCS5Padding with C#, Add a flag to decide how to handle possible errors when removing padding."
+ */

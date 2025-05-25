@@ -1,34 +1,8 @@
-﻿/*
- * WelsonJS.Toolkit: WelsonJS native component
- * 
- *     filename:
- *         Toolkit.cs
- * 
- *     description:
- *         WelsonJS - Build a Windows app on the Windows built-in JavaScript engine
- * 
- *     website:
- *         - https://github.com/gnh1201/welsonjs
- *         - https://catswords.social/@catswords_oss
- *         - https://teams.live.com/l/community/FEACHncAhq8ldnojAI
- * 
- *     author:
- *         Namhyeon Go <abuse@catswords.net>
- *
- *     license:
- *         GPLv3 or MS-RL(Microsoft Reciprocal License)
- * 
- *     references:
- *         - https://stackoverflow.com/questions/9004352/call-a-function-in-a-console-app-from-vbscript
- *         - https://stackoverflow.com/questions/9501022/cannot-create-an-object-from-a-active-x-component
- *         - https://stackoverflow.com/questions/13547639/return-window-handle-by-its-name-title
- *         - https://blog.naver.com/zlatmgpdjtiq/222016292758
- *         - https://stackoverflow.com/questions/5427020/prompt-dialog-in-windows-forms
- *         - https://stackoverflow.com/questions/31856473/how-to-send-an-enter-press-to-another-application-in-wpf
- *         - https://stackoverflow.com/questions/11365605/c-sharp-postmessage-syntax-trying-to-post-a-wm-char-to-another-applications-win
- *         - https://docs.microsoft.com/ko-kr/windows/win32/inputdev/virtual-key-codes?redirectedfrom=MSDN
- */
-
+﻿// Toolkit.cs
+// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX - FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
+// https://github.com/gnh1201/welsonjs
+// 
 using System;
 using System.Runtime.InteropServices;
 using System.Text;

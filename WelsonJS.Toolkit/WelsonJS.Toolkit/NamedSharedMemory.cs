@@ -1,24 +1,8 @@
-﻿/*
- * WelsonJS.Toolkit: WelsonJS native component
- * 
- *     filename:
- *         NamedSharedMemory.cs
- * 
- *     description:
- *         WelsonJS - Build a Windows app on the Windows built-in JavaScript engine
- * 
- *     website:
- *         - https://github.com/gnh1201/welsonjs
- *         - https://catswords.social/@catswords_oss
- *         - https://teams.live.com/l/community/FEACHncAhq8ldnojAI
- * 
- *     author:
- *         Namhyeon Go <abuse@catswords.net>
- *
- *     license:
- *         GPLv3 or MS-RL(Microsoft Reciprocal License)
- * 
- */
+﻿// NamedSharedMemory.cs
+// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX - FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
+// https://github.com/gnh1201/welsonjs
+// 
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;

@@ -1,6 +1,8 @@
 ﻿// ScreenMatching.cs
+// SPDX-License-Identifier: MS-RL
+// SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
 // https://github.com/gnh1201/welsonjs
-// https://catswords-oss.rdbl.io/5719744820/8803957194
+// 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
