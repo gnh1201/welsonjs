@@ -1,6 +1,3 @@
-SPDX-License-Identifier: MS-RL
-SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
-
 Microsoft Reciprocal License (Ms-RL)
 
 This license governs use of the accompanying software. If you use the software, you accept this license. If you do not accept the license, do not use the software.
@@ -15,14 +12,14 @@ A "contributor" is any person that distributes its contribution under this licen
 "Licensed patents" are a contributor's patent claims that read directly on its contribution.
 
 2. Grant of Rights
-(A) Copyright Grant- Subject to the terms of this license, including the license conditions and limitations in section 3, each contributor grants you a non-exclusive, worldwide, royalty-free copyright license to reproduce its contribution, prepare derivative works of its contribution, and distribute its contribution or any derivative works that you create.
+(A) Copyright Grant - Subject to the terms of this license, including the license conditions and limitations in section 3, each contributor grants you a non-exclusive, worldwide, royalty-free copyright license to reproduce its contribution, prepare derivative works of its contribution, and distribute its contribution or any derivative works that you create.
 
 (B) Patent Grant- Subject to the terms of this license, including the license conditions and limitations in section 3, each contributor grants you a non-exclusive, worldwide, royalty-free license under its licensed patents to make, have made, use, sell, offer for sale, import, and/or otherwise dispose of its contribution in the software or derivative works of the contribution in the software.
 
 3. Conditions and Limitations
-(A) Reciprocal Grants- For any file you distribute that contains code from the software (in source code or binary format), you must provide recipients the source code to that file along with a copy of this license, which license will govern that file. You may license other files that are entirely your own work and do not contain code from the software under any terms you choose.
+(A) Reciprocal Grants - For any file you distribute that contains code from the software (in source code or binary format), you must provide recipients the source code to that file along with a copy of this license, which license will govern that file. You may license other files that are entirely your own work and do not contain code from the software under any terms you choose.
 
-(B) No Trademark License- This license does not grant you rights to use any contributors' name, logo, or trademarks.
+(B) No Trademark License - This license does not grant you rights to use any contributors' name, logo, or trademarks.
 
 (C) If you bring a patent claim against any contributor over patents that you claim are infringed by the software, your patent license from such contributor to the software ends automatically.
 
@@ -31,35 +28,3 @@ A "contributor" is any person that distributes its contribution under this licen
 (E) If you distribute any portion of the software in source code form, you may do so only under this license by including a complete copy of this license with your distribution. If you distribute any portion of the software in compiled or object code form, you may only do so under a license that complies with this license.
 
 (F) The software is licensed "as-is." You bear the risk of using it. The contributors give no express warranties, guarantees or conditions. You may have additional consumer rights under your local laws which this license cannot change. To the extent permitted under your local laws, the contributors exclude the implied warranties of merchantability, fitness for a particular purpose and non-infringement.
-
-Microsoft 상호 라이선스(MS-RL)
-SPDX 짧은 식별자: MS-RL
-
-이 라이센스는 함께 제공되는 소프트웨어의 사용에 적용됩니다. 소프트웨어를 사용하는 경우 이 라이센스에 동의하는 것입니다. 라이센스에 동의하지 않으면 소프트웨어를 사용하지 마십시오.
-
-1. 정의
-"복제", "복제물", "파생 저작물" 및 "배포"라는 용어는 여기에서 미국 저작권법과 동일한 의미를 갖습니다.
-
-"기여"은 원본 소프트웨어 또는 소프트웨어에 대한 추가 또는 변경 사항입니다.
-
-"기여자"는 이 라이선스에 따라 기여를 배포하는 모든 사람입니다.
-
-"라이선스 지적재산권"은 기여에 대해 직접 읽는 기여자의 지적재산권 주장입니다.
-
-2. 권리 부여
-(A) 저작권 부여 - 섹션 3의 라이선스 조건 및 제한 사항을 포함하여 이 라이선스의 조건에 따라 각 기여자는 자신의 기여를 복제하고 파생 작업을 준비할 수 있는 비독점적이고 전세계적인 로열티 없는 저작권 라이선스를 부여합니다. 기여 및 귀하가 만든 기여 또는 파생 작업을 배포합니다.
-
-(B) 지적재산권 부여 - 섹션 3의 라이선스 조건 및 제한 사항을 포함하여 이 라이선스의 조건에 따라 각 기여자는 라이선스가 부여된 지적재산권에 따라 귀하에게 비독점적이고 전 세계적으로 사용료가 없는 라이선스를 부여합니다. 여기에는 판매, 판매 제안, 수입 및 또는 소프트웨어에 대한 기여 또는 소프트웨어 기여의 파생물을 처분하는 행위를 포함합니다.
-
-3. 조건 및 제한
-(A) 상호 부여 - 소프트웨어의 코드(소스코드 또는 바이너리 형식)가 포함된 배포하는 모든 파일의 경우 해당 파일에 적용되는 라이선스의 사본과 함께 해당 파일의 소스코드를 수신자에게 제공해야 합니다. . 귀하는 전적으로 귀하의 저작물이며 귀하가 선택한 조건에 따라 소프트웨어의 코드를 포함하지 않는 다른 파일에 라이선스를 부여할 수 있습니다.
-
-(B) 상표 사용권 없음 - 이 사용권은 기여자의 이름, 로고 또는 상표를 사용할 수 있는 권한을 부여하지 않습니다.
-
-(C) 귀하가 소프트웨어에 의해 침해되었다고 주장하는 지적재산권에 대해 기여자에 대해 지적재산권 청구를 제기하는 경우 해당 기여자의 소프트웨어에 대한 귀하의 지적재산권 라이선스는 자동으로 종료됩니다.
-
-(D) 소프트웨어의 일부를 배포하는 경우 소프트웨어에 있는 모든 저작권, 지적재산권, 상표 및 귀속 고지를 보유해야 합니다.
-
-(E) 소프트웨어의 일부를 소스코드 형식으로 배포하는 경우 배포와 함께 이 라이센스의 전체 사본을 포함하여 이 라이센스 하에서만 그렇게 할 수 있습니다. 소프트웨어의 일부를 컴파일된 또는 개체 코드 형식으로 배포하는 경우 이 라이센스를 준수하는 라이센스 하에서만 배포할 수 있습니다.
-
-(F) 소프트웨어는 "있는 그대로" 사용이 허가됩니다. 당신은 그것을 사용할 위험을 감수합니다. 기여자는 명시적 보증, 보증 또는 조건을 제공하지 않습니다. 귀하는 현지 법률에 따라 이 라이선스가 변경할 수 없는 추가적인 소비자 권리를 가질 수 있습니다. 현지 법률에서 허용하는 범위 내에서 기여자는 상품성, 특정 목적에의 적합성 및 비침해성에 대한 묵시적 보증을 배제합니다.
