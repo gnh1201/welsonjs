@@ -28,9 +28,8 @@ All types of contributions are encouraged and valued. See the [Table of Contents
 
 ## Code of Conduct
 
-This project and everyone participating in it is governed by the
-[WelsonJS Code of Conduct](https://github.com/gnh1201/welsonjs/blob/master/CODE_OF_CONDUCT.md).
-By participating, you are expected to uphold this code. Please report unacceptable behavior to <oss@catswords.net>.
+This project and everyone participating in it is governed by the [WelsonJS Code of Conduct](https://github.com/gnh1201/welsonjs/blob/master/CODE_OF_CONDUCT.md).
+By participating, you are expected to uphold this code. Please report unacceptable behavior to <abuse@catswords.net>.
 
 ## I Have a Question
 
