@@ -1,40 +1,10 @@
-﻿/*
- * WelsonJS.Toolkit: WelsonJS native component
- * 
- *     filename:
- *         ARIA.cs
- * 
- *     description:
- *         ARIA(KS X 1213-1, RFC5794, RFC6209) cryptography algorithm implementation (Experimental)
- * 
- *     website:
- *         - https://github.com/gnh1201/welsonjs
- *         - https://catswords.social/@catswords_oss
- *         - https://teams.live.com/l/community/FEACHncAhq8ldnojAI
- *         - https://discord.gg/XKG5CjtXEj
- * 
- *     authors:
- *         - Namhyeon Go (@gnh1201) <abuse@catswords.net>
- *         - @angelkum (blog.naver.com)
- *         - KISA(Korea Internet & Security Agency) (kisa.or.kr)
- *         - National Security Research Institute (NSRI)
- *         - National Intelligence Service (nis.go.kr)
- *     
- *     references:
- *         - https://seed.kisa.or.kr/kisa/Board/19/detailView.do
- *         - https://blog.naver.com/angelkum/130154153446
- *         - https://www.ncsc.go.kr:4018/PageLink.do?link=forward:/PageContent.do&tempParam1=&menuNo=060000&subMenuNo=060200&thirdMenuNo=
- *         - https://www.nis.go.kr/AF/1_7_3_1.do
- *         - https://datatracker.ietf.org/doc/html/rfc5794
- *         - https://datatracker.ietf.org/doc/html/rfc6209
- *         - https://github.com/eGovFrame/egovframework.rte.root/blob/master/Foundation/egovframework.rte.fdl.crypto/src/main/java/egovframework/rte/fdl/cryptography/impl/aria/ARIAEngine.java
-*          - https://ics.catswords.net/ARIA-specification.pdf
-*          - https://ics.catswords.net/ARIA-testvector.pdf
- *         
- *     license:
- *         GPLv3 or MS-RL(Microsoft Reciprocal License)
- * 
- */
+﻿// ARIA.cs
+// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
+// https://github.com/gnh1201/welsonjs
+// 
+// ARIA(KS X 1213-1, RFC5794, RFC6209) cryptography algorithm implementation (Experimental)
+// 
 using System.Security.Cryptography;
 using System.Text;
 
@@ -612,3 +582,24 @@ namespace WelsonJS.Cryptography
         }
     }
 }
+
+/* References:
+ * [1] KISA(Korea Internet & Security Agency) - 블록암호 ARIA
+ *     https://seed.kisa.or.kr/kisa/Board/19/detailView.do
+ * [2] Naver Blog - ARIA 암호 JAVA, .NET(C#) 라이브러리 (@angelkum)
+ *     https://blog.naver.com/angelkum/130154153446
+ * [3] NSRI(National Security Research Institute) - 검증대상 암호알고리즘
+ *     https://www.ncsc.go.kr:4018/PageLink.do?link=forward:/PageContent.do&tempParam1=&menuNo=060000&subMenuNo=060200&thirdMenuNo=
+ * [4] NIS(National Intelligence Service) - 암호모듈 검증
+ *     https://www.nis.go.kr/AF/1_7_3_1.do
+ * [5] IETF - RFC 5794 - A Description of the ARIA Encryption Algorithm
+ *     https://datatracker.ietf.org/doc/html/rfc5794
+ * [6] IETF - RFC 6209 - Addition of the ARIA Cipher Suites to Transport Layer Security (TLS)
+ *     https://datatracker.ietf.org/doc/html/rfc6209
+ * [7] GitHub - 표준프레임워크의 실행환경 (eGovFrame/egovframework.rte.root)
+ *     https://github.com/eGovFrame/egovframework.rte.root/blob/master/Foundation/egovframework.rte.fdl.crypto/src/main/java/egovframework/rte/fdl/cryptography/impl/aria/ARIAEngine.java
+ * [8] NSRI(National Security Research Institute) - 민관겸용 블록 암호 알고리즘 ARIA 알고리즘 명세서 (Version 1.0, 2024. 5.)
+ *     https://ics.catswords.net/ARIA-specification.pdf
+ * [9] NSRI(National Security Research Institute) - ARIA 테스트 벡터 (Version 1.0)
+ *     https://ics.catswords.net/ARIA-testvector.pdf
+ */
