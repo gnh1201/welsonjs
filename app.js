@@ -1,6 +1,6 @@
 // app.js
+// Copyright 2019-2025, Namhyeon Go <gnh1201@catswords.re.kr> and the WelsonJS contributors.
 // SPDX-License-Identifier: GPL-3.0-or-later
-// SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
 // https://github.com/gnh1201/welsonjs
 
 // Bootstrap code for running a javascript app in windows.  Run as:
@@ -693,7 +693,7 @@ function __main__() {
     console.log(" WelsonJS - Build a Windows app on the Windows built-in JavaScript engine");
     console.log(" C-2021-000237 (cros.or.kr), 10.5281/zenodo.11382385 (doi.org), 2023-A0562 (oss.kr), Codename Macadamia");
     console.log(" This software is distributed as open source under the GPL 3.0 or MS-RL licenses.");
-    console.log(" Please support this project: https://gnh1201.link");
+    console.log(" Please support this project: https://github.com/sponsors/gnh1201");
     console.log(" Source code available: https://github.com/gnh1201/welsonjs");
     console.log("");
 

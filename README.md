@@ -90,7 +90,7 @@ function say() {
 exports.say = say;
 
 exports.VERSIONINFO = "SayHello (sayhello.js) version 0.1";
-exports.AUTHOR = "abuse@catswords.net";
+exports.AUTHOR = "gnh1201@catswords.re.kr";
 exports.global = global;
 exports.require = global.require;
 ```
