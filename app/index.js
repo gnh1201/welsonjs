@@ -1,6 +1,10 @@
-// index.js - The entrypoint on WelsonJS GUI envionment
-// Namhyeon Go <abuse@catswords.net>
+// index.js
+// Copyright 2019-2025, Namhyeon Go <gnh1201@catswords.re.kr> and the WelsonJS contributors.
+// SPDX-License-Identifier: GPL-3.0-or-later
 // https://github.com/gnh1201/welsonjs
+// 
+// The entrypoint on WelsonJS GUI envionment
+// 
 var FILE = require("lib/file");
 var SHELL = require("lib/shell");
 var Browser = require("lib/browser");

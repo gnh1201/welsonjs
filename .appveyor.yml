@@ -41,7 +41,7 @@ deploy:
 notifications:
   - provider: Email
     to:
-      - abuse@catswords.net
+      - gnh1201@catswords.re.kr
     subject: 'Build #{{build}} {{status}}'
     on_build_success: false
     on_build_failure: true
