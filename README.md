@@ -160,6 +160,7 @@ The WelsonJS framework suggests the following application release methods:
 * :eyes: [daily.dev](https://app.daily.dev/posts/js-libraries-svg-tools-json-databases-8quregz3a)
 * :eyes: [PitchHut](https://www.pitchhut.com/project/proj_Ya136OLSW5at)
 * :eyes: [Disquiet](https://dis.qa/nv6T6)
+* :eyes: [Node Weekly](https://nodeweekly.com/issues/582)
 
 ## Report abuse
 * [GitHub Security Advisories (gnh1201/welsonjs)](https://github.com/gnh1201/welsonjs/security)
