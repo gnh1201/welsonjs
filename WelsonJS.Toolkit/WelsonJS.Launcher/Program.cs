@@ -10,28 +10,46 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using System.Configuration;
+using System.Collections.Generic;
+using WelsonJS.Launcher.Storage;
 
 namespace WelsonJS.Launcher
 {
     internal static class Program
     {
         static Mutex mutex;
-        public static ResourceServer resourceServer;
+        public static ResourceServer _ResourceServer;
+        public static MetadataStore _MetadataStore;
 
         [STAThread]
         static void Main()
         {
-            mutex = new Mutex(true, "WelsonJS.Launcher.Mutex", out bool isMutexNotExists);
+            // create the mutex
+            mutex = new Mutex(true, "WelsonJS.Launcher", out bool isMutexNotExists);
             if (!isMutexNotExists)
             {
                 MessageBox.Show("WelsonJS Launcher already running.");
                 return;
             }
 
+            // connect the database to manage an instances
+            Schema schema = new Schema("Instances", new List<Column>
+            {
+                new Column("InstanceId", typeof(string), 255),
+                new Column("FirstDeployTime", typeof(DateTime), 1)
+            });
+            schema.SetPrimaryKey("InstanceId");
+            _MetadataStore = new MetadataStore(schema);
+
+            // draw the main form
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new MainForm());
 
+            // close the database
+            _MetadataStore.Dispose();
+
+            // destory the mutex
             mutex.ReleaseMutex();
             mutex.Dispose();
         }
@@ -147,9 +165,9 @@ namespace WelsonJS.Launcher
         {
             lock(typeof(Program))
             {
-                if (resourceServer == null)
+                if (_ResourceServer == null)
                 {
-                    resourceServer = new ResourceServer(GetAppConfig("ResourceServerPrefix"), "editor.html");
+                    _ResourceServer = new ResourceServer(GetAppConfig("ResourceServerPrefix"), "editor.html");
                 }
             }
         }

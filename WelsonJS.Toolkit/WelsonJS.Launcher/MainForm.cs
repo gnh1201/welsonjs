@@ -4,6 +4,7 @@
 // https://github.com/gnh1201/welsonjs
 // 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -158,6 +159,7 @@ namespace WelsonJS.Launcher
 
         private void RecordFirstDeployTime(string directory)
         {
+            /*
             try
             {
                 string filePath = Path.Combine(directory, ".welsonjs_first_deploy_time");
@@ -168,6 +170,21 @@ namespace WelsonJS.Launcher
             catch (Exception ex)
             {
                 throw new Exception($"Failed to record first deploy time: {ex.Message}");
+            }
+            */
+
+            try
+            {
+                object key;
+                Program._MetadataStore.Insert(new Dictionary<string, object>
+                {
+                    ["InstanceId"] = "abc123",
+                    ["FirstDeployTime"] = "2025-06-19 10:00:00"
+                }, out key);
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceWarning(ex.Message);
             }
         }
 
@@ -242,26 +259,26 @@ namespace WelsonJS.Launcher
         {
             Program.StartResourceServer();
 
-            if (!Program.resourceServer.IsRunning())
+            if (!Program._ResourceServer.IsRunning())
             {
-                Program.resourceServer.Start();
+                Program._ResourceServer.Start();
                 ((ToolStripMenuItem)sender).Text = "Open the code editor...";
             }
             else
             {
-                Program.OpenWebBrowser(Program.resourceServer.GetPrefix());
+                Program.OpenWebBrowser(Program._ResourceServer.GetPrefix());
             }
         }
 
         private void openCodeEditorToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (Program.resourceServer == null)
+            if (Program._ResourceServer == null)
             {
                 MessageBox.Show("A resource server is not running.");
             }
             else
             {
-                Program.OpenWebBrowser(Program.resourceServer.GetPrefix());
+                Program.OpenWebBrowser(Program._ResourceServer.GetPrefix());
             }
         }
 

@@ -15,17 +15,20 @@ namespace WelsonJS.Launcher
         private string entryFileName;
         private string scriptName;
         private const string timestampFormat = "yyyy-MM-dd HH:mm:ss";
+        private static MetadataStore metadataStore;
 
         public InstancesForm()
         {
             InitializeComponent();
 
+            // set the entry file name to run the instance
             entryFileName = "bootstrap.bat";
         }
 
         private void InstancesForm_Load(object sender, EventArgs e)
         {
             lvInstances.Items.Clear();
+
             LoadInstances(Program.GetAppDataPath());
             LoadInstances(Path.GetTempPath());
         }
