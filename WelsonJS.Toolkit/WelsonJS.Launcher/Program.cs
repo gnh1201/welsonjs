@@ -19,7 +19,7 @@ namespace WelsonJS.Launcher
     {
         static Mutex mutex;
         public static ResourceServer _ResourceServer;
-        public static MetadataStore _MetadataStore;
+        public static MetadataStore _InstancesMetadataStore;
 
         [STAThread]
         static void Main()
@@ -39,7 +39,7 @@ namespace WelsonJS.Launcher
                 new Column("FirstDeployTime", typeof(DateTime), 1)
             });
             schema.SetPrimaryKey("InstanceId");
-            _MetadataStore = new MetadataStore(schema);
+            _InstancesMetadataStore = new MetadataStore(schema);
 
             // draw the main form
             Application.EnableVisualStyles();
@@ -47,7 +47,7 @@ namespace WelsonJS.Launcher
             Application.Run(new MainForm());
 
             // close the database
-            _MetadataStore.Dispose();
+            _InstancesMetadataStore.Dispose();
 
             // destory the mutex
             mutex.ReleaseMutex();

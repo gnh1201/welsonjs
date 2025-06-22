@@ -38,6 +38,7 @@ namespace WelsonJS.Launcher
             if (!Directory.Exists(instancesRoot))
                 return;
 
+            /*
             foreach (string dir in Directory.GetDirectories(instancesRoot))
             {
                 string timestampFile = Path.Combine(dir, ".welsonjs_first_deploy_time");
@@ -65,6 +66,25 @@ namespace WelsonJS.Launcher
                         Tag = dir
                     });
                 }
+            }
+            */
+
+            var instances = Program._InstancesMetadataStore.FindAll();
+            foreach (var instance in instances)
+            {
+                string instanceId = instance["InstanceId"].ToString();
+                string firstDeployTime = instance.ContainsKey("FirstDeployTime") 
+                    ? ((DateTime)instance["FirstDeployTime"]).ToString(timestampFormat) 
+                    : "Unknown";
+
+                lvInstances.Items.Add(new ListViewItem(new[]
+                {
+                    instanceId,
+                    firstDeployTime
+                })
+                {
+                    Tag = Path.Combine(instancesRoot, instanceId)
+                });
             }
         }
 

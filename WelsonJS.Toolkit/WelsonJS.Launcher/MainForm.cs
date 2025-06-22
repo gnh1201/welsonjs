@@ -140,7 +140,7 @@ namespace WelsonJS.Launcher
                 ZipFile.ExtractToDirectory(filePath, workingDirectory);
 
                 // record the first deploy time
-                RecordFirstDeployTime(workingDirectory);
+                RecordFirstDeployTime(workingDirectory, instanceId);
 
                 // follow the sub-directory
                 workingDirectory = Program.GetWorkingDirectory(instanceId, true);
@@ -157,34 +157,35 @@ namespace WelsonJS.Launcher
             SafeInvoke(() => EnableUI());
         }
 
-        private void RecordFirstDeployTime(string directory)
+        private void RecordFirstDeployTime(string directory, string instanceId)
         {
-            /*
+            // get current time
+            DateTime now = DateTime.Now;
+
+            // record to the metadata database
+            try
+            {
+                Program._InstancesMetadataStore.Insert(new Dictionary<string, object>
+                {
+                    ["InstanceId"] = instanceId,
+                    ["FirstDeployTime"] = now
+                }, out _);
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError($"Failed to record first deploy time: {ex.Message}");
+            }
+
+            // record to the instance directory
             try
             {
                 string filePath = Path.Combine(directory, ".welsonjs_first_deploy_time");
-                string text = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-
+                string text = now.ToString("yyyy-MM-dd HH:mm:ss");
                 File.WriteAllText(filePath, text);
             }
             catch (Exception ex)
             {
-                throw new Exception($"Failed to record first deploy time: {ex.Message}");
-            }
-            */
-
-            try
-            {
-                object key;
-                Program._MetadataStore.Insert(new Dictionary<string, object>
-                {
-                    ["InstanceId"] = "abc123",
-                    ["FirstDeployTime"] = "2025-06-19 10:00:00"
-                }, out key);
-            }
-            catch (Exception ex)
-            {
-                Trace.TraceWarning(ex.Message);
+                Trace.TraceError($"Failed to record first deploy time: {ex.Message}");
             }
         }
 

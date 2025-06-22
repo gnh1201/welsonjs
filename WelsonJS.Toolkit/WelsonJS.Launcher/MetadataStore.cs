@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Windows.Forms;
 using Microsoft.Isam.Esent.Interop;
 using WelsonJS.Launcher.Storage;
 
@@ -104,6 +105,18 @@ namespace WelsonJS.Launcher
                 Api.JetAddColumn(_session, tableid, col.Name, coldef, null, 0, out _);
             }
 
+            string indexName = "primary";
+            string indexKey = $"+{_primaryKey}\0\0"; // Primary key ASC
+
+            Api.JetCreateIndex(
+                _session,
+                tableid,
+                indexName,
+                CreateIndexGrbit.IndexPrimary | CreateIndexGrbit.IndexUnique,
+                indexKey,
+                indexKey.Length,
+                100);
+
             Api.JetCloseTable(_session, tableid);
             Api.JetCommitTransaction(_session, CommitTransactionGrbit.None);
         }
@@ -156,6 +169,7 @@ namespace WelsonJS.Launcher
                 {
                     Api.JetBeginTransaction(_session);
 
+                    Api.JetSetCurrentIndex(_session, table, null);
                     MakeKeyByType(keyValue, keyType, _session, table);
                     bool found = Api.TrySeek(_session, table, SeekGrbit.SeekEQ);
 
@@ -180,6 +194,7 @@ namespace WelsonJS.Launcher
                 catch (Exception ex)
                 {
                     Trace.TraceError($"[ESENT] Operation failed: {ex.Message}");
+                    MessageBox.Show($"[ESENT] Operation failed: {ex.Message}");
                     Api.JetRollback(_session, RollbackTransactionGrbit.None);
                     return false;
                 }
@@ -193,6 +208,7 @@ namespace WelsonJS.Launcher
 
             using (var table = new Table(_session, _dbid, _schema.TableName, OpenTableGrbit.ReadOnly))
             {
+                Api.JetSetCurrentIndex(_session, table, null);
                 MakeKeyByType(keyValue, keyType, _session, table);
                 if (!Api.TrySeek(_session, table, SeekGrbit.SeekEQ))
                     return null;
@@ -244,6 +260,7 @@ namespace WelsonJS.Launcher
 
             using (var table = new Table(_session, _dbid, _schema.TableName, OpenTableGrbit.Updatable))
             {
+                Api.JetSetCurrentIndex(_session, table, null);
                 MakeKeyByType(keyValue, keyType, _session, table);
                 if (!Api.TrySeek(_session, table, SeekGrbit.SeekEQ))
                     return false;
