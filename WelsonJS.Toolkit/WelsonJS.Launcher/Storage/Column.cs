@@ -17,6 +17,16 @@ namespace WelsonJS.Launcher.Storage
         public JET_CP CodePage { get; set; }
         public bool IsPrimaryKey { get; set; } = false;
 
+        public override string ToString()
+        {
+            return Name;
+        }
+
+        public static explicit operator string(Column c)
+        {
+            return c.ToString();
+        }
+
         public Column(string name, JET_coltyp type, int maxSize = 0, JET_CP codePage = JET_CP.None)
         {
             Name = name;

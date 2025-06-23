@@ -105,22 +105,23 @@ namespace WelsonJS.Launcher
                 Api.JetAddColumn(_session, tableid, col.Name, coldef, null, 0, out _);
             }
 
-            string indexKey = $"+{_primaryKey.Name}\0";
-            int keyLength = Encoding.ASCII.GetByteCount(indexKey + "\0"); // double null-terminated
-            string fullKeyDescription = indexKey + "\0";
+            string indexName = "primary";
+            string key = $"+{_primaryKey.Name}\0";
+            string keyDescription = key + "\0"; // double null-terminated
+            int keyDescriptionLength = Encoding.ASCII.GetByteCount(keyDescription); // in characters
 
             Api.JetCreateIndex(
                 _session,
                 tableid,
-                "primary",
+                indexName,
                 CreateIndexGrbit.IndexPrimary | CreateIndexGrbit.IndexUnique,
-                fullKeyDescription,
-                keyLength,
+                keyDescription,
+                keyDescriptionLength,
                 100
             );
 
-            Api.JetCommitTransaction(_session, CommitTransactionGrbit.None);
             Api.JetCloseTable(_session, tableid);
+            Api.JetCommitTransaction(_session, CommitTransactionGrbit.None);
         }
 
         private void CacheColumns()
