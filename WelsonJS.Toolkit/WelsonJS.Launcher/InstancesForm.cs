@@ -15,7 +15,6 @@ namespace WelsonJS.Launcher
         private string entryFileName;
         private string scriptName;
         private const string timestampFormat = "yyyy-MM-dd HH:mm:ss";
-        private static MetadataStore metadataStore;
 
         public InstancesForm()
         {
