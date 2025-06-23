@@ -106,16 +106,16 @@ namespace WelsonJS.Launcher
             }
 
             string indexKey = $"+{_primaryKey.Name}\0";
-            string keyDescription = indexKey + "\0";
-            int keyDescriptionLength = Encoding.ASCII.GetByteCount(keyDescription); // double null-terminated
+            int keyLength = Encoding.ASCII.GetByteCount(indexKey + "\0"); // double null-terminated
+            string fullKeyDescription = indexKey + "\0";
 
             Api.JetCreateIndex(
                 _session,
                 tableid,
                 "primary",
                 CreateIndexGrbit.IndexPrimary | CreateIndexGrbit.IndexUnique,
-                keyDescription,
-                keyDescriptionLength,
+                fullKeyDescription,
+                keyLength,
                 100
             );
 
