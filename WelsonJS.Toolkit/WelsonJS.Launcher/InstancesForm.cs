@@ -5,6 +5,7 @@
 // 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -14,15 +15,17 @@ namespace WelsonJS.Launcher
 {
     public partial class InstancesForm : Form
     {
-        private const string _timestampFormat = "yyyy-MM-dd HH:mm:ss";
-
         private string _entryFileName;
         private string _scriptName;
+        private readonly string _dateTimeFormat;
         private readonly DataStore _dataStore;
 
         public InstancesForm()
         {
             InitializeComponent();
+
+            // set the datetime format
+            _dateTimeFormat = Program.GetAppConfig("DateTimeFormat");
 
             // set the entry file name to run the instance
             _entryFileName = "bootstrap.bat";
@@ -45,64 +48,52 @@ namespace WelsonJS.Launcher
         private void InstancesForm_Load(object sender, EventArgs e)
         {
             lvInstances.Items.Clear();
-
-            LoadInstances(Program.GetAppDataPath());
-            LoadInstances(Path.GetTempPath());
+            LoadInstances();
         }
 
-        private void LoadInstances(string instancesRoot)
+        private void LoadInstances()
         {
-            if (!Directory.Exists(instancesRoot))
-                return;
-
-            /*
-            foreach (string dir in Directory.GetDirectories(instancesRoot))
-            {
-                string timestampFile = Path.Combine(dir, ".welsonjs_first_deploy_time");
-                string entryScriptFile = Path.Combine(dir, "app.js");
-                string firstDeployTime = null;
-
-                if (File.Exists(timestampFile)
-                    && DateTime.TryParse(File.ReadAllText(timestampFile).Trim(), out DateTime parsedTimestamp))
-                {
-                    firstDeployTime = parsedTimestamp.ToString(_timestampFormat);
-                }
-                else if (File.Exists(entryScriptFile))
-                {
-                    firstDeployTime = File.GetCreationTime(entryScriptFile).ToString(_timestampFormat);
-                }
-
-                if (firstDeployTime != null)
-                {
-                    lvInstances.Items.Add(new ListViewItem(new[]
-                    {
-                        Path.GetFileName(dir),
-                        firstDeployTime
-                    })
-                    {
-                        Tag = dir
-                    });
-                }
-            }
-            */
-
             var instances = _dataStore.FindAll();
             foreach (var instance in instances)
             {
-                string instanceId = instance["InstanceId"].ToString();
-                string firstDeployTime = instance.ContainsKey("FirstDeployTime") 
-                    ? ((DateTime)instance["FirstDeployTime"]).ToString(_timestampFormat) 
-                    : "Unknown";
+                try
+                {
+                    string instanceId = instance["InstanceId"].ToString();
+                    string firstDeployTime = instance.ContainsKey("FirstDeployTime")
+                        ? ((DateTime)instance["FirstDeployTime"]).ToString(_dateTimeFormat)
+                        : "Unknown";
 
-                lvInstances.Items.Add(new ListViewItem(new[]
+                    lvInstances.Items.Add(new ListViewItem(new[]
+                    {
+                        instanceId,
+                        firstDeployTime
+                    })
+                    {
+                        Tag = ResolveWorkingDirectory(instanceId)
+                    });
+                }
+                catch (Exception ex)
                 {
-                    instanceId,
-                    firstDeployTime
-                })
-                {
-                    Tag = Path.Combine(instancesRoot, instanceId)
-                });
+                    Trace.TraceWarning(ex.Message);
+                }
             }
+        }
+
+        private string ResolveWorkingDirectory(string instanceId)
+        {
+            string workingDirectory = Program.GetWorkingDirectory(instanceId, true);
+
+            if (!Directory.Exists(workingDirectory))
+            {
+                workingDirectory = Path.Combine(Path.GetTempPath(), instanceId);
+            }
+
+            if (!Directory.Exists(workingDirectory))
+            {
+                throw new DirectoryNotFoundException($"Working directory for instance '{instanceId}' does not exist: {workingDirectory}");
+            }
+
+            return workingDirectory;
         }
 
         private void btnStart_Click(object sender, EventArgs e)
@@ -111,8 +102,7 @@ namespace WelsonJS.Launcher
             {
                 _scriptName = txtUseSpecificScript.Text;
 
-                string instanceId = lvInstances.SelectedItems[0].Text;
-                string workingDirectory = Program.GetWorkingDirectory(instanceId, true);
+                string workingDirectory = (string)lvInstances.SelectedItems[0].Tag;
 
                 Task.Run(() =>
                 {
@@ -135,24 +125,25 @@ namespace WelsonJS.Launcher
 
         private void btnDelete_Click(object sender, EventArgs e)
         {
-            if (lvInstances.SelectedItems.Count > 0)
+            var selectedItems = lvInstances.SelectedItems;
+
+            if (selectedItems.Count > 0)
             {
-                string instanceId = lvInstances.SelectedItems[0].Text;
-                string workingDirectory = Program.GetWorkingDirectory(instanceId, false);
+                string workingDirectory = (string)selectedItems[0].Tag;
+                string instanceId = selectedItems[0].SubItems[0].Text;
 
-                if (!Directory.Exists(workingDirectory))
-                {
-                    workingDirectory = Path.Combine(Path.GetTempPath(), instanceId);
-                }
-
-                if (Directory.Exists(workingDirectory))
+                try
                 {
                     Directory.Delete(workingDirectory, true);
-
-                    lvInstances.Items.Clear();
-                    LoadInstances(Program.GetAppDataPath());
-                    LoadInstances(Path.GetTempPath());
+                    _dataStore.DeleteById(instanceId);
                 }
+                catch (Exception ex)
+                {
+                    Trace.TraceError(ex.Message);
+                }
+
+                lvInstances.Items.Clear();
+                LoadInstances();
             }
             else
             {
@@ -164,8 +155,7 @@ namespace WelsonJS.Launcher
         {
             if (lvInstances.SelectedItems.Count > 0)
             {
-                string instanceId = lvInstances.SelectedItems[0].Text;
-                string workingDirectory = Program.GetWorkingDirectory(instanceId, true);
+                string workingDirectory = (string)lvInstances.SelectedItems[0].Tag;
 
                 if (Directory.Exists(workingDirectory))
                 {
