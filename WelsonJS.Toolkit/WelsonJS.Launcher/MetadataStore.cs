@@ -17,6 +17,9 @@ namespace WelsonJS.Launcher
 {
     public class MetadataStore : IDisposable
     {
+        private const string _primaryKeyindexName = "primary";
+        private const string _indexNamePrefix = "idx_";
+
         private static readonly object _lock = new object();
         private static bool _initialized = false;
         private static Instance _instance;
@@ -105,23 +108,46 @@ namespace WelsonJS.Launcher
                 Api.JetAddColumn(_session, tableid, col.Name, coldef, null, 0, out _);
             }
 
-            string indexName = "primary";
-            string key = $"+{_primaryKey.Name}\0";
-            string keyDescription = key + "\0"; // double null-terminated
-            int keyDescriptionLength = Encoding.ASCII.GetByteCount(keyDescription); // in characters
+            CreateIndex(tableid, new[] { _primaryKey }, CreateIndexGrbit.IndexPrimary | CreateIndexGrbit.IndexUnique);
+
+            Api.JetCloseTable(_session, tableid);
+            Api.JetCommitTransaction(_session, CommitTransactionGrbit.None);
+        }
+
+        public void CreateIndex(JET_TABLEID tableid, IEnumerable<Column> columns, CreateIndexGrbit grbit)
+        {
+            if (columns == null)
+                throw new ArgumentNullException(nameof(columns));
+
+            var columnList = columns.ToList();
+            if (columnList.Count == 0)
+                throw new ArgumentException("At least one column is required to create an index.", nameof(columns));
+
+            if (tableid == JET_TABLEID.Nil)
+                throw new ArgumentException("Invalid table ID.", nameof(tableid));
+
+            bool isPrimaryKeyIndex = (columnList.Count == 1 && columnList[0].IsPrimaryKey);
+
+            if (isPrimaryKeyIndex && (grbit & CreateIndexGrbit.IndexPrimary) == 0)
+                throw new ArgumentException("Primary key index must have the CreateIndexGrbit.IndexPrimary flag set.", nameof(grbit));
+
+            string indexName = isPrimaryKeyIndex
+                ? _primaryKeyindexName
+                : _indexNamePrefix + string.Join("_", columnList.Select(c => c.Name));
+
+            string key = string.Concat(columnList.Select(c => "+" + c.Name));
+            string keyDescription = key + "\0\0"; // double null-terminated
+            int keyDescriptionLength = keyDescription.Length;
 
             Api.JetCreateIndex(
                 _session,
                 tableid,
                 indexName,
-                CreateIndexGrbit.IndexPrimary | CreateIndexGrbit.IndexUnique,
+                grbit,
                 keyDescription,
                 keyDescriptionLength,
                 100
             );
-
-            Api.JetCloseTable(_session, tableid);
-            Api.JetCommitTransaction(_session, CommitTransactionGrbit.None);
         }
 
         private void CacheColumns()
@@ -172,7 +198,7 @@ namespace WelsonJS.Launcher
                 {
                     Api.JetBeginTransaction(_session);
 
-                    Api.JetSetCurrentIndex(_session, table, null);
+                    Api.JetSetCurrentIndex(_session, table, _primaryKeyindexName);
                     MakeKeyByType(keyValue, keyType, _session, table);
                     bool found = Api.TrySeek(_session, table, SeekGrbit.SeekEQ);
 
@@ -197,8 +223,9 @@ namespace WelsonJS.Launcher
                 catch (Exception ex)
                 {
                     Trace.TraceError($"[ESENT] Operation failed: {ex.Message}");
-                    MessageBox.Show($"[ESENT] Operation failed: {ex.Message}");
                     Api.JetRollback(_session, RollbackTransactionGrbit.None);
+
+                    MessageBox.Show($"[ESENT] Operation failed: {ex.Message}");
                     return false;
                 }
             }
@@ -211,7 +238,7 @@ namespace WelsonJS.Launcher
 
             using (var table = new Table(_session, _dbid, _schema.TableName, OpenTableGrbit.ReadOnly))
             {
-                Api.JetSetCurrentIndex(_session, table, null);
+                Api.JetSetCurrentIndex(_session, table, _primaryKeyindexName);
                 MakeKeyByType(keyValue, keyType, _session, table);
                 if (!Api.TrySeek(_session, table, SeekGrbit.SeekEQ))
                     return null;
@@ -235,6 +262,8 @@ namespace WelsonJS.Launcher
 
             using (var table = new Table(_session, _dbid, _schema.TableName, OpenTableGrbit.ReadOnly))
             {
+                Api.JetSetCurrentIndex(_session, table, _primaryKeyindexName);
+
                 if (!Api.TryMoveFirst(_session, table))
                     return results;
 
@@ -263,7 +292,7 @@ namespace WelsonJS.Launcher
 
             using (var table = new Table(_session, _dbid, _schema.TableName, OpenTableGrbit.Updatable))
             {
-                Api.JetSetCurrentIndex(_session, table, null);
+                Api.JetSetCurrentIndex(_session, table, _primaryKeyindexName);
                 MakeKeyByType(keyValue, keyType, _session, table);
                 if (!Api.TrySeek(_session, table, SeekGrbit.SeekEQ))
                     return false;
