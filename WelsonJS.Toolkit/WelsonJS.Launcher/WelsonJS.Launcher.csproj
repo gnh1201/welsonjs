@@ -74,9 +74,6 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Esent.Interop, Version=1.9.4.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\ManagedEsent.1.9.4\lib\net40\Esent.Interop.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
@@ -124,9 +121,6 @@
       <DependentUpon>GlobalSettingsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="ResourceServer.cs" />
-    <Compile Include="Storage\Column.cs" />
-    <Compile Include="MetadataStore.cs" />
-    <Compile Include="Storage\Schema.cs" />
     <EmbeddedResource Include="EnvForm.resx">
       <DependentUpon>EnvForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -145,7 +139,6 @@
       <DependentUpon>GlobalSettingsForm.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />
-    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -184,6 +177,16 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="editor.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EsentInterop\EsentInterop.csproj">
+      <Project>{e929e163-52a0-4aac-917b-6d7faf70c45e}</Project>
+      <Name>EsentInterop</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\WelsonJS.Esent\WelsonJS.Esent.csproj">
+      <Project>{783f2db2-80d0-4f58-a55e-9593e44d5743}</Project>
+      <Name>WelsonJS.Esent</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

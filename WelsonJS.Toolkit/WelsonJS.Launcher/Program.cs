@@ -10,8 +10,6 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using System.Configuration;
-using System.Collections.Generic;
-using WelsonJS.Launcher.Storage;
 
 namespace WelsonJS.Launcher
 {
@@ -19,7 +17,6 @@ namespace WelsonJS.Launcher
     {
         static Mutex mutex;
         public static ResourceServer _ResourceServer;
-        public static MetadataStore _InstancesMetadataStore;
 
         [STAThread]
         static void Main()
@@ -32,22 +29,10 @@ namespace WelsonJS.Launcher
                 return;
             }
 
-            // connect the database to manage an instances
-            Schema schema = new Schema("Instances", new List<Column>
-            {
-                new Column("InstanceId", typeof(string), 255),
-                new Column("FirstDeployTime", typeof(DateTime), 1)
-            });
-            schema.SetPrimaryKey("InstanceId");
-            _InstancesMetadataStore = new MetadataStore(schema);
-
             // draw the main form
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new MainForm());
-
-            // close the database
-            _InstancesMetadataStore.Dispose();
 
             // destory the mutex
             mutex.ReleaseMutex();

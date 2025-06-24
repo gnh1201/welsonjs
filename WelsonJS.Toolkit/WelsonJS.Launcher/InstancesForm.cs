@@ -4,24 +4,42 @@
 // https://github.com/gnh1201/welsonjs
 // 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using WelsonJS.Esent;
 
 namespace WelsonJS.Launcher
 {
     public partial class InstancesForm : Form
     {
-        private string entryFileName;
-        private string scriptName;
-        private const string timestampFormat = "yyyy-MM-dd HH:mm:ss";
+        private const string _timestampFormat = "yyyy-MM-dd HH:mm:ss";
+
+        private string _entryFileName;
+        private string _scriptName;
+        private readonly DataStore _dataStore;
 
         public InstancesForm()
         {
             InitializeComponent();
 
             // set the entry file name to run the instance
-            entryFileName = "bootstrap.bat";
+            _entryFileName = "bootstrap.bat";
+
+            // connect the database to manage an instances
+            Schema schema = new Schema("Instances", new List<Column>
+            {
+                new Column("InstanceId", typeof(string), 255),
+                new Column("FirstDeployTime", typeof(DateTime), 1)
+            });
+            schema.SetPrimaryKey("InstanceId");
+            _dataStore = new DataStore(schema, Program.GetAppDataPath());
+        }
+
+        public DataStore GetDataStore()
+        {
+            return _dataStore;
         }
 
         private void InstancesForm_Load(object sender, EventArgs e)
@@ -47,11 +65,11 @@ namespace WelsonJS.Launcher
                 if (File.Exists(timestampFile)
                     && DateTime.TryParse(File.ReadAllText(timestampFile).Trim(), out DateTime parsedTimestamp))
                 {
-                    firstDeployTime = parsedTimestamp.ToString(timestampFormat);
+                    firstDeployTime = parsedTimestamp.ToString(_timestampFormat);
                 }
                 else if (File.Exists(entryScriptFile))
                 {
-                    firstDeployTime = File.GetCreationTime(entryScriptFile).ToString(timestampFormat);
+                    firstDeployTime = File.GetCreationTime(entryScriptFile).ToString(_timestampFormat);
                 }
 
                 if (firstDeployTime != null)
@@ -68,12 +86,12 @@ namespace WelsonJS.Launcher
             }
             */
 
-            var instances = Program._InstancesMetadataStore.FindAll();
+            var instances = _dataStore.FindAll();
             foreach (var instance in instances)
             {
                 string instanceId = instance["InstanceId"].ToString();
                 string firstDeployTime = instance.ContainsKey("FirstDeployTime") 
-                    ? ((DateTime)instance["FirstDeployTime"]).ToString(timestampFormat) 
+                    ? ((DateTime)instance["FirstDeployTime"]).ToString(_timestampFormat) 
                     : "Unknown";
 
                 lvInstances.Items.Add(new ListViewItem(new[]
@@ -91,7 +109,7 @@ namespace WelsonJS.Launcher
         {
             if (lvInstances.SelectedItems.Count > 0)
             {
-                scriptName = txtUseSpecificScript.Text;
+                _scriptName = txtUseSpecificScript.Text;
 
                 string instanceId = lvInstances.SelectedItems[0].Text;
                 string workingDirectory = Program.GetWorkingDirectory(instanceId, true);
@@ -101,7 +119,7 @@ namespace WelsonJS.Launcher
                     try
                     {
                         // Run the appliction
-                        Program.RunCommandPrompt(workingDirectory, entryFileName, scriptName, cbUseSpecificScript.Checked, cbInteractiveServiceApp.Checked);
+                        Program.RunCommandPrompt(workingDirectory, _entryFileName, _scriptName, cbUseSpecificScript.Checked, cbInteractiveServiceApp.Checked);
                     }
                     catch (Exception ex)
                     {
