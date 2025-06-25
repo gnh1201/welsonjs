@@ -4,6 +4,7 @@
 // https://github.com/gnh1201/welsonjs
 // 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -15,14 +16,17 @@ namespace WelsonJS.Launcher
 {
     public partial class MainForm : Form
     {
-        private string workingDirectory;
-        private string instanceId;
-        private readonly string entryFileName;
-        private string scriptName;
+        private const string _entryFileName = "bootstrap.bat";
+
+        private readonly string _dateTimeFormat;
+
+        private string _workingDirectory;
+        private string _instanceId;
+        private string _scriptName;
 
         public MainForm()
         {
-            entryFileName = "bootstrap.bat";
+            _dateTimeFormat = Program.GetAppConfig("DateTimeFormat");
 
             InitializeComponent();
 
@@ -123,29 +127,29 @@ namespace WelsonJS.Launcher
 
         private void ExtractAndRun(string filePath)
         {
-            instanceId = Guid.NewGuid().ToString();
-            workingDirectory = Program.GetWorkingDirectory(instanceId);
-            scriptName = txtUseSpecificScript.Text;
+            _instanceId = Guid.NewGuid().ToString();
+            _workingDirectory = Program.GetWorkingDirectory(_instanceId);
+            _scriptName = txtUseSpecificScript.Text;
 
             try
             {
                 // check if the working directory exists
-                if (Directory.Exists(workingDirectory))
+                if (Directory.Exists(_workingDirectory))
                 {
                     throw new InvalidOperationException("GUID validation failed. Directory already exists.");
                 }
 
                 // try to extract ZIP file
-                ZipFile.ExtractToDirectory(filePath, workingDirectory);
+                ZipFile.ExtractToDirectory(filePath, _workingDirectory);
 
                 // record the first deploy time
-                RecordFirstDeployTime(workingDirectory);
+                RecordFirstDeployTime(_workingDirectory, _instanceId);
 
                 // follow the sub-directory
-                workingDirectory = Program.GetWorkingDirectory(instanceId, true);
+                _workingDirectory = Program.GetWorkingDirectory(_instanceId, true);
 
                 // Run the application
-                Program.RunCommandPrompt(workingDirectory, entryFileName, scriptName, cbUseSpecificScript.Checked, cbInteractiveServiceApp.Checked);
+                Program.RunCommandPrompt(_workingDirectory, _entryFileName, _scriptName, cbUseSpecificScript.Checked, cbInteractiveServiceApp.Checked);
             }
             catch (Exception ex)
             {
@@ -156,18 +160,37 @@ namespace WelsonJS.Launcher
             SafeInvoke(() => EnableUI());
         }
 
-        private void RecordFirstDeployTime(string directory)
+        private void RecordFirstDeployTime(string directory, string instanceId)
         {
+            // get current time
+            DateTime now = DateTime.Now;
+
+            // record to the metadata database
+            InstancesForm instancesForm = new InstancesForm();
+            try
+            {
+                instancesForm.GetDataStore().Insert(new Dictionary<string, object>
+                {
+                    ["InstanceId"] = instanceId,
+                    ["FirstDeployTime"] = now
+                }, out _);
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError($"Failed to record first deploy time: {ex.Message}");
+            }
+            instancesForm.Dispose();
+
+            // record to the instance directory
             try
             {
                 string filePath = Path.Combine(directory, ".welsonjs_first_deploy_time");
-                string text = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
-
+                string text = now.ToString(_dateTimeFormat);
                 File.WriteAllText(filePath, text);
             }
             catch (Exception ex)
             {
-                throw new Exception($"Failed to record first deploy time: {ex.Message}");
+                Trace.TraceError($"Failed to record first deploy time: {ex.Message}");
             }
         }
 
@@ -242,26 +265,26 @@ namespace WelsonJS.Launcher
         {
             Program.StartResourceServer();
 
-            if (!Program.resourceServer.IsRunning())
+            if (!Program._ResourceServer.IsRunning())
             {
-                Program.resourceServer.Start();
+                Program._ResourceServer.Start();
                 ((ToolStripMenuItem)sender).Text = "Open the code editor...";
             }
             else
             {
-                Program.OpenWebBrowser(Program.resourceServer.GetPrefix());
+                Program.OpenWebBrowser(Program._ResourceServer.GetPrefix());
             }
         }
 
         private void openCodeEditorToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (Program.resourceServer == null)
+            if (Program._ResourceServer == null)
             {
                 MessageBox.Show("A resource server is not running.");
             }
             else
             {
-                Program.OpenWebBrowser(Program.resourceServer.GetPrefix());
+                Program.OpenWebBrowser(Program._ResourceServer.GetPrefix());
             }
         }
 

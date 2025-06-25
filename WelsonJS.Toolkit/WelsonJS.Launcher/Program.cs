@@ -16,22 +16,25 @@ namespace WelsonJS.Launcher
     internal static class Program
     {
         static Mutex mutex;
-        public static ResourceServer resourceServer;
+        public static ResourceServer _ResourceServer;
 
         [STAThread]
         static void Main()
         {
-            mutex = new Mutex(true, "WelsonJS.Launcher.Mutex", out bool isMutexNotExists);
+            // create the mutex
+            mutex = new Mutex(true, "WelsonJS.Launcher", out bool isMutexNotExists);
             if (!isMutexNotExists)
             {
                 MessageBox.Show("WelsonJS Launcher already running.");
                 return;
             }
 
+            // draw the main form
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new MainForm());
 
+            // destory the mutex
             mutex.ReleaseMutex();
             mutex.Dispose();
         }
@@ -147,9 +150,9 @@ namespace WelsonJS.Launcher
         {
             lock(typeof(Program))
             {
-                if (resourceServer == null)
+                if (_ResourceServer == null)
                 {
-                    resourceServer = new ResourceServer(GetAppConfig("ResourceServerPrefix"), "editor.html");
+                    _ResourceServer = new ResourceServer(GetAppConfig("ResourceServerPrefix"), "editor.html");
                 }
             }
         }

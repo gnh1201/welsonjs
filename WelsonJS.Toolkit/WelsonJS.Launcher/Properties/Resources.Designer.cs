@@ -133,6 +133,15 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
+        ///   yyyy-MM-dd HH:mm:ss과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string DateTimeFormat {
+            get {
+                return ResourceManager.GetString("DateTimeFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   http://localhost:9222/과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string DevToolsPrefix {

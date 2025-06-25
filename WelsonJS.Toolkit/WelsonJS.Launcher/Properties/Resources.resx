@@ -196,4 +196,7 @@
   <data name="CitiApiPrefix" xml:space="preserve">
     <value>https://api.criminalip.io/v1/</value>
   </data>
+  <data name="DateTimeFormat" xml:space="preserve">
+    <value>yyyy-MM-dd HH:mm:ss</value>
+  </data>
 </root>

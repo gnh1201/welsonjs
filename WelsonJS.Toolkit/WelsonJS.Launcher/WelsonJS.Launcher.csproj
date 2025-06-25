@@ -55,6 +55,24 @@
   <PropertyGroup>
     <ApplicationIcon>favicon.ico</ApplicationIcon>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x64\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
+    <OutputPath>bin\x64\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ErrorReport>prompt</ErrorReport>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -159,6 +177,16 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="editor.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\EsentInterop\EsentInterop.csproj">
+      <Project>{e929e163-52a0-4aac-917b-6d7faf70c45e}</Project>
+      <Name>EsentInterop</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\WelsonJS.Esent\WelsonJS.Esent.csproj">
+      <Project>{783f2db2-80d0-4f58-a55e-9593e44d5743}</Project>
+      <Name>WelsonJS.Esent</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
