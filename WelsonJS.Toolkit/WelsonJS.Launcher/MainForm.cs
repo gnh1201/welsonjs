@@ -18,12 +18,16 @@ namespace WelsonJS.Launcher
     {
         private const string _entryFileName = "bootstrap.bat";
 
+        private readonly string _dateTimeFormat;
+
         private string _workingDirectory;
         private string _instanceId;
         private string _scriptName;
 
         public MainForm()
         {
+            _dateTimeFormat = Program.GetAppConfig("DateTimeFormat");
+
             InitializeComponent();
 
             if (IsInAdministrator())
@@ -181,7 +185,7 @@ namespace WelsonJS.Launcher
             try
             {
                 string filePath = Path.Combine(directory, ".welsonjs_first_deploy_time");
-                string text = now.ToString("yyyy-MM-dd HH:mm:ss");
+                string text = now.ToString(_dateTimeFormat);
                 File.WriteAllText(filePath, text);
             }
             catch (Exception ex)
