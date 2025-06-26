@@ -42,7 +42,7 @@ foreach (var instance in instances)
     {
         string instanceId = instance["InstanceId"].ToString();
         string firstDeployTime = instance.ContainsKey("FirstDeployTime")
-            ? ((DateTime)instance["FirstDeployTime"]).ToString(_dateTimeFormat)
+            ? ((DateTime)instance["FirstDeployTime"]).ToString("yyyy-MM-dd HH:mm:ss")
             : "Unknown";
 
         Console.WriteLine($"{firstDeployTime}, {instanceId}");
