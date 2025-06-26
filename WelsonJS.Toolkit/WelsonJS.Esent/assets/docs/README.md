@@ -11,7 +11,7 @@ For more details, refer to the [WelsonJS Documentation](https://catswords-oss.rd
 ```csharp
 using WelsonJS.Esent;
 
-// connect the database to manage an instances
+// connect the database to manage instances
 Schema schema = new Schema("Instances", new List<Column>
 {
     new Column("InstanceId", typeof(string), 255),

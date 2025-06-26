@@ -36,10 +36,10 @@ namespace WelsonJS.Esent
         {
             _logger = logger ?? new TraceLogger();
 
-            _primaryKey = schema.PrimaryKey;
-
             if (schema == null)
                 throw new ArgumentNullException(nameof(schema));
+
+            _primaryKey = schema.PrimaryKey;
 
             if (_primaryKey == null)
                 throw new ArgumentNullException();
