@@ -1,6 +1,6 @@
 ﻿// DataStore.cs (WelsonJS.Esent)
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: 2025 Namhyeon Go, Catswords OSS and WelsonJS Contributors
+// SPDX-FileCopyrightText: 2025 Namhyeon Go <gnh1201@catswords.re.kr>, Catswords OSS and WelsonJS Contributors
 // https://github.com/gnh1201/welsonjs
 // 
 using System;
@@ -13,11 +13,13 @@ using Microsoft.Isam.Esent.Interop;
 
 namespace WelsonJS.Esent
 {
-    public class DataStore : IDisposable
+    public class EsentDatabase : IDisposable
     {
         private const string _primaryKeyindexName = "primary";
         private const string _indexNamePrefix = "idx_";
+        private const string _databaseName = "metadata.edb";
 
+        private readonly ICompatibleLogger _logger;
         private static readonly object _lock = new object();
         private static bool _initialized = false;
         private static Instance _instance;
@@ -30,8 +32,10 @@ namespace WelsonJS.Esent
         private readonly Column _primaryKey;
         private readonly Dictionary<string, JET_COLUMNID> _columnIds;
 
-        public DataStore(Schema schema, string workingDirectory)
+        public EsentDatabase(Schema schema, string workingDirectory, ICompatibleLogger logger = null)
         {
+            _logger = logger ?? new TraceLogger();
+
             _primaryKey = schema.PrimaryKey;
 
             if (schema == null)
@@ -74,10 +78,10 @@ namespace WelsonJS.Esent
                 if (_initialized) return;
 
                 // set the file path
-                _filePath = Path.Combine(_workingDirectory, "metadata.edb");
+                _filePath = Path.Combine(_workingDirectory, _databaseName);
 
                 // config the instance
-                _instance = new Instance("WelsonJS.Launcher.MetadataStore");
+                _instance = new Instance(typeof(EsentDatabase).Namespace);
                 _instance.Parameters.SystemDirectory = _workingDirectory;
                 _instance.Parameters.LogFileDirectory = _workingDirectory;
                 _instance.Parameters.TempDirectory = _workingDirectory;
@@ -160,7 +164,7 @@ namespace WelsonJS.Esent
                     }
                     catch (EsentColumnNotFoundException)
                     {
-                        Trace.TraceWarning($"Column '{col.Name}' not found.");
+                        _logger.Warn($"Column '{col.Name}' not found.");
                     }
                 }
             }
@@ -201,7 +205,7 @@ namespace WelsonJS.Esent
 
                     if (expectSeek != found)
                     {
-                        Trace.TraceWarning($"[ESENT] Operation skipped. Seek result = {found}, expected = {expectSeek}");
+                        _logger.Warn($"[ESENT] Operation skipped. Seek result = {found}, expected = {expectSeek}");
                         Api.JetRollback(_session, RollbackTransactionGrbit.None);
                         return false;
                     }
@@ -312,7 +316,7 @@ namespace WelsonJS.Esent
                 case JET_coltyp.LongBinary:
                     return Api.RetrieveColumn(session, table, columnId);
                 default:
-                    Trace.TraceWarning($"[ESENT] Unsupported RetrieveColumn type: {type}");
+                    _logger.Warn($"[ESENT] Unsupported RetrieveColumn type: {type}");
                     return null;
             }
         }
@@ -323,13 +327,13 @@ namespace WelsonJS.Esent
 
             if (!values.TryGetValue(_primaryKey.Name, out keyValue))
             {
-                Trace.TraceWarning($"[ESENT] Missing primary key '{_primaryKey.Name}'.");
+                _logger.Warn($"[ESENT] Missing primary key '{_primaryKey.Name}'.");
                 return false;
             }
 
             if (keyValue == null)
             {
-                Trace.TraceWarning("[ESENT] Primary key value cannot be null.");
+                _logger.Warn("[ESENT] Primary key value cannot be null.");
                 return false;
             }
 
@@ -351,7 +355,7 @@ namespace WelsonJS.Esent
             {
                 if (!_columnIds.TryGetValue(kv.Key, out var colid))
                 {
-                    Trace.TraceWarning($"[ESENT] Column '{kv.Key}' not found in cache.");
+                    _logger.Warn($"[ESENT] Column '{kv.Key}' not found in cache.");
                     continue;
                 }
 
@@ -384,7 +388,7 @@ namespace WelsonJS.Esent
                     Api.SetColumn(session, table, columnId, (byte[])value);
                     break;
                 default:
-                    Trace.TraceWarning($"[ESENT] Unsupported SetColumn type: {type}");
+                    _logger.Warn($"[ESENT] Unsupported SetColumn type: {type}");
                     break;
             }
         }
@@ -410,7 +414,7 @@ namespace WelsonJS.Esent
                     Api.MakeKey(session, table, (byte[])value, MakeKeyGrbit.NewKey);
                     break;
                 default:
-                    Trace.TraceWarning($"[ESENT] Unsupported MakeKey type: {type}");
+                    _logger.Warn($"[ESENT] Unsupported MakeKey type: {type}");
                     break;
             }
         }

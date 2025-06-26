@@ -15,7 +15,7 @@
         {
             if (disposing && (components != null))
             {
-                _dataStore?.Dispose();  // dispose the database session
+                _db?.Dispose();  // dispose the database session
                 components.Dispose();
             }
             base.Dispose(disposing);
