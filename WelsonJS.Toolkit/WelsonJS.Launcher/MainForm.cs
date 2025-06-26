@@ -169,7 +169,7 @@ namespace WelsonJS.Launcher
             InstancesForm instancesForm = new InstancesForm();
             try
             {
-                instancesForm.GetDataStore().Insert(new Dictionary<string, object>
+                instancesForm.GetDatabaseInstance().Insert(new Dictionary<string, object>
                 {
                     ["InstanceId"] = instanceId,
                     ["FirstDeployTime"] = now

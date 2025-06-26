@@ -1,6 +1,6 @@
 ﻿// Schema.cs (WelsonJS.Esent)
 // SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: 2025 Namhyeon Go, Catswords OSS and WelsonJS Contributors
+// SPDX-FileCopyrightText: 2025 Namhyeon Go <gnh1201@catswords.re.kr>, Catswords OSS and WelsonJS Contributors
 // https://github.com/gnh1201/welsonjs
 // 
 using System;

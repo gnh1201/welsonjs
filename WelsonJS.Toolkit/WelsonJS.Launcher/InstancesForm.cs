@@ -18,7 +18,7 @@ namespace WelsonJS.Launcher
         private string _entryFileName;
         private string _scriptName;
         private readonly string _dateTimeFormat;
-        private readonly DataStore _dataStore;
+        private readonly EsentDatabase _db;
 
         public InstancesForm()
         {
@@ -37,12 +37,12 @@ namespace WelsonJS.Launcher
                 new Column("FirstDeployTime", typeof(DateTime), 1)
             });
             schema.SetPrimaryKey("InstanceId");
-            _dataStore = new DataStore(schema, Program.GetAppDataPath());
+            _db = new EsentDatabase(schema, Program.GetAppDataPath());
         }
 
-        public DataStore GetDataStore()
+        public EsentDatabase GetDatabaseInstance()
         {
-            return _dataStore;
+            return _db;
         }
 
         private void InstancesForm_Load(object sender, EventArgs e)
@@ -53,7 +53,7 @@ namespace WelsonJS.Launcher
 
         private void LoadInstances()
         {
-            var instances = _dataStore.FindAll();
+            var instances = _db.FindAll();
             foreach (var instance in instances)
             {
                 try
@@ -135,7 +135,7 @@ namespace WelsonJS.Launcher
                 try
                 {
                     Directory.Delete(workingDirectory, true);
-                    _dataStore.DeleteById(instanceId);
+                    _db.DeleteById(instanceId);
                 }
                 catch (Exception ex)
                 {
