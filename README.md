@@ -76,6 +76,7 @@ WelsonJS is tailored for developers who need a reliable, lightweight JavaScript 
 * Generative AI integrations: [Multiple LLM and sLLM](https://catswords-oss.rdbl.io/5719744820/5510319392) (e.g., ChatGPT, Claude, ...)
 * Aviation Data integrations: [AviationStack](https://aviationstack.com?utm_source=FirstPromoter&utm_medium=Affiliate&fpr=namhyeon71), [SearchApi Google Flight](https://www.searchapi.io/?via=namhyeon)
 * VM infrastructure tool integrations: [OVFTool for Broadcom/VMware infrastructures](https://developer.broadcom.com/tools/open-virtualization-format-ovf-tool/latest)
+* ***:fire: NEW!*** Windows bulit-in database engine AKA. [ESENT (ESE) database](https://learn.microsoft.com/en-us/windows/win32/extensible-storage-engine/database-overview) interface library (WelsonJS.Esent)
 * Everything you can imagine.
 
 ## Quick start
