@@ -12,8 +12,8 @@ Module Program
         Console.WriteLine("Start SEED encryption and decryption test")
         Dim cipher As New WelsonJS.Cryptography.SeedAlgorithm()
 
-        cipher.Key = {&H2B, &H7E, &H15, &H16, &H28, &HAE, &HD2, &HA6, &HAB, &HF7, &H15, &H88, &H9, &HCF, &H4F, &H3C}
-        cipher.IV = {&H26, &H8D, &H66, &HA7, &H35, &HA8, &H1A, &H81, &H6F, &HBA, &HD9, &HFA, &H36, &H16, &H25, &H1}
+        cipher.Key = {&H88, &HE3, &H4F, &H8F, &H8, &H17, &H79, &HF1, &HE9, &HF3, &H94, &H37, &HA, &HD4, &H5, &H89}
+        ' cipher.IV = {&H26, &H8D, &H66, &HA7, &H35, &HA8, &H1A, &H81, &H6F, &HBA, &HD9, &HFA, &H36, &H16, &H25, &H1}
         cipher.Mode = CipherMode.ECB
         cipher.Padding = PaddingMode.PKCS7
 
@@ -21,7 +21,7 @@ Module Program
     End Sub
 
     Public Sub RunTest(cipher As SymmetricAlgorithm)
-        Dim inputBytes As Byte() = {&H0, &H1, &H2, &H3, &H4, &H5, &H6, &H7, &H8, &H9, &HA, &HB, &HC, &HD, &HE, &HF, &H0, &H1}
+        Dim inputBytes As Byte() = {&H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &HFE}
 
         Console.WriteLine("Original bytes (HEX):")
         PrintHex(inputBytes)
@@ -38,13 +38,7 @@ Module Program
     End Sub
 
     Private Function ApplyTransform(transformer As ICryptoTransform, input As Byte()) As Byte()
-        Using ms As New MemoryStream()
-            Using cs As New CryptoStream(ms, transformer, CryptoStreamMode.Write)
-                cs.Write(input, 0, input.Length)
-                cs.FlushFinalBlock()
-                Return ms.ToArray()
-            End Using
-        End Using
+        Return transformer.TransformFinalBlock(input, 0, input.Length)
     End Function
 
     Private Sub PrintHex(data As Byte())
