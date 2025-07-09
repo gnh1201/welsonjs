@@ -156,10 +156,20 @@ Public Class SeedCore
         KeySchedule(key)
     End Sub
 
-    ' Extract a byte (0 = LSB, 3 = MSB)
     Private Shared Function GetByte(n As UInteger, index As Integer) As Byte
         Return CByte((n >> (index * 8)) And &HFF)
     End Function
+
+    Private Shared Function ToUInt32BE(data() As Byte, offset As Integer) As UInteger
+        Return (CUInt(data(offset)) << 24) Or (CUInt(data(offset + 1)) << 16) Or (CUInt(data(offset + 2)) << 8) Or CUInt(data(offset + 3))
+    End Function
+
+    Private Shared Sub WriteUInt32BE(value As UInteger, output() As Byte, offset As Integer)
+        output(offset) = CByte((value >> 24) And &HFF)
+        output(offset + 1) = CByte((value >> 16) And &HFF)
+        output(offset + 2) = CByte((value >> 8) And &HFF)
+        output(offset + 3) = CByte(value And &HFF)
+    End Sub
 
     Private Shared Function RoundFunction(T0 As UInteger, T1 As UInteger) As Tuple(Of UInteger, UInteger)
         T1 = T1 Xor T0
@@ -173,10 +183,10 @@ Public Class SeedCore
     End Function
 
     Private Sub KeySchedule(userKey As Byte())
-        Dim A As UInteger = BitConverter.ToUInt32(userKey, 0)
-        Dim B As UInteger = BitConverter.ToUInt32(userKey, 4)
-        Dim C As UInteger = BitConverter.ToUInt32(userKey, 8)
-        Dim D As UInteger = BitConverter.ToUInt32(userKey, 12)
+        Dim A As UInteger = ToUInt32BE(userKey, 0)
+        Dim B As UInteger = ToUInt32BE(userKey, 4)
+        Dim C As UInteger = ToUInt32BE(userKey, 8)
+        Dim D As UInteger = ToUInt32BE(userKey, 12)
 
         For i As Integer = 0 To 15
             Dim T0 As UInteger = (A + C - KC(i)) And &HFFFFFFFFUI
@@ -185,66 +195,62 @@ Public Class SeedCore
             roundKey(2 * i + 1) = SS0(GetByte(T1, 0)) Xor SS1(GetByte(T1, 1)) Xor SS2(GetByte(T1, 2)) Xor SS3(GetByte(T1, 3))
 
             If i Mod 2 = 0 Then
-                Dim tmpA = A
-                A = (A >> 8) Or (B << 24)
-                B = (B >> 8) Or (tmpA << 24)
+                Dim AB As ULong = (CLng(A) << 32) Or B
+                AB = ((AB >> 8) Or (AB << 56)) And &HFFFFFFFFFFFFFFFFUL
+                A = CUInt(AB >> 32)
+                B = CUInt(AB And &HFFFFFFFFUL)
             Else
-                Dim tmpC = C
-                C = (C << 8) Or (D >> 24)
-                D = (D << 8) Or (tmpC >> 24)
+                Dim CD As ULong = (CLng(C) << 32) Or D
+                CD = ((CD << 8) Or (CD >> 56)) And &HFFFFFFFFFFFFFFFFUL
+                C = CUInt(CD >> 32)
+                D = CUInt(CD And &HFFFFFFFFUL)
             End If
         Next
     End Sub
 
     Public Sub EncryptBlock(input() As Byte, inOffset As Integer, output() As Byte, outOffset As Integer)
-        Dim L0 = BitConverter.ToUInt32(input, inOffset)
-        Dim L1 = BitConverter.ToUInt32(input, inOffset + 4)
-        Dim R0 = BitConverter.ToUInt32(input, inOffset + 8)
-        Dim R1 = BitConverter.ToUInt32(input, inOffset + 12)
+        Dim L0 = ToUInt32BE(input, inOffset)
+        Dim L1 = ToUInt32BE(input, inOffset + 4)
+        Dim R0 = ToUInt32BE(input, inOffset + 8)
+        Dim R1 = ToUInt32BE(input, inOffset + 12)
 
         For i As Integer = 0 To 15
             Dim t = RoundFunction(R0 Xor roundKey(2 * i), R1 Xor roundKey(2 * i + 1))
             Dim T0 = t.Item1
             Dim T1 = t.Item2
 
-            L0 = L0 Xor T0
-            L1 = L1 Xor T1
-
-            ' swap
-            Dim tmp0 = L0 : Dim tmp1 = L1
+            Dim temp0 = L0 Xor T0
+            Dim temp1 = L1 Xor T1
             L0 = R0 : L1 = R1
-            R0 = tmp0 : R1 = tmp1
+            R0 = temp0 : R1 = temp1
         Next
 
-        Array.Copy(BitConverter.GetBytes(R0), 0, output, outOffset, 4)
-        Array.Copy(BitConverter.GetBytes(R1), 0, output, outOffset + 4, 4)
-        Array.Copy(BitConverter.GetBytes(L0), 0, output, outOffset + 8, 4)
-        Array.Copy(BitConverter.GetBytes(L1), 0, output, outOffset + 12, 4)
+        WriteUInt32BE(R0, output, outOffset)
+        WriteUInt32BE(R1, output, outOffset + 4)
+        WriteUInt32BE(L0, output, outOffset + 8)
+        WriteUInt32BE(L1, output, outOffset + 12)
     End Sub
 
     Public Sub DecryptBlock(input() As Byte, inOffset As Integer, output() As Byte, outOffset As Integer)
-        Dim L0 = BitConverter.ToUInt32(input, inOffset)
-        Dim L1 = BitConverter.ToUInt32(input, inOffset + 4)
-        Dim R0 = BitConverter.ToUInt32(input, inOffset + 8)
-        Dim R1 = BitConverter.ToUInt32(input, inOffset + 12)
+        Dim L0 = ToUInt32BE(input, inOffset)
+        Dim L1 = ToUInt32BE(input, inOffset + 4)
+        Dim R0 = ToUInt32BE(input, inOffset + 8)
+        Dim R1 = ToUInt32BE(input, inOffset + 12)
 
         For i As Integer = 0 To 15
             Dim t = RoundFunction(R0 Xor roundKey(30 - 2 * i), R1 Xor roundKey(31 - 2 * i))
             Dim T0 = t.Item1
             Dim T1 = t.Item2
 
-            L0 = L0 Xor T0
-            L1 = L1 Xor T1
-
-            ' swap
-            Dim tmp0 = L0 : Dim tmp1 = L1
+            Dim temp0 = L0 Xor T0
+            Dim temp1 = L1 Xor T1
             L0 = R0 : L1 = R1
-            R0 = tmp0 : R1 = tmp1
+            R0 = temp0 : R1 = temp1
         Next
 
-        Array.Copy(BitConverter.GetBytes(R0), 0, output, outOffset, 4)
-        Array.Copy(BitConverter.GetBytes(R1), 0, output, outOffset + 4, 4)
-        Array.Copy(BitConverter.GetBytes(L0), 0, output, outOffset + 8, 4)
-        Array.Copy(BitConverter.GetBytes(L1), 0, output, outOffset + 12, 4)
+        WriteUInt32BE(R0, output, outOffset)
+        WriteUInt32BE(R1, output, outOffset + 4)
+        WriteUInt32BE(L0, output, outOffset + 8)
+        WriteUInt32BE(L1, output, outOffset + 12)
     End Sub
 End Class

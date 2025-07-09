@@ -23,6 +23,9 @@ Module Program
     Public Sub RunTest(cipher As SymmetricAlgorithm)
         Dim inputBytes As Byte() = {&H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &HFE}
 
+        Console.WriteLine("Key (HEX):")
+        PrintHex(cipher.Key)
+
         Console.WriteLine("Original bytes (HEX):")
         PrintHex(inputBytes)
 
