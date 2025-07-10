@@ -13,9 +13,9 @@
     },
     {
         "type": "serp",
-        "provider": "searchapi",
-        "url": "https://www.searchapi.io/api/v1/search?api_key={api_key}&engine={engine}&q={q}",
-        "documentation": "https://www.searchapi.io/?via=namhyeon"
+        "provider": "serpapi",
+        "url": "https://serpapi.com/search.json?api_key={api_key}&engine={engine}&q={q}",
+        "documentation": "https://serpapi.com/?utm_source=welsonjs"
     },
     {
         "type": "serp",

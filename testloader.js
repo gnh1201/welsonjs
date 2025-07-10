@@ -1029,18 +1029,18 @@ var test_implements = {
         console.log("responseBody:", response.responseBody);
     },
     
-    // https://catswords-oss.rdbl.io/5719744820/8278298336
+    // How to use: https://catswords-oss.rdbl.io/5719744820/8278298336
     "proxy_serp": function() {
         var HTTP = require("lib/http");
         var CRED = require("lib/credentials");
 
         var response = HTTP.create()
             .setVariables({
-                "api_key": CRED.get("apikey", "searchapi")
+                "api_key": CRED.get("apikey", "serpapi")
             })
             .setProxy({
                 "enabled": true,
-                "provider": "searchapi",
+                "provider": "serpapi",
                 "type": "serp"
             })
             .open("GET", "https://www.google.com/search?q=test")
