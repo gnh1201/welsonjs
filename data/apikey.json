@@ -10,7 +10,7 @@
     "clovastudio": "file:data/clovastudio_apikey.txt",
     "catswords-ai": "file:data/catswords_ai_apikey.txt",
     "scrapeops": "file:data/scrapeops_apikey.txt",
-    "serpapi": "file:data/serp_apikey.txt",
+    "serpapi": "file:data/serpapi_apikey.txt",
     "aviationstack": "file:data/aviationstack_apikey.txt",
     "abuseipdb": "file:data/abuseipdb_apikey.txt"
 }
