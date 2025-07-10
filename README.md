@@ -27,7 +27,7 @@ WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)*** + :h
 
 ## Sponsors
 * :octocat: [GitHub Sponsors](https://github.com/sponsors/gnh1201), :coffee: [Buy me a coffee](https://buymeacoffee.com/catswords)
-* <img src="https://ics.catswords.net/serpapi_logo_32.png" height="32" alt=""/> [SerpApi](https://serpapi.com/?utm_source=welsonjs): Search API - Scrape search engines results with simple API.
+* <img src="https://ics.catswords.net/serpapi_logo_32.png" height="32" alt=""/> [SerpApi: Search API](https://serpapi.com/?utm_source=welsonjs) - Scrape search engines results with simple API.
 * <img src="https://ics.catswords.net/logo_oss.gif" height="32" alt=""/> [Open SW Portal](https://oss.kr), NIPA National IT Industry Promotion Agency<sup>(정보통신산업진흥원)</sup>
 * <img src="https://ics.catswords.net/signpath_logo.png" height="32" alt=""/> Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org/)
 * <img src="https://ics.catswords.net/f1security_logo.png" height="32" alt=""/> [F1Security<sup>(에프원시큐리티)</sup>](https://f1security.co.kr/) provides [industry-leading](https://www.ksecurity.or.kr/kisis/subIndex/469.do) web security services.
