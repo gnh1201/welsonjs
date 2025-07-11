@@ -144,9 +144,10 @@ The WelsonJS framework suggests the following application release methods:
 * :heart: Artwork (Logo image): [@druidesse](https://github.com/druidesse)
 * :heart: Artwork (Cover image): [@_bag0@x.com](https://x.com/_bag0)
 * :heart: Special Contributors: [@hcho3](https://github.com/hcho3), :octocat: [GitHub Sponsors](https://github.com/sponsors/gnh1201)
-* :sunglasses: Heavy-industry specialized CSP(Cloud Service Provider) in Republic of Korea - Use case establishment
-* :sunglasses: Live-commerce specialized online advertisement companies in Republic of Korea - Use case establishment
-* :sunglasses: Information security companies in Republic of Korea - Use case establishment
+* :sunglasses: Heavy-industry specialized CSP(Cloud Service Provider) in Republic of Korea - Use case development
+* :sunglasses: Live-commerce specialized online advertisement companies in Republic of Korea - Use case development
+* :sunglasses: Information security companies in Republic of Korea - Use case development
+* :sunglasses: Travel planning(e.g., Airlines, Hotels, Ticketing) related companies - Use case development
 * :eyes: [Facebook Group "Javascript Programming"(javascript4u)](https://www.facebook.com/javascript4u/posts/build-a-windows-desktop-apps-with-javascript-html-and-cssmorioh-javascript-html-/1484014618472735/)
 * :eyes: [morioh.com](https://morioh.com/a/23c427a82bf1/build-a-windows-desktop-apps-with-javascript-html-and-css)
 * :eyes: CSDN
