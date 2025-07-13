@@ -164,6 +164,7 @@ The WelsonJS framework suggests the following application release methods:
 * :eyes: [PitchHut](https://www.pitchhut.com/project/proj_Ya136OLSW5at)
 * :eyes: [Disquiet](https://dis.qa/nv6T6)
 * :eyes: [Node Weekly](https://nodeweekly.com/issues/582)
+* :eyes: [Zhouexin (周e信)](https://www.zhouexin.com/issues/321)
 
 ## Report abuse
 * [GitHub Security Advisories (gnh1201/welsonjs)](https://github.com/gnh1201/welsonjs/security)
