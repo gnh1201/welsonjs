@@ -148,6 +148,7 @@ The WelsonJS framework suggests the following application release methods:
 * :sunglasses: Live-commerce specialized online advertisement companies in Republic of Korea - Use case development
 * :sunglasses: Information security companies in Republic of Korea - Use case development
 * :sunglasses: Travel planning(e.g., Airlines, Hotels, Ticketing) related companies - Use case development
+* :sunglasses: Probability-based game prediction in a data analytics company - Use case development
 * :eyes: [Facebook Group "Javascript Programming"(javascript4u)](https://www.facebook.com/javascript4u/posts/build-a-windows-desktop-apps-with-javascript-html-and-cssmorioh-javascript-html-/1484014618472735/)
 * :eyes: [morioh.com](https://morioh.com/a/23c427a82bf1/build-a-windows-desktop-apps-with-javascript-html-and-css)
 * :eyes: CSDN
