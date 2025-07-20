@@ -70,6 +70,12 @@ Public Class SeedEcbTransform
         Dim blockSize = InputBlockSize
         Dim buffer() As Byte
 
+        If paddingMode = PaddingMode.None Then
+            buffer = New Byte(inputCount - 1) {}
+            TransformBlock(input, inputOffset, inputCount, buffer, 0)
+            Return buffer
+        End If
+
         If encrypt Then
             Dim paddedLength As Integer
             Select Case paddingMode

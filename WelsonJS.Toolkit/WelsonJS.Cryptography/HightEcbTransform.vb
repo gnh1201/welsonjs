@@ -1,33 +1,28 @@
-﻿' AriaEcbTransform.cs (WelsonJS.Cryptography)
-' SPDX-License-Identifier: MIT
-' SPDX-FileCopyrightText: 2025 Namhyeon Go <gnh1201@catswords.re.kr>, Catswords OSS And WelsonJS Contributors
-' https://github.com/gnh1201/welsonjs
+﻿Imports System.Security.Cryptography
 
-Imports System.Security.Cryptography
-
-Public Class AriaEcbTransform
+Public Class HightEcbTransform
     Implements ICryptoTransform
 
     Private ReadOnly rnd As New Random()
-    Private ReadOnly seedCore As SeedCore
+    Private ReadOnly core As HightCore
     Private ReadOnly encrypt As Boolean
     Private ReadOnly paddingMode As PaddingMode
 
     Public Sub New(key As Byte(), encryptMode As Boolean, Optional mode As PaddingMode = PaddingMode.PKCS7)
-        seedCore = New SeedCore(key)
+        core = New HightCore(key)
         encrypt = encryptMode
         paddingMode = mode
     End Sub
 
     Public ReadOnly Property InputBlockSize As Integer Implements ICryptoTransform.InputBlockSize
         Get
-            Return 16
+            Return 8
         End Get
     End Property
 
     Public ReadOnly Property OutputBlockSize As Integer Implements ICryptoTransform.OutputBlockSize
         Get
-            Return 16
+            Return 8
         End Get
     End Property
 
@@ -54,9 +49,9 @@ Public Class AriaEcbTransform
 
         While remaining >= blockSize
             If encrypt Then
-                seedCore.EncryptBlock(input, inPtr, output, outPtr)
+                core.EncryptBlock(input, inPtr, output, outPtr)
             Else
-                seedCore.DecryptBlock(input, inPtr, output, outPtr)
+                core.DecryptBlock(input, inPtr, output, outPtr)
             End If
             inPtr += blockSize
             outPtr += blockSize
@@ -79,12 +74,6 @@ Public Class AriaEcbTransform
         If encrypt Then
             Dim paddedLength As Integer
             Select Case paddingMode
-                Case PaddingMode.None
-                    If (inputCount Mod blockSize) <> 0 Then
-                        Throw New CryptographicException("Input data is not a multiple of block size and PaddingMode is None.")
-                    End If
-                    paddedLength = inputCount
-
                 Case PaddingMode.Zeros
                     paddedLength = ((inputCount + blockSize - 1) \ blockSize) * blockSize
 
@@ -119,7 +108,7 @@ Public Class AriaEcbTransform
             End Select
 
             For i = 0 To buffer.Length - 1 Step blockSize
-                seedCore.EncryptBlock(buffer, i, buffer, i)
+                core.EncryptBlock(buffer, i, buffer, i)
             Next
             Return buffer
 
