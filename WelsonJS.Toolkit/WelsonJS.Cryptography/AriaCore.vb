@@ -1,8 +1,8 @@
-﻿' AriaCore.cs (WelsonJS.Cryptography)
+﻿' AriaCore.vb (WelsonJS.Cryptography)
 ' SPDX-License-Identifier: MIT
 ' SPDX-FileCopyrightText: 2025 Namhyeon Go <gnh1201@catswords.re.kr>, Catswords OSS And WelsonJS Contributors
 ' https://github.com/gnh1201/welsonjs
-
+' 
 Public Class AriaCore
     Private S(3, 255) As Byte
     Private KRK(2, 15) As Byte
