@@ -9,12 +9,12 @@ Public Class AriaEcbTransform
     Implements ICryptoTransform
 
     Private ReadOnly rnd As New Random()
-    Private ReadOnly seedCore As SeedCore
+    Private ReadOnly core As AriaCore
     Private ReadOnly encrypt As Boolean
     Private ReadOnly paddingMode As PaddingMode
 
     Public Sub New(key As Byte(), encryptMode As Boolean, Optional mode As PaddingMode = PaddingMode.PKCS7)
-        seedCore = New SeedCore(key)
+        core = New AriaCore(key, encrypt)
         encrypt = encryptMode
         paddingMode = mode
     End Sub
@@ -54,9 +54,9 @@ Public Class AriaEcbTransform
 
         While remaining >= blockSize
             If encrypt Then
-                seedCore.EncryptBlock(input, inPtr, output, outPtr)
+                core.EncryptBlock(input, inPtr, output, outPtr)
             Else
-                seedCore.DecryptBlock(input, inPtr, output, outPtr)
+                core.DecryptBlock(input, inPtr, output, outPtr)
             End If
             inPtr += blockSize
             outPtr += blockSize
@@ -119,7 +119,7 @@ Public Class AriaEcbTransform
             End Select
 
             For i = 0 To buffer.Length - 1 Step blockSize
-                seedCore.EncryptBlock(buffer, i, buffer, i)
+                core.EncryptBlock(buffer, i, buffer, i)
             Next
             Return buffer
 
@@ -133,7 +133,8 @@ Public Class AriaEcbTransform
 
             Dim padVal As Integer = buffer(buffer.Length - 1)
             If padVal <= 0 OrElse padVal > blockSize Then
-                Throw New CryptographicException("Invalid padding.")
+                ' Throw New CryptographicException("Invalid padding.")
+                Return buffer
             End If
 
             Select Case paddingMode

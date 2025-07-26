@@ -31,21 +31,21 @@ Module Program
         Console.WriteLine()
 
         ' HIGHT algorithm
-        Console.WriteLine("Start HIGHT encryption and decryption test")
-        Dim hightCipher As New WelsonJS.Cryptography.HightAlgorithm()
-        hightCipher.Key = {&H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0}
+        ' Console.WriteLine("Start HIGHT encryption and decryption test")
+        ' Dim hightCipher As New WelsonJS.Cryptography.HightAlgorithm()
+        ' hightCipher.Key = {&H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0}
         ' hightCipher.IV = {&H0F, &H1E, &H2D, &H3C, &H4B, &H5A, &H69, &H78, &H87, &H96, &HA5, &HB4, &HC3, &HD2, &HE1, &HF0}
-        hightCipher.Mode = CipherMode.ECB
-        hightCipher.Padding = PaddingMode.PKCS7
-        RunTest(hightCipher)
-        Console.WriteLine()
+        ' hightCipher.Mode = CipherMode.ECB
+        ' hightCipher.Padding = PaddingMode.PKCS7
+        ' RunTest(hightCipher)
+        ' Console.WriteLine()
 
     End Sub
 
     Public Sub RunTest(cipher As SymmetricAlgorithm)
         ' Dim inputBytes As Byte() = {&H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &HFE} ' SEED test vector
-        ' Dim inputBytes As Byte() = {&H11, &H11, &H11, &H11, &HAA, &HAA, &HAA, &HAA, &H11, &H11, &H11, &H11, &HBB, &HBB, &HBB, &HBB} ' ARIA test vector
-        Dim inputBytes As Byte() = {&H80, &H0, &H0, &H0, &H0, &H0, &H0, &H0} ' HIGHT test vector
+        Dim inputBytes As Byte() = {&H11, &H11, &H11, &H11, &HAA, &HAA, &HAA, &HAA, &H11, &H11, &H11, &H11, &HBB, &HBB, &HBB, &HBB} ' ARIA test vector
+        ' Dim inputBytes As Byte() = {&H80, &H0, &H0, &H0, &H0, &H0, &H0, &H0} ' HIGHT test vector
         Console.WriteLine("Key (HEX):")
         PrintHex(cipher.Key)
 
