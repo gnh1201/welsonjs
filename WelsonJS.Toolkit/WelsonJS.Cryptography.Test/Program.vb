@@ -13,7 +13,7 @@ Module Program
         ' SEED algorithm
         Console.WriteLine("Start SEED encryption and decryption test")
         Dim seedCipher As New WelsonJS.Cryptography.SeedAlgorithm()
-        seedCipher.Key = {&H88, &HE3, &H4F, &H8F, &H8, &H17, &H79, &HF1, &HE9, &HF3, &H94, &H37, &HA, &HD4, &H5, &H89}
+        seedCipher.Key = {&H9F, &H38, &H79, &HB9, &H64, &HCB, &H88, &H49, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0}
         ' seedCipher.IV = {&H26, &H8D, &H66, &HA7, &H35, &HA8, &H1A, &H81, &H6F, &HBA, &HD9, &HFA, &H36, &H16, &H25, &H1}
         seedCipher.Mode = CipherMode.ECB
         seedCipher.Padding = PaddingMode.PKCS7
@@ -43,7 +43,7 @@ Module Program
     End Sub
 
     Public Sub RunTest(cipher As SymmetricAlgorithm)
-        ' Dim inputBytes As Byte() = {&H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &HFE} ' SEED test vector
+        ' Dim inputBytes As Byte() = {&H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0} ' SEED test vector
         Dim inputBytes As Byte() = {&H80, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0, &H0} ' ARIA test vector
         ' Dim inputBytes As Byte() = {&H80, &H0, &H0, &H0, &H0, &H0, &H0, &H0} ' HIGHT test vector
         Console.WriteLine("Key (HEX):")
