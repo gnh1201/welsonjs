@@ -14,7 +14,7 @@ Public Class AriaEcbTransform
     Private ReadOnly paddingMode As PaddingMode
 
     Public Sub New(key As Byte(), encryptMode As Boolean, Optional mode As PaddingMode = PaddingMode.PKCS7)
-        core = New AriaCore(key, encrypt)
+        core = New AriaCore(key)
         encrypt = encryptMode
         paddingMode = mode
     End Sub

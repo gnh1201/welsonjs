@@ -1,22 +1,40 @@
 ﻿Public Class AriaCore
     Private S(3, 255) As Byte
     Private KRK(2, 15) As Byte
-    Private roundKey(271) As Byte
+    Private roundKeyEnc(271) As Byte
+    Private roundKeyDec(271) As Byte
     Private R As Integer
 
     Private ReadOnly KeyBits As Integer
 
-    Public Sub New(key As Byte(), Optional encrypt As Boolean = True)
+    Public Sub New(key As Byte())
         If key.Length Mod 8 <> 0 Or key.Length < 16 Or key.Length > 32 Then
-            Throw New ArgumentException($"ARIA key must be 16, 24, 32 bytes. Your key length is {key.Length} bytes")
+            Throw New ArgumentException($"ARIA key must be 16, 24, or 32 bytes. Your key length is {key.Length} bytes")
         End If
 
         InitConstants()
 
-        ' Set key length
         KeyBits = key.Length * 8
+        roundKeyEnc = New Byte(271) {}
+        roundKeyDec = New Byte(271) {}
+        R = EncKeySetup(key, roundKeyEnc)
+        DecKeySetup(key, roundKeyDec)
+    End Sub
 
-        KeySchedule(key, encrypt)
+    Public Sub EncryptBlock(input() As Byte, inOffset As Integer, output() As Byte, outOffset As Integer)
+        Dim block(15) As Byte
+        Array.Copy(input, inOffset, block, 0, 16)
+        Dim encrypted(15) As Byte
+        Crypt(block, R, roundKeyEnc, encrypted)
+        Array.Copy(encrypted, 0, output, outOffset, 16)
+    End Sub
+
+    Public Sub DecryptBlock(input() As Byte, inOffset As Integer, output() As Byte, outOffset As Integer)
+        Dim block(15) As Byte
+        Array.Copy(input, inOffset, block, 0, 16)
+        Dim decrypted(15) As Byte
+        Crypt(block, R, roundKeyDec, decrypted)
+        Array.Copy(decrypted, 0, output, outOffset, 16)
     End Sub
 
     Public Sub InitConstants()
@@ -108,14 +126,6 @@
     }
     End Sub
 
-    Private Sub KeySchedule(userKey As Byte(), encrypt As Boolean)
-        If encrypt Then
-            R = EncKeySetup(userKey, roundKey)
-        Else
-            R = DecKeySetup(userKey, roundKey)
-        End If
-    End Sub
-
     Public Sub DL(ByRef input() As Byte, ByRef output() As Byte)
         Dim T As Byte
         T = input(3) Xor input(4) Xor input(9) Xor input(14)
@@ -192,74 +202,39 @@
         Return R
     End Function
 
-    Public Function DecKeySetup(ByRef w0() As Byte, ByRef d() As Byte) As Integer
-        Dim R As Integer = EncKeySetup(w0, d)
+    Public Sub DecKeySetup(ByRef w0() As Byte, ByRef d() As Byte)
+        Dim r As Integer = EncKeySetup(w0, d)
         Dim t(15) As Byte, i, j As Integer
         For j = 0 To 15
             t(j) = d(j)
-            d(j) = d(16 * R + j)
-            d(16 * R + j) = t(j)
+            d(j) = d(16 * r + j)
+            d(16 * r + j) = t(j)
         Next
-        For i = 1 To R \ 2
-            Dim input3(15) As Byte
-            Array.Copy(d, i * 16, input3, 0, 16)
-            DL(input3, t)
-            Dim input4(15), output4(15) As Byte
-            Array.Copy(d, (R - i) * 16, input4, 0, 16)
-            DL(input4, output4)
-            Array.Copy(output4, 0, d, i * 16, 16)
-            For j = 0 To 15 : d((R - i) * 16 + j) = t(j) : Next
+        For i = 1 To r \ 2
+            Dim input1(15), input2(15), output1(15), output2(15) As Byte
+            Array.Copy(d, i * 16, input1, 0, 16)
+            DL(input1, output1)
+            Array.Copy(d, (r - i) * 16, input2, 0, 16)
+            DL(input2, output2)
+            Array.Copy(output2, 0, d, i * 16, 16)
+            Array.Copy(output1, 0, d, (r - i) * 16, 16)
         Next
-        Return R
-    End Function
+    End Sub
 
     Public Sub Crypt(ByRef p() As Byte, R As Integer, ByRef e() As Byte, ByRef c() As Byte)
         Dim i, j As Integer
         Dim t(15) As Byte
         Dim eOffset As Integer = 0
-
-        ' c = p
-        For j = 0 To 15
-            c(j) = p(j)
-        Next
-
-        ' R/2 rounds, each with 2 subrounds (F0, F1)
+        For j = 0 To 15 : c(j) = p(j) : Next
         For i = 0 To (R \ 2) - 1
-            ' First substitution + DL
-            For j = 0 To 15
-                t(j) = S(j Mod 4, e(eOffset + j) Xor c(j))
-            Next
+            For j = 0 To 15 : t(j) = S(j Mod 4, e(eOffset + j) Xor c(j)) : Next
             DL(t, c)
             eOffset += 16
-
-            ' Second substitution + DL
-            For j = 0 To 15
-                t(j) = S((2 + j) Mod 4, e(eOffset + j) Xor c(j))
-            Next
+            For j = 0 To 15 : t(j) = S((2 + j) Mod 4, e(eOffset + j) Xor c(j)) : Next
             DL(t, c)
             eOffset += 16
         Next
-
-        ' Final round key mixing
         DL(c, t)
-        For j = 0 To 15
-            c(j) = e(eOffset + j) Xor t(j)
-        Next
-    End Sub
-
-    Public Sub EncryptBlock(input() As Byte, inOffset As Integer, output() As Byte, outOffset As Integer)
-        Dim block(15) As Byte
-        Array.Copy(input, inOffset, block, 0, 16)
-        Dim encrypted(15) As Byte
-        Crypt(block, R, roundKey, encrypted)
-        Array.Copy(encrypted, 0, output, outOffset, 16)
-    End Sub
-
-    Public Sub DecryptBlock(input() As Byte, inOffset As Integer, output() As Byte, outOffset As Integer)
-        Dim block(15) As Byte
-        Array.Copy(input, inOffset, block, 0, 16)
-        Dim decrypted(15) As Byte
-        Crypt(block, R, roundKey, decrypted)
-        Array.Copy(decrypted, 0, output, outOffset, 16)
+        For j = 0 To 15 : c(j) = e(eOffset + j) Xor t(j) : Next
     End Sub
 End Class
