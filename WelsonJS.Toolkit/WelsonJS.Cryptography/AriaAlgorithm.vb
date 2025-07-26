@@ -1,4 +1,4 @@
-﻿' AriaAlgorithm.cs(WelsonJS.Cryptography)
+﻿' AriaAlgorithm.vb (WelsonJS.Cryptography)
 ' SPDX-License-Identifier: MIT
 ' SPDX-FileCopyrightText: 2025 Namhyeon Go <gnh1201@catswords.re.kr>, Catswords OSS And WelsonJS Contributors
 ' https://github.com/gnh1201/welsonjs
