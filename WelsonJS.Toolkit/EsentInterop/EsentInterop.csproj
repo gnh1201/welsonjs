@@ -89,14 +89,13 @@
   
   <ItemGroup>
     <Compile Include="*.cs" />
+    <Compile Remove="Properties\**" />
+    <EmbeddedResource Remove="Properties\**" />
+    <None Remove="Properties\**" />
     <Compile Include="Esent\CallbackDataConverter.cs" />
     <Compile Include="Esent\EsentJetApi.cs" />
     <Compile Include="Esent\EsentNativeMethods.cs" />
     <Compile Include="Esent\AssemblyInfo.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Properties\" />
   </ItemGroup>
   
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

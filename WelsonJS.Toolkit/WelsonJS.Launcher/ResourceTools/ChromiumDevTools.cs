@@ -10,13 +10,13 @@ using System.Threading.Tasks;
 
 namespace WelsonJS.Launcher.ResourceTools
 {
-    public class DevTools : IResourceTool
+    public class ChromiumDevTools : IResourceTool
     {
         private ResourceServer Server;
         private readonly HttpClient _httpClient;
         private const string Prefix = "devtools/";
 
-        public DevTools(ResourceServer server, HttpClient httpClient)
+        public ChromiumDevTools(ResourceServer server, HttpClient httpClient)
         {
             Server = server;
             _httpClient = httpClient;
@@ -33,7 +33,7 @@ namespace WelsonJS.Launcher.ResourceTools
 
             try
             {
-                string url = Program.GetAppConfig("DevToolsPrefix") + endpoint;
+                string url = Program.GetAppConfig("ChromiumDevToolsPrefix") + endpoint;
                 string data = await _httpClient.GetStringAsync(url);
 
                 Server.ServeResource(context, data, "application/json");
