@@ -106,6 +106,24 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
+        ///   http://localhost:9222/과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string ChromiumDevToolsPrefix {
+            get {
+                return ResourceManager.GetString("ChromiumDevToolsPrefix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   msedge.exe과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string ChromiumFileName {
+            get {
+                return ResourceManager.GetString("ChromiumFileName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string CitiApiKey {
@@ -138,15 +156,6 @@ namespace WelsonJS.Launcher.Properties {
         internal static string DateTimeFormat {
             get {
                 return ResourceManager.GetString("DateTimeFormat", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   http://localhost:9222/과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string DevToolsPrefix {
-            get {
-                return ResourceManager.GetString("DevToolsPrefix", resourceCulture);
             }
         }
         
@@ -274,6 +283,15 @@ namespace WelsonJS.Launcher.Properties {
         internal static string RepositoryUrl {
             get {
                 return ResourceManager.GetString("RepositoryUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   true과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string ResourceServerAutoStart {
+            get {
+                return ResourceManager.GetString("ResourceServerAutoStart", resourceCulture);
             }
         }
         
