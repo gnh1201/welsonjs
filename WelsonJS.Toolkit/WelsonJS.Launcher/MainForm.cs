@@ -17,7 +17,6 @@ namespace WelsonJS.Launcher
     public partial class MainForm : Form
     {
         private const string _entryFileName = "bootstrap.bat";
-
         private readonly string _dateTimeFormat;
 
         private string _workingDirectory;
@@ -26,18 +25,28 @@ namespace WelsonJS.Launcher
 
         public MainForm()
         {
+            // set the datetime format
             _dateTimeFormat = Program.GetAppConfig("DateTimeFormat");
 
+            // initialize UI
             InitializeComponent();
 
+            // Check the user is an Administator
             if (IsInAdministrator())
             {
                 Text += " (Administrator)";
             }
 
+            // Send to the tray (to the background)
             notifyIcon1.DoubleClick += OnShow;
             openLauncherToolStripMenuItem.Click += OnShow;
             exitToolStripMenuItem.Click += OnExit;
+
+            // Autostart the resource server
+            if (Program.GetAppConfig("ResourceServerAutoStart").ToLower() == "true")
+            {
+                RunResourceServer();
+            }
         }
 
         protected override void OnFormClosing(FormClosingEventArgs e)
@@ -120,12 +129,12 @@ namespace WelsonJS.Launcher
                     string filePath = openFileDialog.FileName;
 
                     DisableUI();
-                    Task.Run(() => ExtractAndRun(filePath));
+                    Task.Run(() => RunAppPackageFile(filePath));
                 }
             }
         }
 
-        private void ExtractAndRun(string filePath)
+        private void RunAppPackageFile(string filePath)
         {
             _instanceId = Guid.NewGuid().ToString();
             _workingDirectory = Program.GetWorkingDirectory(_instanceId);
@@ -158,6 +167,19 @@ namespace WelsonJS.Launcher
 
             // Enable UI
             SafeInvoke(() => EnableUI());
+        }
+
+        private bool RunResourceServer()
+        {
+            Program.InitializeResourceServer();
+
+            if (!Program._ResourceServer.IsRunning())
+            {
+                Program._ResourceServer.Start(false);
+                startCodeEditorToolStripMenuItem.Text = "Open the code editor...";
+            }
+
+            return Program._ResourceServer.IsRunning();
         }
 
         private void RecordFirstDeployTime(string directory, string instanceId)
@@ -263,14 +285,7 @@ namespace WelsonJS.Launcher
 
         private void startCodeEditorToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Program.StartResourceServer();
-
-            if (!Program._ResourceServer.IsRunning())
-            {
-                Program._ResourceServer.Start();
-                ((ToolStripMenuItem)sender).Text = "Open the code editor...";
-            }
-            else
+            if (RunResourceServer())
             {
                 Program.OpenWebBrowser(Program._ResourceServer.GetPrefix());
             }

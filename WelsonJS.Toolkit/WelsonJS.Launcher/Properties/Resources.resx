@@ -157,7 +157,7 @@
   <data name="ResourceServerPrefix" xml:space="preserve">
     <value>http://localhost:3000/</value>
   </data>
-  <data name="DevToolsPrefix" xml:space="preserve">
+  <data name="ChromiumDevToolsPrefix" xml:space="preserve">
     <value>http://localhost:9222/</value>
   </data>
   <data name="AzureAiServiceApiKey" xml:space="preserve">
@@ -198,5 +198,11 @@
   </data>
   <data name="DateTimeFormat" xml:space="preserve">
     <value>yyyy-MM-dd HH:mm:ss</value>
+  </data>
+  <data name="ResourceServerAutoStart" xml:space="preserve">
+    <value>true</value>
+  </data>
+  <data name="ChromiumFileName" xml:space="preserve">
+    <value>msedge.exe</value>
   </data>
 </root>

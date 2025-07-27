@@ -146,7 +146,7 @@ namespace WelsonJS.Launcher
             return workingDirectory;
         }
 
-        public static void StartResourceServer()
+        public static void InitializeResourceServer()
         {
             lock(typeof(Program))
             {
@@ -159,7 +159,7 @@ namespace WelsonJS.Launcher
         public static void OpenWebBrowser(string url)
         {
             Uri resourceServerUri = new Uri(GetAppConfig("ResourceServerPrefix"));
-            Uri devToolsUri = new Uri(GetAppConfig("DevToolsPrefix"));
+            Uri devToolsUri = new Uri(GetAppConfig("ChromiumDevToolsPrefix"));
 
             string userDataDir = Path.Combine(GetAppDataPath(), "EdgeUserProfile");
             string remoteAllowOrigins = $"{resourceServerUri.Scheme}://{resourceServerUri.Host}:{resourceServerUri.Port}";
@@ -173,7 +173,7 @@ namespace WelsonJS.Launcher
 
             Process.Start(new ProcessStartInfo
             {
-                FileName = "msedge.exe",
+                FileName = Program.GetAppConfig("ChromiumFileName"),
                 Arguments = string.Join(" ", arguments),
                 UseShellExecute = true
             });
