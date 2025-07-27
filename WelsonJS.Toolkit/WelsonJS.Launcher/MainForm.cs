@@ -37,7 +37,7 @@ namespace WelsonJS.Launcher
                 Text += " (Administrator)";
             }
 
-            // tray icon
+            // Send to the tray (to the background)
             notifyIcon1.DoubleClick += OnShow;
             openLauncherToolStripMenuItem.Click += OnShow;
             exitToolStripMenuItem.Click += OnExit;
@@ -171,7 +171,7 @@ namespace WelsonJS.Launcher
 
         private bool RunResourceServer()
         {
-            Program.InitResourceServer();
+            Program.InitializeResourceServer();
 
             if (!Program._ResourceServer.IsRunning())
             {

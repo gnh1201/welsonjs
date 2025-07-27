@@ -146,7 +146,7 @@ namespace WelsonJS.Launcher
             return workingDirectory;
         }
 
-        public static void InitResourceServer()
+        public static void InitializeResourceServer()
         {
             lock(typeof(Program))
             {
