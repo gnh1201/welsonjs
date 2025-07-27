@@ -30,6 +30,7 @@ namespace WelsonJS.Launcher
         private string _prefix;
         private string _resourceName;
         private List<IResourceTool> _tools = new List<IResourceTool>();
+
         private static readonly HttpClient _httpClient = new HttpClient();
         private static readonly string _defaultMimeType = "application/octet-stream";
         private static BlobConfig _blobConfig;
@@ -66,7 +67,7 @@ namespace WelsonJS.Launcher
             return _prefix;
         }
 
-        public void Start()
+        public void Start(bool IsOpenWebBrowser = true)
         {
             if (_isRunning) return;
 
@@ -75,7 +76,10 @@ namespace WelsonJS.Launcher
             _listener.Start();
 
             // Open the web browser
-            Program.OpenWebBrowser(_prefix);
+            if (IsOpenWebBrowser)
+            {
+                Program.OpenWebBrowser(_prefix);
+            }
 
             // Run a task with cancellation token
             _serverTask = Task.Run(() => ListenLoop(_cts.Token));

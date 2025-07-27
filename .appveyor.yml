@@ -25,6 +25,7 @@ after_build:
    #- cmd: xcopy /s /y WelsonJS.Toolkit\WelsonJS.Toolkit\bin\x86\%CONFIGURATION%\* artifacts\
    - cmd: xcopy /s /y WelsonJS.Toolkit\WelsonJS.Service\bin\x86\%CONFIGURATION%\* artifacts\
    - cmd: xcopy /s /y WelsonJS.Toolkit\WelsonJS.Launcher\bin\x86\%CONFIGURATION%\* artifacts\
+   - cmd: xcopy /s /y WelsonJS.Toolkit\EsentInterop\bin\%CONFIGURATION%\* artifacts\
    - cmd: nuget pack WelsonJS.Toolkit\WelsonJS.Toolkit\ -properties Configuration=%CONFIGURATION% -properties Platform=x86 -OutputDirectory artifacts\
    - cmd: 7z a artifacts.zip artifacts\*
 
