@@ -90,7 +90,7 @@
     <Compile Include="ResourceTools\CitiQuery.cs" />
     <Compile Include="ResourceTools\Settings.cs" />
     <Compile Include="ResourceTools\Completion.cs" />
-    <Compile Include="ResourceTools\DevTools.cs" />
+    <Compile Include="ResourceTools\ChromiumDevTools.cs" />
     <Compile Include="ResourceTools\DnsQuery.cs" />
     <Compile Include="ResourceTools\Tfa.cs" />
     <Compile Include="ResourceTools\Whois.cs" />
@@ -121,6 +121,7 @@
       <DependentUpon>GlobalSettingsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="ResourceServer.cs" />
+    <Compile Include="WebSocketManager.cs" />
     <EmbeddedResource Include="EnvForm.resx">
       <DependentUpon>EnvForm.cs</DependentUpon>
     </EmbeddedResource>

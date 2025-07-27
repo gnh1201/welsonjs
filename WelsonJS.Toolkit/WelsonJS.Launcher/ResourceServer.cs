@@ -55,7 +55,7 @@ namespace WelsonJS.Launcher
             // Add resource tools
             _tools.Add(new ResourceTools.Completion(this, _httpClient));
             _tools.Add(new ResourceTools.Settings(this, _httpClient));
-            _tools.Add(new ResourceTools.DevTools(this, _httpClient));
+            _tools.Add(new ResourceTools.ChromiumDevTools(this, _httpClient));
             _tools.Add(new ResourceTools.DnsQuery(this, _httpClient));
             _tools.Add(new ResourceTools.CitiQuery(this, _httpClient));
             _tools.Add(new ResourceTools.Tfa(this, _httpClient));
