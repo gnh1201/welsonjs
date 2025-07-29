@@ -55,8 +55,8 @@ This project may include code that was generated with the help of LLM-based AI s
 You may [request offline distribution](https://forms.gle/4WCnJmnFNDzubUmk7) if you are in a restricted environment, such as one without internet access or with specific security requirements.
 
 ## Report abuse
-* [GitHub Security Advisories](https://github.com/gnh1201/welsonjs/security)
-* [abuse@catswords.net](mailto:abuse@catswords.net)
+* [GitHub Security Advisories (gnh1201/welsonjs)](https://github.com/gnh1201/welsonjs/security)
+* [abuse@catswords.re.kr](mailto:abuse@catswords.re.kr)
 
 ## Join the community
 * ActivityPub [@catswords_oss@catswords.social](https://catswords.social/@catswords_oss)
@@ -66,4 +66,3 @@ You may [request offline distribution](https://forms.gle/4WCnJmnFNDzubUmk7) if y
 
 ## Special channels
 * [A paid consultation channel (m.expert.naver.com)](https://m.expert.naver.com/mobile/expert/product/detail?storeId=100051156&productId=100144540) is available for Korean<sup>(한국어)</sup> region.
-* [Join the private operations channel (forms.gle)](https://forms.gle/ZKAAaGTiGamksHoo8) is available for all regions.
