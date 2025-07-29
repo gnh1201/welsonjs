@@ -48,6 +48,9 @@ This program is also known by the following names. These names are used solely f
 * "C-2021-000237"(2021) (Copyright Registration Online System, Korea Copyright Commission<sup>(한국저작권위원회)</sup>, Republic of Korea)
 * "Codename Macadamia"(2020) (Heavy industry specialized CSP in the Republic of Korea)
 
+## Offline Distribution
+You may [request offline distribution](https://forms.gle/4WCnJmnFNDzubUmk7) if you are in a restricted environment, such as one without internet access or with specific security requirements.
+
 ## Notice on the Use of AI Services
 This project may include code that was generated with the help of LLM-based AI services such as [ChatGPT](https://chatgpt.com/) Pro, AI-powered code review tools (e.g., [CodeRabbit](https://www.coderabbit.ai/), [Sourcery](https://sourcery.ai/), [Qodo](https://www.qodo.ai/)), or LLM models provided through [Microsoft Azure AI Foundry](https://ai.azure.com/).
 
