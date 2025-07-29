@@ -10,6 +10,7 @@
 [![slideshare.net presentation](https://img.shields.io/badge/SlideShare-black?logo=slideshare)](https://www.slideshare.net/slideshow/welsonjs-javascript-framework-presentation-2024/276005486)
 [![YouTube promotion video](https://img.shields.io/badge/YouTube-red?logo=youtube)](https://youtu.be/JavH7Dms8-U)
 [![Discord chat](https://img.shields.io/discord/359930650330923008?logo=discord)](https://discord.gg/XKG5CjtXEj)
+[![Trustpilot](https://img.shields.io/badge/Trustpilot-00B67A?logo=trustpilot&logoColor=fff)](https://www.trustpilot.com/review/catswords.com)
 [![Open to work](https://img.shields.io/badge/%23-OPENTOWORK-green)](https://github.com/gnh1201/welsonjs/discussions/167)
 
 <img src="app/assets/img/logo.svg" height="32" alt=""/> WelsonJS - Build a Windows app on the Windows built-in JavaScript engine.
