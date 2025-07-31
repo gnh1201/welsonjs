@@ -115,6 +115,15 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
+        ///   5과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string ChromiumDevToolsTimeout {
+            get {
+                return ResourceManager.GetString("ChromiumDevToolsTimeout", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   msedge.exe과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string ChromiumFileName {

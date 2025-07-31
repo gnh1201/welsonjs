@@ -590,10 +590,7 @@
                     const ip = encodeURIComponent(hostname.trim());
 
                     axios.get(`/citi-query/${hostname}`).then(response => {
-                        const parser = new XMLParser();
-                        const result = parser.parse(response.data);
-                        const data = JSON.parse(result.json);
-                        if (!data) {
+                        if (!response) {
                             appendTextToEditor("\n// No data returned from Criminal IP.");
                             return;
                         }
@@ -603,10 +600,10 @@
                         
                         // network port data
                         lines.push(`## Network ports:`);
-                        if (data.port.data.length == 0) {
+                        if (response.port.data.length == 0) {
                             lines.push(`* No open ports found.`);
                         } else {
-                            data.port.data.forEach(x => {
+                            response.port.data.forEach(x => {
                                 lines.push(`### ${x.open_port_no}/${x.socket}`);
                                 lines.push(`* Application: ${x.app_name} ${x.app_version}`);
                                 lines.push(`* Discovered hostnames: ${x.dns_names}`);
@@ -616,10 +613,10 @@
 
                         // vulnerability data
                         lines.push(`## Vulnerabilities:`);
-                        if (data.vulnerability.data.length == 0) {
+                        if (response.vulnerability.data.length == 0) {
                             lines.push(`* No vulnerabilities found.`);
                         } else {
-                            data.vulnerability.data.forEach(x => {
+                            response.vulnerability.data.forEach(x => {
                                 lines.push(`### ${x.cve_id}`);
                                 lines.push(`* ${x.cve_description}`);
                                 lines.push(`* CVSSV2 Score: ${x.cvssv2_score}`);
