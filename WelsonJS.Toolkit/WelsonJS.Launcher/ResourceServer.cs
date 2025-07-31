@@ -373,11 +373,6 @@ namespace WelsonJS.Launcher
             {
                 data = xmlHeader + "\r\n" + data;
             }
-            else if (mimeType == "application/json")
-            {
-                data = xmlHeader + "\r\n<json><![CDATA[" + data + "]]></json>";
-                mimeType = "application/xml";
-            }
 
             ServeResource(context, Encoding.UTF8.GetBytes(data), mimeType, statusCode);
         }
