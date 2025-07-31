@@ -103,7 +103,7 @@ namespace WelsonJS.Launcher
             }
         }
 
-        public async Task<string> SendAndReceiveAsync(string host, int port, string path, string message, int timeoutSeconds)
+        public async Task<string> SendAndReceiveAsync(string host, int port, string path, string message, int timeoutSeconds, int bufferSize = 65536)
         {
             var buffer = Encoding.UTF8.GetBytes(message);
             CancellationTokenSource cts = timeoutSeconds > 0
@@ -115,7 +115,7 @@ namespace WelsonJS.Launcher
 
             ClientWebSocket ws = await GetOrCreateAsync(host, port, path);
 
-            byte[] recvBuffer = new byte[4096];
+            byte[] recvBuffer = new byte[bufferSize];
             WebSocketReceiveResult result = await ws.ReceiveAsync(new ArraySegment<byte>(recvBuffer), cts.Token);
             return Encoding.UTF8.GetString(recvBuffer, 0, result.Count);
         }

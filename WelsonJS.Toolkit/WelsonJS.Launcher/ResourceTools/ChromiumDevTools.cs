@@ -8,6 +8,7 @@ using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
+using System.Security;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -128,7 +129,7 @@ namespace WelsonJS.Launcher.ResourceTools
 
         private string EscapeXml(string text)
         {
-            return WebUtility.HtmlEncode(text);
+            return SecurityElement.Escape(text);
         }
     }
 }
