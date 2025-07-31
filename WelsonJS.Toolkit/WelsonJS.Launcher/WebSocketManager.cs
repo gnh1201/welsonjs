@@ -7,6 +7,7 @@ using System;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Net.WebSockets;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,7 +28,13 @@ namespace WelsonJS.Launcher
 
         private string MakeKey(string host, int port, string path)
         {
-            return host + ":" + port + "/" + path;
+            // To create a unique key for the WebSocket connection
+            string input = host + ":" + port + "/" + path;
+            using (var md5 = MD5.Create())
+            {
+                byte[] hash = md5.ComputeHash(Encoding.UTF8.GetBytes(input));
+                return BitConverter.ToString(hash).Replace("-", "").ToLower();
+            }
         }
 
         public async Task<ClientWebSocket> GetOrCreateAsync(string host, int port, string path)
