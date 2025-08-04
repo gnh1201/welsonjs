@@ -25,7 +25,7 @@ namespace WelsonJS.Launcher
 
         private readonly ConcurrentDictionary<string, Entry> _pool = new ConcurrentDictionary<string, Entry>();
 
-        // Create a unique cache key based on host, port, and path using MD5
+        // Create a unique cache key using MD5 hash
         private string MakeKey(string host, int port, string path)
         {
             string raw = host + ":" + port + "/" + path;
@@ -36,7 +36,7 @@ namespace WelsonJS.Launcher
             }
         }
 
-        // Get existing WebSocket if valid, otherwise connect and store a new one
+        // Get an open WebSocket or connect a new one
         public async Task<ClientWebSocket> GetOrCreateAsync(string host, int port, string path)
         {
             string key = MakeKey(host, port, path);
@@ -44,11 +44,15 @@ namespace WelsonJS.Launcher
             if (_pool.TryGetValue(key, out var entry))
             {
                 var sock = entry.Socket;
-                if (sock != null && sock.State == WebSocketState.Open)
-                    return sock;
 
-                // Remove stale or broken socket
-                Remove(host, port, path);
+                if (sock == null || sock.State != WebSocketState.Open)
+                {
+                    Remove(host, port, path);
+                }
+                else
+                {
+                    return sock;
+                }
             }
 
             var newSock = new ClientWebSocket();
@@ -57,6 +61,7 @@ namespace WelsonJS.Launcher
             try
             {
                 await newSock.ConnectAsync(uri, CancellationToken.None);
+
                 _pool[key] = new Entry
                 {
                     Socket = newSock,
@@ -64,16 +69,18 @@ namespace WelsonJS.Launcher
                     Port = port,
                     Path = path
                 };
+
                 return newSock;
             }
-            catch
+            catch (Exception ex)
             {
                 newSock.Dispose();
-                throw;
+                Remove(host, port, path);
+                throw new WebSocketException("WebSocket connection failed", ex);
             }
         }
 
-        // Remove WebSocket from the pool and dispose
+        // Remove a socket from the pool and dispose it
         public void Remove(string host, int port, string path)
         {
             string key = MakeKey(host, port, path);
@@ -84,11 +91,11 @@ namespace WelsonJS.Launcher
                     entry.Socket?.Abort();
                     entry.Socket?.Dispose();
                 }
-                catch { /* Ignore errors */ }
+                catch { /* Ignore dispose exceptions */ }
             }
         }
 
-        // Send message and receive response with 1 retry on failure
+        // Send and receive with automatic retry on first failure
         public async Task<string> SendAndReceiveAsync(string host, int port, string path, string message, int timeoutSec)
         {
             byte[] buf = Encoding.UTF8.GetBytes(message);
@@ -112,16 +119,31 @@ namespace WelsonJS.Launcher
             throw new InvalidOperationException("Unreachable");
         }
 
-        // Internal helper for sending and receiving data
+        // Actual send and receive implementation
         private async Task<string> TrySendAndReceiveAsync(string host, int port, string path, byte[] buf, CancellationToken token)
         {
-            var sock = await GetOrCreateAsync(host, port, path);
-            await sock.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, token);
+            try
+            {
+                var sock = await GetOrCreateAsync(host, port, path);
 
-            byte[] recv = new byte[4096];
-            var result = await sock.ReceiveAsync(new ArraySegment<byte>(recv), token);
+                if (sock.State != WebSocketState.Open)
+                    throw new WebSocketException("WebSocket is not in an open state");
 
-            return Encoding.UTF8.GetString(recv, 0, result.Count);
+                await sock.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, token);
+
+                byte[] recv = new byte[4096];
+                var result = await sock.ReceiveAsync(new ArraySegment<byte>(recv), token);
+
+                return Encoding.UTF8.GetString(recv, 0, result.Count);
+            }
+            catch (WebSocketException ex)
+            {
+                throw new InvalidOperationException("WebSocket communication error", ex);
+            }
+            catch (OperationCanceledException)
+            {
+                throw new TimeoutException("WebSocket operation timed out");
+            }
         }
     }
 }
