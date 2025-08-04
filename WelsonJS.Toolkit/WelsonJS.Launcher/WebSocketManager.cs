@@ -5,12 +5,11 @@
 // 
 using System;
 using System.Collections.Concurrent;
-using System.IO;
 using System.Net.WebSockets;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Security.Cryptography;
 
 namespace WelsonJS.Launcher
 {
@@ -28,12 +27,11 @@ namespace WelsonJS.Launcher
 
         private string MakeKey(string host, int port, string path)
         {
-            // To create a unique key for the WebSocket connection
-            string input = host + ":" + port + "/" + path;
+            string raw = host + ":" + port + "/" + path;
             using (var md5 = MD5.Create())
             {
-                byte[] hash = md5.ComputeHash(Encoding.UTF8.GetBytes(input));
-                return BitConverter.ToString(hash).Replace("-", "").ToLower();
+                byte[] hash = md5.ComputeHash(Encoding.UTF8.GetBytes(raw));
+                return BitConverter.ToString(hash).Replace("-", "").ToLower(); // 32자
             }
         }
 
@@ -41,34 +39,39 @@ namespace WelsonJS.Launcher
         {
             string key = MakeKey(host, port, path);
 
-            if (_wsPool.TryGetValue(key, out var entry) && entry.Socket?.State == WebSocketState.Open)
-                return entry.Socket;
-
-            // 재연결 필요
-            if (entry != null)
+            if (_wsPool.TryGetValue(key, out var entry))
             {
-                _wsPool.TryRemove(key, out _);
-                entry.Socket?.Dispose();
+                var socket = entry.Socket;
+
+                if (socket != null)
+                {
+                    if (socket.State == WebSocketState.Open)
+                        return socket;
+
+                    Remove(host, port, path);
+                }
             }
 
-            var ws = new ClientWebSocket();
-            Uri uri = new Uri($"ws://{host}:{port}/{path}");
+            var newSocket = new ClientWebSocket();
+            var uri = new Uri($"ws://{host}:{port}/{path}");
 
             try
             {
-                await ws.ConnectAsync(uri, CancellationToken.None);
+                await newSocket.ConnectAsync(uri, CancellationToken.None);
+
                 _wsPool[key] = new WebSocketEntry
                 {
-                    Socket = ws,
+                    Socket = newSocket,
                     Host = host,
                     Port = port,
                     Path = path
                 };
-                return ws;
+
+                return newSocket;
             }
             catch
             {
-                ws.Dispose();
+                newSocket.Dispose();
                 throw;
             }
         }
@@ -78,53 +81,48 @@ namespace WelsonJS.Launcher
             string key = MakeKey(host, port, path);
             if (_wsPool.TryRemove(key, out var entry))
             {
-                entry.Socket?.Abort();
-                entry.Socket?.Dispose();
+                try
+                {
+                    entry.Socket?.Abort();
+                    entry.Socket?.Dispose();
+                }
+                catch { /* ignore */ }
             }
         }
 
-        public async Task<bool> SendWithReconnectAsync(string host, int port, string path, byte[] message, CancellationToken token)
+        public async Task<string> SendAndReceiveAsync(string host, int port, string path, string message, int timeoutSeconds)
         {
-            ClientWebSocket ws;
+            var buffer = Encoding.UTF8.GetBytes(message);
+            var cts = timeoutSeconds > 0 ? new CancellationTokenSource(TimeSpan.FromSeconds(timeoutSeconds)) : new CancellationTokenSource();
 
             try
             {
-                ws = await GetOrCreateAsync(host, port, path);
-                await ws.SendAsync(new ArraySegment<byte>(message), WebSocketMessageType.Text, true, token);
-                return true;
+                var socket = await GetOrCreateAsync(host, port, path);
+                await socket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, cts.Token);
+
+                var recvBuffer = new byte[4096];
+                var result = await socket.ReceiveAsync(new ArraySegment<byte>(recvBuffer), cts.Token);
+                return Encoding.UTF8.GetString(recvBuffer, 0, result.Count);
             }
             catch
             {
                 Remove(host, port, path);
+
                 try
                 {
-                    ws = await GetOrCreateAsync(host, port, path);
-                    await ws.SendAsync(new ArraySegment<byte>(message), WebSocketMessageType.Text, true, token);
-                    return true;
+                    var socket = await GetOrCreateAsync(host, port, path);
+                    await socket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, cts.Token);
+
+                    var recvBuffer = new byte[4096];
+                    var result = await socket.ReceiveAsync(new ArraySegment<byte>(recvBuffer), cts.Token);
+                    return Encoding.UTF8.GetString(recvBuffer, 0, result.Count);
                 }
                 catch
                 {
                     Remove(host, port, path);
-                    return false;
+                    throw;
                 }
             }
-        }
-
-        public async Task<string> SendAndReceiveAsync(string host, int port, string path, string message, int timeoutSeconds, int bufferSize = 65536)
-        {
-            var buffer = Encoding.UTF8.GetBytes(message);
-            CancellationTokenSource cts = timeoutSeconds > 0
-                ? new CancellationTokenSource(TimeSpan.FromSeconds(timeoutSeconds))
-                : new CancellationTokenSource();
-
-            if (!await SendWithReconnectAsync(host, port, path, buffer, cts.Token))
-                throw new IOException("Failed to send after reconnect");
-
-            ClientWebSocket ws = await GetOrCreateAsync(host, port, path);
-
-            byte[] recvBuffer = new byte[bufferSize];
-            WebSocketReceiveResult result = await ws.ReceiveAsync(new ArraySegment<byte>(recvBuffer), cts.Token);
-            return Encoding.UTF8.GetString(recvBuffer, 0, result.Count);
         }
     }
 }
