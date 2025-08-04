@@ -6,123 +6,122 @@
 using System;
 using System.Collections.Concurrent;
 using System.Net.WebSockets;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Security.Cryptography;
 
 namespace WelsonJS.Launcher
 {
     public class WebSocketManager
     {
-        private class WebSocketEntry
+        private class Entry
         {
-            public ClientWebSocket Socket { get; set; }
-            public string Host { get; set; }
-            public int Port { get; set; }
-            public string Path { get; set; }
+            public ClientWebSocket Socket;
+            public string Host;
+            public int Port;
+            public string Path;
         }
 
-        private readonly ConcurrentDictionary<string, WebSocketEntry> _wsPool = new ConcurrentDictionary<string, WebSocketEntry>();
+        private readonly ConcurrentDictionary<string, Entry> _pool = new ConcurrentDictionary<string, Entry>();
 
+        // Create a unique cache key based on host, port, and path using MD5
         private string MakeKey(string host, int port, string path)
         {
             string raw = host + ":" + port + "/" + path;
             using (var md5 = MD5.Create())
             {
                 byte[] hash = md5.ComputeHash(Encoding.UTF8.GetBytes(raw));
-                return BitConverter.ToString(hash).Replace("-", "").ToLower(); // 32자
+                return BitConverter.ToString(hash).Replace("-", "").ToLower();
             }
         }
 
+        // Get existing WebSocket if valid, otherwise connect and store a new one
         public async Task<ClientWebSocket> GetOrCreateAsync(string host, int port, string path)
         {
             string key = MakeKey(host, port, path);
 
-            if (_wsPool.TryGetValue(key, out var entry))
+            if (_pool.TryGetValue(key, out var entry))
             {
-                var socket = entry.Socket;
+                var sock = entry.Socket;
+                if (sock != null && sock.State == WebSocketState.Open)
+                    return sock;
 
-                if (socket != null)
-                {
-                    if (socket.State == WebSocketState.Open)
-                        return socket;
-
-                    Remove(host, port, path);
-                }
+                // Remove stale or broken socket
+                Remove(host, port, path);
             }
 
-            var newSocket = new ClientWebSocket();
+            var newSock = new ClientWebSocket();
             var uri = new Uri($"ws://{host}:{port}/{path}");
 
             try
             {
-                await newSocket.ConnectAsync(uri, CancellationToken.None);
-
-                _wsPool[key] = new WebSocketEntry
+                await newSock.ConnectAsync(uri, CancellationToken.None);
+                _pool[key] = new Entry
                 {
-                    Socket = newSocket,
+                    Socket = newSock,
                     Host = host,
                     Port = port,
                     Path = path
                 };
-
-                return newSocket;
+                return newSock;
             }
             catch
             {
-                newSocket.Dispose();
+                newSock.Dispose();
                 throw;
             }
         }
 
+        // Remove WebSocket from the pool and dispose
         public void Remove(string host, int port, string path)
         {
             string key = MakeKey(host, port, path);
-            if (_wsPool.TryRemove(key, out var entry))
+            if (_pool.TryRemove(key, out var entry))
             {
                 try
                 {
                     entry.Socket?.Abort();
                     entry.Socket?.Dispose();
                 }
-                catch { /* ignore */ }
+                catch { /* Ignore errors */ }
             }
         }
 
-        public async Task<string> SendAndReceiveAsync(string host, int port, string path, string message, int timeoutSeconds)
+        // Send message and receive response with 1 retry on failure
+        public async Task<string> SendAndReceiveAsync(string host, int port, string path, string message, int timeoutSec)
         {
-            var buffer = Encoding.UTF8.GetBytes(message);
-            var cts = timeoutSeconds > 0 ? new CancellationTokenSource(TimeSpan.FromSeconds(timeoutSeconds)) : new CancellationTokenSource();
+            byte[] buf = Encoding.UTF8.GetBytes(message);
+            var cts = timeoutSec > 0
+                ? new CancellationTokenSource(TimeSpan.FromSeconds(timeoutSec))
+                : new CancellationTokenSource();
 
-            try
+            for (int attempt = 0; attempt < 2; attempt++)
             {
-                var socket = await GetOrCreateAsync(host, port, path);
-                await socket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, cts.Token);
-
-                var recvBuffer = new byte[4096];
-                var result = await socket.ReceiveAsync(new ArraySegment<byte>(recvBuffer), cts.Token);
-                return Encoding.UTF8.GetString(recvBuffer, 0, result.Count);
-            }
-            catch
-            {
-                Remove(host, port, path);
-
                 try
                 {
-                    var socket = await GetOrCreateAsync(host, port, path);
-                    await socket.SendAsync(new ArraySegment<byte>(buffer), WebSocketMessageType.Text, true, cts.Token);
-
-                    var recvBuffer = new byte[4096];
-                    var result = await socket.ReceiveAsync(new ArraySegment<byte>(recvBuffer), cts.Token);
-                    return Encoding.UTF8.GetString(recvBuffer, 0, result.Count);
+                    return await TrySendAndReceiveAsync(host, port, path, buf, cts.Token);
                 }
                 catch
                 {
                     Remove(host, port, path);
-                    throw;
+                    if (attempt == 1) throw;
                 }
             }
+
+            throw new InvalidOperationException("Unreachable");
+        }
+
+        // Internal helper for sending and receiving data
+        private async Task<string> TrySendAndReceiveAsync(string host, int port, string path, byte[] buf, CancellationToken token)
+        {
+            var sock = await GetOrCreateAsync(host, port, path);
+            await sock.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, token);
+
+            byte[] recv = new byte[4096];
+            var result = await sock.ReceiveAsync(new ArraySegment<byte>(recv), token);
+
+            return Encoding.UTF8.GetString(recv, 0, result.Count);
         }
     }
 }
