@@ -187,6 +187,24 @@ if (typeof CreateObject === "undefined") {
     };
 }
 
+if (typeof UseObject === "undefined") {
+    var UseObject = function(progId, callback) {
+        var _dispose = function(obj) {
+            try {
+                obj.Close();
+            } catch (e) { /* ignore */ }
+        };
+        
+        var obj = CreateObject(progId);
+        try {
+            return callback(obj);
+        } finally {
+            _dispose(obj);
+            obj = null;
+        }
+    }
+}
+
 /**
  * @FN {string} The name of the file.
  */
@@ -283,7 +301,9 @@ function require(pathname) {
             return filename;
         })({
             existsSync: function(filename) {
-                return CreateObject("Scripting.FileSystemObject").FileExists(filename);
+                return UseObject("Scripting.FileSystemObject", function(fso) {
+                    return fso.FileExists(filename);
+                });
             }
         }, {
             join: function() {
