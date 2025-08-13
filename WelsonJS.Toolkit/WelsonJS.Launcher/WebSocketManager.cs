@@ -1,10 +1,9 @@
-﻿// WebSocketManager.cs
+// WebSocketManager.cs
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
 // https://github.com/gnh1201/welsonjs
 //
 using System;
-using System.Buffers;
 using System.Collections.Concurrent;
 using System.IO;
 using System.Net.WebSockets;
@@ -146,45 +145,38 @@ namespace WelsonJS.Launcher
                 await entry.IoLock.WaitAsync(token);
                 try
                 {
-                    // Send message (single-frame; can be split if needed)
+                    // Send message
                     await sock.SendAsync(new ArraySegment<byte>(sendBuf), WebSocketMessageType.Text, true, token);
 
-                    // Receive message until EndOfMessage is reached
-                    var buffer = ArrayPool<byte>.Shared.Rent(8192);
-                    try
+                    // Receive message until EndOfMessage
+                    byte[] buffer = new byte[8192];
+                    using (var ms = new MemoryStream())
                     {
-                        using (var ms = new MemoryStream())
+                        while (true)
                         {
-                            while (true)
+                            var res = await sock.ReceiveAsync(new ArraySegment<byte>(buffer), token);
+
+                            if (res.MessageType == WebSocketMessageType.Close)
                             {
-                                var res = await sock.ReceiveAsync(new ArraySegment<byte>(buffer), token);
-
-                                if (res.MessageType == WebSocketMessageType.Close)
-                                {
-                                    // Server requested closure
-                                    try { await sock.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing as requested by server", token); } catch { }
-                                    throw new WebSocketException($"WebSocket closed by server: {sock.CloseStatus} {sock.CloseStatusDescription}");
-                                }
-
-                                if (res.Count > 0)
-                                {
-                                    ms.Write(buffer, 0, res.Count);
-
-                                    if (ms.Length > maxMessageBytes)
-                                        throw new InvalidOperationException($"Received message exceeds limit ({maxMessageBytes} bytes).");
-                                }
-
-                                if (res.EndOfMessage)
-                                    break;
+                                // Server requested closure
+                                try { await sock.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing as requested by server", token); } catch { }
+                                throw new WebSocketException($"WebSocket closed by server: {sock.CloseStatus} {sock.CloseStatusDescription}");
                             }
 
-                            // Convert UTF-8 encoded text message to string
-                            return Encoding.UTF8.GetString(ms.ToArray());
+                            if (res.Count > 0)
+                            {
+                                ms.Write(buffer, 0, res.Count);
+
+                                if (ms.Length > maxMessageBytes)
+                                    throw new InvalidOperationException($"Received message exceeds limit ({maxMessageBytes} bytes).");
+                            }
+
+                            if (res.EndOfMessage)
+                                break;
                         }
-                    }
-                    finally
-                    {
-                        ArrayPool<byte>.Shared.Return(buffer);
+
+                        // Convert UTF-8 encoded text message to string
+                        return Encoding.UTF8.GetString(ms.ToArray());
                     }
                 }
                 finally
