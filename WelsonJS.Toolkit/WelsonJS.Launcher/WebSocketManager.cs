@@ -119,7 +119,7 @@ namespace WelsonJS.Launcher
             throw new InvalidOperationException("Unreachable");
         }
 
-        // Actual send and receive implementation
+        // Actual send and receive implementation that accumulates all frames until EndOfMessage
         private async Task<string> TrySendAndReceiveAsync(string host, int port, string path, byte[] buf, CancellationToken token)
         {
             try
@@ -129,12 +129,41 @@ namespace WelsonJS.Launcher
                 if (sock.State != WebSocketState.Open)
                     throw new WebSocketException("WebSocket is not in an open state");
 
+                // Send the message as a single text frame
                 await sock.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, token);
 
-                byte[] recv = new byte[4096];
-                var result = await sock.ReceiveAsync(new ArraySegment<byte>(recv), token);
+                // Receive loop: keep reading until the logical message ends (EndOfMessage == true)
+                byte[] buffer = new byte[8192];
+                using (var ms = new System.IO.MemoryStream())
+                {
+                    while (true)
+                    {
+                        var result = await sock.ReceiveAsync(new ArraySegment<byte>(buffer), token);
 
-                return Encoding.UTF8.GetString(recv, 0, result.Count);
+                        if (result.MessageType == WebSocketMessageType.Close)
+                        {
+                            // Server requested closure; acknowledge and throw
+                            try { await sock.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing as requested by server", token); }
+                            catch { /* ignore close exceptions */ }
+
+                            throw new WebSocketException($"WebSocket closed by server: {sock.CloseStatus} {sock.CloseStatusDescription}");
+                        }
+
+                        if (result.Count > 0)
+                        {
+                            ms.Write(buffer, 0, result.Count);
+                        }
+
+                        if (result.EndOfMessage)
+                        {
+                            // Entire message received
+                            break;
+                        }
+                    }
+
+                    // Decode UTF-8 text message
+                    return Encoding.UTF8.GetString(ms.ToArray());
+                }
             }
             catch (WebSocketException ex)
             {
