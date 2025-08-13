@@ -119,51 +119,62 @@ namespace WelsonJS.Launcher
             throw new InvalidOperationException("Unreachable");
         }
 
-        // Actual send and receive implementation that accumulates all frames until EndOfMessage
+        // Actual send and receive implementation that never truncates the accumulated data.
+        // - Uses a fixed-size read buffer ONLY for I/O
+        // - Accumulates dynamically into a List<byte[]> until EndOfMessage
         private async Task<string> TrySendAndReceiveAsync(string host, int port, string path, byte[] buf, CancellationToken token)
         {
             try
             {
                 var sock = await GetOrCreateAsync(host, port, path);
-
                 if (sock.State != WebSocketState.Open)
                     throw new WebSocketException("WebSocket is not in an open state");
 
-                // Send the message as a single text frame
+                // Send request as a single text frame
                 await sock.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, token);
 
-                // Receive loop: keep reading until the logical message ends (EndOfMessage == true)
-                byte[] buffer = new byte[8192];
-                using (var ms = new System.IO.MemoryStream())
+                // Fixed-size read buffer for I/O (does NOT cap total message size)
+                byte[] readBuffer = new byte[8192];
+
+                // Dynamic accumulator for all received chunks
+                var parts = new System.Collections.Generic.List<byte[]>(8);
+                int total = 0;
+
+                while (true)
                 {
-                    while (true)
+                    var res = await sock.ReceiveAsync(new ArraySegment<byte>(readBuffer), token);
+
+                    if (res.MessageType == WebSocketMessageType.Close)
                     {
-                        var result = await sock.ReceiveAsync(new ArraySegment<byte>(buffer), token);
-
-                        if (result.MessageType == WebSocketMessageType.Close)
-                        {
-                            // Server requested closure; acknowledge and throw
-                            try { await sock.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing as requested by server", token); }
-                            catch { /* ignore close exceptions */ }
-
-                            throw new WebSocketException($"WebSocket closed by server: {sock.CloseStatus} {sock.CloseStatusDescription}");
-                        }
-
-                        if (result.Count > 0)
-                        {
-                            ms.Write(buffer, 0, result.Count);
-                        }
-
-                        if (result.EndOfMessage)
-                        {
-                            // Entire message received
-                            break;
-                        }
+                        try { await sock.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing as requested by server", token); } catch { }
+                        throw new WebSocketException($"WebSocket closed by server: {sock.CloseStatus} {sock.CloseStatusDescription}");
                     }
 
-                    // Decode UTF-8 text message
-                    return Encoding.UTF8.GetString(ms.ToArray());
+                    if (res.Count > 0)
+                    {
+                        // Copy out exactly the bytes read in this frame fragment
+                        var copy = new byte[res.Count];
+                        Buffer.BlockCopy(readBuffer, 0, copy, 0, res.Count);
+                        parts.Add(copy);
+                        total += res.Count;
+                    }
+
+                    if (res.EndOfMessage)
+                        break; // Full logical message received
                 }
+
+                // Concatenate all parts into a single byte[] sized to the exact total
+                var payload = new byte[total];
+                int offset = 0;
+                for (int i = 0; i < parts.Count; i++)
+                {
+                    var p = parts[i];
+                    Buffer.BlockCopy(p, 0, payload, offset, p.Length);
+                    offset += p.Length;
+                }
+
+                // Decode as UTF-8 text (adjust if Binary messages are expected)
+                return Encoding.UTF8.GetString(payload);
             }
             catch (WebSocketException ex)
             {
