@@ -55,7 +55,7 @@ namespace WelsonJS.Launcher.ResourceTools
 
             if (endpoint.StartsWith("page/", StringComparison.OrdinalIgnoreCase))
             {
-                // 기본 구성
+                // read the variable
                 string baseUrl = Program.GetAppConfig("ChromiumDevToolsPrefix");
                 if (!Uri.TryCreate(baseUrl, UriKind.Absolute, out Uri uri))
                 {
@@ -66,7 +66,7 @@ namespace WelsonJS.Launcher.ResourceTools
                 string hostname = uri.Host;
                 int port = uri.Port;
 
-                // 포트 덮어쓰기: ?port=1234
+                // override the port number: ?port=1234
                 string portQuery = context.Request.QueryString["port"];
                 if (!string.IsNullOrEmpty(portQuery))
                 {
@@ -74,47 +74,27 @@ namespace WelsonJS.Launcher.ResourceTools
                     if (parsedPort > 0) port = parsedPort;
                 }
 
-                // 타임아웃 처리
+                // set timeout
                 int timeout = 5;
                 string timeoutConfig = Program.GetAppConfig("ChromiumDevToolsTimeout");
                 if (!string.IsNullOrEmpty(timeoutConfig))
                     int.TryParse(timeoutConfig, out timeout);
 
-                // 경로
+                // targeted WebSocket path
                 string wsPath = "devtools/" + endpoint;
 
-                // 본문 읽기
+                // read the body messsage
                 string postBody;
                 using (var reader = new StreamReader(context.Request.InputStream, context.Request.ContentEncoding))
+                {
                     postBody = await reader.ReadToEndAsync();
-
-                ClientWebSocket ws;
-                try
-                {
-                    ws = await _wsManager.GetOrCreateAsync(hostname, port, wsPath);
-                }
-                catch (Exception ex)
-                {
-                    Server.ServeResource(context, $"<error>WebSocket connection failed: {EscapeXml(ex.Message)}</error>", "application/xml", 502);
-                    return;
                 }
 
+                // try to communicate
                 try
                 {
-                    var sendBuffer = Encoding.UTF8.GetBytes(postBody);
-                    var sendToken = timeout == 0 ? CancellationToken.None : new CancellationTokenSource(TimeSpan.FromSeconds(timeout)).Token;
-                    await ws.SendAsync(new ArraySegment<byte>(sendBuffer), WebSocketMessageType.Text, true, sendToken);
-
-                    var recvBuffer = new byte[4096];
-                    var recvToken = timeout == 0 ? CancellationToken.None : new CancellationTokenSource(TimeSpan.FromSeconds(timeout)).Token;
-                    var result = await ws.ReceiveAsync(new ArraySegment<byte>(recvBuffer), recvToken);
-
-                    string response = Encoding.UTF8.GetString(recvBuffer, 0, result.Count);
+                    string response = await _wsManager.SendAndReceiveAsync(hostname, port, wsPath, postBody, timeout);
                     Server.ServeResource(context, response, "application/json", 200);
-                }
-                catch (OperationCanceledException)
-                {
-                    Server.ServeResource(context, "<error>Timeout occurred</error>", "application/xml", 504);
                 }
                 catch (Exception ex)
                 {
