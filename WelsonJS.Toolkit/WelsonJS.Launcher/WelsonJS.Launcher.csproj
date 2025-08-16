@@ -86,6 +86,7 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ICompatibleLogger.cs" />
     <Compile Include="IResourceTool.cs" />
     <Compile Include="ResourceTools\CitiQuery.cs" />
     <Compile Include="ResourceTools\Settings.cs" />
@@ -121,6 +122,7 @@
       <DependentUpon>GlobalSettingsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="ResourceServer.cs" />
+    <Compile Include="TraceLogger.cs" />
     <Compile Include="WebSocketManager.cs" />
     <EmbeddedResource Include="EnvForm.resx">
       <DependentUpon>EnvForm.cs</DependentUpon>
