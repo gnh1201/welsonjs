@@ -12,6 +12,17 @@ namespace WelsonJS.Launcher
 {
     public class TraceLogger : ICompatibleLogger
     {
+        private static readonly string _logFileName;
+
+        static TraceLogger()
+        {
+            _logFileName = typeof(TraceLogger).Namespace + ".log";
+
+            var textWriterTraceListener = new TextWriterTraceListener(_logFileName);
+            Trace.Listeners.Add(textWriterTraceListener);
+            Trace.AutoFlush = true;
+        }
+
         public void Info(string message) => Trace.TraceInformation(message);
         public void Warn(string message) => Trace.TraceWarning(message);
         public void Error(string message) => Trace.TraceError(message);

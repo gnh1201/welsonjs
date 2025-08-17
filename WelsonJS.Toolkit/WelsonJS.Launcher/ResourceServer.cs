@@ -44,13 +44,13 @@ namespace WelsonJS.Launcher
 
         public ResourceServer(string prefix, string resourceName, ICompatibleLogger logger = null)
         {
-            _logger = logger;
+            _logger = logger ?? new TraceLogger();
             _prefix = prefix;
             _listener = new HttpListener();
             _resourceName = resourceName;
 
             // Fetch a blob config from Internet
-            FetchBlobConfig();
+            FetchBlobConfig().ConfigureAwait(false);
 
             // Add resource tools
             _tools.Add(new ResourceTools.Completion(this, _httpClient));
@@ -167,7 +167,11 @@ namespace WelsonJS.Launcher
                     using (var client = new HttpClient())
                     {
                         HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
-                        request.Headers.UserAgent.ParseAdd(context.Request.UserAgent);
+                        var ua = context?.Request?.UserAgent;
+                        if (!string.IsNullOrEmpty(ua))
+                        {
+                            request.Headers.UserAgent.ParseAdd(ua);
+                        }
                         HttpResponseMessage response = await client.SendAsync(request);
 
                         if (!response.IsSuccessStatusCode)
@@ -430,24 +434,29 @@ namespace WelsonJS.Launcher
             }
         }
 
-        private async void FetchBlobConfig()
+        private async Task FetchBlobConfig()
         {
             try
             {
                 string url = Program.GetAppConfig("BlobConfigUrl");
-                var response = await _httpClient.GetStreamAsync(url);
+                if (string.IsNullOrWhiteSpace(url))
+                {
+                    _logger?.Warn("BlobConfigUrl is not configured.");
+                    return;
+                }
 
-                var serializer = new XmlSerializer(typeof(BlobConfig));
+                using (var response = await _httpClient.GetStreamAsync(url))
                 using (var reader = new StreamReader(response))
                 {
-                    _blobConfig = (BlobConfig)serializer.Deserialize(reader);
+                    var serializer = new XmlSerializer(typeof(BlobConfig));
+                     _blobConfig = (BlobConfig)serializer.Deserialize(reader);
                 }
 
                 _blobConfig?.Compile();
             }
             catch (Exception ex)
             {
-                _logger?.Error($"Failed to fetch a blob config. Exception: {ex.Message}");
+                _logger?.Error($"Failed to fetch a blob config. Exception: {ex}");
             }
         }
     }
