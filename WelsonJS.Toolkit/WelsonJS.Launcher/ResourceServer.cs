@@ -5,7 +5,6 @@
 // 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -30,27 +29,28 @@ namespace WelsonJS.Launcher
         private string _prefix;
         private string _resourceName;
         private List<IResourceTool> _tools = new List<IResourceTool>();
+        private BlobConfig _blobConfig;
+        private readonly ICompatibleLogger _logger;
 
         private static readonly HttpClient _httpClient = new HttpClient();
         private static readonly string _defaultMimeType = "application/octet-stream";
-        private static BlobConfig _blobConfig;
 
         static ResourceServer()
         {
             // Set timeout
             int timeout = int.TryParse(Program.GetAppConfig("HttpClientTimeout"), out timeout) ? timeout : 90;
             _httpClient.Timeout = TimeSpan.FromSeconds(timeout);
+        }
+
+        public ResourceServer(string prefix, string resourceName, ICompatibleLogger logger = null)
+        {
+            _logger = logger;
+            _prefix = prefix;
+            _listener = new HttpListener();
+            _resourceName = resourceName;
 
             // Fetch a blob config from Internet
             FetchBlobConfig();
-        }
-
-        public ResourceServer(string prefix, string resourceName)
-        {
-            _prefix = prefix;
-            _listener = new HttpListener();
-            _listener.Prefixes.Add(prefix);
-            _resourceName = resourceName;
 
             // Add resource tools
             _tools.Add(new ResourceTools.Completion(this, _httpClient));
@@ -60,6 +60,9 @@ namespace WelsonJS.Launcher
             _tools.Add(new ResourceTools.CitiQuery(this, _httpClient));
             _tools.Add(new ResourceTools.Tfa(this, _httpClient));
             _tools.Add(new ResourceTools.Whois(this, _httpClient));
+
+            // Register the prefix
+            _listener.Prefixes.Add(prefix);
         }
 
         public string GetPrefix()
@@ -110,7 +113,7 @@ namespace WelsonJS.Launcher
                 catch (Exception ex)
                 {
                     if (token.IsCancellationRequested || !_isRunning) break;
-                    MessageBox.Show($"Error: {ex.Message}");
+                    _logger?.Error($"Error: {ex.Message}");
                 }
             }
         }
@@ -169,7 +172,7 @@ namespace WelsonJS.Launcher
 
                         if (!response.IsSuccessStatusCode)
                         {
-                            Trace.TraceError($"Failed to serve blob. URL: {url}, Status: {response.StatusCode}");
+                            _logger?.Error($"Failed to serve blob. URL: {url}, Status: {response.StatusCode}");
                             return false;
                         }
 
@@ -184,7 +187,7 @@ namespace WelsonJS.Launcher
                 }
                 catch (Exception ex)
                 {
-                    Trace.TraceError($"Failed to serve blob. URL: {url}, Exception: {ex.Message}");
+                    _logger?.Error($"Failed to serve blob. URL: {url}, Exception: {ex.Message}");
                     return false;
                 }
             }
@@ -284,7 +287,7 @@ namespace WelsonJS.Launcher
             }
             catch (Exception ex)
             {
-                Trace.TraceError($"Cache Read Error: {ex.Message}");
+                _logger?.Error($"Cache Read Error: {ex.Message}");
             }
 
             data = null;
@@ -329,7 +332,7 @@ namespace WelsonJS.Launcher
             }
             catch (Exception ex)
             {
-                Trace.TraceError($"Error: {ex.Message}");
+                _logger?.Error($"Error: {ex.Message}");
                 return false;
             }
         }
@@ -427,7 +430,7 @@ namespace WelsonJS.Launcher
             }
         }
 
-        private static async void FetchBlobConfig()
+        private async void FetchBlobConfig()
         {
             try
             {
@@ -444,7 +447,7 @@ namespace WelsonJS.Launcher
             }
             catch (Exception ex)
             {
-                Trace.TraceError($"Failed to fetch a blob config. Exception: {ex.Message}");
+                _logger?.Error($"Failed to fetch a blob config. Exception: {ex.Message}");
             }
         }
     }
