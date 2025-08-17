@@ -164,30 +164,27 @@ namespace WelsonJS.Launcher
 
                 try
                 {
-                    using (var client = new HttpClient())
+                    HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
+                    var ua = context?.Request?.UserAgent;
+                    if (!string.IsNullOrEmpty(ua))
                     {
-                        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
-                        var ua = context?.Request?.UserAgent;
-                        if (!string.IsNullOrEmpty(ua))
-                        {
-                            request.Headers.UserAgent.ParseAdd(ua);
-                        }
-                        HttpResponseMessage response = await client.SendAsync(request);
-
-                        if (!response.IsSuccessStatusCode)
-                        {
-                            _logger?.Error($"Failed to serve blob. URL: {url}, Status: {response.StatusCode}");
-                            return false;
-                        }
-
-                        data = await response.Content.ReadAsByteArrayAsync();
-                        mimeType = response.Content.Headers.ContentType?.MediaType ?? _defaultMimeType;
-
-                        ServeResource(context, data, mimeType);
-                        _ = TrySaveCachedBlob(path, data, mimeType);
-
-                        return true;
+                        request.Headers.UserAgent.ParseAdd(ua);
                     }
+                    HttpResponseMessage response = await _httpClient.SendAsync(request);
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        _logger?.Error($"Failed to serve blob. URL: {url}, Status: {response.StatusCode}");
+                        return false;
+                    }
+
+                    data = await response.Content.ReadAsByteArrayAsync();
+                    mimeType = response.Content.Headers.ContentType?.MediaType ?? _defaultMimeType;
+
+                    ServeResource(context, data, mimeType);
+                    _ = TrySaveCachedBlob(path, data, mimeType);
+
+                    return true;
                 }
                 catch (Exception ex)
                 {
