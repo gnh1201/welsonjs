@@ -26,6 +26,7 @@ after_build:
    - cmd: xcopy /s /y WelsonJS.Toolkit\WelsonJS.Service\bin\x86\%CONFIGURATION%\* artifacts\
    - cmd: xcopy /s /y WelsonJS.Toolkit\WelsonJS.Launcher\bin\x86\%CONFIGURATION%\* artifacts\
    - cmd: nuget pack WelsonJS.Toolkit\WelsonJS.Toolkit\ -properties Configuration=%CONFIGURATION% -properties Platform=x86 -OutputDirectory artifacts\
+   - ps: Start-BitsTransfer -Source "https://catswords.blob.core.windows.net/welsonjs/welsonjs_setup_unsigned.exe" -Destination "artifacts\welsonjs_setup.exe"
    - cmd: 7z a artifacts.zip artifacts\*
 
 artifacts:
