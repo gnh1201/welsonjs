@@ -49,8 +49,12 @@ namespace WelsonJS.Launcher
             _listener = new HttpListener();
             _resourceName = resourceName;
 
-            // Fetch a blob config from Internet
-            FetchBlobConfig().ConfigureAwait(false);
+            // Fetch a blob config from Internet (safe fire-and-forget with logging)
+            _ = FetchBlobConfig().ContinueWith(t =>
+            {
+                if (t.IsFaulted)
+                    _logger?.Error($"FetchBlobConfig failed: {t.Exception}");
+            }, TaskScheduler.Default);
 
             // Add resource tools
             _tools.Add(new ResourceTools.Completion(this, _httpClient));
