@@ -44,13 +44,17 @@ namespace WelsonJS.Launcher
 
         public ResourceServer(string prefix, string resourceName, ICompatibleLogger logger = null)
         {
-            _logger = logger;
+            _logger = logger ?? new TraceLogger();
             _prefix = prefix;
             _listener = new HttpListener();
             _resourceName = resourceName;
 
-            // Fetch a blob config from Internet
-            FetchBlobConfig();
+            // Fetch a blob config from Internet (safe fire-and-forget with logging)
+            _ = FetchBlobConfig().ContinueWith(t =>
+            {
+                if (t.IsFaulted)
+                    _logger?.Error($"FetchBlobConfig failed: {t.Exception}");
+            }, TaskScheduler.Default);
 
             // Add resource tools
             _tools.Add(new ResourceTools.Completion(this, _httpClient));
@@ -164,26 +168,27 @@ namespace WelsonJS.Launcher
 
                 try
                 {
-                    using (var client = new HttpClient())
+                    HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
+                    var ua = context?.Request?.UserAgent;
+                    if (!string.IsNullOrEmpty(ua))
                     {
-                        HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
-                        request.Headers.UserAgent.ParseAdd(context.Request.UserAgent);
-                        HttpResponseMessage response = await client.SendAsync(request);
-
-                        if (!response.IsSuccessStatusCode)
-                        {
-                            _logger?.Error($"Failed to serve blob. URL: {url}, Status: {response.StatusCode}");
-                            return false;
-                        }
-
-                        data = await response.Content.ReadAsByteArrayAsync();
-                        mimeType = response.Content.Headers.ContentType?.MediaType ?? _defaultMimeType;
-
-                        ServeResource(context, data, mimeType);
-                        _ = TrySaveCachedBlob(path, data, mimeType);
-
-                        return true;
+                        request.Headers.UserAgent.ParseAdd(ua);
                     }
+                    HttpResponseMessage response = await _httpClient.SendAsync(request);
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        _logger?.Error($"Failed to serve blob. URL: {url}, Status: {response.StatusCode}");
+                        return false;
+                    }
+
+                    data = await response.Content.ReadAsByteArrayAsync();
+                    mimeType = response.Content.Headers.ContentType?.MediaType ?? _defaultMimeType;
+
+                    ServeResource(context, data, mimeType);
+                    _ = TrySaveCachedBlob(path, data, mimeType);
+
+                    return true;
                 }
                 catch (Exception ex)
                 {
@@ -430,24 +435,29 @@ namespace WelsonJS.Launcher
             }
         }
 
-        private async void FetchBlobConfig()
+        private async Task FetchBlobConfig()
         {
             try
             {
                 string url = Program.GetAppConfig("BlobConfigUrl");
-                var response = await _httpClient.GetStreamAsync(url);
-
-                var serializer = new XmlSerializer(typeof(BlobConfig));
-                using (var reader = new StreamReader(response))
+                if (string.IsNullOrWhiteSpace(url))
                 {
-                    _blobConfig = (BlobConfig)serializer.Deserialize(reader);
+                    _logger?.Warn("BlobConfigUrl is not configured.");
+                    return;
                 }
 
-                _blobConfig?.Compile();
+                using (var response = await _httpClient.GetStreamAsync(url).ConfigureAwait(false))
+                using (var reader = new StreamReader(response))
+                {
+                    var serializer = new XmlSerializer(typeof(BlobConfig));
+                    var cfg = (BlobConfig)serializer.Deserialize(reader);
+                    cfg?.Compile();
+                    _blobConfig = cfg;
+                }
             }
             catch (Exception ex)
             {
-                _logger?.Error($"Failed to fetch a blob config. Exception: {ex.Message}");
+                _logger?.Error($"Failed to fetch a blob config. Exception: {ex}");
             }
         }
     }

@@ -12,6 +12,24 @@ namespace WelsonJS.Launcher
 {
     public class TraceLogger : ICompatibleLogger
     {
+        private static readonly string _logFileName;
+
+        static TraceLogger()
+        {
+            try
+            {
+                _logFileName = (typeof(TraceLogger).Namespace ?? "WelsonJS.Launcher") + ".log";
+                Trace.Listeners.Add(new TextWriterTraceListener(_logFileName));
+            }
+            catch (System.Exception ex)
+            {
+                // Fallback when the process cannot write to the working directory
+                Trace.Listeners.Add(new ConsoleTraceListener());
+                Trace.TraceWarning($"TraceLogger: failed to initialize file listener '{_logFileName}'. Falling back to ConsoleTraceListener. Error: {ex.Message}");
+            }
+            Trace.AutoFlush = true;
+        }
+
         public void Info(string message) => Trace.TraceInformation(message);
         public void Warn(string message) => Trace.TraceWarning(message);
         public void Error(string message) => Trace.TraceError(message);
