@@ -442,14 +442,14 @@ namespace WelsonJS.Launcher
                     return;
                 }
 
-                using (var response = await _httpClient.GetStreamAsync(url))
+                using (var response = await _httpClient.GetStreamAsync(url).ConfigureAwait(false))
                 using (var reader = new StreamReader(response))
                 {
                     var serializer = new XmlSerializer(typeof(BlobConfig));
-                     _blobConfig = (BlobConfig)serializer.Deserialize(reader);
+                    var cfg = (BlobConfig)serializer.Deserialize(reader);
+                    cfg?.Compile();
+                    _blobConfig = cfg;
                 }
-
-                _blobConfig?.Compile();
             }
             catch (Exception ex)
             {
