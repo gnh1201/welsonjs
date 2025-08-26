@@ -29,8 +29,8 @@ namespace WelsonJS.Launcher
         static void Main()
         {
             // create the mutex
-            _mutex = new Mutex(true, "WelsonJS.Launcher", out bool _createdNew);
-            if (!_createdNew)
+            _mutex = new Mutex(true, "WelsonJS.Launcher", out bool createdNew);
+            if (!createdNew)
             {
                 _logger.Error("WelsonJS Launcher already running.");
                 return;
