@@ -32,7 +32,7 @@ namespace WelsonJS.Launcher
             _mutex = new Mutex(true, "WelsonJS.Launcher", out bool createdNew);
             if (!createdNew)
             {
-                _logger.Error("WelsonJS Launcher already running.");
+                _logger.Info("WelsonJS Launcher already running.");
                 return;
             }
 
@@ -42,7 +42,9 @@ namespace WelsonJS.Launcher
             Application.Run(new MainForm(_logger));
 
             // destory the mutex
-            _mutex.ReleaseMutex();
+            try {
+                _mutex.ReleaseMutex();
+            } catch { /* ignore if not owned */ }
             _mutex.Dispose();
         }
 

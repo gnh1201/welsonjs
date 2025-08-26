@@ -177,6 +177,12 @@ namespace WelsonJS.Launcher
         {
             Program.InitializeResourceServer();
 
+            if (Program._resourceServer == null)
+            {
+                _logger.Error("Resource server failed to initialize.");
+                return false;
+            }
+
             if (!Program._resourceServer.IsRunning())
             {
                 Program._resourceServer.Start(false);
