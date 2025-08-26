@@ -15,28 +15,37 @@ namespace WelsonJS.Launcher
 {
     internal static class Program
     {
-        static Mutex mutex;
-        public static ResourceServer _ResourceServer;
+        private static readonly ICompatibleLogger _logger;
+
+        public static Mutex _mutex;
+        public static ResourceServer _resourceServer;
+
+        static Program()
+        {
+            _logger = new TraceLogger();
+        }
 
         [STAThread]
         static void Main()
         {
             // create the mutex
-            mutex = new Mutex(true, "WelsonJS.Launcher", out bool isMutexNotExists);
-            if (!isMutexNotExists)
+            _mutex = new Mutex(true, "WelsonJS.Launcher", out bool createdNew);
+            if (!createdNew)
             {
-                MessageBox.Show("WelsonJS Launcher already running.");
+                _logger.Info("WelsonJS Launcher already running.");
                 return;
             }
 
             // draw the main form
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm());
+            Application.Run(new MainForm(_logger));
 
             // destory the mutex
-            mutex.ReleaseMutex();
-            mutex.Dispose();
+            try {
+                _mutex.ReleaseMutex();
+            } catch { /* ignore if not owned */ }
+            _mutex.Dispose();
         }
 
         public static void RunCommandPrompt(string workingDirectory, string entryFileName, string scriptName, bool isConsoleApplication = false, bool isInteractiveServiceAapplication = false)
@@ -150,9 +159,9 @@ namespace WelsonJS.Launcher
         {
             lock(typeof(Program))
             {
-                if (_ResourceServer == null)
+                if (_resourceServer == null)
                 {
-                    _ResourceServer = new ResourceServer(GetAppConfig("ResourceServerPrefix"), "editor.html");
+                    _resourceServer = new ResourceServer(GetAppConfig("ResourceServerPrefix"), "editor.html", _logger);
                 }
             }
         }

@@ -44,7 +44,10 @@ namespace WelsonJS.Launcher
 
         public ResourceServer(string prefix, string resourceName, ICompatibleLogger logger = null)
         {
+            // Set the logger
             _logger = logger ?? new TraceLogger();
+
+            // Initialize
             _prefix = prefix;
             _listener = new HttpListener();
             _resourceName = resourceName;

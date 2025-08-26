@@ -18,17 +18,21 @@ namespace WelsonJS.Launcher
     {
         private const string _entryFileName = "bootstrap.bat";
         private readonly string _dateTimeFormat;
+        private readonly ICompatibleLogger _logger;
 
         private string _workingDirectory;
         private string _instanceId;
         private string _scriptName;
 
-        public MainForm()
+        public MainForm(ICompatibleLogger logger = null)
         {
-            // set the datetime format
+            // Set the logger
+            _logger = logger ?? new TraceLogger();
+
+            // Set the datetime format
             _dateTimeFormat = Program.GetAppConfig("DateTimeFormat");
 
-            // initialize UI
+            // Initialize UI
             InitializeComponent();
 
             // Check the user is an Administator
@@ -173,13 +177,19 @@ namespace WelsonJS.Launcher
         {
             Program.InitializeResourceServer();
 
-            if (!Program._ResourceServer.IsRunning())
+            if (Program._resourceServer == null)
             {
-                Program._ResourceServer.Start(false);
+                _logger.Error("Resource server failed to initialize.");
+                return false;
+            }
+
+            if (!Program._resourceServer.IsRunning())
+            {
+                Program._resourceServer.Start(false);
                 startCodeEditorToolStripMenuItem.Text = "Open the code editor...";
             }
 
-            return Program._ResourceServer.IsRunning();
+            return Program._resourceServer.IsRunning();
         }
 
         private void RecordFirstDeployTime(string directory, string instanceId)
@@ -199,7 +209,7 @@ namespace WelsonJS.Launcher
             }
             catch (Exception ex)
             {
-                Trace.TraceError($"Failed to record first deploy time: {ex.Message}");
+                _logger.Error($"Failed to record first deploy time: {ex.Message}");
             }
             instancesForm.Dispose();
 
@@ -212,7 +222,7 @@ namespace WelsonJS.Launcher
             }
             catch (Exception ex)
             {
-                Trace.TraceError($"Failed to record first deploy time: {ex.Message}");
+                _logger.Error($"Failed to record first deploy time: {ex.Message}");
             }
         }
 
@@ -225,7 +235,7 @@ namespace WelsonJS.Launcher
             }
             catch (Exception ex)
             {
-                Trace.TraceInformation($"The current user is not an administrator, or the check failed: {ex.Message}");
+                _logger.Info($"The current user is not an administrator, or the check failed: {ex.Message}");
                 return false;
             }
         }
@@ -287,20 +297,19 @@ namespace WelsonJS.Launcher
         {
             if (RunResourceServer())
             {
-                Program.OpenWebBrowser(Program._ResourceServer.GetPrefix());
+                Program.OpenWebBrowser(Program._resourceServer.GetPrefix());
             }
         }
 
         private void openCodeEditorToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (Program._ResourceServer == null)
+            if (Program._resourceServer == null)
             {
                 MessageBox.Show("A resource server is not running.");
+                return;
             }
-            else
-            {
-                Program.OpenWebBrowser(Program._ResourceServer.GetPrefix());
-            }
+
+            Program.OpenWebBrowser(Program._resourceServer.GetPrefix());
         }
 
         private void openCopilotToolStripMenuItem_Click(object sender, EventArgs e)
