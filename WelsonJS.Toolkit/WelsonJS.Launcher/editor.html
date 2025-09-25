@@ -130,7 +130,7 @@
             function RibbonMenu({
                 onOpenFileClick, onSaveFileClick, onCopliotClick, onAzureAiClick,
                 onSavePromptClick, onLoadPromptClick, onQueryWhoisClick, onQueryDnsClick,
-                onQueryCitiClick
+                onQueryIpClick
             }) {
                 const fileButtons = [
                     {
@@ -157,7 +157,7 @@
                 const networkToolsButtons = [
                     { id: 'btnWhois', icon: 'mif-earth', caption: 'Whois', onClick: onQueryWhoisClick },
                     { id: 'btnQueryDns', icon: 'mif-earth', caption: 'DNS', onClick: onQueryDnsClick },
-                    { id: 'btnQueryCiti', icon: 'mif-user-secret', caption: 'IP', onClick: onQueryCitiClick }
+                    { id: 'btnQueryIp', icon: 'mif-user-secret', caption: 'IP', onClick: onQueryIpClick }
                 ];
 
                 return _e(
@@ -583,23 +583,23 @@
                     });
                 };
 
-                const queryCiti = () => {
+                const queryIp = () => {
                     const hostname = prompt("Enter IP address:", '');
                     if (!hostname || hostname.trim() === '') {
                         appendTextToEditor("\n// IP address is required.");
                         return;
                     }
 
-                    const apiKey = settingsRef.current.CitiApiKey;
+                    const apiKey = settingsRef.current.CriminalIpApiKey;
                     if (!apiKey || apiKey.trim() === '') {
                         appendTextToEditor("\n// Criminal IP API key is not set.");
                         return;
                     }
 
-                    const apiPrefix = settingsRef.current.CitiApiPrefix;
+                    const apiPrefix = settingsRef.current.CriminalIpApiPrefix;
                     const ip = encodeURIComponent(hostname.trim());
 
-                    axios.get(`/citi-query/${hostname}`).then(response => {
+                    axios.get(`/ip-query/${hostname}`).then(response => {
                         if (!response) {
                             appendTextToEditor("\n// No data returned from Criminal IP.");
                             return;
@@ -664,7 +664,7 @@
                         onLoadPromptClick: loadPromptMessages,
                         onQueryWhoisClick: queryWhois,
                         onQueryDnsClick: queryDns,
-                        onQueryCitiClick: queryCiti
+                        onQueryIpClick: queryIp
                     }),
                     _e('div', { id: 'container' },
                         _e(Editor, { editorRef }),

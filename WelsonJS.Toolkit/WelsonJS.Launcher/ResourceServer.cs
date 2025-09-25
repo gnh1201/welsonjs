@@ -64,7 +64,7 @@ namespace WelsonJS.Launcher
             _tools.Add(new ResourceTools.Settings(this, _httpClient));
             _tools.Add(new ResourceTools.ChromiumDevTools(this, _httpClient));
             _tools.Add(new ResourceTools.DnsQuery(this, _httpClient));
-            _tools.Add(new ResourceTools.CitiQuery(this, _httpClient));
+            _tools.Add(new ResourceTools.IpQuery(this, _httpClient));
             _tools.Add(new ResourceTools.TwoFactorAuth(this, _httpClient));
             _tools.Add(new ResourceTools.Whois(this, _httpClient));
 

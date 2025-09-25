@@ -10,13 +10,13 @@ using System.Threading.Tasks;
 
 namespace WelsonJS.Launcher.ResourceTools
 {
-    public class CitiQuery : IResourceTool
+    public class IpQuery : IResourceTool
     {
         private readonly ResourceServer Server;
         private readonly HttpClient _httpClient;
-        private const string Prefix = "citi-query/";
+        private const string Prefix = "ip-query/";
 
-        public CitiQuery(ResourceServer server, HttpClient httpClient)
+        public IpQuery(ResourceServer server, HttpClient httpClient)
         {
             Server = server;
             _httpClient = httpClient;
@@ -32,7 +32,7 @@ namespace WelsonJS.Launcher.ResourceTools
             try
             {
                 string target = path.Substring(Prefix.Length).Trim();
-                string apiKey = Program.GetAppConfig("CitiApiKey");
+                string apiKey = Program.GetAppConfig("CriminalIpApiKey");
                 if (string.IsNullOrEmpty(apiKey))
                 {
                     Server.ServeResource(context, "<error>Missing API key<error>", "application/xml", 500);
@@ -40,7 +40,7 @@ namespace WelsonJS.Launcher.ResourceTools
                 }
 
                 string encoded = Uri.EscapeDataString(target);
-                string apiPrefix = Program.GetAppConfig("CitiApiPrefix");
+                string apiPrefix = Program.GetAppConfig("CriminalIpApiPrefix");
                 string url = $"{apiPrefix}asset/ip/report?ip={encoded}&full=true";
 
                 var request = new HttpRequestMessage(HttpMethod.Get, url);
