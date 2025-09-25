@@ -133,29 +133,29 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
+        ///   https://copilot.microsoft.com/과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string CopilotUrl {
+            get {
+                return ResourceManager.GetString("CopilotUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
-        internal static string CitiApiKey {
+        internal static string CriminalIpApiKey {
             get {
-                return ResourceManager.GetString("CitiApiKey", resourceCulture);
+                return ResourceManager.GetString("CriminalIpApiKey", resourceCulture);
             }
         }
         
         /// <summary>
         ///   https://api.criminalip.io/v1/과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
-        internal static string CitiApiPrefix {
+        internal static string CriminalIpApiPrefix {
             get {
-                return ResourceManager.GetString("CitiApiPrefix", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   https://copilot.microsoft.com/과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string CopilotUrl {
-            get {
-                return ResourceManager.GetString("CopilotUrl", resourceCulture);
+                return ResourceManager.GetString("CriminalIpApiPrefix", resourceCulture);
             }
         }
         

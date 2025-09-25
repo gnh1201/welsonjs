@@ -88,7 +88,7 @@
   <ItemGroup>
     <Compile Include="ICompatibleLogger.cs" />
     <Compile Include="IResourceTool.cs" />
-    <Compile Include="ResourceTools\CitiQuery.cs" />
+    <Compile Include="ResourceTools\IpQuery.cs" />
     <Compile Include="ResourceTools\Settings.cs" />
     <Compile Include="ResourceTools\Completion.cs" />
     <Compile Include="ResourceTools\ChromiumDevTools.cs" />
