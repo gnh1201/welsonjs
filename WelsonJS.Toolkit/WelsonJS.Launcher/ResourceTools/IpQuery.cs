@@ -35,7 +35,7 @@ namespace WelsonJS.Launcher.ResourceTools
                 string apiKey = Program.GetAppConfig("CriminalIpApiKey");
                 if (string.IsNullOrEmpty(apiKey))
                 {
-                    Server.ServeResource(context, "<error>Missing API key<error>", "application/xml", 500);
+                    Server.ServeResource(context, "<error>Missing API key</error>", "application/xml", 500);
                     return;
                 }
 
