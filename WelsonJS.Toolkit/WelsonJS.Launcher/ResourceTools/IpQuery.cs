@@ -38,7 +38,7 @@ namespace WelsonJS.Launcher.ResourceTools
                 string apiKey = Program.GetAppConfig("CriminalIpApiKey");
                 if (string.IsNullOrEmpty(apiKey))
                 {
-                    Server.ServeResource(context, "<error>Missing API key</error>", "application/xml", 500);
+                    await Server.ServeResource(context, "<error>Missing API key</error>", "application/xml", 500);
                     return;
                 }
 
@@ -54,11 +54,11 @@ namespace WelsonJS.Launcher.ResourceTools
                 string content = await response.Content.ReadAsStringAsync();
 
                 context.Response.StatusCode = (int)response.StatusCode;
-                Server.ServeResource(context, content, "application/json", (int)response.StatusCode);
+                await Server.ServeResource(context, content, "application/json", (int)response.StatusCode);
             }
             catch (Exception ex)
             {
-                Server.ServeResource(context, $"<error>{ex.Message}</error>", "application/xml", 500);
+                await Server.ServeResource(context, $"<error>{ex.Message}</error>", "application/xml", 500);
             }
         }
     }

@@ -92,6 +92,7 @@
     <Compile Include="JsNative.cs" />
     <Compile Include="JsSerializer.cs" />
     <Compile Include="NativeBootstrap.cs" />
+    <Compile Include="ResourceTools\ImageColorPicker.cs" />
     <Compile Include="ResourceTools\IpQuery.cs" />
     <Compile Include="ResourceTools\Settings.cs" />
     <Compile Include="ResourceTools\Completion.cs" />

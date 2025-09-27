@@ -42,13 +42,11 @@ namespace WelsonJS.Launcher.ResourceTools
 
         public async Task HandleAsync(HttpListenerContext context, string path)
         {
-            await Task.Delay(0);
-
             string query = path.Substring(Prefix.Length);
 
             if (string.IsNullOrWhiteSpace(query) || query.Length > 255)
             {
-                Server.ServeResource(context, "<error>Invalid query parameter</error>", "application/xml", 400);
+                await Server.ServeResource(context, "<error>Invalid query parameter</error>", "application/xml", 400);
                 return;
             }
 
@@ -67,11 +65,11 @@ namespace WelsonJS.Launcher.ResourceTools
                 }
 
                 string data = result.ToString();
-                Server.ServeResource(context, data, "text/plain", 200);
+                await Server.ServeResource(context, data, "text/plain", 200);
             }
             catch (Exception ex)
             {
-                Server.ServeResource(context, $"<error>Failed to process DNS query. {ex.Message}</error>", "application/xml", 500);
+                await Server.ServeResource(context, $"<error>Failed to process DNS query. {ex.Message}</error>", "application/xml", 500);
             }
         }
 

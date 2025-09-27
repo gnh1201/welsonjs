@@ -53,7 +53,7 @@ namespace WelsonJS.Launcher.ResourceTools
                     length = parsed;
                 }
 
-                Server.ServeResource(context, GetPubKey(length), "text/plain", 200);
+                await Server.ServeResource(context, GetPubKey(length), "text/plain", 200);
                 return;
             }
 
@@ -71,7 +71,7 @@ namespace WelsonJS.Launcher.ResourceTools
                 var parsed = ParseFormEncoded(body);
                 if (!parsed.TryGetValue("secret", out string secret) || string.IsNullOrWhiteSpace(secret))
                 {
-                    Server.ServeResource(context, "missing 'secret' parameter", "text/plain", 400);
+                    await Server.ServeResource(context, "missing 'secret' parameter", "text/plain", 400);
                     return;
                 }
 
@@ -79,17 +79,17 @@ namespace WelsonJS.Launcher.ResourceTools
                 {
                     int otp = GetOtp(secret.Trim());
                     string otp6 = otp.ToString("D6"); // always 6 digits
-                    Server.ServeResource(context, otp6, "text/plain", 200);
+                    await Server.ServeResource(context, otp6, "text/plain", 200);
                 }
                 catch (Exception ex)
                 {
-                    Server.ServeResource(context, $"invalid secret: {ex.Message}", "text/plain", 400);
+                    await Server.ServeResource(context, $"invalid secret: {ex.Message}", "text/plain", 400);
                 }
                 return;
             }
 
             // Default: not found
-            Server.ServeResource(context, "not found", "text/plain", 404);
+            await Server.ServeResource(context, "not found", "text/plain", 404);
         }
 
         /// <summary>

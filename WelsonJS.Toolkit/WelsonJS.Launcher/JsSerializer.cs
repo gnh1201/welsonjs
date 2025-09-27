@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
 // https://github.com/gnh1201/welsonjs
-// 
+//
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -16,6 +16,10 @@ namespace WelsonJS.Launcher
         private readonly JsCore _core;
         private readonly bool _ownsCore;
 
+        // In-engine parsed document store management
+        private bool _storeReady;
+        private int _nextId = 1; // 0 is reserved (unused)
+
         public JsSerializer() : this(new JsCore(), true) { }
 
         public JsSerializer(JsCore core, bool ownsCore)
@@ -24,6 +28,100 @@ namespace WelsonJS.Launcher
             _core = core;
             _ownsCore = ownsCore;
         }
+
+        // ---------------- Engine-backed document store ----------------
+
+        /// <summary>
+        /// Parses JSON once and stores it in the engine under a numeric id.
+        /// Returns the id which can be used for fast repeated extraction.
+        /// </summary>
+        public int Load(string json)
+        {
+            if (json == null) throw new ArgumentNullException("json");
+            EnsureStore();
+
+            int id = _nextId++;
+            // Create slot and parse
+            // Using Object.create(null) for a clean dictionary without prototype.
+            var sb = new StringBuilder();
+            sb.Append("(function(){var S=globalThis.__WJ_STORE;");
+            sb.Append("S[").Append(id.ToString(CultureInfo.InvariantCulture)).Append("]=JSON.parse(").Append(Q(json)).Append(");");
+            sb.Append("return '1';})()");
+            string r = _core.EvaluateToString(sb.ToString());
+            if (r != "1") throw new InvalidOperationException("Failed to load JSON into the engine store.");
+            return id;
+        }
+
+        /// <summary>
+        /// Removes a previously loaded document from the engine store.
+        /// After this, the id becomes invalid.
+        /// </summary>
+        public void Unload(int id)
+        {
+            EnsureStore();
+            string script = "(function(){var S=globalThis.__WJ_STORE; delete S[" + id.ToString(CultureInfo.InvariantCulture) + "]; return '1';})()";
+            _core.EvaluateToString(script);
+        }
+
+        /// <summary>
+        /// Replaces the stored JSON at a given id (parse once, reuse later).
+        /// </summary>
+        public void Reload(int id, string json)
+        {
+            if (json == null) throw new ArgumentNullException("json");
+            EnsureStore();
+            string script = "(function(){var S=globalThis.__WJ_STORE; S[" + id.ToString(CultureInfo.InvariantCulture) + "]=JSON.parse(" + Q(json) + "); return '1';})()";
+            _core.EvaluateToString(script);
+        }
+
+        /// <summary>
+        /// Stringifies the stored value identified by id (no reparse).
+        /// </summary>
+        public string ToJson(int id, int space)
+        {
+            EnsureStore();
+            space = Clamp(space, 0, 10);
+            string script = "(function(){var v=globalThis.__WJ_STORE[" + id.ToString(CultureInfo.InvariantCulture) + "]; return JSON.stringify(v,null," + space.ToString(CultureInfo.InvariantCulture) + ");})()";
+            return _core.EvaluateToString(script);
+        }
+
+        /// <summary>
+        /// Extracts from a stored document identified by id (no reparse).
+        /// Returns JSON of the selected value.
+        /// </summary>
+        public string ExtractFrom(int id, params object[] path)
+        {
+            EnsureStore();
+            if (path == null) path = new object[0];
+            string jsPath = BuildJsPath(path);
+
+            var sb = new StringBuilder();
+            sb.Append("(function(){var v=globalThis.__WJ_STORE[")
+              .Append(id.ToString(CultureInfo.InvariantCulture))
+              .Append("];var p=").Append(jsPath).Append(";");
+            sb.Append("for(var i=0;i<p.length;i++){var k=p[i];");
+            sb.Append("if(Array.isArray(v) && typeof k==='number'){ v=v[k]; }");
+            sb.Append("else { v=(v==null?null:v[k]); }}");
+            sb.Append("return JSON.stringify(v);})()");
+            return _core.EvaluateToString(sb.ToString());
+        }
+
+        // Initialize the global store only once per JsSerializer instance/context
+        private void EnsureStore()
+        {
+            if (_storeReady) return;
+            // Create a single global dictionary: globalThis.__WJ_STORE
+            // Object.create(null) prevents prototype pollution and accidental hits on built-ins.
+            string script =
+                "(function(){var g=globalThis||this;" +
+                "if(!g.__WJ_STORE){Object.defineProperty(g,'__WJ_STORE',{value:Object.create(null),writable:false,enumerable:false,configurable:false});}" +
+                "return '1';})()";
+            string r = _core.EvaluateToString(script);
+            _storeReady = (r == "1");
+            if (!_storeReady) throw new InvalidOperationException("Failed to initialize the engine-backed JSON store.");
+        }
+
+        // ---------------- Existing API (kept for compatibility) ----------------
 
         public bool IsValid(string json)
         {
@@ -55,8 +153,8 @@ namespace WelsonJS.Launcher
         }
 
         /// <summary>
-        /// Extracts a value by a simple path of property names (numeric segment as string = array index).
-        /// Returns the selected value as a JSON string.
+        /// Extracts by string-only path (kept for backward compatibility).
+        /// Internally forwards to the mixed-path overload.
         /// </summary>
         public string Extract(string json, params string[] path)
         {
@@ -67,9 +165,8 @@ namespace WelsonJS.Launcher
         }
 
         /// <summary>
-        /// Extracts by a mixed path. Segments can be strings (object keys) or integers (array indices).
-        /// Returns the selected value as a JSON string (e.g., a JS string returns with quotes).
-        /// Usage: Extract(json, "items", 0, "name")
+        /// Extracts by a mixed path directly from a JSON string (parses every call).
+        /// Prefer Load(...) + ExtractFrom(...) to avoid repeated parsing.
         /// </summary>
         public string Extract(string json, params object[] path)
         {
@@ -95,6 +192,8 @@ namespace WelsonJS.Launcher
             string script = "JSON.stringify((" + expr + "),null," + space.ToString(CultureInfo.InvariantCulture) + ")";
             return _core.EvaluateToString(script);
         }
+
+        // ---------------- Helpers ----------------
 
         private static int Clamp(int v, int min, int max)
         {

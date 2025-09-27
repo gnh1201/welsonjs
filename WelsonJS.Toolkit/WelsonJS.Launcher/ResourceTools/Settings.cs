@@ -79,7 +79,7 @@ namespace WelsonJS.Launcher.ResourceTools
                 finalConfig.Select(kv => new XElement(kv.Key, kv.Value))
             );
 
-            Server.ServeResource(context, xml.ToString(), "application/xml");
+            await Server.ServeResource(context, xml.ToString(), "application/xml");
         }
     }
 }

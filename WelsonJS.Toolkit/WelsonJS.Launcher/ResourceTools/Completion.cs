@@ -72,11 +72,11 @@ namespace WelsonJS.Launcher.ResourceTools
                     ))
                 );
 
-                Server.ServeResource(context, response.ToString(), "application/xml");
+                await Server.ServeResource(context, response.ToString(), "application/xml");
             }
             catch (Exception ex)
             {
-                Server.ServeResource(context, $"<error>Failed to try completion. {ex.Message}</error>", "application/xml", 500);
+                await Server.ServeResource(context, $"<error>Failed to try completion. {ex.Message}</error>", "application/xml", 500);
             }
         }
 
