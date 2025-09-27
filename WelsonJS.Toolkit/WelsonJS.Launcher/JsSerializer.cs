@@ -123,6 +123,8 @@ namespace WelsonJS.Launcher
                     case '\n': sb.Append(@"\n"); break;
                     case '\r': sb.Append(@"\r"); break;
                     case '\t': sb.Append(@"\t"); break;
+                    case '\u2028': sb.Append("\\u2028"); break;
+                    case '\u2029': sb.Append("\\u2029"); break;
                     default:
                         if (char.IsControl(ch))
                         {
