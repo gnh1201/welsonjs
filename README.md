@@ -10,6 +10,7 @@
 [![slideshare.net presentation](https://img.shields.io/badge/SlideShare-black?logo=slideshare)](https://www.slideshare.net/slideshow/welsonjs-javascript-framework-presentation-2024/276005486)
 [![YouTube promotion video](https://img.shields.io/badge/YouTube-red?logo=youtube)](https://youtu.be/JavH7Dms8-U)
 [![Discord chat](https://img.shields.io/discord/359930650330923008?logo=discord)](https://discord.gg/XKG5CjtXEj)
+[![Trustpilot](https://img.shields.io/badge/Trustpilot-00B67A?logo=trustpilot&logoColor=fff)](https://www.trustpilot.com/review/catswords.com)
 [![Open to work](https://img.shields.io/badge/%23-OPENTOWORK-green)](https://github.com/gnh1201/welsonjs/discussions/167)
 
 <img src="app/assets/img/logo.svg" height="32" alt=""/> WelsonJS - Build a Windows app on the Windows built-in JavaScript engine.
@@ -32,7 +33,7 @@ WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)*** + :h
 * <img src="https://ics.catswords.net/signpath_logo.png" height="32" alt=""/> Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org/)
 * <img src="https://ics.catswords.net/f1security_logo.png" height="32" alt=""/> [F1Security<sup>(에프원시큐리티)</sup>](https://f1security.co.kr/) provides [industry-leading](https://www.ksecurity.or.kr/kisis/subIndex/469.do) web security services.
 * <img src="https://ics.catswords.net/microsoft_logo.png" height="32" alt=""/> [Microsoft ISV Success Program](https://www.microsoft.com/en-us/isv/isv-success), Grow your business with powerful tools.
-* :zap: [Integrations](https://catswords-oss.rdbl.io/5719744820/8278298336) ([ScrapeOps](https://scrapeops.io?fpr=namhyeon75), [AviationStack](https://aviationstack.com?utm_source=FirstPromoter&utm_medium=Affiliate&fpr=namhyeon71), [Coupang](https://link.coupang.com/a/b7HV3V)...)
+* :zap: [Integrations (e.g., Aviation, Shopping)...](https://catswords-oss.rdbl.io/5719744820/8278298336)
 
 ## System Requirements
 * **Operating Systems**: Windows XP SP3 or later (Currently, Windows 11 24H2)
@@ -179,9 +180,11 @@ I am always open. Collaboration, opportunities, and community activities are all
 * [Join Catswords OSS on Microsoft Teams (teams.live.com)](https://teams.live.com/l/community/FEACHncAhq8ldnojAI)
 * [Join Catswords OSS #welsonjs on Discord (discord.gg)](https://discord.gg/XKG5CjtXEj)
 
+## Offline Distribution
+You may [request offline distribution](https://forms.gle/4WCnJmnFNDzubUmk7) if you are in a restricted environment, such as one without internet access or with specific security requirements.
+
 ## Special channels
 * [A paid consultation channel (m.expert.naver.com)](https://m.expert.naver.com/mobile/expert/product/detail?storeId=100051156&productId=100144540) is available for Korean<sup>(한국어)</sup> region.
-* [Join the private operations channel (forms.gle)](https://forms.gle/ZKAAaGTiGamksHoo8) is available for all regions.
 
 ## License
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs?ref=badge_large)
