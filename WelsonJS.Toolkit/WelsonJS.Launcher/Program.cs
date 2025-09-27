@@ -27,7 +27,11 @@ namespace WelsonJS.Launcher
 
             // load native libraries
             string appDataSubDirectory = "WelsonJS";
-            bool requireSigned = GetAppConfig("NativeRequireSigned").Equals("true");
+           bool requireSigned = string.Equals(
+               GetAppConfig("NativeRequireSigned"),
+               "true",
+               StringComparison.OrdinalIgnoreCase);
+
             NativeBootstrap.Init(
                 dllNames: new[] { "ChakraCore.dll" },
                 appDataSubdirectory: appDataSubDirectory,
