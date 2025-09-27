@@ -18,16 +18,19 @@ namespace WelsonJS.Launcher.ResourceTools
     {
         private readonly ResourceServer Server;
         private readonly HttpClient _httpClient;
+        private readonly ICompatibleLogger _logger;
         private const string Prefix = "dns-query/";
         private string DnsServer;
         private const int DnsPort = 53;
         private const int Timeout = 5000;
         private static readonly Random _random = new Random();
 
-        public DnsQuery(ResourceServer server, HttpClient httpClient)
+        public DnsQuery(ResourceServer server, HttpClient httpClient, ICompatibleLogger logger)
         {
             Server = server;
+
             _httpClient = httpClient;
+            _logger = logger;
 
             DnsServer = Program.GetAppConfig("DnsServerAddress");
         }

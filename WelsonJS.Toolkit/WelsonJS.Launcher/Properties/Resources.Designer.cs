@@ -287,6 +287,15 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
+        ///   false과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string NativeRequireSigned {
+            get {
+                return ResourceManager.GetString("NativeRequireSigned", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   https://github.com/gnh1201/welsonjs과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string RepositoryUrl {

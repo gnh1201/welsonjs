@@ -88,6 +88,10 @@
   <ItemGroup>
     <Compile Include="ICompatibleLogger.cs" />
     <Compile Include="IResourceTool.cs" />
+    <Compile Include="JsCore.cs" />
+    <Compile Include="JsNative.cs" />
+    <Compile Include="JsSerializer.cs" />
+    <Compile Include="NativeBootstrap.cs" />
     <Compile Include="ResourceTools\IpQuery.cs" />
     <Compile Include="ResourceTools\Settings.cs" />
     <Compile Include="ResourceTools\Completion.cs" />

@@ -10,8 +10,8 @@ namespace WelsonJS.Launcher
 {
     public interface ICompatibleLogger
     {
-        void Info(string message);
-        void Warn(string message);
-        void Error(string message);
+        void Info(params object[] args);
+        void Warn(params object[] args);
+        void Error(params object[] args);
     }
 }

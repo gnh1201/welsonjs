@@ -22,7 +22,22 @@ namespace WelsonJS.Launcher
 
         static Program()
         {
+            // set up logger
             _logger = new TraceLogger();
+
+            // load native libraries
+            string appDataSubDirectory = "WelsonJS";
+           bool requireSigned = string.Equals(
+               GetAppConfig("NativeRequireSigned"),
+               "true",
+               StringComparison.OrdinalIgnoreCase);
+
+            NativeBootstrap.Init(
+                dllNames: new[] { "ChakraCore.dll" },
+                appDataSubdirectory: appDataSubDirectory,
+                logger: _logger,
+                requireSigned: requireSigned
+            );
         }
 
         [STAThread]
