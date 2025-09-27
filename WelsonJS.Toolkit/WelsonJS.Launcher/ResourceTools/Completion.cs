@@ -22,13 +22,16 @@ namespace WelsonJS.Launcher.ResourceTools
     {
         private readonly ResourceServer Server;
         private readonly HttpClient _httpClient;
+        private readonly ICompatibleLogger _logger;
         private const string Prefix = "completion/";
         private readonly ConcurrentBag<string> DiscoveredExecutables = new ConcurrentBag<string>();
 
-        public Completion(ResourceServer server, HttpClient httpClient)
+        public Completion(ResourceServer server, HttpClient httpClient, ICompatibleLogger logger)
         {
             Server = server;
+
             _httpClient = httpClient;
+            _logger = logger;
 
             Task.Run(async () => await SafeDiscoverAsync(DiscoverFromInstalledSoftware));
             Task.Run(async () => await SafeDiscoverAsync(DiscoverFromPathVariable));
@@ -160,7 +163,7 @@ namespace WelsonJS.Launcher.ResourceTools
         {
             if (!Directory.Exists(path))
             {
-                Trace.TraceInformation("Directory does not exist: {0}", path);
+                _logger.Info("Directory does not exist: {0}", path);
                 return;
             }
 
@@ -175,7 +178,7 @@ namespace WelsonJS.Launcher.ResourceTools
             }
             catch (Exception ex)
             {
-                Trace.TraceInformation("Error enumerating executables in '{0}': {1}", path, ex.Message);
+                _logger.Info("Error enumerating executables in '{0}': {1}", path, ex.Message);
             }
         }
 
@@ -195,7 +198,7 @@ namespace WelsonJS.Launcher.ResourceTools
             }
             catch (Exception ex)
             {
-                Trace.TraceError($"Discovery failed: {ex.Message}");
+                _logger.Error($"Discovery failed: {ex.Message}");
             }
         }
     }

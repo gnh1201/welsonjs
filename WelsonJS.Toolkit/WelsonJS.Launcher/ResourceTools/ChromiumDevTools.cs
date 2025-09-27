@@ -19,13 +19,16 @@ namespace WelsonJS.Launcher.ResourceTools
     {
         private readonly ResourceServer Server;
         private readonly HttpClient _httpClient;
+        private readonly ICompatibleLogger _logger;
         private readonly WebSocketManager _wsManager = new WebSocketManager();
         private const string Prefix = "devtools/";
 
-        public ChromiumDevTools(ResourceServer server, HttpClient httpClient)
+        public ChromiumDevTools(ResourceServer server, HttpClient httpClient, ICompatibleLogger logger)
         {
             Server = server;
+
             _httpClient = httpClient;
+            _logger = logger;
         }
 
         public bool CanHandle(string path)

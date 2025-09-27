@@ -19,14 +19,17 @@ namespace WelsonJS.Launcher.ResourceTools
     {
         private readonly ResourceServer Server;
         private readonly HttpClient _httpClient;
+        private readonly ICompatibleLogger _logger;
         private const string Prefix = "tfa/";
         private const string Base32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
         private static readonly int[] ValidKeyCharLengths = new[] { 16, 32 };
 
-        public TwoFactorAuth(ResourceServer server, HttpClient httpClient)
+        public TwoFactorAuth(ResourceServer server, HttpClient httpClient, ICompatibleLogger logger)
         {
             Server = server;
+
             _httpClient = httpClient;
+            _logger = logger;
         }
 
         public bool CanHandle(string path)

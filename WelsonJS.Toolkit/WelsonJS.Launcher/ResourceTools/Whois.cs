@@ -15,12 +15,15 @@ namespace WelsonJS.Launcher.ResourceTools
     {
         private readonly ResourceServer Server;
         private readonly HttpClient _httpClient;
+        private readonly ICompatibleLogger _logger;
         private const string Prefix = "whois/";
 
-        public Whois(ResourceServer server, HttpClient httpClient)
+        public Whois(ResourceServer server, HttpClient httpClient, ICompatibleLogger logger)
         {
             Server = server;
+
             _httpClient = httpClient;
+            _logger = logger;
         }
 
         public bool CanHandle(string path)

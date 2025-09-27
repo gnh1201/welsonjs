@@ -60,13 +60,13 @@ namespace WelsonJS.Launcher
             }, TaskScheduler.Default);
 
             // Add resource tools
-            _tools.Add(new ResourceTools.Completion(this, _httpClient));
-            _tools.Add(new ResourceTools.Settings(this, _httpClient));
-            _tools.Add(new ResourceTools.ChromiumDevTools(this, _httpClient));
-            _tools.Add(new ResourceTools.DnsQuery(this, _httpClient));
-            _tools.Add(new ResourceTools.IpQuery(this, _httpClient));
-            _tools.Add(new ResourceTools.TwoFactorAuth(this, _httpClient));
-            _tools.Add(new ResourceTools.Whois(this, _httpClient));
+            _tools.Add(new ResourceTools.Completion(this, _httpClient, _logger));
+            _tools.Add(new ResourceTools.Settings(this, _httpClient, _logger));
+            _tools.Add(new ResourceTools.ChromiumDevTools(this, _httpClient, _logger));
+            _tools.Add(new ResourceTools.DnsQuery(this, _httpClient, _logger));
+            _tools.Add(new ResourceTools.IpQuery(this, _httpClient, _logger));
+            _tools.Add(new ResourceTools.TwoFactorAuth(this, _httpClient, _logger));
+            _tools.Add(new ResourceTools.Whois(this, _httpClient, _logger));
 
             // Register the prefix
             _listener.Prefixes.Add(prefix);

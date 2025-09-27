@@ -6,7 +6,9 @@
 // We use the ICompatibleLogger interface to maintain a BCL-first style.
 // This allows for later replacement with logging libraries such as ILogger or Log4Net.
 // 
+using System;
 using System.Diagnostics;
+using System.Linq;
 
 namespace WelsonJS.Launcher
 {
@@ -21,7 +23,7 @@ namespace WelsonJS.Launcher
                 _logFileName = (typeof(TraceLogger).Namespace ?? "WelsonJS.Launcher") + ".log";
                 Trace.Listeners.Add(new TextWriterTraceListener(_logFileName));
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 // Fallback when the process cannot write to the working directory
                 Trace.Listeners.Add(new ConsoleTraceListener());
@@ -30,8 +32,27 @@ namespace WelsonJS.Launcher
             Trace.AutoFlush = true;
         }
 
-        public void Info(string message) => Trace.TraceInformation(message);
-        public void Warn(string message) => Trace.TraceWarning(message);
-        public void Error(string message) => Trace.TraceError(message);
+        public void Info(params object[] args) => Trace.TraceInformation(Format(args));
+        public void Warn(params object[] args) => Trace.TraceWarning(Format(args));
+        public void Error(params object[] args) => Trace.TraceError(Format(args));
+
+        private static string Format(object[] args)
+        {
+            if (args == null || args.Length == 0) return string.Empty;
+
+            if (args.Length == 1)
+                return args[0]?.ToString() ?? string.Empty;
+
+            string format = args[0]?.ToString() ?? string.Empty;
+            try
+            {
+                return string.Format(format, args.Skip(1).ToArray());
+            }
+            catch
+            {
+                // In case of mismatched format placeholders
+                return string.Join(" ", args);
+            }
+        }
     }
 }
