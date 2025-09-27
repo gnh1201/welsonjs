@@ -67,6 +67,7 @@ namespace WelsonJS.Launcher
             _tools.Add(new ResourceTools.IpQuery(this, _httpClient, _logger));
             _tools.Add(new ResourceTools.TwoFactorAuth(this, _httpClient, _logger));
             _tools.Add(new ResourceTools.Whois(this, _httpClient, _logger));
+            _tools.Add(new ResourceTools.ImageColorPicker(this, _httpClient, _logger));
 
             // Register the prefix
             _listener.Prefixes.Add(prefix);
@@ -132,14 +133,14 @@ namespace WelsonJS.Launcher
             // Serve from a resource name
             if (String.IsNullOrEmpty(path))
             {
-                ServeResource(context, GetResource(_resourceName), "text/html");
+                await ServeResource(context, GetResource(_resourceName), "text/html");
                 return;
             }
 
             // Serve the favicon.ico file
             if ("favicon.ico".Equals(path, StringComparison.OrdinalIgnoreCase))
             {
-                ServeResource(context, GetResource("favicon"), "image/x-icon");
+                await ServeResource(context, GetResource("favicon"), "image/x-icon");
                 return;
             }
 
@@ -157,7 +158,7 @@ namespace WelsonJS.Launcher
             if (await ServeBlob(context, path)) return;
 
             // Fallback to serve from a resource name
-            ServeResource(context, GetResource(_resourceName), "text/html");
+            await ServeResource(context, GetResource(_resourceName), "text/html");
         }
 
         private async Task<bool> ServeBlob(HttpListenerContext context, string path, string prefix = null)
@@ -188,7 +189,7 @@ namespace WelsonJS.Launcher
                     data = await response.Content.ReadAsByteArrayAsync();
                     mimeType = response.Content.Headers.ContentType?.MediaType ?? _defaultMimeType;
 
-                    ServeResource(context, data, mimeType);
+                    await ServeResource(context, data, mimeType);
                     _ = TrySaveCachedBlob(path, data, mimeType);
 
                     return true;
@@ -211,7 +212,7 @@ namespace WelsonJS.Launcher
                             mimeType = _defaultMimeType;
                         }
 
-                        ServeResource(context, data, mimeType);
+                        await ServeResource(context, data, mimeType);
                         return true;
                     }
                 }
@@ -345,12 +346,12 @@ namespace WelsonJS.Launcher
             }
         }
 
-        public void ServeResource(HttpListenerContext context)
+        public async Task ServeResource(HttpListenerContext context)
         {
-            ServeResource(context, "<error>Not Found</error>", "application/xml", 404);
+            await ServeResource(context, "<error>Not Found</error>", "application/xml", 404);
         }
 
-        public void ServeResource(HttpListenerContext context, byte[] data, string mimeType = "text/html", int statusCode = 200)
+        public async Task ServeResource(HttpListenerContext context, byte[] data, string mimeType = "text/html", int statusCode = 200)
         {
             string xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
@@ -364,13 +365,10 @@ namespace WelsonJS.Launcher
             context.Response.StatusCode = statusCode;
             context.Response.ContentType = mimeType;
             context.Response.ContentLength64 = data.Length;
-            using (Stream outputStream = context.Response.OutputStream)
-            {
-                outputStream.Write(data, 0, data.Length);
-            }
+            await context.Response.OutputStream.WriteAsync(data, 0, data.Length);
         }
 
-        public void ServeResource(HttpListenerContext context, string data, string mimeType = "text/html", int statusCode = 200)
+        public async Task ServeResource(HttpListenerContext context, string data, string mimeType = "text/html", int statusCode = 200)
         {
             string xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
@@ -385,7 +383,7 @@ namespace WelsonJS.Launcher
                 data = xmlHeader + "\r\n" + data;
             }
 
-            ServeResource(context, Encoding.UTF8.GetBytes(data), mimeType, statusCode);
+            await ServeResource(context, Encoding.UTF8.GetBytes(data), mimeType, statusCode);
         }
 
         private byte[] GetResource(string resourceName)

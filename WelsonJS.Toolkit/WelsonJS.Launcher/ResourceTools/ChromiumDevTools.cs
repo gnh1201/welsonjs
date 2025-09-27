@@ -47,11 +47,11 @@ namespace WelsonJS.Launcher.ResourceTools
                     string baseUrl = Program.GetAppConfig("ChromiumDevToolsPrefix"); // e.g., http://localhost:9222/
                     string url = baseUrl.TrimEnd('/') + "/" + endpoint;
                     string data = await _httpClient.GetStringAsync(url);
-                    Server.ServeResource(context, data, "application/json");
+                    await Server.ServeResource(context, data, "application/json");
                 }
                 catch (Exception ex)
                 {
-                    Server.ServeResource(context, $"<error>Failed to process DevTools request. {EscapeXml(ex.Message)}</error>", "application/xml", 500);
+                    await Server.ServeResource(context, $"<error>Failed to process DevTools request. {EscapeXml(ex.Message)}</error>", "application/xml", 500);
                 }
                 return;
             }
@@ -62,7 +62,7 @@ namespace WelsonJS.Launcher.ResourceTools
                 string baseUrl = Program.GetAppConfig("ChromiumDevToolsPrefix");
                 if (!Uri.TryCreate(baseUrl, UriKind.Absolute, out Uri uri))
                 {
-                    Server.ServeResource(context, "<error>Invalid ChromiumDevToolsPrefix</error>", "application/xml", 500);
+                    await Server.ServeResource(context, "<error>Invalid ChromiumDevToolsPrefix</error>", "application/xml", 500);
                     return;
                 }
 
@@ -97,17 +97,17 @@ namespace WelsonJS.Launcher.ResourceTools
                 try
                 {
                     string response = await _wsManager.SendAndReceiveAsync(hostname, port, wsPath, postBody, timeout);
-                    Server.ServeResource(context, response, "application/json", 200);
+                    await Server.ServeResource(context, response, "application/json", 200);
                 }
                 catch (Exception ex)
                 {
                     _wsManager.Remove(hostname, port, wsPath);
-                    Server.ServeResource(context, $"<error>WebSocket communication error: {EscapeXml(ex.Message)}</error>", "application/xml", 500);
+                    await Server.ServeResource(context, $"<error>WebSocket communication error: {EscapeXml(ex.Message)}</error>", "application/xml", 500);
                 }
                 return;
             }
 
-            Server.ServeResource(context, "<error>Invalid DevTools endpoint</error>", "application/xml", 404);
+            await Server.ServeResource(context, "<error>Invalid DevTools endpoint</error>", "application/xml", 404);
         }
 
         private string EscapeXml(string text)

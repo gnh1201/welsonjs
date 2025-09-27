@@ -37,7 +37,7 @@ namespace WelsonJS.Launcher.ResourceTools
 
             if (string.IsNullOrWhiteSpace(query) || query.Length > 255)
             {
-                Server.ServeResource(context, "<error>Invalid query parameter</error>", "application/xml", 400);
+                await Server.ServeResource(context, "<error>Invalid query parameter</error>", "application/xml", 400);
                 return;
             }
 
@@ -57,11 +57,11 @@ namespace WelsonJS.Launcher.ResourceTools
                 HttpResponseMessage response = await _httpClient.SendAsync(request);
                 string responseBody = await response.Content.ReadAsStringAsync();
 
-                Server.ServeResource(context, responseBody, "text/plain", (int)response.StatusCode);
+                await Server.ServeResource(context, responseBody, "text/plain", (int)response.StatusCode);
             }
             catch (Exception ex)
             {
-                Server.ServeResource(context, $"<error>Failed to process WHOIS request. {ex.Message}</error>", "application/xml", 500);
+                await Server.ServeResource(context, $"<error>Failed to process WHOIS request. {ex.Message}</error>", "application/xml", 500);
             }
         }
     }
