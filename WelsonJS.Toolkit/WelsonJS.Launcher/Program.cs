@@ -15,7 +15,6 @@ namespace WelsonJS.Launcher
 {
     internal static class Program
     {
-        private const string _appDataSubDirectory = "WelsonJS";
         private static readonly ICompatibleLogger _logger;
 
         public static Mutex _mutex;
@@ -27,9 +26,14 @@ namespace WelsonJS.Launcher
             _logger = new TraceLogger();
 
             // load native libraries
-            NativeBootstrap.Init(new string[] {
-                "ChakraCore.dll"
-            }, _appDataSubDirectory, _logger);
+            string appDataSubDirectory = "WelsonJS";
+            bool requireSigned = GetAppConfig("NativeRequireSigned").Equals("true");
+            NativeBootstrap.Init(
+                dllNames: new[] { "ChakraCore.dll" },
+                appDataSubdirectory: appDataSubDirectory,
+                logger: _logger,
+                requireSigned: requireSigned
+            );
         }
 
         [STAThread]

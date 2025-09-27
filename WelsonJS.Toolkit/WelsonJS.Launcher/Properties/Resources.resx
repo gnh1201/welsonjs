@@ -208,4 +208,7 @@
   <data name="ChromiumDevToolsTimeout" xml:space="preserve">
     <value>5</value>
   </data>
+  <data name="NativeRequireSigned" xml:space="preserve">
+    <value>false</value>
+  </data>
 </root>
