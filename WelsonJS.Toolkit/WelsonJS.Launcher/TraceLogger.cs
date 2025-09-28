@@ -1,34 +1,67 @@
-﻿// TraceLogger.cs (WelsonJS.Launcher)
+﻿// TraceLogger.cs
 // SPDX-License-Identifier: GPL-3.0-or-later
-// SPDX-FileCopyrightText: 2025 Namhyeon Go <gnh1201@catswords.re.kr>, Catswords OSS and WelsonJS Contributors
+// SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
 // https://github.com/gnh1201/welsonjs
-// 
-// We use the ICompatibleLogger interface to maintain a BCL-first style.
-// This allows for later replacement with logging libraries such as ILogger or Log4Net.
 // 
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 
 namespace WelsonJS.Launcher
 {
+    /// <summary>
+    /// File-based trace logger.
+    /// Writes to %APPDATA%\WelsonJS\Logs\<Namespace>.<random-6>.pid<####>.log
+    /// Falls back to current directory if %APPDATA%\WelsonJS\Logs cannot be created.
+    /// </summary>
     public class TraceLogger : ICompatibleLogger
     {
-        private static readonly string _logFileName;
+        private static readonly string _logFilePath;
 
         static TraceLogger()
         {
             try
             {
-                _logFileName = (typeof(TraceLogger).Namespace ?? "WelsonJS.Launcher") + ".log";
-                Trace.Listeners.Add(new TextWriterTraceListener(_logFileName));
+                string ns = typeof(TraceLogger).Namespace ?? "WelsonJS.Launcher";
+                string suffix = GenerateRandomSuffix(6);
+                int pid = Process.GetCurrentProcess().Id;
+
+                // Try %APPDATA%\WelsonJS\Logs
+                string baseDir;
+                try
+                {
+                    string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                    baseDir = Path.Combine(appData, "WelsonJS", "Logs");
+                    Directory.CreateDirectory(baseDir);
+                }
+                catch
+                {
+                    // Fallback: current directory
+                    baseDir = AppDomain.CurrentDomain.BaseDirectory;
+                }
+
+                _logFilePath = Path.Combine(baseDir, $"{ns}.{suffix}.pid{pid}.log");
+
+                var fs = new FileStream(_logFilePath, FileMode.Append, FileAccess.Write, FileShare.Read);
+                var writer = new StreamWriter(fs) { AutoFlush = true };
+
+                if (!Trace.Listeners.OfType<TextWriterTraceListener>().Any())
+                {
+                    Trace.Listeners.Add(new TextWriterTraceListener(writer)
+                    {
+                        Name = "FileTraceListener",
+                        TraceOutputOptions = TraceOptions.DateTime
+                    });
+                }
             }
             catch (Exception ex)
             {
-                // Fallback when the process cannot write to the working directory
                 Trace.Listeners.Add(new ConsoleTraceListener());
-                Trace.TraceWarning($"TraceLogger: failed to initialize file listener '{_logFileName}'. Falling back to ConsoleTraceListener. Error: {ex.Message}");
+                Trace.TraceWarning($"TraceLogger: failed to open log file. Using console. Error: {ex.Message}");
             }
+
             Trace.AutoFlush = true;
         }
 
@@ -39,20 +72,27 @@ namespace WelsonJS.Launcher
         private static string Format(object[] args)
         {
             if (args == null || args.Length == 0) return string.Empty;
+            if (args.Length == 1) return args[0]?.ToString() ?? string.Empty;
 
-            if (args.Length == 1)
-                return args[0]?.ToString() ?? string.Empty;
+            string fmt = args[0]?.ToString() ?? string.Empty;
+            try { return string.Format(fmt, args.Skip(1).ToArray()); }
+            catch { return string.Join(" ", args.Select(a => a?.ToString() ?? "")); }
+        }
 
-            string format = args[0]?.ToString() ?? string.Empty;
-            try
+        private static string GenerateRandomSuffix(int length)
+        {
+            char[] buf = new char[length];
+            byte[] rnd = new byte[length];
+
+            using (var rng = RandomNumberGenerator.Create())
             {
-                return string.Format(format, args.Skip(1).ToArray());
+                rng.GetBytes(rnd);
             }
-            catch
-            {
-                // In case of mismatched format placeholders
-                return string.Join(" ", args);
-            }
+
+            for (int i = 0; i < length; i++)
+                buf[i] = (char)('a' + (rnd[i] % 26));
+
+            return new string(buf);
         }
     }
 }
