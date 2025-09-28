@@ -13,7 +13,7 @@ namespace WelsonJS.Launcher
 {
     /// <summary>
     /// File-based trace logger.
-    /// Writes to %APPDATA%\WelsonJS\Logs\<Namespace>.<random-6>.pid<####>.log
+    /// Writes to %APPDATA%\WelsonJS\Logs\<Namespace>.<random-6>.<PID>.log
     /// Falls back to current directory if %APPDATA%\WelsonJS\Logs cannot be created.
     /// </summary>
     public class TraceLogger : ICompatibleLogger
@@ -42,13 +42,13 @@ namespace WelsonJS.Launcher
                     baseDir = AppDomain.CurrentDomain.BaseDirectory;
                 }
 
-                _logFilePath = Path.Combine(baseDir, $"{ns}.{suffix}.pid{pid}.log");
-
-                var fs = new FileStream(_logFilePath, FileMode.Append, FileAccess.Write, FileShare.Read);
-                var writer = new StreamWriter(fs) { AutoFlush = true };
+                _logFilePath = Path.Combine(baseDir, $"{ns}.{suffix}.{pid}.log");
 
                 if (!Trace.Listeners.OfType<TextWriterTraceListener>().Any())
                 {
+                    var fs = new FileStream(_logFilePath, FileMode.Append, FileAccess.Write, FileShare.Read);
+                    var writer = new StreamWriter(fs) { AutoFlush = true };
+
                     Trace.Listeners.Add(new TextWriterTraceListener(writer)
                     {
                         Name = "FileTraceListener",
@@ -71,12 +71,19 @@ namespace WelsonJS.Launcher
 
         private static string Format(object[] args)
         {
-            if (args == null || args.Length == 0) return string.Empty;
-            if (args.Length == 1) return args[0]?.ToString() ?? string.Empty;
+            if (args == null || args.Length == 0)
+                return string.Empty;
+
+            if (args.Length == 1)
+                return args[0]?.ToString() ?? string.Empty;
 
             string fmt = args[0]?.ToString() ?? string.Empty;
-            try { return string.Format(fmt, args.Skip(1).ToArray()); }
-            catch { return string.Join(" ", args.Select(a => a?.ToString() ?? "")); }
+            try {
+                return string.Format(fmt, args.Skip(1).ToArray());
+            }
+            catch {
+                return string.Join(" ", args.Select(a => a?.ToString() ?? ""));
+            }
         }
 
         private static string GenerateRandomSuffix(int length)
