@@ -188,8 +188,12 @@ namespace WelsonJS.Launcher
             string userDataDir = Path.Combine(GetAppDataPath(), "EdgeUserProfile");
             string remoteAllowOrigins = $"{resourceServerUri.Scheme}://{resourceServerUri.Host}:{resourceServerUri.Port}";
             int remoteDebuggingPort = devToolsUri.Port;
+            bool isAppMode = string.Equals(
+                GetAppConfig("ChromiumAppMode"),
+                "true",
+                StringComparison.OrdinalIgnoreCase);
             string[] arguments = {
-                $"\"{url}\"",
+                isAppMode ? $"\"--app={url}\"" : $"\"{url}\"",
                 $"--remote-debugging-port={remoteDebuggingPort}",
                 $"--remote-allow-origins={remoteAllowOrigins}",  // for security reason
                 $"--user-data-dir=\"{userDataDir}\""
@@ -197,7 +201,7 @@ namespace WelsonJS.Launcher
 
             Process.Start(new ProcessStartInfo
             {
-                FileName = Program.GetAppConfig("ChromiumFileName"),
+                FileName = Program.GetAppConfig("ChromiumExecutablePath"),
                 Arguments = string.Join(" ", arguments),
                 UseShellExecute = true
             });
