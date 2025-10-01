@@ -202,7 +202,7 @@
   <data name="ResourceServerAutoStart" xml:space="preserve">
     <value>true</value>
   </data>
-  <data name="ChromiumFileName" xml:space="preserve">
+  <data name="ChromiumExecutablePath" xml:space="preserve">
     <value>msedge.exe</value>
   </data>
   <data name="ChromiumDevToolsTimeout" xml:space="preserve">
@@ -210,5 +210,8 @@
   </data>
   <data name="NativeRequireSigned" xml:space="preserve">
     <value>false</value>
+  </data>
+  <data name="ChromiumAppMode" xml:space="preserve">
+    <value>true</value>
   </data>
 </root>

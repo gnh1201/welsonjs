@@ -106,6 +106,15 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
+        ///   true과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string ChromiumAppMode {
+            get {
+                return ResourceManager.GetString("ChromiumAppMode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   http://localhost:9222/과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string ChromiumDevToolsPrefix {
@@ -126,9 +135,9 @@ namespace WelsonJS.Launcher.Properties {
         /// <summary>
         ///   msedge.exe과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
-        internal static string ChromiumFileName {
+        internal static string ChromiumExecutablePath {
             get {
-                return ResourceManager.GetString("ChromiumFileName", resourceCulture);
+                return ResourceManager.GetString("ChromiumExecutablePath", resourceCulture);
             }
         }
         
