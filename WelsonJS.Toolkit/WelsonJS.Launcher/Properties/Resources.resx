@@ -190,10 +190,10 @@
   <data name="HttpClientTimeout" xml:space="preserve">
     <value>90</value>
   </data>
-  <data name="CriminalIpApiKey" xml:space="preserve">
+  <data name="IpQueryApiKey" xml:space="preserve">
     <value />
   </data>
-  <data name="CriminalIpApiPrefix" xml:space="preserve">
+  <data name="IpQueryApiPrefix" xml:space="preserve">
     <value>https://api.criminalip.io/v1/</value>
   </data>
   <data name="DateTimeFormat" xml:space="preserve">
@@ -213,5 +213,11 @@
   </data>
   <data name="ChromiumAppMode" xml:space="preserve">
     <value>true</value>
+  </data>
+  <data name="IpQueryApiKey2" xml:space="preserve">
+    <value />
+  </data>
+  <data name="IpQueryApiPrefix2" xml:space="preserve">
+    <value>https://api.abuseipdb.com/api/v2/</value>
   </data>
 </root>

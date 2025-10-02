@@ -37,6 +37,7 @@ namespace WelsonJS.Launcher.ResourceTools
 
             if (string.IsNullOrWhiteSpace(query) || query.Length > 255)
             {
+                _logger.Error("Invalid WHOIS query parameter.");
                 await Server.ServeResource(context, "<error>Invalid query parameter</error>", "application/xml", 400);
                 return;
             }
@@ -61,6 +62,7 @@ namespace WelsonJS.Launcher.ResourceTools
             }
             catch (Exception ex)
             {
+                _logger.Error("Error processing WHOIS request: " + ex.Message);
                 await Server.ServeResource(context, $"<error>Failed to process WHOIS request. {ex.Message}</error>", "application/xml", 500);
             }
         }

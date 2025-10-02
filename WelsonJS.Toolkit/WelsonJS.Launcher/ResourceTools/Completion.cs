@@ -6,7 +6,6 @@
 using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Linq;
@@ -45,8 +44,6 @@ namespace WelsonJS.Launcher.ResourceTools
 
         public async Task HandleAsync(HttpListenerContext context, string path)
         {
-            await Task.Delay(0);
-
             string word = path.Substring(Prefix.Length);
 
             try
@@ -121,10 +118,7 @@ namespace WelsonJS.Launcher.ResourceTools
                 .Select(p => p.Trim())
                 .Where(p => !string.IsNullOrEmpty(p));
 
-            foreach (string path in paths)
-            {
-                SearchAllExecutables(path, SearchOption.TopDirectoryOnly);
-            }
+            paths.ToList().ForEach(x => SearchAllExecutables(x, SearchOption.TopDirectoryOnly));
         }
 
         private void DiscoverFromProgramDirectories()
@@ -153,10 +147,7 @@ namespace WelsonJS.Launcher.ResourceTools
                 Path.Combine(userProfile, "scoop", "apps")
             };
 
-            foreach (string path in paths)
-            {
-                SearchAllExecutables(path);
-            }
+            paths.ToList().ForEach(x => SearchAllExecutables(x));
         }
 
         private void SearchAllExecutables(string path, SearchOption searchOption = SearchOption.AllDirectories, int maxFiles = 1000)
@@ -184,10 +175,7 @@ namespace WelsonJS.Launcher.ResourceTools
 
         private void AddDiscoveredExecutables(List<string> executableFiles)
         {
-            foreach (var executableFile in executableFiles)
-            {
-                DiscoveredExecutables.Add(executableFile);
-            }
+            executableFiles.ForEach(x => DiscoveredExecutables.Add(x));
         }
 
         private async Task SafeDiscoverAsync(Action discoveryMethod)

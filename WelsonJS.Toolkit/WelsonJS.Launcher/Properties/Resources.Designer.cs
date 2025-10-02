@@ -151,24 +151,6 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
-        ///   과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string CriminalIpApiKey {
-            get {
-                return ResourceManager.GetString("CriminalIpApiKey", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   https://api.criminalip.io/v1/과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string CriminalIpApiPrefix {
-            get {
-                return ResourceManager.GetString("CriminalIpApiPrefix", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   yyyy-MM-dd HH:mm:ss과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string DateTimeFormat {
@@ -292,6 +274,42 @@ namespace WelsonJS.Launcher.Properties {
             get {
                 object obj = ResourceManager.GetObject("icon_zip_128", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string IpQueryApiKey {
+            get {
+                return ResourceManager.GetString("IpQueryApiKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string IpQueryApiKey2 {
+            get {
+                return ResourceManager.GetString("IpQueryApiKey2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   https://api.criminalip.io/v1/과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string IpQueryApiPrefix {
+            get {
+                return ResourceManager.GetString("IpQueryApiPrefix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   https://api.abuseipdb.com/api/v2/과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string IpQueryApiPrefix2 {
+            get {
+                return ResourceManager.GetString("IpQueryApiPrefix2", resourceCulture);
             }
         }
         
