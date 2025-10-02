@@ -94,7 +94,7 @@ namespace WelsonJS.Launcher.ResourceTools
 
             if (string.IsNullOrWhiteSpace(prefix) || string.IsNullOrWhiteSpace(key))
             {
-                node.Add(new XAttribute("status", 500));
+                node.Add(new XAttribute("status", 503));
                 node.Add(new XElement("error", "Missing configuration for " + provider));
                 return node;
             }
