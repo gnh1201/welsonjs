@@ -589,59 +589,62 @@
                         appendTextToEditor("\n// IP address is required.");
                         return;
                     }
-
-                    const apiKey = settingsRef.current.CriminalIpApiKey;
-                    if (!apiKey || apiKey.trim() === '') {
-                        appendTextToEditor("\n// Criminal IP API key is not set.");
-                        return;
-                    }
-
-                    const apiPrefix = settingsRef.current.CriminalIpApiPrefix;
                     const ip = encodeURIComponent(hostname.trim());
 
-                    axios.get(`/ip-query/${hostname}`).then(response => {
-                        if (!response) {
-                            appendTextToEditor("\n// No data returned from Criminal IP.");
+                    axios.get(`/ip-query/${hostname}`).then(res => {
+                        if (!res || !res.data) {
+                            appendTextToEditor("\n// No data returned from server.");
                             return;
                         }
 
-                        const lines = [];
-                        lines.push(`/*\nCriminal IP Report: ${hostname}\n`);
-                        
-                        // network port data
-                        lines.push(`## Network ports:`);
-                        if (response.port.data.length == 0) {
-                            lines.push(`* No open ports found.`);
-                        } else {
-                            response.port.data.forEach(x => {
-                                lines.push(`### ${x.open_port_no}/${x.socket}`);
-                                lines.push(`* Application: ${x.app_name} ${x.app_version}`);
-                                lines.push(`* Discovered hostnames: ${x.dns_names}`);
-                                lines.push(`* Confirmed Time: ${x.confirmed_time}`);
-                            });
+                        // Parse XML and keep attributes (provider, status)
+                        const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: "@_" });
+                        const parsed = parser.parse(res.data);
+
+                        // Expected XML:
+                        // <result target="...">
+                        //   <response provider="criminalip" status="200">
+                        //     <text>{ "...raw json..." }</text>
+                        //   </response>
+                        //   <response provider="abuseipdb" status="200">
+                        //     <text>{ "...raw json..." }</text>
+                        //   </response>
+                        // </result>
+
+                        // Normalize to an array of <response> nodes
+                        const responsesNode = parsed?.result?.response;
+                        const responses = Array.isArray(responsesNode)
+                            ? responsesNode
+                            : (responsesNode ? [responsesNode] : []);
+
+                        if (responses.length === 0) {
+                            appendTextToEditor("\n// No <response> nodes found.");
+                            return;
                         }
 
-                        // vulnerability data
-                        lines.push(`## Vulnerabilities:`);
-                        if (response.vulnerability.data.length == 0) {
-                            lines.push(`* No vulnerabilities found.`);
-                        } else {
-                            response.vulnerability.data.forEach(x => {
-                                lines.push(`### ${x.cve_id}`);
-                                lines.push(`* ${x.cve_description}`);
-                                lines.push(`* CVSSV2 Score: ${x.cvssv2_score}`);
-                                lines.push(`* CVSSV3 Score: ${x.cvssv3_score}`);
-                            });
+                        // Extract each <response><text> content and print
+                        let out = "\n// --- IP Query Results ---";
+                        for (const r of responses) {
+                            const provider = r?.["@_provider"] || "unknown";
+                            const status = r?.["@_status"] || "n/a";
+
+                            // Fast-XML-Parser usually makes <text> a string, but be safe:
+                            let txt = r?.text;
+                            if (txt && typeof txt === "object") {
+                                // If parser produced an object with a '#text' key or similar
+                                txt = txt["#text"] || JSON.stringify(txt);
+                            }
+                            if (txt == null) txt = "";
+
+                            out += `\n// provider=${provider}, status=${status}\n${txt}\n`;
                         }
+                        out = "\n/*" + out + "*/\n";
 
-                        lines.push(`*/\n`);
-                        const report = lines.join('\n');
-
-                        appendTextToEditor(report);
-                        pushPromptMessage("system", report);
+                        appendTextToEditor(out);
+                        pushPromptMessage("system", out);
                     }).catch(error => {
                         console.error(error);
-                        appendTextToEditor(`\n// Failed to query Criminal IP: ${error.message}`);
+                        appendTextToEditor(`\n// Failed to query the IP: ${error.message}`);
                     });
                 };
 
