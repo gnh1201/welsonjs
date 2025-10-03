@@ -512,11 +512,11 @@ namespace WelsonJS.Launcher
                 return false;
 
             var respHeaders = context.Response.Headers;
-            respHeaders["Vary"] = "Origin";
 
             if (allowed.Any(a => a == "*"))
             {
                 respHeaders["Access-Control-Allow-Origin"] = "*";
+                respHeaders["Vary"] = "Origin";
                 return true;
             }
 
@@ -524,6 +524,7 @@ namespace WelsonJS.Launcher
             {
                 respHeaders["Access-Control-Allow-Origin"] = origin;
                 respHeaders["Access-Control-Allow-Credentials"] = "true";
+                respHeaders["Vary"] = "Origin";
                 return true;
             }
 
