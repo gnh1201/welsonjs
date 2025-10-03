@@ -521,10 +521,10 @@ namespace WelsonJS.Launcher
             }
 
             if (allowed.Contains(origin, StringComparer.OrdinalIgnoreCase))
+            if (allowed.Contains(origin, StringComparer.Ordinal))
             {
                 respHeaders["Access-Control-Allow-Origin"] = origin;
                 respHeaders["Access-Control-Allow-Credentials"] = "true";
-                respHeaders["Vary"] = "Origin";
                 return true;
             }
 
