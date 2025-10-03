@@ -545,12 +545,8 @@ namespace WelsonJS.Launcher
             var requestMethod = context.Request.Headers["Access-Control-Request-Method"];
 
             var h = context.Response.Headers;
-            h["Access-Control-Allow-Methods"] = string.IsNullOrEmpty(requestMethod)
-                ? "GET, POST, PUT, DELETE, OPTIONS"
-                : requestMethod;
-            h["Access-Control-Allow-Headers"] = string.IsNullOrEmpty(requestHeaders)
-                ? "Content-Type, Authorization, X-Requested-With"
-                : requestHeaders;
+            h["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS";
+            h["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With";
             h["Access-Control-Max-Age"] = "600";
 
             context.Response.StatusCode = 204;
