@@ -353,6 +353,11 @@ namespace WelsonJS.Launcher
 
         public async Task ServeResource(HttpListenerContext context, byte[] data, string mimeType = "text/html", int statusCode = 200)
         {
+            if (HandleCorsPreflight(context))
+                return;
+
+            TryApplyCors(context);
+
             string xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
             if (data == null)
@@ -460,6 +465,98 @@ namespace WelsonJS.Launcher
             {
                 _logger?.Error($"Failed to fetch a blob config. Exception: {ex}");
             }
+        }
+
+
+        private static string[] GetAllowedOrigins()
+        {
+            // 1. Try explicit ResourceServerAllowOrigins config
+            var raw = Program.GetAppConfig("ResourceServerAllowOrigins");
+
+            if (string.IsNullOrEmpty(raw))
+            {
+                // 2. Fallback: parse from ResourceServerPrefix
+                var prefix = Program.GetAppConfig("ResourceServerPrefix");
+                if (!string.IsNullOrEmpty(prefix))
+                {
+                    try
+                    {
+                        var uri = new Uri(prefix);
+                        var origin = uri.GetLeftPart(UriPartial.Authority); // protocol + host + port
+                        return new[] { origin };
+                    }
+                    catch
+                    {
+                        return Array.Empty<string>();
+                    }
+                }
+                return Array.Empty<string>();
+            }
+
+            // Split configured list
+            var parts = raw.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                           .Select(s => s.Trim())
+                           .Where(s => !string.IsNullOrEmpty(s))
+                           .ToArray();
+            return parts;
+        }
+
+        private static bool TryApplyCors(HttpListenerContext context)
+        {
+            var origin = context.Request.Headers["Origin"];
+            if (string.IsNullOrEmpty(origin))
+                return false;
+
+            var allowed = GetAllowedOrigins();
+            if (allowed.Length == 0)
+                return false;
+
+            var respHeaders = context.Response.Headers;
+            respHeaders["Vary"] = "Origin";
+
+            if (allowed.Any(a => a == "*"))
+            {
+                respHeaders["Access-Control-Allow-Origin"] = "*";
+                return true;
+            }
+
+            if (allowed.Contains(origin, StringComparer.OrdinalIgnoreCase))
+            {
+                respHeaders["Access-Control-Allow-Origin"] = origin;
+                respHeaders["Access-Control-Allow-Credentials"] = "true";
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool HandleCorsPreflight(HttpListenerContext context)
+        {
+            if (!string.Equals(context.Request.HttpMethod, "OPTIONS", StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            if (string.IsNullOrEmpty(context.Request.Headers["Origin"]))
+                return false;
+
+            // Apply CORS headers once here
+            TryApplyCors(context);
+
+            var requestHeaders = context.Request.Headers["Access-Control-Request-Headers"];
+            var requestMethod = context.Request.Headers["Access-Control-Request-Method"];
+
+            var h = context.Response.Headers;
+            h["Access-Control-Allow-Methods"] = string.IsNullOrEmpty(requestMethod)
+                ? "GET, POST, PUT, DELETE, OPTIONS"
+                : requestMethod;
+            h["Access-Control-Allow-Headers"] = string.IsNullOrEmpty(requestHeaders)
+                ? "Content-Type, Authorization, X-Requested-With"
+                : requestHeaders;
+            h["Access-Control-Max-Age"] = "600";
+
+            context.Response.StatusCode = 204;
+            context.Response.ContentLength64 = 0;
+            context.Response.OutputStream.Close();
+            return true;
         }
     }
 
