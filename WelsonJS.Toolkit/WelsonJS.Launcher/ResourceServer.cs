@@ -34,12 +34,16 @@ namespace WelsonJS.Launcher
 
         private static readonly HttpClient _httpClient = new HttpClient();
         private static readonly string _defaultMimeType = "application/octet-stream";
+        private static string[] _allowedOrigins;
 
         static ResourceServer()
         {
             // Set timeout
             int timeout = int.TryParse(Program.GetAppConfig("HttpClientTimeout"), out timeout) ? timeout : 90;
             _httpClient.Timeout = TimeSpan.FromSeconds(timeout);
+
+            // Set allowed origins (CORS policy)
+            TryParseAllowedOrigins();
         }
 
         public ResourceServer(string prefix, string resourceName, ICompatibleLogger logger = null)
@@ -467,38 +471,36 @@ namespace WelsonJS.Launcher
             }
         }
 
-
-        private static string[] GetAllowedOrigins()
+        private static void TryParseAllowedOrigins(ICompatibleLogger logger = null)
         {
-            // 1. Try explicit ResourceServerAllowOrigins config
             var raw = Program.GetAppConfig("ResourceServerAllowOrigins");
 
-            if (string.IsNullOrEmpty(raw))
+            if (!string.IsNullOrEmpty(raw))
             {
-                // 2. Fallback: parse from ResourceServerPrefix
-                var prefix = Program.GetAppConfig("ResourceServerPrefix");
-                if (!string.IsNullOrEmpty(prefix))
-                {
-                    try
-                    {
-                        var uri = new Uri(prefix);
-                        var origin = uri.GetLeftPart(UriPartial.Authority); // protocol + host + port
-                        return new[] { origin };
-                    }
-                    catch
-                    {
-                        return Array.Empty<string>();
-                    }
-                }
-                return Array.Empty<string>();
+                _allowedOrigins = raw.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                                     .Select(s => s.Trim())
+                                     .Where(s => !string.IsNullOrEmpty(s))
+                                     .ToArray();
+                return;
             }
 
-            // Split configured list
-            var parts = raw.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                           .Select(s => s.Trim())
-                           .Where(s => !string.IsNullOrEmpty(s))
-                           .ToArray();
-            return parts;
+            var prefix = Program.GetAppConfig("ResourceServerPrefix");
+            if (!string.IsNullOrEmpty(prefix))
+            {
+                try
+                {
+                    var uri = new Uri(prefix);
+                    _allowedOrigins = new[] { uri.GetLeftPart(UriPartial.Authority) }; // protocol + host + port
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    logger?.Warn($"Invalid ResourceServerPrefix '{prefix}'. It must be a valid absolute URI. Error: {ex.Message}");
+                    // fall through to set empty
+                }
+            }
+
+            _allowedOrigins = Array.Empty<string>();
         }
 
         private static bool TryApplyCors(HttpListenerContext context)
@@ -507,7 +509,7 @@ namespace WelsonJS.Launcher
             if (string.IsNullOrEmpty(origin))
                 return false;
 
-            var allowed = GetAllowedOrigins();
+            var allowed = _allowedOrigins;
             if (allowed.Length == 0)
                 return false;
 
