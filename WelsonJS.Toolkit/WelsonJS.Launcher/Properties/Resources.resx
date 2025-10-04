@@ -220,4 +220,7 @@
   <data name="IpQueryApiPrefix2" xml:space="preserve">
     <value>https://api.abuseipdb.com/api/v2/</value>
   </data>
+  <data name="ResourceServerAllowOrigins" xml:space="preserve">
+    <value />
+  </data>
 </root>
