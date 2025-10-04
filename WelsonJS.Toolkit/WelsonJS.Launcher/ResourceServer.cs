@@ -514,15 +514,16 @@ namespace WelsonJS.Launcher
                 return false;
 
             var respHeaders = context.Response.Headers;
-            respHeaders["Vary"] = "Origin";
 
             if (allowed.Any(a => a == "*"))
             {
                 respHeaders["Access-Control-Allow-Origin"] = "*";
+                respHeaders["Vary"] = "Origin";
                 return true;
             }
 
             if (allowed.Contains(origin, StringComparer.OrdinalIgnoreCase))
+            if (allowed.Contains(origin, StringComparer.Ordinal))
             {
                 respHeaders["Access-Control-Allow-Origin"] = origin;
                 respHeaders["Access-Control-Allow-Credentials"] = "true";
@@ -547,12 +548,8 @@ namespace WelsonJS.Launcher
             var requestMethod = context.Request.Headers["Access-Control-Request-Method"];
 
             var h = context.Response.Headers;
-            h["Access-Control-Allow-Methods"] = string.IsNullOrEmpty(requestMethod)
-                ? "GET, POST, PUT, DELETE, OPTIONS"
-                : requestMethod;
-            h["Access-Control-Allow-Headers"] = string.IsNullOrEmpty(requestHeaders)
-                ? "Content-Type, Authorization, X-Requested-With"
-                : requestHeaders;
+            h["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS";
+            h["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With";
             h["Access-Control-Max-Age"] = "600";
 
             context.Response.StatusCode = 204;
