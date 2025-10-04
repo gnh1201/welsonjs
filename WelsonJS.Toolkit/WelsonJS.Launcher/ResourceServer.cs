@@ -522,8 +522,13 @@ namespace WelsonJS.Launcher
                 return true;
             }
 
-            if (allowed.Contains(origin, StringComparer.OrdinalIgnoreCase))
+            // only perform a single, case-sensitive origin check
             if (allowed.Contains(origin, StringComparer.Ordinal))
+            {
+                respHeaders["Access-Control-Allow-Origin"] = origin;
+                respHeaders["Access-Control-Allow-Credentials"] = "true";
+                return true;
+            }
             {
                 respHeaders["Access-Control-Allow-Origin"] = origin;
                 respHeaders["Access-Control-Allow-Credentials"] = "true";
