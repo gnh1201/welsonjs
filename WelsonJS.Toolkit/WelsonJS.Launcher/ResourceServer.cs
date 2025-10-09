@@ -34,12 +34,16 @@ namespace WelsonJS.Launcher
 
         private static readonly HttpClient _httpClient = new HttpClient();
         private static readonly string _defaultMimeType = "application/octet-stream";
+        private static string[] _allowedOrigins;
 
         static ResourceServer()
         {
             // Set timeout
             int timeout = int.TryParse(Program.GetAppConfig("HttpClientTimeout"), out timeout) ? timeout : 90;
             _httpClient.Timeout = TimeSpan.FromSeconds(timeout);
+
+            // Set allowed origins (CORS policy)
+            TryParseAllowedOrigins();
         }
 
         public ResourceServer(string prefix, string resourceName, ICompatibleLogger logger = null)
@@ -353,6 +357,11 @@ namespace WelsonJS.Launcher
 
         public async Task ServeResource(HttpListenerContext context, byte[] data, string mimeType = "text/html", int statusCode = 200)
         {
+            if (HandleCorsPreflight(context))
+                return;
+
+            TryApplyCors(context);
+
             string xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
             if (data == null)
@@ -460,6 +469,92 @@ namespace WelsonJS.Launcher
             {
                 _logger?.Error($"Failed to fetch a blob config. Exception: {ex}");
             }
+        }
+
+        private static void TryParseAllowedOrigins(ICompatibleLogger logger = null)
+        {
+            var raw = Program.GetAppConfig("ResourceServerAllowOrigins");
+
+            if (!string.IsNullOrEmpty(raw))
+            {
+                _allowedOrigins = raw.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                                     .Select(s => s.Trim())
+                                     .Where(s => !string.IsNullOrEmpty(s))
+                                     .ToArray();
+                return;
+            }
+
+            var prefix = Program.GetAppConfig("ResourceServerPrefix");
+            if (!string.IsNullOrEmpty(prefix))
+            {
+                try
+                {
+                    var uri = new Uri(prefix);
+                    _allowedOrigins = new[] { uri.GetLeftPart(UriPartial.Authority) }; // protocol + host + port
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    logger?.Warn($"Invalid ResourceServerPrefix '{prefix}'. It must be a valid absolute URI. Error: {ex.Message}");
+                    // fall through to set empty
+                }
+            }
+
+            _allowedOrigins = Array.Empty<string>();
+        }
+
+        private static bool TryApplyCors(HttpListenerContext context)
+        {
+            var origin = context.Request.Headers["Origin"];
+            if (string.IsNullOrEmpty(origin))
+                return false;
+
+            var allowed = _allowedOrigins;
+            if (allowed.Length == 0)
+                return false;
+
+            var respHeaders = context.Response.Headers;
+
+            if (allowed.Any(a => a == "*"))
+            {
+                respHeaders["Access-Control-Allow-Origin"] = "*";
+                respHeaders["Vary"] = "Origin";
+                return true;
+            }
+
+            // only perform a single, case-sensitive origin check
+            if (allowed.Contains(origin, StringComparer.Ordinal))
+            {
+                respHeaders["Access-Control-Allow-Origin"] = origin;
+                respHeaders["Access-Control-Allow-Credentials"] = "true";
+                respHeaders["Vary"] = "Origin";
+                return true;
+            }
+
+            return false;
+        }
+
+        private static bool HandleCorsPreflight(HttpListenerContext context)
+        {
+            if (!string.Equals(context.Request.HttpMethod, "OPTIONS", StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            if (string.IsNullOrEmpty(context.Request.Headers["Origin"]))
+                return false;
+
+            // Apply CORS headers once here
+            TryApplyCors(context);
+
+            var respHeaders = context.Response.Headers;
+            respHeaders["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS";
+            respHeaders["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With";
+            respHeaders["Access-Control-Max-Age"] = "600";
+
+            context.Response.StatusCode = 204;
+            context.Response.ContentLength64 = 0;
+            context.Response.Close();
+
+            return true;
         }
     }
 
