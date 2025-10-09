@@ -527,6 +527,7 @@ namespace WelsonJS.Launcher
             {
                 respHeaders["Access-Control-Allow-Origin"] = origin;
                 respHeaders["Access-Control-Allow-Credentials"] = "true";
+                respHeaders["Vary"] = "Origin";
                 return true;
             }
 
@@ -551,7 +552,7 @@ namespace WelsonJS.Launcher
 
             context.Response.StatusCode = 204;
             context.Response.ContentLength64 = 0;
-            context.Response.OutputStream.Close();
+            context.Response.Close();
 
             return true;
         }
