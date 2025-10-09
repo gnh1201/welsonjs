@@ -529,11 +529,6 @@ namespace WelsonJS.Launcher
                 respHeaders["Access-Control-Allow-Credentials"] = "true";
                 return true;
             }
-            {
-                respHeaders["Access-Control-Allow-Origin"] = origin;
-                respHeaders["Access-Control-Allow-Credentials"] = "true";
-                return true;
-            }
 
             return false;
         }
@@ -549,17 +544,15 @@ namespace WelsonJS.Launcher
             // Apply CORS headers once here
             TryApplyCors(context);
 
-            var requestHeaders = context.Request.Headers["Access-Control-Request-Headers"];
-            var requestMethod = context.Request.Headers["Access-Control-Request-Method"];
-
-            var h = context.Response.Headers;
-            h["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS";
-            h["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With";
-            h["Access-Control-Max-Age"] = "600";
+            var respHeaders = context.Response.Headers;
+            respHeaders["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS";
+            respHeaders["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With";
+            respHeaders["Access-Control-Max-Age"] = "600";
 
             context.Response.StatusCode = 204;
             context.Response.ContentLength64 = 0;
             context.Response.OutputStream.Close();
+
             return true;
         }
     }
