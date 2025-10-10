@@ -151,22 +151,11 @@ The WelsonJS framework suggests the following application release methods:
 * :sunglasses: Information security companies in Republic of Korea - Use case development
 * :sunglasses: Travel planning(e.g., Airlines, Hotels, Ticketing) related companies - Use case development
 * :sunglasses: Probability-based game prediction in a data analytics company - Use case development
-* :eyes: [Facebook Group "Javascript Programming"(javascript4u)](https://www.facebook.com/javascript4u/posts/build-a-windows-desktop-apps-with-javascript-html-and-cssmorioh-javascript-html-/1484014618472735/)
-* :eyes: [morioh.com](https://morioh.com/a/23c427a82bf1/build-a-windows-desktop-apps-with-javascript-html-and-css)
-* :eyes: CSDN
-* :eyes: Qiita - Knowledge-base about WSH environment
+* :sunglasses: Qiita - Knowledge-base about WSH environment
 * :sunglasses: Redsky Software - PoC(Proof of Concept) of the CommonJS on WSH environment
 * :sunglasses: Inspired by a small-sized JavaScript payload demonstrated by a cybersecurity related group.
 * :sunglasses: Inspired by the use of Named Shared Memory in a cross-runtime IPC implementation written by the unidentified developer.
-* :eyes: Fediverse
-* :eyes: [Hacker News](https://news.ycombinator.com/item?id=41316782)
-* :eyes: [WebToolsWeekly](https://webtoolsweekly.com/archives/issue-585/)
-* :eyes: [GeekNews](https://news.hada.io/weekly/202441) in GeekNews Weekly (2024-09-30 ~ 2024-10-06)
-* :eyes: [daily.dev](https://app.daily.dev/posts/js-libraries-svg-tools-json-databases-8quregz3a)
-* :eyes: [PitchHut](https://www.pitchhut.com/project/proj_Ya136OLSW5at)
-* :eyes: [Disquiet](https://dis.qa/nv6T6)
-* :eyes: [Node Weekly](https://nodeweekly.com/issues/582)
-* :eyes: [Zhouexin (周e信)](https://www.zhouexin.com/issues/321)
+* :eyes: [Facebook Group "Javascript Programming"(javascript4u)](https://www.facebook.com/javascript4u/posts/build-a-windows-desktop-apps-with-javascript-html-and-cssmorioh-javascript-html-/1484014618472735/), [morioh.com](https://morioh.com/a/23c427a82bf1/build-a-windows-desktop-apps-with-javascript-html-and-css), CSDN, Fediverse, [Hacker News](https://news.ycombinator.com/item?id=41316782), [WebToolsWeekly](https://webtoolsweekly.com/archives/issue-585/), [GeekNews in GeekNews Weekly (2024-09-30 ~ 2024-10-06)](https://news.hada.io/weekly/202441), [daily.dev](https://app.daily.dev/posts/js-libraries-svg-tools-json-databases-8quregz3a), [PitchHut](https://www.pitchhut.com/project/proj_Ya136OLSW5at), [Disquiet](https://dis.qa/nv6T6), [Node Weekly (#​582 - June 17, 2025)](https://nodeweekly.com/issues/582), [Zhouexin (周e信)](https://www.zhouexin.com/issues/321), [Echo JS](https://www.echojs.com/news/43008), [Telegram Channel @front_end_dev](https://t.me/front_end_dev/9376?ysclid=mgk4a9hqf0853890652)
 
 ## Report abuse
 * [GitHub Security Advisories (gnh1201/welsonjs)](https://github.com/gnh1201/welsonjs/security)
