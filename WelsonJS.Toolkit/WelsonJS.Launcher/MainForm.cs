@@ -243,6 +243,24 @@ namespace WelsonJS.Launcher
             }
         }
 
+        private void LaunchEditor()
+        {
+            if (RunResourceServer())
+            {
+                Program.OpenWebBrowser(Program._resourceServer.GetPrefix());
+            }
+            else
+            {
+                _logger.Error("Failed to start the resource server.");
+                MessageBox.Show(
+                    "Failed to start the resource server. Please check your configuration or try again.",
+                    "Resource Server Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
+                );
+            }
+        }
+
         private void cbUseSpecificScript_CheckedChanged(object sender, EventArgs e)
         {
             txtUseSpecificScript.Enabled = cbUseSpecificScript.Checked;
@@ -291,12 +309,14 @@ namespace WelsonJS.Launcher
             (new GlobalSettingsForm()).Show();
         }
 
+        private void btnStartTheEditor_Click(object sender, EventArgs e)
+        {
+            LaunchEditor();
+        }
+
         private void startCodeEditorToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (RunResourceServer())
-            {
-                Program.OpenWebBrowser(Program._resourceServer.GetPrefix());
-            }
+            LaunchEditor();
         }
 
         private void openCodeEditorToolStripMenuItem_Click(object sender, EventArgs e)
@@ -313,14 +333,6 @@ namespace WelsonJS.Launcher
         private void openCopilotToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Program.OpenWebBrowser(Program.GetAppConfig("CopilotUrl"));
-        }
-
-        private void btnStartTheEditor_Click(object sender, EventArgs e)
-        {
-            if (RunResourceServer())
-            {
-                Program.OpenWebBrowser(Program._resourceServer.GetPrefix());
-            }
         }
 
         private void btnJoinTheCommunity_Click(object sender, EventArgs e)
