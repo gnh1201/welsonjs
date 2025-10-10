@@ -32,7 +32,6 @@
             this.btnRunFromZipFile = new System.Windows.Forms.Button();
             this.btnRunFromExternalLink = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
-            this.linkLabel1 = new System.Windows.Forms.LinkLabel();
             this.cbUseSpecificScript = new System.Windows.Forms.CheckBox();
             this.txtUseSpecificScript = new System.Windows.Forms.TextBox();
             this.cbInteractiveServiceApp = new System.Windows.Forms.CheckBox();
@@ -42,13 +41,16 @@
             this.instancesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.runAsAdministratorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.globalSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.startCodeEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.startTheEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openCopilotToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.openLauncherToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openCodeEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
+            this.btnStartTheEditor = new System.Windows.Forms.Button();
+            this.btnJoinTheCommunity = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -60,7 +62,7 @@
             this.btnRunFromZipFile.Name = "btnRunFromZipFile";
             this.btnRunFromZipFile.Size = new System.Drawing.Size(200, 200);
             this.btnRunFromZipFile.TabIndex = 0;
-            this.btnRunFromZipFile.Text = "From ZIP file...";
+            this.btnRunFromZipFile.Text = "From a package file...";
             this.btnRunFromZipFile.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             this.btnRunFromZipFile.UseVisualStyleBackColor = true;
             this.btnRunFromZipFile.Click += new System.EventHandler(this.btnRunFromZipFile_Click);
@@ -72,7 +74,7 @@
             this.btnRunFromExternalLink.Name = "btnRunFromExternalLink";
             this.btnRunFromExternalLink.Size = new System.Drawing.Size(200, 200);
             this.btnRunFromExternalLink.TabIndex = 1;
-            this.btnRunFromExternalLink.Text = "From external link...";
+            this.btnRunFromExternalLink.Text = "From an external source...";
             this.btnRunFromExternalLink.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
             this.btnRunFromExternalLink.UseVisualStyleBackColor = true;
             this.btnRunFromExternalLink.Click += new System.EventHandler(this.btnRunFromExternalLink_Click);
@@ -85,17 +87,6 @@
             this.label1.Size = new System.Drawing.Size(312, 12);
             this.label1.TabIndex = 2;
             this.label1.Text = "Choose the location of WelsonJS application package.";
-            // 
-            // linkLabel1
-            // 
-            this.linkLabel1.AutoSize = true;
-            this.linkLabel1.Location = new System.Drawing.Point(24, 345);
-            this.linkLabel1.Name = "linkLabel1";
-            this.linkLabel1.Size = new System.Drawing.Size(327, 12);
-            this.linkLabel1.TabIndex = 3;
-            this.linkLabel1.TabStop = true;
-            this.linkLabel1.Text = "WelsonJS is open-source software. Join our community!";
-            this.linkLabel1.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkLabel1_LinkClicked);
             // 
             // cbUseSpecificScript
             // 
@@ -143,7 +134,7 @@
             this.instancesToolStripMenuItem,
             this.runAsAdministratorToolStripMenuItem,
             this.globalSettingsToolStripMenuItem,
-            this.startCodeEditorToolStripMenuItem,
+            this.startTheEditorToolStripMenuItem,
             this.openCopilotToolStripMenuItem});
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
             this.settingsToolStripMenuItem.Size = new System.Drawing.Size(62, 20);
@@ -177,12 +168,12 @@
             this.globalSettingsToolStripMenuItem.Text = "Global settings...";
             this.globalSettingsToolStripMenuItem.Click += new System.EventHandler(this.globalSettingsToolStripMenuItem_Click);
             // 
-            // startCodeEditorToolStripMenuItem
+            // startTheEditorToolStripMenuItem
             // 
-            this.startCodeEditorToolStripMenuItem.Name = "startCodeEditorToolStripMenuItem";
-            this.startCodeEditorToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
-            this.startCodeEditorToolStripMenuItem.Text = "Start the code editor...";
-            this.startCodeEditorToolStripMenuItem.Click += new System.EventHandler(this.startCodeEditorToolStripMenuItem_Click);
+            this.startTheEditorToolStripMenuItem.Name = "startTheEditorToolStripMenuItem";
+            this.startTheEditorToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
+            this.startTheEditorToolStripMenuItem.Text = "Start the editor...";
+            this.startTheEditorToolStripMenuItem.Click += new System.EventHandler(this.startCodeEditorToolStripMenuItem_Click);
             // 
             // openCopilotToolStripMenuItem
             // 
@@ -225,15 +216,42 @@
             this.exitToolStripMenuItem.Size = new System.Drawing.Size(198, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             // 
+            // btnStartTheEditor
+            // 
+            this.btnStartTheEditor.Image = global::WelsonJS.Launcher.Properties.Resources.icon_editor_32;
+            this.btnStartTheEditor.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnStartTheEditor.Location = new System.Drawing.Point(25, 344);
+            this.btnStartTheEditor.Name = "btnStartTheEditor";
+            this.btnStartTheEditor.Padding = new System.Windows.Forms.Padding(10, 0, 0, 0);
+            this.btnStartTheEditor.Size = new System.Drawing.Size(200, 40);
+            this.btnStartTheEditor.TabIndex = 8;
+            this.btnStartTheEditor.Text = "Start the editor...";
+            this.btnStartTheEditor.UseVisualStyleBackColor = true;
+            this.btnStartTheEditor.Click += new System.EventHandler(this.btnStartTheEditor_Click);
+            // 
+            // btnJoinTheCommunity
+            // 
+            this.btnJoinTheCommunity.Image = global::WelsonJS.Launcher.Properties.Resources.icon_community_32;
+            this.btnJoinTheCommunity.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            this.btnJoinTheCommunity.Location = new System.Drawing.Point(230, 344);
+            this.btnJoinTheCommunity.Name = "btnJoinTheCommunity";
+            this.btnJoinTheCommunity.Padding = new System.Windows.Forms.Padding(10, 0, 0, 0);
+            this.btnJoinTheCommunity.Size = new System.Drawing.Size(200, 40);
+            this.btnJoinTheCommunity.TabIndex = 9;
+            this.btnJoinTheCommunity.Text = "Join the community";
+            this.btnJoinTheCommunity.UseVisualStyleBackColor = true;
+            this.btnJoinTheCommunity.Click += new System.EventHandler(this.btnJoinTheCommunity_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(461, 382);
+            this.ClientSize = new System.Drawing.Size(461, 404);
+            this.Controls.Add(this.btnJoinTheCommunity);
+            this.Controls.Add(this.btnStartTheEditor);
             this.Controls.Add(this.cbInteractiveServiceApp);
             this.Controls.Add(this.txtUseSpecificScript);
             this.Controls.Add(this.cbUseSpecificScript);
-            this.Controls.Add(this.linkLabel1);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.btnRunFromExternalLink);
             this.Controls.Add(this.btnRunFromZipFile);
@@ -257,7 +275,6 @@
         private System.Windows.Forms.Button btnRunFromZipFile;
         private System.Windows.Forms.Button btnRunFromExternalLink;
         private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.LinkLabel linkLabel1;
         private System.Windows.Forms.CheckBox cbUseSpecificScript;
         private System.Windows.Forms.TextBox txtUseSpecificScript;
         private System.Windows.Forms.CheckBox cbInteractiveServiceApp;
@@ -267,13 +284,16 @@
         private System.Windows.Forms.ToolStripMenuItem instancesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem runAsAdministratorToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem globalSettingsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem startCodeEditorToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem startTheEditorToolStripMenuItem;
         private System.Windows.Forms.NotifyIcon notifyIcon1;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openCodeEditorToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openLauncherToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openCopilotToolStripMenuItem;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog1;
+        private System.Windows.Forms.Button btnStartTheEditor;
+        private System.Windows.Forms.Button btnJoinTheCommunity;
     }
 }
 

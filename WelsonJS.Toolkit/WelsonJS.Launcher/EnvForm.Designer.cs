@@ -125,7 +125,7 @@
             this.btnOpenFile.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnOpenFile.Location = new System.Drawing.Point(31, 169);
             this.btnOpenFile.Name = "btnOpenFile";
-            this.btnOpenFile.Padding = new System.Windows.Forms.Padding(11, 0, 0, 0);
+            this.btnOpenFile.Padding = new System.Windows.Forms.Padding(10, 0, 0, 0);
             this.btnOpenFile.Size = new System.Drawing.Size(201, 40);
             this.btnOpenFile.TabIndex = 5;
             this.btnOpenFile.Text = "Open the file...";
@@ -140,7 +140,7 @@
             this.btnOpenDirectory.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnOpenDirectory.Location = new System.Drawing.Point(31, 123);
             this.btnOpenDirectory.Name = "btnOpenDirectory";
-            this.btnOpenDirectory.Padding = new System.Windows.Forms.Padding(11, 0, 0, 0);
+            this.btnOpenDirectory.Padding = new System.Windows.Forms.Padding(10, 0, 0, 0);
             this.btnOpenDirectory.Size = new System.Drawing.Size(201, 40);
             this.btnOpenDirectory.TabIndex = 4;
             this.btnOpenDirectory.Text = "Open the directory...";
@@ -198,7 +198,7 @@
             this.btnExport.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnExport.Location = new System.Drawing.Point(213, 29);
             this.btnExport.Name = "btnExport";
-            this.btnExport.Padding = new System.Windows.Forms.Padding(11, 0, 0, 0);
+            this.btnExport.Padding = new System.Windows.Forms.Padding(10, 0, 0, 0);
             this.btnExport.Size = new System.Drawing.Size(176, 40);
             this.btnExport.TabIndex = 6;
             this.btnExport.Text = "Export";
@@ -211,7 +211,7 @@
             this.btnImport.ImageAlign = System.Drawing.ContentAlignment.MiddleLeft;
             this.btnImport.Location = new System.Drawing.Point(31, 29);
             this.btnImport.Name = "btnImport";
-            this.btnImport.Padding = new System.Windows.Forms.Padding(11, 0, 0, 0);
+            this.btnImport.Padding = new System.Windows.Forms.Padding(10, 0, 0, 0);
             this.btnImport.Size = new System.Drawing.Size(176, 40);
             this.btnImport.TabIndex = 5;
             this.btnImport.Text = "Import";

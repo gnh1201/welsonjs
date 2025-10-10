@@ -186,7 +186,10 @@ namespace WelsonJS.Launcher
             if (!Program._resourceServer.IsRunning())
             {
                 Program._resourceServer.Start(false);
-                startCodeEditorToolStripMenuItem.Text = "Open the code editor...";
+
+                string text = "Open the editor...";
+                startTheEditorToolStripMenuItem.Text = text;
+                btnStartTheEditor.Text = text;
             }
 
             return Program._resourceServer.IsRunning();
@@ -243,11 +246,6 @@ namespace WelsonJS.Launcher
         private void cbUseSpecificScript_CheckedChanged(object sender, EventArgs e)
         {
             txtUseSpecificScript.Enabled = cbUseSpecificScript.Checked;
-        }
-
-        private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
-        {
-            Program.OpenWebBrowser(Program.GetAppConfig("RepositoryUrl"));
         }
 
         private void userdefinedVariablesToolStripMenuItem_Click(object sender, EventArgs e)
@@ -315,6 +313,19 @@ namespace WelsonJS.Launcher
         private void openCopilotToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Program.OpenWebBrowser(Program.GetAppConfig("CopilotUrl"));
+        }
+
+        private void btnStartTheEditor_Click(object sender, EventArgs e)
+        {
+            if (RunResourceServer())
+            {
+                Program.OpenWebBrowser(Program._resourceServer.GetPrefix());
+            }
+        }
+
+        private void btnJoinTheCommunity_Click(object sender, EventArgs e)
+        {
+            Program.OpenWebBrowser(Program.GetAppConfig("RepositoryUrl"));
         }
     }
 }

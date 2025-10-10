@@ -197,5 +197,11 @@
       <Name>WelsonJS.Esent</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icon_editor_32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\icon_community_32.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
