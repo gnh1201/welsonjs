@@ -89,11 +89,20 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConnectionManagerBase.cs" />
+    <Compile Include="ConnectionMonitorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ConnectionMonitorForm.Designer.cs">
+      <DependentUpon>ConnectionMonitorForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ConnectionMonitorRegistry.cs" />
     <Compile Include="ICompatibleLogger.cs" />
+    <Compile Include="IManagedConnectionProvider.cs" />
     <Compile Include="IResourceTool.cs" />
     <Compile Include="JsCore.cs" />
     <Compile Include="JsNative.cs" />
     <Compile Include="JsSerializer.cs" />
+    <Compile Include="ManagedConnectionStatus.cs" />
     <Compile Include="NativeBootstrap.cs" />
     <Compile Include="ResourceTools\ImageColorPicker.cs" />
     <Compile Include="ResourceTools\IpQuery.cs" />
@@ -135,6 +144,9 @@
     <Compile Include="WebSocketManager.cs" />
     <EmbeddedResource Include="EnvForm.resx">
       <DependentUpon>EnvForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ConnectionMonitorForm.resx">
+      <DependentUpon>ConnectionMonitorForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="InstancesForm.resx">
       <DependentUpon>InstancesForm.cs</DependentUpon>

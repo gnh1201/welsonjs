@@ -4,6 +4,7 @@
 // https://github.com/gnh1201/welsonjs
 // 
 using System;
+using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Security.Cryptography;
 using System.Text;
@@ -12,8 +13,10 @@ using System.Threading.Tasks;
 
 namespace WelsonJS.Launcher
 {
-    public sealed class WebSocketManager : ConnectionManagerBase<WebSocketManager.Endpoint, ClientWebSocket>
+    public sealed class WebSocketManager : ConnectionManagerBase<WebSocketManager.Endpoint, ClientWebSocket>, IManagedConnectionProvider
     {
+        private const string ConnectionTypeName = "WebSocket";
+
         public struct Endpoint
         {
             public Endpoint(string host, int port, string path)
@@ -27,6 +30,13 @@ namespace WelsonJS.Launcher
             public int Port { get; }
             public string Path { get; }
         }
+
+        public WebSocketManager()
+        {
+            ConnectionMonitorRegistry.RegisterProvider(this);
+        }
+
+        public string ConnectionType => ConnectionTypeName;
 
         protected override string CreateKey(Endpoint parameters)
         {
@@ -101,6 +111,42 @@ namespace WelsonJS.Launcher
             {
                 cts.Dispose();
             }
+        }
+
+        public IReadOnlyCollection<ManagedConnectionStatus> GetStatuses()
+        {
+            var snapshots = SnapshotConnections();
+            var result = new List<ManagedConnectionStatus>(snapshots.Count);
+
+            foreach (var snapshot in snapshots)
+            {
+                string state;
+                try
+                {
+                    state = snapshot.Connection?.State.ToString() ?? "Unknown";
+                }
+                catch
+                {
+                    state = "Unknown";
+                }
+
+                var endpoint = snapshot.Parameters;
+                var description = $"ws://{endpoint.Host}:{endpoint.Port}/{endpoint.Path}";
+
+                result.Add(new ManagedConnectionStatus(
+                    ConnectionTypeName,
+                    snapshot.Key,
+                    state,
+                    description,
+                    snapshot.IsValid));
+            }
+
+            return result;
+        }
+
+        public bool TryClose(string key)
+        {
+            return TryRemoveByKey(key);
         }
 
         // Actual send and receive implementation that never truncates the accumulated data.

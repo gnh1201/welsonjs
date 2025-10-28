@@ -4,6 +4,7 @@
 // https://github.com/gnh1201/welsonjs
 //
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Ports;
 using System.Text;
@@ -12,8 +13,10 @@ using System.Threading.Tasks;
 
 namespace WelsonJS.Launcher
 {
-    public sealed class SerialPortManager : ConnectionManagerBase<SerialPortManager.ConnectionParameters, SerialPort>
+    public sealed class SerialPortManager : ConnectionManagerBase<SerialPortManager.ConnectionParameters, SerialPort>, IManagedConnectionProvider
     {
+        private const string ConnectionTypeName = "Serial Port";
+
         public struct ConnectionParameters
         {
             public ConnectionParameters(
@@ -50,6 +53,13 @@ namespace WelsonJS.Launcher
             public int WriteTimeout { get; }
             public int ReadBufferSize { get; }
         }
+
+        public SerialPortManager()
+        {
+            ConnectionMonitorRegistry.RegisterProvider(this);
+        }
+
+        public string ConnectionType => ConnectionTypeName;
 
         protected override string CreateKey(ConnectionParameters parameters)
         {
@@ -131,6 +141,42 @@ namespace WelsonJS.Launcher
                 (port, token) => SendAndReceiveInternalAsync(port, parameters.ReadBufferSize, payload, encoding, token),
                 2,
                 cancellationToken).ConfigureAwait(false);
+        }
+
+        public IReadOnlyCollection<ManagedConnectionStatus> GetStatuses()
+        {
+            var snapshots = SnapshotConnections();
+            var result = new List<ManagedConnectionStatus>(snapshots.Count);
+
+            foreach (var snapshot in snapshots)
+            {
+                string state;
+                try
+                {
+                    state = snapshot.Connection?.IsOpen == true ? "Open" : "Closed";
+                }
+                catch
+                {
+                    state = "Unknown";
+                }
+
+                var parameters = snapshot.Parameters;
+                string description = $"{parameters.PortName} @ {parameters.BaudRate} bps";
+
+                result.Add(new ManagedConnectionStatus(
+                    ConnectionTypeName,
+                    snapshot.Key,
+                    state,
+                    description,
+                    snapshot.IsValid));
+            }
+
+            return result;
+        }
+
+        public bool TryClose(string key)
+        {
+            return TryRemoveByKey(key);
         }
 
         private static async Task<string> SendAndReceiveInternalAsync(

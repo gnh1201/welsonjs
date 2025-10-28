@@ -23,6 +23,7 @@ namespace WelsonJS.Launcher
         private string _workingDirectory;
         private string _instanceId;
         private string _scriptName;
+        private ConnectionMonitorForm _connectionMonitorForm;
 
         public MainForm(ICompatibleLogger logger = null)
         {
@@ -274,6 +275,17 @@ namespace WelsonJS.Launcher
         private void instancesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             (new InstancesForm()).Show();
+        }
+
+        private void connectionMonitorToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_connectionMonitorForm == null || _connectionMonitorForm.IsDisposed)
+            {
+                _connectionMonitorForm = new ConnectionMonitorForm();
+            }
+
+            _connectionMonitorForm.Show();
+            _connectionMonitorForm.Focus();
         }
 
         private void runAsAdministratorToolStripMenuItem_Click(object sender, EventArgs e)

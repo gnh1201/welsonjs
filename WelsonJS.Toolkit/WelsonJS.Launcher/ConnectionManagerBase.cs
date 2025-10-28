@@ -5,6 +5,7 @@
 //
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,7 +20,8 @@ namespace WelsonJS.Launcher
     public abstract class ConnectionManagerBase<TParameters, TConnection>
         where TConnection : class
     {
-        private readonly ConcurrentDictionary<string, TConnection> _pool = new ConcurrentDictionary<string, TConnection>();
+        private readonly ConcurrentDictionary<string, (TConnection Connection, TParameters Parameters)> _pool
+            = new ConcurrentDictionary<string, (TConnection, TParameters)>();
 
         /// <summary>
         /// Creates a unique cache key for the given connection parameters.
@@ -54,15 +56,15 @@ namespace WelsonJS.Launcher
         {
             string key = CreateKey(parameters);
 
-            if (_pool.TryGetValue(key, out var existing) && IsConnectionValid(existing))
+            if (_pool.TryGetValue(key, out var existing) && IsConnectionHealthy(existing.Connection))
             {
-                return existing;
+                return existing.Connection;
             }
 
-            RemoveInternal(key, existing);
+            RemoveInternal(key, existing.Connection);
 
             var connection = await OpenConnectionAsync(parameters, token).ConfigureAwait(false);
-            _pool[key] = connection;
+            _pool[key] = (connection, parameters);
             return connection;
         }
 
@@ -72,10 +74,53 @@ namespace WelsonJS.Launcher
         public void Remove(TParameters parameters)
         {
             string key = CreateKey(parameters);
-            if (_pool.TryRemove(key, out var connection))
+            if (_pool.TryRemove(key, out var entry))
             {
-                CloseSafely(connection);
+                CloseSafely(entry.Connection);
             }
+        }
+
+        /// <summary>
+        /// Removes the connection associated with the provided cache key.
+        /// </summary>
+        protected bool TryRemoveByKey(string key)
+        {
+            if (string.IsNullOrEmpty(key))
+            {
+                return false;
+            }
+
+            if (_pool.TryRemove(key, out var entry))
+            {
+                CloseSafely(entry.Connection);
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Provides a snapshot of the currently tracked connections.
+        /// </summary>
+        protected IReadOnlyList<ConnectionSnapshot> SnapshotConnections()
+        {
+            var entries = _pool.ToArray();
+            var result = new ConnectionSnapshot[entries.Length];
+
+            for (int i = 0; i < entries.Length; i++)
+            {
+                var entry = entries[i];
+                var connection = entry.Value.Connection;
+                bool isValid = IsConnectionHealthy(connection);
+
+                result[i] = new ConnectionSnapshot(
+                    entry.Key,
+                    entry.Value.Parameters,
+                    connection,
+                    isValid);
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -119,6 +164,23 @@ namespace WelsonJS.Launcher
             throw lastError ?? new InvalidOperationException("Unreachable state in ExecuteWithRetryAsync");
         }
 
+        private bool IsConnectionHealthy(TConnection connection)
+        {
+            if (connection == null)
+            {
+                return false;
+            }
+
+            try
+            {
+                return IsConnectionValid(connection);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         private void RemoveInternal(string key, TConnection connection)
         {
             if (!string.IsNullOrEmpty(key))
@@ -142,6 +204,28 @@ namespace WelsonJS.Launcher
             {
                 // Ignore dispose exceptions.
             }
+        }
+
+        /// <summary>
+        /// Represents an immutable snapshot of a managed connection.
+        /// </summary>
+        protected readonly struct ConnectionSnapshot
+        {
+            public ConnectionSnapshot(string key, TParameters parameters, TConnection connection, bool isValid)
+            {
+                Key = key;
+                Parameters = parameters;
+                Connection = connection;
+                IsValid = isValid;
+            }
+
+            public string Key { get; }
+
+            public TParameters Parameters { get; }
+
+            public TConnection Connection { get; }
+
+            public bool IsValid { get; }
         }
     }
 }
