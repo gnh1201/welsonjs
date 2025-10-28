@@ -24,6 +24,8 @@ namespace WelsonJS.Launcher
             = new ConcurrentDictionary<string, (TConnection, TParameters)>();
         private readonly ConcurrentDictionary<string, SemaphoreSlim> _openLocks
             = new ConcurrentDictionary<string, SemaphoreSlim>();
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> _opLocks
+            = new ConcurrentDictionary<string, SemaphoreSlim>();
 
         /// <summary>
         /// Creates a unique cache key for the given connection parameters.
@@ -155,14 +157,16 @@ namespace WelsonJS.Launcher
             if (maxAttempts < 1) throw new ArgumentOutOfRangeException(nameof(maxAttempts));
 
             Exception lastError = null;
+            var key = CreateKey(parameters);
+            var opLock = _opLocks.GetOrAdd(key, _ => new SemaphoreSlim(1, 1));
 
             for (int attempt = 0; attempt < maxAttempts; attempt++)
             {
-                token.ThrowIfCancellationRequested();
-                var connection = await GetOrCreateAsync(parameters, token).ConfigureAwait(false);
-
+                await opLock.WaitAsync(token).ConfigureAwait(false);
                 try
                 {
+                    token.ThrowIfCancellationRequested();
+                    var connection = await GetOrCreateAsync(parameters, token).ConfigureAwait(false);
                     return await operation(connection, token).ConfigureAwait(false);
                 }
                 catch (OperationCanceledException)
@@ -177,6 +181,10 @@ namespace WelsonJS.Launcher
                     {
                         throw;
                     }
+                }
+                finally
+                {
+                    opLock.Release();
                 }
             }
 
