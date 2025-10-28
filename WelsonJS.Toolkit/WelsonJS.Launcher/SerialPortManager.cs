@@ -212,7 +212,7 @@ namespace WelsonJS.Launcher
             using (var stream = new MemoryStream())
             {
                 var buffer = new byte[bufferSize];
-
+                const int MaxResponseBytes = 1 * 1024 * 1024; // 1 MiB safety cap
                 while (true)
                 {
                     try
@@ -220,18 +220,10 @@ namespace WelsonJS.Launcher
                         int read = await Task.Run(() => port.Read(buffer, 0, buffer.Length), token).ConfigureAwait(false);
                         if (read > 0)
                         {
+                            if (stream.Length + read > MaxResponseBytes)
+                                throw new InvalidOperationException("Serial response exceeded maximum allowed size.");
                             stream.Write(buffer, 0, read);
-                            if (port.BytesToRead == 0)
-                            {
-                                break;
-                            }
-                        }
-                        else
-                        {
-                            if (port.BytesToRead == 0)
-                            {
-                                break;
-                            }
+                            continue; // keep reading until idle timeout
                         }
                     }
                     catch (TimeoutException)
