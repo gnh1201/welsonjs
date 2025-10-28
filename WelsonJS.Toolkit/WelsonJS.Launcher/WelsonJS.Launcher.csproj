@@ -80,6 +80,7 @@
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.IO.Ports" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Web" />
     <Reference Include="System.Windows.Forms" />
@@ -87,6 +88,7 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ConnectionManagerBase.cs" />
     <Compile Include="ICompatibleLogger.cs" />
     <Compile Include="IResourceTool.cs" />
     <Compile Include="JsCore.cs" />
@@ -128,6 +130,7 @@
       <DependentUpon>GlobalSettingsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="ResourceServer.cs" />
+    <Compile Include="SerialPortManager.cs" />
     <Compile Include="TraceLogger.cs" />
     <Compile Include="WebSocketManager.cs" />
     <EmbeddedResource Include="EnvForm.resx">

@@ -1,0 +1,183 @@
+// SerialPortManager.cs
+// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
+// https://github.com/gnh1201/welsonjs
+//
+using System;
+using System.IO;
+using System.IO.Ports;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace WelsonJS.Launcher
+{
+    public sealed class SerialPortManager : ConnectionManagerBase<SerialPortManager.ConnectionParameters, SerialPort>
+    {
+        public struct ConnectionParameters
+        {
+            public ConnectionParameters(
+                string portName,
+                int baudRate,
+                Parity parity = Parity.None,
+                int dataBits = 8,
+                StopBits stopBits = StopBits.One,
+                Handshake handshake = Handshake.None,
+                int readTimeout = 500,
+                int writeTimeout = 500,
+                int readBufferSize = 1024)
+            {
+                if (string.IsNullOrWhiteSpace(portName)) throw new ArgumentNullException(nameof(portName));
+
+                PortName = portName;
+                BaudRate = baudRate;
+                Parity = parity;
+                DataBits = dataBits;
+                StopBits = stopBits;
+                Handshake = handshake;
+                ReadTimeout = readTimeout;
+                WriteTimeout = writeTimeout;
+                ReadBufferSize = readBufferSize > 0 ? readBufferSize : 1024;
+            }
+
+            public string PortName { get; }
+            public int BaudRate { get; }
+            public Parity Parity { get; }
+            public int DataBits { get; }
+            public StopBits StopBits { get; }
+            public Handshake Handshake { get; }
+            public int ReadTimeout { get; }
+            public int WriteTimeout { get; }
+            public int ReadBufferSize { get; }
+        }
+
+        protected override string CreateKey(ConnectionParameters parameters)
+        {
+            return string.Join(",", new object[]
+            {
+                parameters.PortName.ToUpperInvariant(),
+                parameters.BaudRate,
+                parameters.Parity,
+                parameters.DataBits,
+                parameters.StopBits,
+                parameters.Handshake
+            });
+        }
+
+        protected override Task<SerialPort> OpenConnectionAsync(ConnectionParameters parameters, CancellationToken token)
+        {
+            token.ThrowIfCancellationRequested();
+
+            var port = new SerialPort(parameters.PortName, parameters.BaudRate, parameters.Parity, parameters.DataBits, parameters.StopBits)
+            {
+                Handshake = parameters.Handshake,
+                ReadTimeout = parameters.ReadTimeout,
+                WriteTimeout = parameters.WriteTimeout
+            };
+
+            try
+            {
+                port.Open();
+                return Task.FromResult(port);
+            }
+            catch
+            {
+                port.Dispose();
+                throw;
+            }
+        }
+
+        protected override bool IsConnectionValid(SerialPort connection)
+        {
+            return connection != null && connection.IsOpen;
+        }
+
+        protected override void CloseConnection(SerialPort connection)
+        {
+            try
+            {
+                if (connection != null && connection.IsOpen)
+                {
+                    connection.Close();
+                }
+            }
+            finally
+            {
+                connection?.Dispose();
+            }
+        }
+
+        public Task<TResult> ExecuteAsync<TResult>(
+            ConnectionParameters parameters,
+            Func<SerialPort, CancellationToken, Task<TResult>> operation,
+            int maxAttempts = 2,
+            CancellationToken cancellationToken = default)
+        {
+            if (operation == null) throw new ArgumentNullException(nameof(operation));
+            return ExecuteWithRetryAsync(parameters, operation, maxAttempts, cancellationToken);
+        }
+
+        public async Task<string> SendAndReceiveAsync(
+            ConnectionParameters parameters,
+            string message,
+            Encoding encoding,
+            CancellationToken cancellationToken = default)
+        {
+            if (encoding == null) throw new ArgumentNullException(nameof(encoding));
+            byte[] payload = encoding.GetBytes(message ?? string.Empty);
+
+            return await ExecuteWithRetryAsync(
+                parameters,
+                (port, token) => SendAndReceiveInternalAsync(port, parameters.ReadBufferSize, payload, encoding, token),
+                2,
+                cancellationToken).ConfigureAwait(false);
+        }
+
+        private static async Task<string> SendAndReceiveInternalAsync(
+            SerialPort port,
+            int bufferSize,
+            byte[] payload,
+            Encoding encoding,
+            CancellationToken token)
+        {
+            port.DiscardInBuffer();
+            port.DiscardOutBuffer();
+
+            if (payload.Length > 0)
+            {
+                await Task.Run(() => port.Write(payload, 0, payload.Length), token).ConfigureAwait(false);
+            }
+
+            using (var stream = new MemoryStream())
+            {
+                var buffer = new byte[bufferSize];
+
+                while (true)
+                {
+                    try
+                    {
+                        int read = await Task.Run(() => port.Read(buffer, 0, buffer.Length), token).ConfigureAwait(false);
+                        if (read > 0)
+                        {
+                            stream.Write(buffer, 0, read);
+                            if (read < buffer.Length)
+                            {
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+                    catch (TimeoutException)
+                    {
+                        break;
+                    }
+                }
+
+                return encoding.GetString(stream.ToArray());
+            }
+        }
+    }
+}
