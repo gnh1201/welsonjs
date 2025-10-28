@@ -22,6 +22,8 @@ namespace WelsonJS.Launcher
     {
         private readonly ConcurrentDictionary<string, (TConnection Connection, TParameters Parameters)> _pool
             = new ConcurrentDictionary<string, (TConnection, TParameters)>();
+        private readonly ConcurrentDictionary<string, SemaphoreSlim> _openLocks
+            = new ConcurrentDictionary<string, SemaphoreSlim>();
 
         /// <summary>
         /// Creates a unique cache key for the given connection parameters.
@@ -61,11 +63,28 @@ namespace WelsonJS.Launcher
                 return existing.Connection;
             }
 
-            RemoveInternal(key, existing.Connection);
+            var gate = _openLocks.GetOrAdd(key, _ => new SemaphoreSlim(1, 1));
+            await gate.WaitAsync(token).ConfigureAwait(false);
+            try
+            {
+                if (_pool.TryGetValue(key, out existing) && IsConnectionHealthy(existing.Connection))
+                {
+                    return existing.Connection;
+                }
 
-            var connection = await OpenConnectionAsync(parameters, token).ConfigureAwait(false);
-            _pool[key] = (connection, parameters);
-            return connection;
+                if (existing.Connection != null && !IsConnectionHealthy(existing.Connection))
+                {
+                    RemoveInternal(key, existing.Connection);
+                }
+
+                var connection = await OpenConnectionAsync(parameters, token).ConfigureAwait(false);
+                _pool[key] = (connection, parameters);
+                return connection;
+            }
+            finally
+            {
+                gate.Release();
+            }
         }
 
         /// <summary>
