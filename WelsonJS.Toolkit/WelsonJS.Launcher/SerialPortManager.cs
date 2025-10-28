@@ -28,7 +28,8 @@ namespace WelsonJS.Launcher
                 Handshake handshake = Handshake.None,
                 int readTimeout = 500,
                 int writeTimeout = 500,
-                int readBufferSize = 1024)
+                int readBufferSize = 1024,
+                bool resetBuffersBeforeRequest = false)
             {
                 if (string.IsNullOrWhiteSpace(portName)) throw new ArgumentNullException(nameof(portName));
 
@@ -41,6 +42,7 @@ namespace WelsonJS.Launcher
                 ReadTimeout = readTimeout;
                 WriteTimeout = writeTimeout;
                 ReadBufferSize = readBufferSize > 0 ? readBufferSize : 1024;
+                ResetBuffersBeforeRequest = resetBuffersBeforeRequest;
             }
 
             public string PortName { get; }
@@ -52,6 +54,7 @@ namespace WelsonJS.Launcher
             public int ReadTimeout { get; }
             public int WriteTimeout { get; }
             public int ReadBufferSize { get; }
+            public bool ResetBuffersBeforeRequest { get; }
         }
 
         public SerialPortManager()
@@ -140,7 +143,13 @@ namespace WelsonJS.Launcher
 
             return await ExecuteWithRetryAsync(
                 parameters,
-                (port, token) => SendAndReceiveInternalAsync(port, parameters.ReadBufferSize, payload, encoding, token),
+                (port, token) => SendAndReceiveInternalAsync(
+                    port,
+                    parameters.ReadBufferSize,
+                    payload,
+                    encoding,
+                    parameters.ResetBuffersBeforeRequest,
+                    token),
                 2,
                 cancellationToken).ConfigureAwait(false);
         }
@@ -186,10 +195,14 @@ namespace WelsonJS.Launcher
             int bufferSize,
             byte[] payload,
             Encoding encoding,
+            bool resetBuffers,
             CancellationToken token)
         {
-            port.DiscardInBuffer();
-            port.DiscardOutBuffer();
+            if (resetBuffers)
+            {
+                port.DiscardInBuffer();
+                port.DiscardOutBuffer();
+            }
 
             if (payload.Length > 0)
             {
@@ -208,14 +221,17 @@ namespace WelsonJS.Launcher
                         if (read > 0)
                         {
                             stream.Write(buffer, 0, read);
-                            if (read < buffer.Length)
+                            if (port.BytesToRead == 0)
                             {
                                 break;
                             }
                         }
                         else
                         {
-                            break;
+                            if (port.BytesToRead == 0)
+                            {
+                                break;
+                            }
                         }
                     }
                     catch (TimeoutException)
