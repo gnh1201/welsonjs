@@ -70,7 +70,9 @@ namespace WelsonJS.Launcher
                 parameters.Parity,
                 parameters.DataBits,
                 parameters.StopBits,
-                parameters.Handshake
+                parameters.Handshake,
+                parameters.ReadTimeout,
+                parameters.WriteTimeout
             });
         }
 
