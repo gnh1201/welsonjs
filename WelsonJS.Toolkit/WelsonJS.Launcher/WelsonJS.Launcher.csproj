@@ -127,6 +127,12 @@
     <Compile Include="GlobalSettingsForm.Designer.cs">
       <DependentUpon>GlobalSettingsForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="WebSocketManagerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="WebSocketManagerForm.Designer.cs">
+      <DependentUpon>WebSocketManagerForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="ResourceServer.cs" />
     <Compile Include="TraceLogger.cs" />
     <Compile Include="WebSocketManager.cs" />
@@ -146,6 +152,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="GlobalSettingsForm.resx">
       <DependentUpon>GlobalSettingsForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="WebSocketManagerForm.resx">
+      <DependentUpon>WebSocketManagerForm.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />
     <None Include="Properties\Settings.settings">
