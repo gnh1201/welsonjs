@@ -4,7 +4,7 @@
 // https://github.com/gnh1201/welsonjs
 // 
 using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Net.WebSockets;
 using System.Security.Cryptography;
 using System.Text;
@@ -13,82 +13,86 @@ using System.Threading.Tasks;
 
 namespace WelsonJS.Launcher
 {
-    public sealed class WebSocketManager : ConnectionManagerBase<WebSocketManager.Endpoint, ClientWebSocket>, IManagedConnectionProvider
+    public class WebSocketManager
     {
-        private const string ConnectionTypeName = "WebSocket";
-
-        public struct Endpoint
+        private class Entry
         {
-            public Endpoint(string host, int port, string path)
-            {
-                Host = host ?? throw new ArgumentNullException(nameof(host));
-                Port = port;
-                Path = path ?? string.Empty;
-            }
-
-            public string Host { get; }
-            public int Port { get; }
-            public string Path { get; }
+            public ClientWebSocket Socket;
+            public string Host;
+            public int Port;
+            public string Path;
         }
 
-        public WebSocketManager()
-        {
-            ConnectionMonitorRegistry.RegisterProvider(this);
-        }
+        private readonly ConcurrentDictionary<string, Entry> _pool = new ConcurrentDictionary<string, Entry>();
 
-        public string ConnectionType => ConnectionTypeName;
-
-        protected override string CreateKey(Endpoint parameters)
+        // Create a unique cache key using MD5 hash
+        private string MakeKey(string host, int port, string path)
         {
-            string raw = parameters.Host + ":" + parameters.Port + "/" + parameters.Path;
+            string raw = host + ":" + port + "/" + path;
             using (var md5 = MD5.Create())
             {
                 byte[] hash = md5.ComputeHash(Encoding.UTF8.GetBytes(raw));
-                return BitConverter.ToString(hash).Replace("-", string.Empty).ToLowerInvariant();
+                return BitConverter.ToString(hash).Replace("-", "").ToLower();
             }
         }
 
-        protected override async Task<ClientWebSocket> OpenConnectionAsync(Endpoint parameters, CancellationToken token)
+        // Get an open WebSocket or connect a new one
+        public async Task<ClientWebSocket> GetOrCreateAsync(string host, int port, string path)
         {
-            var socket = new ClientWebSocket();
-            var uri = new Uri($"ws://{parameters.Host}:{parameters.Port}/{parameters.Path}");
+            string key = MakeKey(host, port, path);
+
+            if (_pool.TryGetValue(key, out var entry))
+            {
+                var sock = entry.Socket;
+
+                if (sock == null || sock.State != WebSocketState.Open)
+                {
+                    Remove(host, port, path);
+                }
+                else
+                {
+                    return sock;
+                }
+            }
+
+            var newSock = new ClientWebSocket();
+            var uri = new Uri($"ws://{host}:{port}/{path}");
 
             try
             {
-                await socket.ConnectAsync(uri, token).ConfigureAwait(false);
-                return socket;
+                await newSock.ConnectAsync(uri, CancellationToken.None);
+
+                _pool[key] = new Entry
+                {
+                    Socket = newSock,
+                    Host = host,
+                    Port = port,
+                    Path = path
+                };
+
+                return newSock;
             }
             catch (Exception ex)
             {
-                socket.Dispose();
+                newSock.Dispose();
+                Remove(host, port, path);
                 throw new WebSocketException("WebSocket connection failed", ex);
             }
         }
 
-        protected override bool IsConnectionValid(ClientWebSocket connection)
-        {
-            return connection != null && connection.State == WebSocketState.Open;
-        }
-
-        protected override void CloseConnection(ClientWebSocket connection)
-        {
-            try
-            {
-                connection?.Abort();
-            }
-            catch
-            {
-                // Ignore abort exceptions.
-            }
-            finally
-            {
-                connection?.Dispose();
-            }
-        }
-
+        // Remove a socket from the pool and dispose it
         public void Remove(string host, int port, string path)
         {
-            Remove(new Endpoint(host, port, path));
+            string key = MakeKey(host, port, path);
+            if (_pool.TryRemove(key, out var entry))
+            {
+                try
+                {
+                    entry.Socket?.Abort();
+                    entry.Socket?.Dispose();
+                }
+                catch { /* Ignore dispose exceptions */ }
+            }
         }
 
         // Send and receive with automatic retry on first failure
@@ -99,68 +103,35 @@ namespace WelsonJS.Launcher
                 ? new CancellationTokenSource(TimeSpan.FromSeconds(timeoutSec))
                 : new CancellationTokenSource();
 
-            try
+            for (int attempt = 0; attempt < 2; attempt++)
             {
-                return await ExecuteWithRetryAsync(
-                    new Endpoint(host, port, path),
-                    (socket, token) => TrySendAndReceiveAsync(socket, buf, token),
-                    2,
-                    cts.Token).ConfigureAwait(false);
-            }
-            finally
-            {
-                cts.Dispose();
-            }
-        }
-
-        public IReadOnlyCollection<ManagedConnectionStatus> GetStatuses()
-        {
-            var snapshots = SnapshotConnections();
-            var result = new List<ManagedConnectionStatus>(snapshots.Count);
-
-            foreach (var snapshot in snapshots)
-            {
-                string state;
                 try
                 {
-                    state = snapshot.Connection?.State.ToString() ?? "Unknown";
+                    return await TrySendAndReceiveAsync(host, port, path, buf, cts.Token);
                 }
                 catch
                 {
-                    state = "Unknown";
+                    Remove(host, port, path);
+                    if (attempt == 1) throw;
                 }
-
-                var endpoint = snapshot.Parameters;
-                var description = $"ws://{endpoint.Host}:{endpoint.Port}/{endpoint.Path}";
-
-                result.Add(new ManagedConnectionStatus(
-                    ConnectionTypeName,
-                    snapshot.Key,
-                    state,
-                    description,
-                    snapshot.IsValid));
             }
 
-            return result;
-        }
-
-        public bool TryClose(string key)
-        {
-            return TryRemoveByKey(key);
+            throw new InvalidOperationException("Unreachable");
         }
 
         // Actual send and receive implementation that never truncates the accumulated data.
         // - Uses a fixed-size read buffer ONLY for I/O
         // - Accumulates dynamically into a List<byte[]> until EndOfMessage
-        private async Task<string> TrySendAndReceiveAsync(ClientWebSocket socket, byte[] buf, CancellationToken token)
+        private async Task<string> TrySendAndReceiveAsync(string host, int port, string path, byte[] buf, CancellationToken token)
         {
             try
             {
-                if (socket.State != WebSocketState.Open)
+                var sock = await GetOrCreateAsync(host, port, path);
+                if (sock.State != WebSocketState.Open)
                     throw new WebSocketException("WebSocket is not in an open state");
 
                 // Send request as a single text frame
-                await socket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, token).ConfigureAwait(false);
+                await sock.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, token);
 
                 // Fixed-size read buffer for I/O (does NOT cap total message size)
                 byte[] readBuffer = new byte[8192];
@@ -171,12 +142,12 @@ namespace WelsonJS.Launcher
 
                 while (true)
                 {
-                    var res = await socket.ReceiveAsync(new ArraySegment<byte>(readBuffer), token).ConfigureAwait(false);
+                    var res = await sock.ReceiveAsync(new ArraySegment<byte>(readBuffer), token);
 
                     if (res.MessageType == WebSocketMessageType.Close)
                     {
-                        try { await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing as requested by server", token).ConfigureAwait(false); } catch { }
-                        throw new WebSocketException($"WebSocket closed by server: {socket.CloseStatus} {socket.CloseStatusDescription}");
+                        try { await sock.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing as requested by server", token); } catch { }
+                        throw new WebSocketException($"WebSocket closed by server: {sock.CloseStatus} {sock.CloseStatusDescription}");
                     }
 
                     if (res.Count > 0)

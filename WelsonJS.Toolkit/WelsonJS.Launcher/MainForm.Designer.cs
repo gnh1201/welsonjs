@@ -39,7 +39,6 @@
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.userdefinedVariablesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.instancesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.connectionMonitorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.runAsAdministratorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.globalSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.startTheEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -133,7 +132,6 @@
             this.settingsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.userdefinedVariablesToolStripMenuItem,
             this.instancesToolStripMenuItem,
-            this.connectionMonitorToolStripMenuItem,
             this.runAsAdministratorToolStripMenuItem,
             this.globalSettingsToolStripMenuItem,
             this.startTheEditorToolStripMenuItem,
@@ -155,13 +153,6 @@
             this.instancesToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.instancesToolStripMenuItem.Text = "Instances";
             this.instancesToolStripMenuItem.Click += new System.EventHandler(this.instancesToolStripMenuItem_Click);
-            //
-            // connectionMonitorToolStripMenuItem
-            //
-            this.connectionMonitorToolStripMenuItem.Name = "connectionMonitorToolStripMenuItem";
-            this.connectionMonitorToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
-            this.connectionMonitorToolStripMenuItem.Text = "Connections...";
-            this.connectionMonitorToolStripMenuItem.Click += new System.EventHandler(this.connectionMonitorToolStripMenuItem_Click);
             // 
             // runAsAdministratorToolStripMenuItem
             // 
@@ -291,7 +282,6 @@
         private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem userdefinedVariablesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem instancesToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem connectionMonitorToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem runAsAdministratorToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem globalSettingsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem startTheEditorToolStripMenuItem;
