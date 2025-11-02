@@ -135,7 +135,6 @@
             this.runAsAdministratorToolStripMenuItem,
             this.globalSettingsToolStripMenuItem,
             this.startTheEditorToolStripMenuItem,
-            this.webSocketManagerToolStripMenuItem,
             this.openCopilotToolStripMenuItem});
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
             this.settingsToolStripMenuItem.Size = new System.Drawing.Size(62, 20);
@@ -175,16 +174,9 @@
             this.startTheEditorToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.startTheEditorToolStripMenuItem.Text = "Start the editor...";
             this.startTheEditorToolStripMenuItem.Click += new System.EventHandler(this.startCodeEditorToolStripMenuItem_Click);
-            //
-            // webSocketManagerToolStripMenuItem
-            //
-            this.webSocketManagerToolStripMenuItem.Name = "webSocketManagerToolStripMenuItem";
-            this.webSocketManagerToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
-            this.webSocketManagerToolStripMenuItem.Text = "WebSocket manager...";
-            this.webSocketManagerToolStripMenuItem.Click += new System.EventHandler(this.webSocketManagerToolStripMenuItem_Click);
-            //
+            // 
             // openCopilotToolStripMenuItem
-            //
+            // 
             this.openCopilotToolStripMenuItem.Name = "openCopilotToolStripMenuItem";
             this.openCopilotToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.openCopilotToolStripMenuItem.Text = "Open the Copilot...";
@@ -299,7 +291,6 @@
         private System.Windows.Forms.ToolStripMenuItem openCodeEditorToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openLauncherToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openCopilotToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem webSocketManagerToolStripMenuItem;
         private System.Windows.Forms.SaveFileDialog saveFileDialog1;
         private System.Windows.Forms.Button btnStartTheEditor;
         private System.Windows.Forms.Button btnJoinTheCommunity;

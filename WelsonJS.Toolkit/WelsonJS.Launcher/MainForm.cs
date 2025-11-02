@@ -335,11 +335,6 @@ namespace WelsonJS.Launcher
             Program.OpenWebBrowser(Program.GetAppConfig("CopilotUrl"));
         }
 
-        private void webSocketManagerToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            (new WebSocketManagerForm()).Show();
-        }
-
         private void btnJoinTheCommunity_Click(object sender, EventArgs e)
         {
             Program.OpenWebBrowser(Program.GetAppConfig("RepositoryUrl"));
