@@ -41,8 +41,22 @@ namespace WelsonJS.Launcher
         }
 
         [STAThread]
-        static void Main()
+        static void Main(string[] args)
         {
+            // if set the target file path
+            string targetFilePath = GetTargetFilePath(args);
+            if (!string.IsNullOrEmpty(targetFilePath))
+            {
+                try {
+                    HandleTargetFilePath(targetFilePath);
+                }
+                catch (Exception e)
+                {
+                    _logger.Error($"Initialization failed: {e}");
+                }
+                return;
+            }
+
             // create the mutex
             _mutex = new Mutex(true, "WelsonJS.Launcher", out bool createdNew);
             if (!createdNew)
@@ -56,14 +70,165 @@ namespace WelsonJS.Launcher
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new MainForm(_logger));
 
-            // destory the mutex
-            try {
+            // release the mutex
+            try
+            {
                 _mutex.ReleaseMutex();
-            } catch { /* ignore if not owned */ }
+            }
+            catch { /* ignore if not owned */ }
             _mutex.Dispose();
         }
 
-        public static void RunCommandPrompt(string workingDirectory, string entryFileName, string scriptName, bool isConsoleApplication = false, bool isInteractiveServiceAapplication = false)
+        private static string GetTargetFilePath(string[] args)
+        {
+            if (args == null || args.Length == 0) return null;
+
+            for (int i = 0; i < args.Length; i++)
+            {
+                string token = args[i];
+                if (string.Equals(token, "--file", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(token, "/file", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (i + 1 < args.Length)
+                    {
+                        return args[i + 1];
+                    }
+                }
+
+                if (token.StartsWith("--file=", StringComparison.OrdinalIgnoreCase))
+                {
+                    return token.Substring("--file=".Length).Trim('"');
+                }
+            }
+
+            return null;
+        }
+
+        private static void HandleTargetFilePath(string filePath)
+        {
+            string fileExtension = Path.GetExtension(filePath);
+
+            if (String.IsNullOrEmpty(fileExtension))
+            {
+                throw new ArgumentException("The file extension is null or empty");
+            }
+
+            if (fileExtension.Equals(".zip", StringComparison.OrdinalIgnoreCase))
+            {
+                var mainForm = new MainForm(_logger);
+                mainForm.Show();
+                mainForm.RunFromZipFile(filePath);
+                return;
+            }
+
+            if (fileExtension.Equals(".js", StringComparison.OrdinalIgnoreCase))
+            {
+                string workingDirectory = CreateInstanceDirectory();
+
+                string appRoot = GetAppRootDirectory();
+                string appBaseSource = Path.Combine(appRoot, "app.js");
+                if (!File.Exists(appBaseSource))
+                {
+                    throw new FileNotFoundException("app.js not found in application root.", appBaseSource);
+                }
+
+                string appBaseDestination = Path.Combine(workingDirectory, "app.js");
+                File.Copy(appBaseSource, appBaseDestination, overwrite: true);
+
+                string assetsSource = Path.Combine(appRoot, "app", "assets", "js");
+                string assetsDestination = Path.Combine(workingDirectory, "app", "assets", "js");
+                CopyDirectoryRecursive(assetsSource, assetsDestination);
+
+                string entrypointDestination = Path.Combine(workingDirectory, "bootstrap.js");
+                File.Copy(filePath, entrypointDestination, overwrite: true);
+
+                RunCommandPrompt(
+                    workingDirectory: workingDirectory,
+                    entryFileName: "app.js",
+                    scriptName: "bootstrap",
+                    isConsoleApplication: true,
+                    isInteractiveServiceApplication: false
+                );
+                return;
+            }
+
+            throw new NotSupportedException($"Unsupported file type: {fileExtension}");
+        }
+
+        private static string GetAppRootDirectory()
+        {
+            string[] candidates = new[]
+            {
+                GetAppConfig("AppRootDirectory"),
+                AppDomain.CurrentDomain.BaseDirectory,
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "WelsonJS"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "WelsonJS"),
+            };
+
+            foreach (string dir in candidates)
+            {
+                if (string.IsNullOrEmpty(dir))
+                    continue;
+
+                string appJs = Path.Combine(dir, "app.js");
+                if (File.Exists(appJs))
+                    return dir;
+            }
+
+            throw new FileNotFoundException("Could not locate app.js in any known application root directory.");
+        }
+
+        private static string CreateInstanceDirectory()
+        {
+            string instanceId = Guid.NewGuid().ToString();
+            string workingDirectory = GetWorkingDirectory(instanceId);
+
+            try
+            {
+                // check if the working directory exists
+                if (Directory.Exists(workingDirectory))
+                {
+                    throw new InvalidOperationException("GUID validation failed. Directory already exists.");
+                }
+
+                Directory.CreateDirectory(workingDirectory);
+            }
+            catch
+            {
+                throw new Exception("Instance Initialization failed");
+            }
+
+            return workingDirectory;
+        }
+
+        private static void CopyDirectoryRecursive(string sourceDir, string destDir)
+        {
+            if (!Directory.Exists(sourceDir))
+            {
+                throw new DirectoryNotFoundException("Source directory not found: " + sourceDir);
+            }
+
+            Directory.CreateDirectory(destDir);
+
+            foreach (var file in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
+            {
+                string relativePath = file.Substring(sourceDir.Length).TrimStart(
+                    Path.DirectorySeparatorChar,
+                    Path.AltDirectorySeparatorChar
+                );
+
+                string targetPath = Path.Combine(destDir, relativePath);
+                string targetDir = Path.GetDirectoryName(targetPath);
+                if (!Directory.Exists(targetDir))
+                {
+                    Directory.CreateDirectory(targetDir);
+                }
+
+                File.Copy(file, targetPath, overwrite: true);
+            }
+        }
+
+        public static void RunCommandPrompt(string workingDirectory, string entryFileName, string scriptName, bool isConsoleApplication = false, bool isInteractiveServiceApplication = false)
         {
             if (!isConsoleApplication)
             {
@@ -93,33 +258,37 @@ namespace WelsonJS.Launcher
             };
             process.Start();
 
-            process.StandardInput.WriteLine("pushd " + workingDirectory);
-            process.StandardInput.WriteLine();
-            process.StandardInput.Flush();
-            process.StandardOutput.ReadLine();
+            StreamWriter input = process.StandardInput;
+            StreamReader output = process.StandardOutput;
 
-            if (isInteractiveServiceAapplication)
+            input.WriteLine("pushd " + workingDirectory);
+            input.WriteLine();
+            input.Flush();
+            output.ReadLine();
+
+            if (isInteractiveServiceApplication)
             {
-                process.StandardInput.WriteLine($"start cmd /c startInteractiveService.bat");
-                process.StandardInput.WriteLine();
-                process.StandardInput.Flush();
-                process.StandardOutput.ReadLine();
+                input.WriteLine($"start cmd /c startInteractiveService.bat");
+                input.WriteLine();
+                input.Flush();
+                output.ReadLine();
             }
             else if (!isConsoleApplication)
             {
-                process.StandardInput.WriteLine(entryFileName);
-                process.StandardInput.WriteLine();
-                process.StandardInput.Flush();
-                process.StandardOutput.ReadLine();
+                input.WriteLine(entryFileName);
+                input.WriteLine();
+                input.Flush();
+                output.ReadLine();
             }
             else
             {
-                process.StandardInput.WriteLine($"start cmd /c cscript app.js {scriptName}");
-                process.StandardInput.WriteLine();
-                process.StandardInput.Flush();
-                process.StandardOutput.ReadLine();
+                input.WriteLine($"start cmd /c cscript app.js {scriptName}");
+                input.WriteLine();
+                input.Flush();
+                output.ReadLine();
             }
-            process.StandardInput.Close();
+            input.Close();
+
             process.WaitForExit();
         }
 

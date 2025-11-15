@@ -20,6 +20,7 @@ namespace WelsonJS.Launcher
         private readonly string _dateTimeFormat;
         private readonly ICompatibleLogger _logger;
 
+        private string _filePath;
         private string _workingDirectory;
         private string _instanceId;
         private string _scriptName;
@@ -122,6 +123,16 @@ namespace WelsonJS.Launcher
 
         private void btnRunFromZipFile_Click(object sender, EventArgs e)
         {
+            if (!String.IsNullOrEmpty(_filePath))
+            {
+                string fileExtension = Path.GetExtension(_filePath);
+                if (fileExtension != null && fileExtension.Equals(".zip", StringComparison.OrdinalIgnoreCase))
+                {
+                    DisableUI();
+                    Task.Run(() => RunAppPackageFile());
+                }
+            }
+
             using (var openFileDialog = new OpenFileDialog())
             {
                 openFileDialog.Filter = "zip files (*.zip)|*.zip|All files (*.*)|*.*";
@@ -130,15 +141,15 @@ namespace WelsonJS.Launcher
 
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    string filePath = openFileDialog.FileName;
+                    _filePath = openFileDialog.FileName;
 
                     DisableUI();
-                    Task.Run(() => RunAppPackageFile(filePath));
+                    Task.Run(() => RunAppPackageFile());
                 }
             }
         }
 
-        private void RunAppPackageFile(string filePath)
+        private void RunAppPackageFile()
         {
             _instanceId = Guid.NewGuid().ToString();
             _workingDirectory = Program.GetWorkingDirectory(_instanceId);
@@ -153,7 +164,7 @@ namespace WelsonJS.Launcher
                 }
 
                 // try to extract ZIP file
-                ZipFile.ExtractToDirectory(filePath, _workingDirectory);
+                ZipFile.ExtractToDirectory(_filePath, _workingDirectory);
 
                 // record the first deploy time
                 RecordFirstDeployTime(_workingDirectory, _instanceId);
@@ -338,6 +349,12 @@ namespace WelsonJS.Launcher
         private void btnJoinTheCommunity_Click(object sender, EventArgs e)
         {
             Program.OpenWebBrowser(Program.GetAppConfig("RepositoryUrl"));
+        }
+
+        public void RunFromZipFile(string filePath)
+        {
+            _filePath = filePath;
+            btnRunFromZipFile.PerformClick();
         }
     }
 }
