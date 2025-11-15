@@ -193,9 +193,18 @@ namespace WelsonJS.Launcher
 
                 Directory.CreateDirectory(workingDirectory);
             }
-            catch
+            catch (IOException ex)
             {
-                throw new Exception("Instance Initialization failed");
+                throw new Exception("Instance Initialization failed due to an IO error.", ex);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                throw new Exception("Instance Initialization failed due to insufficient permissions.", ex);
+            }
+            catch (InvalidOperationException)
+            {
+                // Let InvalidOperationException bubble up as it is thrown intentionally above
+                throw;
             }
 
             return workingDirectory;
