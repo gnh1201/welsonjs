@@ -130,6 +130,7 @@ namespace WelsonJS.Launcher
                 {
                     DisableUI();
                     Task.Run(() => RunAppPackageFile());
+                    return;
                 }
             }
 
