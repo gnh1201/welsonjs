@@ -25,12 +25,24 @@ DisableWelcomePage=yes
 DisableDirPage=yes
 DisableProgramGroupPage=yes
 LicenseFile=SECURITY.MD
+ChangesAssociations=yes
 
 ; [Registry]
 ; Root: HKCR; Subkey: "welsonjs"; ValueType: "string"; ValueData: "URL:{cm:AppName}"; Flags: uninsdeletekey
 ; Root: HKCR; Subkey: "welsonjs"; ValueType: "string"; ValueName: "URL Protocol"; ValueData: ""
 ; Root: HKCR; Subkey: "welsonjs\DefaultIcon"; ValueType: "string"; ValueData: "{app}\app\favicon.ico,0"
 ; Root: HKCR; Subkey: "welsonjs\shell\open\command"; ValueType: "string"; ValueData: "cscript ""{app}\app.js"" uriloader ""%1"""
+Root: HKCR; Subkey: "WelsonJS.Script"; ValueType: string; ValueData: "WelsonJS Script"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "WelsonJS.Script\DefaultIcon"; ValueType: string; ValueData: "{app}\app\favicon.ico,0"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "WelsonJS.Script\shell"; ValueType: string; ValueData: "open"; Flags: uninsdeletevalue
+Root: HKCR; Subkey: "WelsonJS.Script\shell\open"; ValueType: string; ValueData: "Run with WelsonJS"; Flags: uninsdeletevalue
+Root: HKCR; Subkey: "WelsonJS.Script\shell\open\command"; ValueType: string; ValueData: """{app}\bin\x86\WelsonJS.Launcher.exe"" --file ""%1"""; Flags: uninsdeletevalue
+Root: HKCR; Subkey: ".js"; ValueType: string; ValueData: "WelsonJS.Script"; Flags: uninsdeletevalue
+Root: HKCR; Subkey: ".ts"; ValueType: string; ValueData: "WelsonJS.Script"; Flags: uninsdeletevalue
+Root: HKCR; Subkey: ".re"; ValueType: string; ValueData: "WelsonJS.Script"; Flags: uninsdeletevalue
+Root: HKCR; Subkey: ".res"; ValueType: string; ValueData: "WelsonJS.Script"; Flags: uninsdeletevalue
+Root: HKCR; Subkey: ".ls"; ValueType: string; ValueData: "WelsonJS.Script"; Flags: uninsdeletevalue
+Root: HKCR; Subkey: ".coffee"; ValueType: string; ValueData: "WelsonJS.Script"; Flags: uninsdeletevalue
 
 [Files]
 Source: "app.js"; DestDir: "{app}";
