@@ -207,25 +207,21 @@ namespace WelsonJS.Launcher
                 throw;
             }
 
-            return workingDirectory;
-        }
 
-        private static void CopyDirectoryRecursive(string sourceDir, string destDir)
-        {
-            if (!Directory.Exists(sourceDir))
-            {
-                throw new DirectoryNotFoundException("Source directory not found: " + sourceDir);
-            }
+                var sourceDirInfo = new DirectoryInfo(sourceDir);
 
-            Directory.CreateDirectory(destDir);
+                // Create all subdirectories
+                foreach (DirectoryInfo dir in sourceDirInfo.GetDirectories("*", SearchOption.AllDirectories))
+                {
+                    Directory.CreateDirectory(Path.Combine(destDir, dir.FullName.Substring(sourceDirInfo.FullName.Length + 1)));
+                }
 
-            foreach (var file in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
-            {
-                string relativePath = file.Substring(sourceDir.Length).TrimStart(
-                    Path.DirectorySeparatorChar,
-                    Path.AltDirectorySeparatorChar
-                );
-
+                // Copy all files
+                foreach (FileInfo file in sourceDirInfo.GetFiles("*", SearchOption.AllDirectories))
+                {
+                    string targetPath = Path.Combine(destDir, file.FullName.Substring(sourceDirInfo.FullName.Length + 1));
+                    file.CopyTo(targetPath, true);
+                }
                 string targetPath = Path.Combine(destDir, relativePath);
                 string targetDir = Path.GetDirectoryName(targetPath);
                 if (!Directory.Exists(targetDir))
