@@ -254,11 +254,11 @@ namespace WelsonJS.Launcher
 
             foreach (var file in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
             {
-                string relativePath = file.Substring(sourceDir.Length).TrimStart(
+                string normalizedSource = sourceDir.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
+                string relativePath = file.Substring(normalizedSource.Length + 1).TrimStart(
                     Path.DirectorySeparatorChar,
                     Path.AltDirectorySeparatorChar
                 );
-
                 string targetPath = Path.Combine(destDir, relativePath);
                 string targetDir = Path.GetDirectoryName(targetPath);
                 if (!Directory.Exists(targetDir))
