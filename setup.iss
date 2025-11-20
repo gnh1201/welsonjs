@@ -84,6 +84,7 @@ Name: "{group}\Uninstall {cm:AppName}"; Filename: "{uninstallexe}"; AfterInstall
 ; Filename: {app}\bin\gtk2-runtime-2.24.33-2021-01-30-ts-win64.exe;
 ; Filename: {app}\bin\nmap-7.92\VC_redist.x86.exe;
 ; Filename: {app}\bin\nmap-7.92\npcap-1.50.exe;
+Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -NoProfile -File ""{app}\afterInstall.ps1"""; WorkingDir: "{app}"; Flags: nowait
 Filename: {app}\installService.bat; Flags: nowait
 Filename: {app}\bin\x86\WelsonJS.Launcher.exe; Flags: nowait
 
