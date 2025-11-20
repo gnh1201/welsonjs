@@ -156,7 +156,7 @@ namespace WelsonJS.Launcher
                 ZipFile.ExtractToDirectory(filePath, _workingDirectory);
 
                 // record the first deploy time
-                RecordFirstDeployTime(_workingDirectory, _instanceId);
+                Program.RecordFirstDeployTime(_workingDirectory, _instanceId);
 
                 // follow the sub-directory
                 _workingDirectory = Program.GetWorkingDirectory(_instanceId, true);
@@ -166,7 +166,7 @@ namespace WelsonJS.Launcher
             }
             catch (Exception ex)
             {
-                SafeInvoke(() =>  MessageBox.Show($"Extraction failed: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error));
+                SafeInvoke(() => MessageBox.Show($"Extraction failed: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error));
             }
 
             // Enable UI
@@ -194,41 +194,6 @@ namespace WelsonJS.Launcher
 
             return Program._resourceServer.IsRunning();
         }
-
-        private void RecordFirstDeployTime(string directory, string instanceId)
-        {
-            // get current time
-            DateTime now = DateTime.Now;
-
-            // record to the metadata database
-            InstancesForm instancesForm = new InstancesForm();
-            try
-            {
-                instancesForm.GetDatabaseInstance().Insert(new Dictionary<string, object>
-                {
-                    ["InstanceId"] = instanceId,
-                    ["FirstDeployTime"] = now
-                }, out _);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error($"Failed to record first deploy time: {ex.Message}");
-            }
-            instancesForm.Dispose();
-
-            // record to the instance directory
-            try
-            {
-                string filePath = Path.Combine(directory, ".welsonjs_first_deploy_time");
-                string text = now.ToString(_dateTimeFormat);
-                File.WriteAllText(filePath, text);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error($"Failed to record first deploy time: {ex.Message}");
-            }
-        }
-
         private bool IsInAdministrator()
         {
             try
