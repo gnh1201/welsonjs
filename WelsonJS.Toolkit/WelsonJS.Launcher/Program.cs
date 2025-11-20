@@ -4,12 +4,13 @@
 // https://github.com/gnh1201/welsonjs
 // 
 using System;
+using System.Collections.Generic;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
-using System.Configuration;
 
 namespace WelsonJS.Launcher
 {
@@ -19,9 +20,13 @@ namespace WelsonJS.Launcher
 
         public static Mutex _mutex;
         public static ResourceServer _resourceServer;
+        public static string _dateTimeFormat;
 
         static Program()
         {
+            // get the date time format
+            _dateTimeFormat = GetAppConfig("DateTimeFormat");
+
             // set up logger
             _logger = new TraceLogger();
 
@@ -79,6 +84,40 @@ namespace WelsonJS.Launcher
             _mutex.Dispose();
         }
 
+        public static void RecordFirstDeployTime(string directory, string instanceId)
+        {
+            // get current time
+            DateTime now = DateTime.Now;
+
+            // record to the metadata database
+            InstancesForm instancesForm = new InstancesForm();
+            try
+            {
+                instancesForm.GetDatabaseInstance().Insert(new Dictionary<string, object>
+                {
+                    ["InstanceId"] = instanceId,
+                    ["FirstDeployTime"] = now
+                }, out _);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Failed to record first deploy time: {ex.Message}");
+            }
+            instancesForm.Dispose();
+
+            // record to the instance directory
+            try
+            {
+                string filePath = Path.Combine(directory, ".welsonjs_first_deploy_time");
+                string text = now.ToString(_dateTimeFormat);
+                File.WriteAllText(filePath, text);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Failed to record first deploy time: {ex.Message}");
+            }
+        }
+
         private static string GetTargetFilePath(string[] args)
         {
             if (args == null || args.Length == 0) return null;
@@ -115,15 +154,13 @@ namespace WelsonJS.Launcher
 
             if (fileExtension.Equals(".zip", StringComparison.OrdinalIgnoreCase))
             {
-                var mainForm = new MainForm(_logger);
-                mainForm.Show();
-                mainForm.RunFromZipFile(filePath);
-                return;
+                throw new NotImplementedException("Not implemented yet.");
             }
 
             if (fileExtension.Equals(".js", StringComparison.OrdinalIgnoreCase))
             {
-                string workingDirectory = CreateInstanceDirectory();
+                string instanceId = Guid.NewGuid().ToString();
+                string workingDirectory = CreateInstanceDirectory(instanceId);
 
                 string appRoot = GetAppRootDirectory();
                 string appBaseSource = Path.Combine(appRoot, "app.js");
@@ -139,8 +176,14 @@ namespace WelsonJS.Launcher
                 string assetsDestination = Path.Combine(workingDirectory, "app", "assets", "js");
                 CopyDirectoryRecursive(assetsSource, assetsDestination);
 
+                string libSource = Path.Combine(appRoot, "lib");
+                string libDestination = Path.Combine(workingDirectory, "lib");
+                CopyDirectoryRecursive(libSource, libDestination);
+
                 string entrypointDestination = Path.Combine(workingDirectory, "bootstrap.js");
                 File.Copy(filePath, entrypointDestination, overwrite: true);
+
+                RecordFirstDeployTime(workingDirectory, instanceId);
 
                 RunCommandPrompt(
                     workingDirectory: workingDirectory,
@@ -178,9 +221,8 @@ namespace WelsonJS.Launcher
             throw new FileNotFoundException("Could not locate app.js in any known application root directory.");
         }
 
-        private static string CreateInstanceDirectory()
+        private static string CreateInstanceDirectory(string instanceId)
         {
-            string instanceId = Guid.NewGuid().ToString();
             string workingDirectory = GetWorkingDirectory(instanceId);
 
             try
@@ -193,35 +235,30 @@ namespace WelsonJS.Launcher
 
                 Directory.CreateDirectory(workingDirectory);
             }
-            catch (IOException ex)
+            catch
             {
-                throw new Exception("Instance Initialization failed due to an IO error.", ex);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                throw new Exception("Instance Initialization failed due to insufficient permissions.", ex);
-            }
-            catch (InvalidOperationException)
-            {
-                // Let InvalidOperationException bubble up as it is thrown intentionally above
-                throw;
+                throw new Exception("Instance Initialization failed");
             }
 
+            return workingDirectory;
+        }
 
-                var sourceDirInfo = new DirectoryInfo(sourceDir);
+        private static void CopyDirectoryRecursive(string sourceDir, string destDir)
+        {
+            if (!Directory.Exists(sourceDir))
+            {
+                throw new DirectoryNotFoundException("Source directory not found: " + sourceDir);
+            }
 
-                // Create all subdirectories
-                foreach (DirectoryInfo dir in sourceDirInfo.GetDirectories("*", SearchOption.AllDirectories))
-                {
-                    Directory.CreateDirectory(Path.Combine(destDir, dir.FullName.Substring(sourceDirInfo.FullName.Length + 1)));
-                }
+            Directory.CreateDirectory(destDir);
 
-                // Copy all files
-                foreach (FileInfo file in sourceDirInfo.GetFiles("*", SearchOption.AllDirectories))
-                {
-                    string targetPath = Path.Combine(destDir, file.FullName.Substring(sourceDirInfo.FullName.Length + 1));
-                    file.CopyTo(targetPath, true);
-                }
+            foreach (var file in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
+            {
+                string relativePath = file.Substring(sourceDir.Length).TrimStart(
+                    Path.DirectorySeparatorChar,
+                    Path.AltDirectorySeparatorChar
+                );
+
                 string targetPath = Path.Combine(destDir, relativePath);
                 string targetDir = Path.GetDirectoryName(targetPath);
                 if (!Directory.Exists(targetDir))

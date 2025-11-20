@@ -14,6 +14,8 @@ function main(args) {
     } catch (e) {
         console.error("lib/http: Something wrong");
     }
+    
+    sleep(100000);
 
     //Toolkit.create();
 }
