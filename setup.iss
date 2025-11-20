@@ -60,6 +60,7 @@ Source: "settings.example.ini"; DestDir: "{app}";
 Source: "defaultService.example.js"; DestDir: "{app}";
 Source: "installService.bat"; DestDir: "{app}";
 Source: "uninstallService.bat"; DestDir: "{app}";
+Source: "afterInstall.ps1"; DestDir: "{app}";
 Source: "helloworld.*"; DestDir: "{app}";
 Source: "app\*"; Excludes: "assets\img\_templates,assets\tessdata\*,assets\tessdata_best\*,assets\tessdata_fast\*"; DestDir: "{app}/app"; Flags: ignoreversion recursesubdirs;
 Source: "lib\*"; DestDir: "{app}/lib"; Flags: ignoreversion recursesubdirs;
