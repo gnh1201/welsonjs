@@ -20,7 +20,6 @@ namespace WelsonJS.Launcher
         private readonly string _dateTimeFormat;
         private readonly ICompatibleLogger _logger;
 
-        private string _filePath;
         private string _workingDirectory;
         private string _instanceId;
         private string _scriptName;
@@ -123,17 +122,6 @@ namespace WelsonJS.Launcher
 
         private void btnRunFromZipFile_Click(object sender, EventArgs e)
         {
-            if (!String.IsNullOrEmpty(_filePath))
-            {
-                string fileExtension = Path.GetExtension(_filePath);
-                if (fileExtension != null && fileExtension.Equals(".zip", StringComparison.OrdinalIgnoreCase))
-                {
-                    DisableUI();
-                    Task.Run(() => RunAppPackageFile());
-                    return;
-                }
-            }
-
             using (var openFileDialog = new OpenFileDialog())
             {
                 openFileDialog.Filter = "zip files (*.zip)|*.zip|All files (*.*)|*.*";
@@ -142,15 +130,15 @@ namespace WelsonJS.Launcher
 
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    _filePath = openFileDialog.FileName;
+                    string filePath = openFileDialog.FileName;
 
                     DisableUI();
-                    Task.Run(() => RunAppPackageFile());
+                    Task.Run(() => RunAppPackageFile(filePath));
                 }
             }
         }
 
-        private void RunAppPackageFile()
+        private void RunAppPackageFile(string filePath)
         {
             _instanceId = Guid.NewGuid().ToString();
             _workingDirectory = Program.GetWorkingDirectory(_instanceId);
@@ -165,7 +153,7 @@ namespace WelsonJS.Launcher
                 }
 
                 // try to extract ZIP file
-                ZipFile.ExtractToDirectory(_filePath, _workingDirectory);
+                ZipFile.ExtractToDirectory(filePath, _workingDirectory);
 
                 // record the first deploy time
                 Program.RecordFirstDeployTime(_workingDirectory, _instanceId);
@@ -178,7 +166,7 @@ namespace WelsonJS.Launcher
             }
             catch (Exception ex)
             {
-                SafeInvoke(() =>  MessageBox.Show($"Extraction failed: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error));
+                SafeInvoke(() => MessageBox.Show($"Extraction failed: {ex.Message}", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error));
             }
 
             // Enable UI
@@ -206,7 +194,6 @@ namespace WelsonJS.Launcher
 
             return Program._resourceServer.IsRunning();
         }
-
         private bool IsInAdministrator()
         {
             try
@@ -316,12 +303,6 @@ namespace WelsonJS.Launcher
         private void btnJoinTheCommunity_Click(object sender, EventArgs e)
         {
             Program.OpenWebBrowser(Program.GetAppConfig("RepositoryUrl"));
-        }
-
-        public void RunFromZipFile(string filePath)
-        {
-            _filePath = filePath;
-            btnRunFromZipFile.PerformClick();
         }
     }
 }
