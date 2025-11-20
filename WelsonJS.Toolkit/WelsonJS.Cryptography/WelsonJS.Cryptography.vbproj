@@ -17,22 +17,18 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <RemoveIntegerChecks>True</RemoveIntegerChecks>
-    <RegisterForComInterop>True</RegisterForComInterop>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <RemoveIntegerChecks>True</RemoveIntegerChecks>
-    <RegisterForComInterop>True</RegisterForComInterop>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <RemoveIntegerChecks>True</RemoveIntegerChecks>
-    <RegisterForComInterop>True</RegisterForComInterop>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
     <RemoveIntegerChecks>True</RemoveIntegerChecks>
-    <RegisterForComInterop>True</RegisterForComInterop>
   </PropertyGroup>
 
 </Project>
