@@ -21,7 +21,8 @@ New-Item -ItemType Directory -Path $TmpDir    -Force | Out-Null
 $arch = "x86"
 if ($env:PROCESSOR_ARCHITECTURE -eq "AMD64") { $arch = "x64" }
 elseif ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { $arch = "arm64" }
-if ($env:PROCESSOR_ARCHITEW6432) { $arch = "x64" }
+if ($env:PROCESSOR_ARCHITEW6432 -eq "AMD64") { $arch = "x64" }
+elseif ($env:PROCESSOR_ARCHITEW6432 -eq "ARM64") { $arch = "arm64" }
 
 Write-Host "[*] Detected architecture: $arch"
 Write-Host ""
