@@ -90,20 +90,21 @@ namespace WelsonJS.Launcher
             DateTime now = DateTime.Now;
 
             // record to the metadata database
-            InstancesForm instancesForm = new InstancesForm();
-            try
+            using (InstancesForm instancesForm = new InstancesForm())
             {
-                instancesForm.GetDatabaseInstance().Insert(new Dictionary<string, object>
+                try
                 {
-                    ["InstanceId"] = instanceId,
-                    ["FirstDeployTime"] = now
-                }, out _);
+                    instancesForm.GetDatabaseInstance().Insert(new Dictionary<string, object>
+                    {
+                        ["InstanceId"] = instanceId,
+                        ["FirstDeployTime"] = now
+                    }, out _);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error($"Failed to record first deploy time: {ex.Message}");
+                }
             }
-            catch (Exception ex)
-            {
-                _logger.Error($"Failed to record first deploy time: {ex.Message}");
-            }
-            instancesForm.Dispose();
 
             // record to the instance directory
             try
