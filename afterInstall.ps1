@@ -369,7 +369,11 @@ try {
 }
 catch {
     Write-Host "[FATAL] Extraction/installation phase failed."
-    Write-Host $_.Exception.Message
+    if ($_ -is [System.Exception]) {
+        Write-Host $_.Exception.Message
+    } else {
+        Write-Host $_
+    }
     exit 1
 }
 
