@@ -116,7 +116,7 @@ function Extract-CompressedFile {
     if ($entries.Count -eq 1 -and $entries[0].PSIsContainer) {
         # Single root directory inside archive -> flatten
         Write-Host "[*] Archive has a single root directory. Flattening..."
-        $innerItems = Get-ChildItem -LiteralPath $entries[0].FullName
+        $innerItems = Get-ChildItem -LiteralPath $entries[0].FullName -Force
         foreach ($item in $innerItems) {
             Move-Item -LiteralPath $item.FullName -Destination $DestinationDirectory -Force
         }
