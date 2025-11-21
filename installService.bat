@@ -6,12 +6,8 @@ REM https://github.com/gnh1201/welsonjs
 REM Set the service name
 set SERVICE_NAME=WelsonJS.Service
 
-REM Get the current directory
-set CURRENT_DIR=%~dp0
-set CURRENT_DIR=%CURRENT_DIR:~0,-1%
-
 REM Set the paths
-set EXE_PATH=%CURRENT_DIR%\bin\x86\WelsonJS.Service.exe
+set EXE_PATH=%APPDATA%\WelsonJS\bin\WelsonJS.Service.exe
 set INSTALL_UTIL_PATH=%SystemRoot%\Microsoft.NET\Framework\v4.0.30319\InstallUtil.exe
 
 REM Uninstall the service
