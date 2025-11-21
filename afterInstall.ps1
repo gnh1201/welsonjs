@@ -69,7 +69,11 @@ function Download-File {
     }
     catch {
         Write-Host "[ERROR] Failed to download: $Url"
-        Write-Host $_.Exception.Message
+        if ($_ -is [System.Exception]) {
+            Write-Host $_.Exception.Message
+        } else {
+            Write-Host $_
+        }
         throw
     }
 }
@@ -101,7 +105,11 @@ function Extract-CompressedFile {
     }
     catch {
         Write-Host "[ERROR] Failed to extract: $CompressedPath"
-        Write-Host $_.Exception.Message
+        if ($_ -is [System.Exception]) {
+            Write-Host $_.Exception.Message
+        } else {
+            Write-Host $_
+        }
         throw
     }
 
@@ -170,7 +178,11 @@ function Extract-TarGzArchive {
     }
     catch {
         Write-Host "[ERROR] Failed to extract TAR.GZ archive: $ArchivePath"
-        Write-Host $_.Exception.Message
+        if ($_ -is [System.Exception]) {
+            Write-Host $_.Exception.Message
+        } else {
+            Write-Host $_
+        }
         throw
     }
 }
@@ -319,8 +331,12 @@ try {
     }
 }
 catch {
-    Write-Host "[FATAL] Download phase faled."
-    Write-Host $_.Exception.Message
+    Write-Host "[FATAL] Download phase failed."
+    if ($_ -is [System.Exception]) {
+        Write-Host $_.Exception.Message
+    } else {
+        Write-Host $_
+    }
     exit 1
 }
 
