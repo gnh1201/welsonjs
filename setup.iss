@@ -27,7 +27,7 @@ DisableProgramGroupPage=yes
 LicenseFile=SECURITY.MD
 ChangesAssociations=yes
 
-; [Registry]
+[Registry]
 ; Root: HKCR; Subkey: "welsonjs"; ValueType: "string"; ValueData: "URL:{cm:AppName}"; Flags: uninsdeletekey
 ; Root: HKCR; Subkey: "welsonjs"; ValueType: "string"; ValueName: "URL Protocol"; ValueData: ""
 ; Root: HKCR; Subkey: "welsonjs\DefaultIcon"; ValueType: "string"; ValueData: "{app}\app\favicon.ico,0"
