@@ -36,7 +36,7 @@ Root: HKCR; Subkey: "{cm:AppName}.Script"; ValueType: string; ValueData: "{cm:Ap
 Root: HKCR; Subkey: "{cm:AppName}.Script\DefaultIcon"; ValueType: string; ValueData: "{app}\app\favicon.ico,0"; Flags: uninsdeletekey
 Root: HKCR; Subkey: "{cm:AppName}.Script\shell"; ValueType: string; ValueData: "open"; Flags: uninsdeletevalue
 Root: HKCR; Subkey: "{cm:AppName}.Script\shell\open"; ValueType: string; ValueData: "Run with {cm:AppName}"; Flags: uninsdeletevalue
-Root: HKCR; Subkey: "{cm:AppName}.Script\shell\open\command"; ValueType: string; ValueData: """{app}\bin\x86\WelsonJS.Launcher.exe"" --file ""%1"""; Flags: uninsdeletevalue
+Root: HKCR; Subkey: "{cm:AppName}.Script\shell\open\command"; ValueType: string; ValueData: """{userappdata}\{cm:AppName}\WelsonJS.Launcher.exe"" --file ""%1"""; Flags: uninsdeletevalue
 Root: HKCR; Subkey: ".js"; ValueType: string; ValueData: "{cm:AppName}.Script"; Flags: uninsdeletevalue
 Root: HKCR; Subkey: ".ts"; ValueType: string; ValueData: "{cm:AppName}.Script"; Flags: uninsdeletevalue
 Root: HKCR; Subkey: ".re"; ValueType: string; ValueData: "{cm:AppName}.Script"; Flags: uninsdeletevalue
@@ -77,7 +77,7 @@ Type: files; Name: "{app}\settings.ini"
 Type: files; Name: "{app}\defaultService.js"
 
 [Icons]
-Name: "{group}\Start {cm:AppName} Launcher"; Filename: "{userappdata}\{cm:AppName}\WelsonJS.Launcher.exe"; AfterInstall: SetElevationBit('{group}\Start {cm:AppName} Launcher.lnk');
+Name: "{group}\Start {cm:AppName} Launcher"; Filename: "{userappdata}\{cm:AppName}\bin\WelsonJS.Launcher.exe"; AfterInstall: SetElevationBit('{group}\Start {cm:AppName} Launcher.lnk');
 Name: "{group}\Test {cm:AppName}"; Filename: "{app}\bootstrap.bat"; AfterInstall: SetElevationBit('{group}\Test {cm:AppName}.lnk');
 Name: "{group}\Uninstall {cm:AppName}"; Filename: "{uninstallexe}"; AfterInstall: SetElevationBit('{group}\Uninstall {cm:AppName}.lnk');
 
