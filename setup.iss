@@ -36,7 +36,7 @@ Root: HKCR; Subkey: "{cm:AppName}.Script"; ValueType: string; ValueData: "{cm:Ap
 Root: HKCR; Subkey: "{cm:AppName}.Script\DefaultIcon"; ValueType: string; ValueData: "{app}\app\favicon.ico,0"; Flags: uninsdeletekey
 Root: HKCR; Subkey: "{cm:AppName}.Script\shell"; ValueType: string; ValueData: "open"; Flags: uninsdeletevalue
 Root: HKCR; Subkey: "{cm:AppName}.Script\shell\open"; ValueType: string; ValueData: "Run with {cm:AppName}"; Flags: uninsdeletevalue
-Root: HKCR; Subkey: "{cm:AppName}.Script\shell\open\command"; ValueType: string; ValueData: """{userappdata}\{cm:AppName}\WelsonJS.Launcher.exe"" --file ""%1"""; Flags: uninsdeletevalue
+Root: HKCR; Subkey: "{cm:AppName}.Script\shell\open\command"; ValueType: string; ValueData: """{userappdata}\{cm:AppName}\bin\WelsonJS.Launcher.exe"" --file ""%1"""; Flags: uninsdeletevalue
 Root: HKCR; Subkey: ".js"; ValueType: string; ValueData: "{cm:AppName}.Script"; Flags: uninsdeletevalue
 Root: HKCR; Subkey: ".ts"; ValueType: string; ValueData: "{cm:AppName}.Script"; Flags: uninsdeletevalue
 Root: HKCR; Subkey: ".re"; ValueType: string; ValueData: "{cm:AppName}.Script"; Flags: uninsdeletevalue
