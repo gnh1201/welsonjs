@@ -1,5 +1,5 @@
 ; @created_on 2020-06-26
-; @updated_on 2025-03-21
+; @updated_on 2025-11-21
 ; @author Namhyeon Go <gnh1201@catswords.re.kr>
 
 [Setup]
@@ -27,22 +27,22 @@ DisableProgramGroupPage=yes
 LicenseFile=SECURITY.MD
 ChangesAssociations=yes
 
-; [Registry]
+[Registry]
 ; Root: HKCR; Subkey: "welsonjs"; ValueType: "string"; ValueData: "URL:{cm:AppName}"; Flags: uninsdeletekey
 ; Root: HKCR; Subkey: "welsonjs"; ValueType: "string"; ValueName: "URL Protocol"; ValueData: ""
 ; Root: HKCR; Subkey: "welsonjs\DefaultIcon"; ValueType: "string"; ValueData: "{app}\app\favicon.ico,0"
 ; Root: HKCR; Subkey: "welsonjs\shell\open\command"; ValueType: "string"; ValueData: "cscript ""{app}\app.js"" uriloader ""%1"""
-Root: HKCR; Subkey: "WelsonJS.Script"; ValueType: string; ValueData: "WelsonJS Script"; Flags: uninsdeletekey
-Root: HKCR; Subkey: "WelsonJS.Script\DefaultIcon"; ValueType: string; ValueData: "{app}\app\favicon.ico,0"; Flags: uninsdeletekey
-Root: HKCR; Subkey: "WelsonJS.Script\shell"; ValueType: string; ValueData: "open"; Flags: uninsdeletevalue
-Root: HKCR; Subkey: "WelsonJS.Script\shell\open"; ValueType: string; ValueData: "Run with WelsonJS"; Flags: uninsdeletevalue
-Root: HKCR; Subkey: "WelsonJS.Script\shell\open\command"; ValueType: string; ValueData: """{app}\bin\x86\WelsonJS.Launcher.exe"" --file ""%1"""; Flags: uninsdeletevalue
-Root: HKCR; Subkey: ".js"; ValueType: string; ValueData: "WelsonJS.Script"; Flags: uninsdeletevalue
-Root: HKCR; Subkey: ".ts"; ValueType: string; ValueData: "WelsonJS.Script"; Flags: uninsdeletevalue
-Root: HKCR; Subkey: ".re"; ValueType: string; ValueData: "WelsonJS.Script"; Flags: uninsdeletevalue
-Root: HKCR; Subkey: ".res"; ValueType: string; ValueData: "WelsonJS.Script"; Flags: uninsdeletevalue
-Root: HKCR; Subkey: ".ls"; ValueType: string; ValueData: "WelsonJS.Script"; Flags: uninsdeletevalue
-Root: HKCR; Subkey: ".coffee"; ValueType: string; ValueData: "WelsonJS.Script"; Flags: uninsdeletevalue
+Root: HKCR; Subkey: "{cm:AppName}.Script"; ValueType: string; ValueData: "{cm:AppName} Script"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "{cm:AppName}.Script\DefaultIcon"; ValueType: string; ValueData: "{app}\app\favicon.ico,0"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "{cm:AppName}.Script\shell"; ValueType: string; ValueData: "open"; Flags: uninsdeletevalue
+Root: HKCR; Subkey: "{cm:AppName}.Script\shell\open"; ValueType: string; ValueData: "Run with {cm:AppName}"; Flags: uninsdeletevalue
+Root: HKCR; Subkey: "{cm:AppName}.Script\shell\open\command"; ValueType: string; ValueData: """{userappdata}\{cm:AppName}\WelsonJS.Launcher.exe"" --file ""%1"""; Flags: uninsdeletevalue
+Root: HKCR; Subkey: ".js"; ValueType: string; ValueData: "{cm:AppName}.Script"; Flags: uninsdeletevalue
+Root: HKCR; Subkey: ".ts"; ValueType: string; ValueData: "{cm:AppName}.Script"; Flags: uninsdeletevalue
+Root: HKCR; Subkey: ".re"; ValueType: string; ValueData: "{cm:AppName}.Script"; Flags: uninsdeletevalue
+Root: HKCR; Subkey: ".res"; ValueType: string; ValueData: "{cm:AppName}.Script"; Flags: uninsdeletevalue
+Root: HKCR; Subkey: ".ls"; ValueType: string; ValueData: "{cm:AppName}.Script"; Flags: uninsdeletevalue
+Root: HKCR; Subkey: ".coffee"; ValueType: string; ValueData: "{cm:AppName}.Script"; Flags: uninsdeletevalue
 
 [Files]
 Source: "app.js"; DestDir: "{app}";
@@ -64,7 +64,7 @@ Source: "afterInstall.ps1"; DestDir: "{app}";
 Source: "helloworld.*"; DestDir: "{app}";
 Source: "app\*"; Excludes: "assets\img\_templates,assets\tessdata\*,assets\tessdata_best\*,assets\tessdata_fast\*"; DestDir: "{app}/app"; Flags: ignoreversion recursesubdirs;
 Source: "lib\*"; DestDir: "{app}/lib"; Flags: ignoreversion recursesubdirs;
-Source: "bin\*"; Excludes: "installer\*"; DestDir: "{app}/bin"; Flags: ignoreversion recursesubdirs;
+; Source: "bin\*"; Excludes: "installer\*"; DestDir: "{app}/bin"; Flags: ignoreversion recursesubdirs;
 Source: "data\*"; Excludes: "*-apikey.txt"; DestDir: "{app}/data"; Flags: ignoreversion recursesubdirs;
 ; Source: "node_modules\*"; DestDir: "{app}/node_modules"; Flags: ignoreversion recursesubdirs;
 ; Source: "bower_components\*"; DestDir: "{app}/node_modules"; Flags: ignoreversion recursesubdirs;
@@ -77,7 +77,7 @@ Type: files; Name: "{app}\settings.ini"
 Type: files; Name: "{app}\defaultService.js"
 
 [Icons]
-Name: "{group}\Start {cm:AppName} Launcher"; Filename: "{app}\bin\x86\WelsonJS.Launcher.exe"; AfterInstall: SetElevationBit('{group}\Start {cm:AppName} Launcher.lnk');
+Name: "{group}\Start {cm:AppName} Launcher"; Filename: "{userappdata}\{cm:AppName}\bin\WelsonJS.Launcher.exe"; AfterInstall: SetElevationBit('{group}\Start {cm:AppName} Launcher.lnk');
 Name: "{group}\Test {cm:AppName}"; Filename: "{app}\bootstrap.bat"; AfterInstall: SetElevationBit('{group}\Test {cm:AppName}.lnk');
 Name: "{group}\Uninstall {cm:AppName}"; Filename: "{uninstallexe}"; AfterInstall: SetElevationBit('{group}\Uninstall {cm:AppName}.lnk');
 
@@ -85,9 +85,9 @@ Name: "{group}\Uninstall {cm:AppName}"; Filename: "{uninstallexe}"; AfterInstall
 ; Filename: {app}\bin\gtk2-runtime-2.24.33-2021-01-30-ts-win64.exe;
 ; Filename: {app}\bin\nmap-7.92\VC_redist.x86.exe;
 ; Filename: {app}\bin\nmap-7.92\npcap-1.50.exe;
-Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -NoProfile -File ""{app}\afterInstall.ps1"""; WorkingDir: "{app}"; Flags: nowait
+Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -NoProfile -File ""{app}\afterInstall.ps1"""; WorkingDir: "{app}"; Flags: waituntilterminated
 Filename: {app}\installService.bat; Flags: nowait
-Filename: {app}\bin\x86\WelsonJS.Launcher.exe; Flags: nowait
+Filename: "{userappdata}\{cm:AppName}\bin\WelsonJS.Launcher.exe"; Flags: nowait
 
 [UninstallRun]
 Filename: {app}\uninstallService.bat;

@@ -181,10 +181,13 @@ function Extract-TarGz {
 # ================================
 # SET DOWNLOAD URLS BASED ON ARCH
 # ================================
-$PythonUrl = $null
-$CurlUrl   = $null
-$YaraUrl   = $null
-$WamrUrl   = $null
+$PythonUrl    = $null
+$CurlUrl      = $null
+$YaraUrl      = $null
+$WamrUrl      = $null
+
+# WelsonJS binary artifacts
+$ArtifactsUrl = "https://catswords.blob.core.windows.net/welsonjs/artifacts.zip"
 
 switch ($arch) {
     "x64" {
@@ -227,40 +230,44 @@ switch ($arch) {
     }
 }
 
-Write-Host "[*] Python URL: $PythonUrl"
-Write-Host "[*] curl URL  : $CurlUrl"
+Write-Host "[*] Python URL   : $PythonUrl"
+Write-Host "[*] curl URL    : $CurlUrl"
 if ($YaraUrl) {
-    Write-Host "[*] YARA URL : $YaraUrl"
+    Write-Host "[*] YARA URL   : $YaraUrl"
 } else {
-    Write-Host "[*] YARA     : skipped on this architecture"
+    Write-Host "[*] YARA       : skipped on this architecture"
 }
 if ($WamrUrl) {
-    Write-Host "[*] WAMR URL : $WamrUrl"
+    Write-Host "[*] WAMR URL   : $WamrUrl"
 } else {
-    Write-Host "[*] WAMR     : skipped on this architecture"
+    Write-Host "[*] WAMR       : skipped on this architecture"
 }
+Write-Host "[*] artifacts URL: $ArtifactsUrl"
 Write-Host ""
 
 
 # ================================
 # DOWNLOAD FILES
 # ================================
-$PythonZip = Join-Path $TmpDir "python.zip"
-$CurlZip   = Join-Path $TmpDir "curl.zip"
-$YaraZip   = Join-Path $TmpDir "yara.zip"
-$WamrTgz   = Join-Path $TmpDir "wamr.tar.gz"
+$PythonZip    = Join-Path $TmpDir "python.zip"
+$CurlZip      = Join-Path $TmpDir "curl.zip"
+$YaraZip      = Join-Path $TmpDir "yara.zip"
+$WamrTgz      = Join-Path $TmpDir "wamr.tar.gz"
+$ArtifactsZip = Join-Path $TmpDir "artifacts.zip"
 
 try {
-    Download-File -Url $PythonUrl -Destination $PythonZip
-    Download-File -Url $CurlUrl   -Destination $CurlZip
+    Download-File -Url $PythonUrl    -Destination $PythonZip
+    Download-File -Url $CurlUrl      -Destination $CurlZip
 
     if ($YaraUrl) {
-        Download-File -Url $YaraUrl -Destination $YaraZip
+        Download-File -Url $YaraUrl  -Destination $YaraZip
     }
 
     if ($WamrUrl) {
-        Download-File -Url $WamrUrl -Destination $WamrTgz
+        Download-File -Url $WamrUrl  -Destination $WamrTgz
     }
+
+    Download-File -Url $ArtifactsUrl -Destination $ArtifactsZip
 }
 catch {
     Write-Host "[FATAL] Download phase failed."
@@ -272,16 +279,18 @@ catch {
 # EXTRACT FILES
 # ================================
 try {
-    Extract-Zip -ZipPath $PythonZip -DestDir (Join-Path $TargetDir "python")
-    Extract-Zip -ZipPath $CurlZip   -DestDir (Join-Path $TargetDir "curl")
+    Extract-Zip  -ZipPath $PythonZip    -DestDir (Join-Path $TargetDir "python")
+    Extract-Zip  -ZipPath $CurlZip      -DestDir (Join-Path $TargetDir "curl")
 
     if ($YaraUrl) {
-        Extract-Zip -ZipPath $YaraZip -DestDir (Join-Path $TargetDir "yara")
+        Extract-Zip -ZipPath $YaraZip   -DestDir (Join-Path $TargetDir "yara")
     }
 
     if ($WamrUrl) {
         Extract-TarGz -TarGzPath $WamrTgz -DestDir (Join-Path $TargetDir "wamr")
     }
+
+    Extract-Zip  -ZipPath $ArtifactsZip -DestDir (Join-Path $TargetDir "bin")
 }
 catch {
     Write-Host "[FATAL] Extraction phase failed."
