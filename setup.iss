@@ -37,12 +37,9 @@ Root: HKCR; Subkey: "{cm:AppName}.Script\DefaultIcon"; ValueType: string; ValueD
 Root: HKCR; Subkey: "{cm:AppName}.Script\shell"; ValueType: string; ValueData: "open"; Flags: uninsdeletevalue
 Root: HKCR; Subkey: "{cm:AppName}.Script\shell\open"; ValueType: string; ValueData: "Run with {cm:AppName}"; Flags: uninsdeletevalue
 Root: HKCR; Subkey: "{cm:AppName}.Script\shell\open\command"; ValueType: string; ValueData: """{userappdata}\{cm:AppName}\bin\WelsonJS.Launcher.exe"" --file ""%1"""; Flags: uninsdeletevalue
+Root: HKCR; Subkey: "{cm:AppName}.Script\ScriptEngine"; ValueType: string; ValueData: "JScript"; Flags: uninsdeletevalue
+Root: HKCR; Subkey: "{cm:AppName}.Script\ScriptHostEncode"; ValueType: string; ValueData: "{{85131630-480C-11D2-B1F9-00C04F86C324}}"; Flags: uninsdeletevalue
 Root: HKCR; Subkey: ".js"; ValueType: string; ValueData: "{cm:AppName}.Script"; Flags: uninsdeletevalue
-Root: HKCR; Subkey: ".ts"; ValueType: string; ValueData: "{cm:AppName}.Script"; Flags: uninsdeletevalue
-Root: HKCR; Subkey: ".re"; ValueType: string; ValueData: "{cm:AppName}.Script"; Flags: uninsdeletevalue
-Root: HKCR; Subkey: ".res"; ValueType: string; ValueData: "{cm:AppName}.Script"; Flags: uninsdeletevalue
-Root: HKCR; Subkey: ".ls"; ValueType: string; ValueData: "{cm:AppName}.Script"; Flags: uninsdeletevalue
-Root: HKCR; Subkey: ".coffee"; ValueType: string; ValueData: "{cm:AppName}.Script"; Flags: uninsdeletevalue
 
 [Files]
 Source: "app.js"; DestDir: "{app}";
