@@ -15,4 +15,3 @@ sc stop "%SERVICE_NAME%"
 "%INSTALL_UTIL_PATH%" /u "%EXE_PATH%"
 
 echo Service "%SERVICE_NAME%" removed.
-pause
