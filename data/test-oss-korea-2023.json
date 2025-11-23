@@ -39,63 +39,63 @@
     "tests": [
         {
             "id": "es5_polyfills",
-            "description": "Indicates Whether Polyfill higher than ES5 level has successfully performed (Perform pollyfill higher than ES5 level in Windows built-in Engine)",
+            "description": "Checks whether polyfills above the ES5 level run successfully (using Windows' built-in engine).",
             "tags": [
-                "Javascript engine",
+                "JavaScript Engine",
                 "ECMAScript Polyfills"
             ]
         },
         {
             "id": "registry_find_provider",
-            "description": "find registry provider",
+            "description": "Find registry provider",
             "tags": [
                 "Windows Systems",
-                "Control Registry"
+                "Registry Control"
             ]
         },
         {
             "id": "registry_write",
-            "description": "writing Registry",
+            "description": "Write registry values",
             "tags": [
                 "Windows Systems",
-                "control Registry"
+                "Registry Control"
             ]
         },
         {
             "id": "registry_read",
-            "description": "reading Registry",
+            "description": "Read registry values",
             "tags": [
                 "Windows Systems",
-                "control Registry"
+                "Registry Control"
             ]
         },
         {
             "id": "wmi_create_object",
-            "description": "create WMI object",
+            "description": "Create WMI object",
             "tags": [
                 "Windows Systems",
-                "control WMI(Windows Management Instrumentation) "
+                "WMI (Windows Management Instrumentation)"
             ]
         },
         {
             "id": "wmi_execute_query",
-            "description": "executing WMI query",
+            "description": "Execute WMI query",
             "tags": [
                 "Windows Systems",
-                "control WMI(Windows Management Instrumentation) "
+                "WMI (Windows Management Instrumentation)"
             ]
         },
         {
             "id": "wmi_result_query",
-            "description": "the result of WMI query",
+            "description": "Retrieve WMI query results",
             "tags": [
                 "Windows Systems",
-                "control WMI(Windows Management Instrumentation) "
+                "WMI (Windows Management Instrumentation)"
             ]
         },
         {
             "id": "shell_create_object",
-            "description": "create Shell object",
+            "description": "Create Shell object",
             "tags": [
                 "Windows Systems",
                 "Windows Shell"
@@ -103,7 +103,7 @@
         },
         {
             "id": "shell_build_command_line",
-            "description": "building command line (input: Array Object, output: Unescaped Command String)",
+            "description": "Build command line (input: Array, output: unescaped command string)",
             "tags": [
                 "Windows Systems",
                 "Windows Shell"
@@ -111,7 +111,7 @@
         },
         {
             "id": "shell_set_charset",
-            "description": "set Charset",
+            "description": "Set character encoding",
             "tags": [
                 "Windows Systems",
                 "Windows Shell"
@@ -119,7 +119,7 @@
         },
         {
             "id": "shell_working_directory",
-            "description": "set Working Directory",
+            "description": "Set working directory",
             "tags": [
                 "Windows Systems",
                 "Windows Shell"
@@ -127,7 +127,7 @@
         },
         {
             "id": "shell_create_process",
-            "description": "creating process",
+            "description": "Create a new process",
             "tags": [
                 "Windows Systems",
                 "Windows Shell"
@@ -135,7 +135,7 @@
         },
         {
             "id": "shell_execute",
-            "description": "execute shell command (receive results(stdout, stderr))",
+            "description": "Execute shell command (returns stdout/stderr)",
             "tags": [
                 "Windows Systems",
                 "Windows Shell"
@@ -143,12 +143,15 @@
         },
         {
             "id": "shell_run",
-            "description": "run shell command (fork)regardless of result",
-            "tags": "run shell command (fork) regardless of result"
+            "description": "Run shell command (fork, does not wait for output)",
+            "tags": [
+                "Windows Systems",
+                "Windows Shell"
+            ]
         },
         {
             "id": "shell_run_as",
-            "description": "run shell command (run with administrator's authority)",
+            "description": "Run shell command with administrator privileges",
             "tags": [
                 "Windows Systems",
                 "Windows Shell"
@@ -156,7 +159,7 @@
         },
         {
             "id": "shell_find_my_documents",
-            "description": "bring (My Documents) location",
+            "description": "Retrieve 'My Documents' path",
             "tags": [
                 "Windows Systems",
                 "Windows Shell"
@@ -164,7 +167,7 @@
         },
         {
             "id": "shell_release",
-            "description": "release created shell object",
+            "description": "Release shell object",
             "tags": [
                 "Windows Systems",
                 "Windows Shell"
@@ -172,47 +175,47 @@
         },
         {
             "id": "powershell_set_command",
-            "description": "Set command line to execute",
+            "description": "Set PowerShell command to execute",
             "tags": [
                 "Windows Systems",
-                "Windows Powershell"
+                "Windows PowerShell"
             ]
         },
         {
             "id": "powershell_set_file",
-            "description": "set files(*.ps1)to execute",
+            "description": "Set PowerShell script file (*.ps1) to execute",
             "tags": [
                 "Windows Systems",
-                "Windows Powershell"
+                "Windows PowerShell"
             ]
         },
         {
             "id": "powershell_set_uri",
-            "description": "Use URI to set commands",
+            "description": "Set command using a URI",
             "tags": [
                 "Windows Systems",
-                "Windows Powershell"
+                "Windows PowerShell"
             ]
         },
         {
             "id": "powershell_execute",
-            "description": "Execute command (user mode)",
+            "description": "Execute PowerShell command (user mode)",
             "tags": [
                 "Windows Systems",
-                "Windows Powershell"
+                "Windows PowerShell"
             ]
         },
         {
             "id": "powershell_run_as",
-            "description": "Execute command (administrator mode)",
+            "description": "Execute PowerShell command (administrator mode)",
             "tags": [
                 "Windows Systems",
-                "Windows Powershell"
+                "Windows PowerShell"
             ]
         },
         {
             "id": "system_resolve_env",
-            "description": "Verify if the environment variable resolver interprets environment variables correctly",
+            "description": "Verify whether environment variables are resolved correctly",
             "tags": [
                 "Windows Systems",
                 "System Information"
@@ -220,7 +223,7 @@
         },
         {
             "id": "system_check_as",
-            "description": "Check if the current process is in administrator mode",
+            "description": "Check if the current process is running as administrator",
             "tags": [
                 "Windows Systems",
                 "System Information"
@@ -228,7 +231,7 @@
         },
         {
             "id": "system_get_os_version",
-            "description": "Get current OS version",
+            "description": "Get OS version",
             "tags": [
                 "Windows Systems",
                 "System Information"
@@ -236,7 +239,7 @@
         },
         {
             "id": "system_get_architecture",
-            "description": "Get current system architecture",
+            "description": "Get system architecture",
             "tags": [
                 "Windows Systems",
                 "System Information"
@@ -244,7 +247,7 @@
         },
         {
             "id": "system_get_uuid",
-            "description": "bringing the UUID of current device",
+            "description": "Retrieve UUID of current device",
             "tags": [
                 "Windows Systems",
                 "System Information"
@@ -252,7 +255,7 @@
         },
         {
             "id": "system_get_working_directory",
-            "description": "bringing current working directory",
+            "description": "Retrieve current working directory",
             "tags": [
                 "Windows Systems",
                 "System Information"
@@ -260,7 +263,7 @@
         },
         {
             "id": "system_get_script_directory",
-            "description": "bringing current script directory",
+            "description": "Retrieve script directory",
             "tags": [
                 "Windows Systems",
                 "System Information"
@@ -268,7 +271,7 @@
         },
         {
             "id": "system_get_network_interfaces",
-            "description": "bringing network interface information",
+            "description": "Retrieve network interface information",
             "tags": [
                 "Windows Systems",
                 "System Information"
@@ -276,7 +279,7 @@
         },
         {
             "id": "system_get_process_list",
-            "description": "get activated ",
+            "description": "Retrieve active process list",
             "tags": [
                 "Windows Systems",
                 "System Information"
@@ -284,7 +287,7 @@
         },
         {
             "id": "system_get_process_list_by_name",
-            "description": "find certain active process by process name",
+            "description": "Find active process by name",
             "tags": [
                 "Windows Systems",
                 "System Information"
@@ -292,161 +295,161 @@
         },
         {
             "id": "system_register_uri",
-            "description": "Register URI and carry out command as URI has requested",
+            "description": "Register URI and execute command associated with it",
             "tags": [
                 "Windows Systems",
-                "Register URI(Uniform Resource Identifier)"
+                "URI Registration"
             ]
         },
         {
             "id": "system_pipe_ipc",
-            "description": "Interprocess communication between more than 2 processes",
+            "description": "Inter-process communication between two or more processes",
             "tags": [
                 "Windows Systems",
-                "IPC(Inter Process Communication)"
+                "IPC (Inter-Process Communication)"
             ]
         },
         {
             "id": "vhid_find_window",
-            "description": "find active window handle",
+            "description": "Find active window handle",
             "tags": [
-                "human interface",
-                "virtual human interface"
+                "Human Interface",
+                "Virtual Human Interface"
             ]
         },
         {
             "id": "vhid_send_click",
-            "description": "send virtual click",
+            "description": "Send virtual click",
             "tags": [
-                "human interface",
-                "virtual human interface"
+                "Human Interface",
+                "Virtual Human Interface"
             ]
         },
         {
             "id": "vhid_send_keys",
-            "description": "Send virtual text key (a-zA-Z0-9)",
+            "description": "Send virtual text input (a–z, A–Z, 0–9)",
             "tags": [
-                "human interface",
-                "virtual human interface"
+                "Human Interface",
+                "Virtual Human Interface"
             ]
         },
         {
             "id": "vhid_send_key_enter",
-            "description": "send virtual enter key",
+            "description": "Send virtual Enter key",
             "tags": [
-                "human interface",
-                "virtual human interface"
+                "Human Interface",
+                "Virtual Human Interface"
             ]
         },
         {
             "id": "vhid_send_key_functions",
-            "description": "Send virtual FN key",
+            "description": "Send virtual function key",
             "tags": [
-                "human interface",
-                "virtual human interface"
+                "Human Interface",
+                "Virtual Human Interface"
             ]
         },
         {
             "id": "vhid_alert",
-            "description": "Alert whether message output will be provided when API is called",
+            "description": "Show alert message when API is called",
             "tags": [
-                "human interface",
-                "virtual human interface"
+                "Human Interface",
+                "Virtual Human Interface"
             ]
         },
         {
             "id": "vhid_confirm",
-            "description": "Confirm() message output when API is called and choose between Yes/No",
+            "description": "Show confirm dialog when API is called (Yes/No)",
             "tags": [
-                "human interface",
-                "virtual human interface"
+                "Human Interface",
+                "Virtual Human Interface"
             ]
         },
         {
             "id": "vhid_prompt",
-            "description": "Prompt() When calling API, can receive descriptive response",
+            "description": "Show prompt dialog and receive user input",
             "tags": [
-                "human interface",
-                "virtual human interface"
+                "Human Interface",
+                "Virtual Human Interface"
             ]
         },
         {
             "id": "network_http_get",
-            "description": "Send HTTP GET",
+            "description": "Send HTTP GET request",
             "tags": [
-                "network",
-                "Send HTTP and handle HTTP"
+                "Network",
+                "HTTP Communication"
             ]
         },
         {
             "id": "network_http_post",
-            "description": "Send HTTP POST",
+            "description": "Send HTTP POST request",
             "tags": [
-                "network",
-                "send HTTP and handle HTTP"
+                "Network",
+                "HTTP Communication"
             ]
         },
         {
             "id": "network_http_extended",
-            "description": "send HTTP extension methods(FETCH, PUT, etc)",
+            "description": "Send HTTP extended methods (FETCH, PUT, etc.)",
             "tags": [
-                "network",
-                "send HTTP and handle HTTP"
+                "Network",
+                "HTTP Communication"
             ]
         },
         {
             "id": "network_attach_debugger",
-            "description": "support attaching HTTP debugger(Fiddler, etc)",
+            "description": "Attach HTTP debugger (e.g., Fiddler)",
             "tags": [
-                "network",
-                "send HTTP and handle HTTP"
+                "Network",
+                "HTTP Communication"
             ]
         },
         {
             "id": "network_detect_charset",
-            "description": "detect Charset in HTTP response body",
+            "description": "Detect charset from HTTP response body",
             "tags": [
-                "network",
-                "send HTTP and handle HTTP"
+                "Network",
+                "HTTP Communication"
             ]
         },
         {
             "id": "network_detect_http_ssl",
-            "description": "detect whether SSL is running in the website to access ",
+            "description": "Detect whether SSL is enabled on a target website",
             "tags": [
-                "network",
-                "send HTTP and handle HTTP"
+                "Network",
+                "HTTP Communication"
             ]
         },
         {
             "id": "network_send_icmp",
-            "description": "send PING(ICMP)",
+            "description": "Send ICMP (PING)",
             "tags": [
-                "network",
-                "send PING(ICMP)"
+                "Network",
+                "ICMP"
             ]
         },
         {
             "id": "extramath_dtm",
-            "description": "create DTM (Document-Term Matrix) from more than 2 sentences that are provided",
+            "description": "Create a Document-Term Matrix (DTM) from two or more sentences",
             "tags": [
-                "advanced string manipulation",
-                "natural language processing"
+                "Advanced String Manipulation",
+                "Natural Language Processing"
             ]
         },
         {
             "id": "extramath_cosine_similarity",
-            "description": "compare the similarity of 2 given sentences with cosine similarity",
+            "description": "Calculate cosine similarity between two sentences",
             "tags": [
-                "advanced string manipulation",
-                "natural language processing"
+                "Advanced String Manipulation",
+                "Natural Language Processing"
             ]
         },
         {
             "id": "base64_encode",
             "description": "BASE64 encoding",
             "tags": [
-                "advanced string manipulation",
+                "Advanced String Manipulation",
                 "BASE64"
             ]
         },
@@ -454,147 +457,147 @@
             "id": "base64_decode",
             "description": "BASE64 decoding",
             "tags": [
-                "advanced string manipulation",
+                "Advanced String Manipulation",
                 "BASE64"
             ]
         },
         {
             "id": "chromium_run",
-            "description": "run web browser",
+            "description": "Run Chromium-based browser",
             "tags": [
-                "control web browser",
-                "control web browser (Chromium-based)"
+                "Web Browser Control",
+                "Chromium-Based Browser"
             ]
         },
         {
             "id": "chromium_create_profile",
-            "description": "create profile",
+            "description": "Create browser profile",
             "tags": [
-                "control web browser",
-                "control web browser (Chromium-based)"
+                "Web Browser Control",
+                "Chromium-Based Browser"
             ]
         },
         {
             "id": "chromium_run_incognito",
-            "description": "run web browser in incognito mode",
+            "description": "Run browser in incognito mode",
             "tags": [
-                "control web browser",
-                "control web browser (Chromium-based)"
+                "Web Browser Control",
+                "Chromium-Based Browser"
             ]
         },
         {
             "id": "chromium_navigate",
-            "description": "move to another address through URL",
+            "description": "Navigate to a given URL",
             "tags": [
-                "control web browser",
-                "control web browser (Chromium-based)"
+                "Web Browser Control",
+                "Chromium-Based Browser"
             ]
         },
         {
             "id": "chromium_get_active_pages",
-            "description": "bringing active page list",
+            "description": "Retrieve list of active pages",
             "tags": [
-                "control web browser",
-                "control web browser (Chromium-based)"
+                "Web Browser Control",
+                "Chromium-Based Browser"
             ]
         },
         {
             "id": "chromium_find_page_by_id",
-            "description": "finding page by original ID",
+            "description": "Find page by its original ID",
             "tags": [
-                "control web browser",
-                "control web browser (Chromium-based)"
+                "Web Browser Control",
+                "Chromium-Based Browser"
             ]
         },
         {
             "id": "chromium_find_pages_by_title",
-            "description": "finding pages by title of the pages",
+            "description": "Find pages by their title",
             "tags": [
-                "control web browser",
-                "control web browser (Chromium-based)"
+                "Web Browser Control",
+                "Chromium-Based Browser"
             ]
         },
         {
             "id": "chromium_move_focused",
-            "description": "move focus of the window",
+            "description": "Change window focus",
             "tags": [
-                "control web browser",
-                "control web browser (Chromium-based)"
+                "Web Browser Control",
+                "Chromium-Based Browser"
             ]
         },
         {
             "id": "chromium_adjust_window_size",
-            "description": "adjust size of the window",
+            "description": "Adjust window size",
             "tags": [
-                "control web browser",
-                "control web browser (Chromium-based)"
+                "Web Browser Control",
+                "Chromium-Based Browser"
             ]
         },
         {
             "id": "chromium_get_element_position",
-            "description": "finding single element position that matches with provided CSS Selector",
+            "description": "Find position of element matching CSS selector",
             "tags": [
-                "control web browser",
-                "control web browser (Chromium-based)"
+                "Web Browser Control",
+                "Chromium-Based Browser"
             ]
         },
         {
             "id": "chromium_get_mapreduced_element_position",
-            "description": "finding position of the element that meets requirement among multiple elements that match with CSS selector",
+            "description": "Find best-matching element position among multiple CSS selector matches (map-reduce)",
             "tags": [
-                "control web browser",
-                "control web browser (Chromium-based)"
+                "Web Browser Control",
+                "Chromium-Based Browser"
             ]
         },
         {
             "id": "chromium_set_value_to_textbox",
-            "description": "setting the value in case the object of the action is input by users(TextArea or TextInput)",
+            "description": "Set value in text-based input element (textarea/input)",
             "tags": [
-                "control web browser",
-                "control web browser (Chromium-based)"
+                "Web Browser Control",
+                "Chromium-Based Browser"
             ]
         },
         {
             "id": "chromium_send_click",
-            "description": "send virtual click",
+            "description": "Send virtual click",
             "tags": [
-                "control web browser",
-                "control web browser (Chromium-based)"
+                "Web Browser Control",
+                "Chromium-Based Browser"
             ]
         },
         {
             "id": "chromium_send_keys",
-            "description": "send virtual key",
+            "description": "Send virtual keystrokes",
             "tags": [
-                "control web browser",
-                "control web browser (Chromium-based browser)"
+                "Web Browser Control",
+                "Chromium-Based Browser"
             ]
         },
         {
             "id": "chromium_auto_scroll_until_end",
-            "description": "exploring the screen automatically until the scrolling finishes, in case of vertical scrolling",
+            "description": "Automatically scroll until reaching the bottom (vertical scroll)",
             "tags": [
-                "control web browser",
-                "control web browser (Chromium-based browser)"
+                "Web Browser Control",
+                "Chromium-Based Browser"
             ]
         },
         {
             "id": "grpc_run_server",
-            "description": "run gRPC server",
+            "description": "Run gRPC server",
             "tags": [
                 "gRPC"
             ]
         },
         {
             "id": "grpc_receive_command",
-            "description": "receive command that is sent to grpc in script",
+            "description": "Receive commands sent to the gRPC script",
             "tags": [
                 "gRPC"
             ]
         },
         {
             "id": "gui_check",
-            "description": "Even in WebView (GUI) environment, (1)Windows Systems/Windows Shell, (2)(Windows Systems/WMI control functions work.",
+            "description": "Verify that Windows Shell and WMI functions operate correctly in a WebView (GUI) environment.",
             "tags": [
                 "WebView"
             ]
