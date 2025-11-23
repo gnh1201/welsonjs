@@ -1,5 +1,5 @@
 ; @created_on 2020-06-26
-; @updated_on 2025-11-21
+; @updated_on 2025-11-23
 ; @author Namhyeon Go <gnh1201@catswords.re.kr>
 
 [Setup]
