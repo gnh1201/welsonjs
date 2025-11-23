@@ -30,7 +30,7 @@ ChangesAssociations=yes
 [Components]
 ; Add an optional component for the user to select during installation
 Name: "fileassoc"; Description: "Associate .js files to run with WelsonJS"; Types: full compact custom;
-Name: "addtools"; Description: "Download additional tools for WelsonJS"; Types: full;
+Name: "addtools"; Description: "Additional tools and Windows service for WelsonJS"; Types: full;
 
 [Registry]
 Root: HKCR; Subkey: "{cm:AppName}.Script"; ValueType: string; ValueData: "{cm:AppName} Script"; Flags: uninsdeletekey
