@@ -79,6 +79,7 @@ WelsonJS is tailored for developers who need a reliable, lightweight JavaScript 
 * Aviation Data integrations: [AviationStack](https://aviationstack.com?utm_source=FirstPromoter&utm_medium=Affiliate&fpr=namhyeon71), [SerpApi Google Flights API](https://serpapi.com/google-flights-api?utm_source=welsonjs)
 * VM infrastructure tool integrations: [OVFTool for Broadcom/VMware infrastructures](https://developer.broadcom.com/tools/open-virtualization-format-ovf-tool/latest)
 * ***:fire: NEW!*** Windows bulit-in database engine AKA. [ESENT (ESE) database](https://learn.microsoft.com/en-us/windows/win32/extensible-storage-engine/database-overview) interface library (WelsonJS.Esent)
+* ***:fire: NEW!*** WelsonJS JCTG(JavaScript-Click-To-Go): Run WelsonJS script files written in JavaScript directly from Windows File Explorer with a (double) click. Just like an `.exe` file.
 * Everything you can imagine.
 
 ## Quick start
