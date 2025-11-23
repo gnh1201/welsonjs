@@ -27,6 +27,12 @@ DisableProgramGroupPage=yes
 LicenseFile=SECURITY.MD
 ChangesAssociations=yes
 
+[Components]
+; Add an optional component for the user to select during installation
+Name: "fileassoc"; Description: "Associate .js files to run with WelsonJS"; Types: full compact custom;
+Name: "winservice"; Description: "Install the Windows Service module for WelsonJS"; Types: full;
+Name: "downloadtools"; Description: "Download additional tools for WelsonJS"; Types: full;
+
 [Registry]
 ; Root: HKCR; Subkey: "welsonjs"; ValueType: "string"; ValueData: "URL:{cm:AppName}"; Flags: uninsdeletekey
 ; Root: HKCR; Subkey: "welsonjs"; ValueType: "string"; ValueName: "URL Protocol"; ValueData: ""
@@ -39,7 +45,7 @@ Root: HKCR; Subkey: "{cm:AppName}.Script\shell\open"; ValueType: string; ValueDa
 Root: HKCR; Subkey: "{cm:AppName}.Script\shell\open\command"; ValueType: string; ValueData: """{userappdata}\{cm:AppName}\bin\WelsonJS.Launcher.exe"" --file ""%1"""; Flags: uninsdeletevalue
 Root: HKCR; Subkey: "{cm:AppName}.Script\ScriptEngine"; ValueType: string; ValueData: "JScript"; Flags: uninsdeletevalue
 Root: HKCR; Subkey: "{cm:AppName}.Script\ScriptHostEncode"; ValueType: string; ValueData: "{{85131630-480C-11D2-B1F9-00C04F86C324}}"; Flags: uninsdeletevalue
-Root: HKCR; Subkey: ".js"; ValueType: string; ValueData: "{cm:AppName}.Script"; Flags: uninsdeletevalue
+Root: HKCR; Subkey: ".js"; ValueType: string; ValueData: "{cm:AppName}.Script"; Components: fileassoc; Flags: uninsdeletevalue;
 
 [Files]
 Source: "app.js"; DestDir: "{app}";
@@ -69,9 +75,9 @@ Source: "data\*"; Excludes: "*-apikey.txt"; DestDir: "{app}/data"; Flags: ignore
 [Dirs]
 Name: "{app}\tmp";
 
-[InstallDelete]
-Type: files; Name: "{app}\settings.ini"
-Type: files; Name: "{app}\defaultService.js"
+; [InstallDelete]
+; Type: files; Name: "{app}\settings.ini"
+; Type: files; Name: "{app}\defaultService.js"
 
 [Icons]
 Name: "{group}\Start {cm:AppName} Launcher"; Filename: "{userappdata}\{cm:AppName}\bin\WelsonJS.Launcher.exe"; AfterInstall: SetElevationBit('{group}\Start {cm:AppName} Launcher.lnk');
@@ -82,12 +88,12 @@ Name: "{group}\Uninstall {cm:AppName}"; Filename: "{uninstallexe}"; AfterInstall
 ; Filename: {app}\bin\gtk2-runtime-2.24.33-2021-01-30-ts-win64.exe;
 ; Filename: {app}\bin\nmap-7.92\VC_redist.x86.exe;
 ; Filename: {app}\bin\nmap-7.92\npcap-1.50.exe;
-Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -NoProfile -File ""{app}\afterInstall.ps1"""; WorkingDir: "{app}"; Flags: waituntilterminated
-Filename: {app}\installService.bat; Flags: nowait
+Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -NoProfile -File ""{app}\afterInstall.ps1"""; WorkingDir: "{app}"; Components: downloadtools; Flags: waituntilterminated
+Filename: {app}\installService.bat; Components: winservice; Flags: nowait
 Filename: "{userappdata}\{cm:AppName}\bin\WelsonJS.Launcher.exe"; Flags: nowait
 
 [UninstallRun]
-Filename: {app}\uninstallService.bat;
+Filename: {app}\uninstallService.bat; Components: winservice;
 ; Filename: {code:GetProgramFiles}\GTK2-Runtime Win64\gtk2_runtime_uninst.exe;
 ; Filename: {code:GetProgramFiles}\Npcap\Uninstall.exe;
 ; Filename: {app}\bin\nmap-7.92\VC_redist.x86.exe;
