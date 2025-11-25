@@ -13,9 +13,9 @@
 [![Trustpilot](https://img.shields.io/badge/Trustpilot-00B67A?logo=trustpilot&logoColor=fff)](https://www.trustpilot.com/review/catswords.com)
 [![Open to work](https://img.shields.io/badge/%23-OPENTOWORK-green)](https://github.com/gnh1201/welsonjs/discussions/167)
 
-<img src="app/assets/img/logo.svg" height="32" alt=""/> WelsonJS - Build a Windows app on the Windows built-in JavaScript engine.
+<img src="https://catswords.blob.core.windows.net/welsonjs/images/logo.svg" height="32" alt=""/> WelsonJS - Build a Windows app on the Windows built-in JavaScript engine.
 
-![A Cover Image: Windows in 1999](https://ics.catswords.net/cover.png)
+![A Cover Image: Windows in 1999](https://catswords.blob.core.windows.net/welsonjs/images/cover.png)
 
 Now, You can build a Windows desktop app with JavaScript, TypeScript, CoffeeScript, ReScript, and HTML/CSS on Windows built-in ECMAScript engine.
 
@@ -129,19 +129,21 @@ The WelsonJS framework suggests the following application release methods:
 * **Copy all directories and files**: This is the simplest and most straightforward method.
 
 ## Screenshots
-![(Screenshot 1) GUI environment](https://ics.catswords.net/screenshot.png)
+![(Screenshot 1) GUI environment](https://catswords.blob.core.windows.net/welsonjs/images/cover.png)
 
-![(Screenshot 2) Command-line environment](https://ics.catswords.net/screenshot2.png)
+![(Screenshot 2) Command-line environment](https://catswords.blob.core.windows.net/welsonjs/images/screenshot2.png)
 
-![(Screenshot 3) WelsonJS with Microsoft Excel](https://ics.catswords.net/screenshot3.png)
+![(Screenshot 3) WelsonJS with Microsoft Excel](https://catswords.blob.core.windows.net/welsonjs/images/screenshot3.png)
 
-![(Screenshot 4) Write a Windows Services with JavaScript](https://ics.catswords.net/screenshot4.png)
+![(Screenshot 4) Write a Windows Services with JavaScript](https://catswords.blob.core.windows.net/welsonjs/images/screenshot4.png)
 
-![(Screenshot 5) Template Matching on the computer screen](https://ics.catswords.net/screenshot5.png)
+![(Screenshot 5) Template Matching on the computer screen](https://catswords.blob.core.windows.net/welsonjs/images/screenshot5.png)
 
-![(Screenshot 6) The Launcher for WelsonJS Application Packages](https://ics.catswords.net/screenshot6.png)
+![(Screenshot 6) The Launcher for WelsonJS Application Packages](https://catswords.blob.core.windows.net/welsonjs/images/screenshot6.png)
 
-![(Screenshot 7) Microsoft Monaco Editor on WelsonJS Launcher](https://ics.catswords.net/screenshot7.png)
+![(Screenshot 7) Microsoft Monaco Editor on WelsonJS Launcher](https://catswords.blob.core.windows.net/welsonjs/images/screenshot7.png)
+
+![(Screenshot 8) You can run a .js file just like an executable by simply double-clicking it.](https://catswords.blob.core.windows.net/welsonjs/images/screenshot8.png)
 
 ## Thanks to
 * :heart: Artwork (Logo image): [@druidesse](https://github.com/druidesse)
