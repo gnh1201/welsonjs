@@ -129,7 +129,7 @@ The WelsonJS framework suggests the following application release methods:
 * **Copy all directories and files**: This is the simplest and most straightforward method.
 
 ## Screenshots
-![(Screenshot 1) GUI environment](https://catswords.blob.core.windows.net/welsonjs/images/cover.png)
+![(Screenshot 1) GUI environment](https://catswords.blob.core.windows.net/welsonjs/images/screenshot.png)
 
 ![(Screenshot 2) Command-line environment](https://catswords.blob.core.windows.net/welsonjs/images/screenshot2.png)
 
