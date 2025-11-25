@@ -135,7 +135,7 @@ The WelsonJS framework suggests the following application release methods:
 
 ![(Screenshot 3) WelsonJS with Microsoft Excel](https://catswords.blob.core.windows.net/welsonjs/images/screenshot3.png)
 
-![(Screenshot 4) Write a Windows Services with JavaScript](https://catswords.blob.core.windows.net/welsonjs/images/screenshot4.png)
+![(Screenshot 4) Write a Windows Service with JavaScript](https://catswords.blob.core.windows.net/welsonjs/images/screenshot4.png)
 
 ![(Screenshot 5) Template Matching on the computer screen](https://catswords.blob.core.windows.net/welsonjs/images/screenshot5.png)
 
