@@ -12,9 +12,9 @@
 [![Open to work](https://img.shields.io/badge/%23-OPENTOWORK-green)](https://github.com/gnh1201/welsonjs/discussions/167)
 [![DeepWiki](https://img.shields.io/badge/DeepWiki-gnh1201%2Fwelsonjs-blue.svg?logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACwAAAAyCAYAAAAnWDnqAAAAAXNSR0IArs4c6QAAA05JREFUaEPtmUtyEzEQhtWTQyQLHNak2AB7ZnyXZMEjXMGeK/AIi+QuHrMnbChYY7MIh8g01fJoopFb0uhhEqqcbWTp06/uv1saEDv4O3n3dV60RfP947Mm9/SQc0ICFQgzfc4CYZoTPAswgSJCCUJUnAAoRHOAUOcATwbmVLWdGoH//PB8mnKqScAhsD0kYP3j/Yt5LPQe2KvcXmGvRHcDnpxfL2zOYJ1mFwrryWTz0advv1Ut4CJgf5uhDuDj5eUcAUoahrdY/56ebRWeraTjMt/00Sh3UDtjgHtQNHwcRGOC98BJEAEymycmYcWwOprTgcB6VZ5JK5TAJ+fXGLBm3FDAmn6oPPjR4rKCAoJCal2eAiQp2x0vxTPB3ALO2CRkwmDy5WohzBDwSEFKRwPbknEggCPB/imwrycgxX2NzoMCHhPkDwqYMr9tRcP5qNrMZHkVnOjRMWwLCcr8ohBVb1OMjxLwGCvjTikrsBOiA6fNyCrm8V1rP93iVPpwaE+gO0SsWmPiXB+jikdf6SizrT5qKasx5j8ABbHpFTx+vFXp9EnYQmLx02h1QTTrl6eDqxLnGjporxl3NL3agEvXdT0WmEost648sQOYAeJS9Q7bfUVoMGnjo4AZdUMQku50McDcMWcBPvr0SzbTAFDfvJqwLzgxwATnCgnp4wDl6Aa+Ax283gghmj+vj7feE2KBBRMW3FzOpLOADl0Isb5587h/U4gGvkt5v60Z1VLG8BhYjbzRwyQZemwAd6cCR5/XFWLYZRIMpX39AR0tjaGGiGzLVyhse5C9RKC6ai42ppWPKiBagOvaYk8lO7DajerabOZP46Lby5wKjw1HCRx7p9sVMOWGzb/vA1hwiWc6jm3MvQDTogQkiqIhJV0nBQBTU+3okKCFDy9WwferkHjtxib7t3xIUQtHxnIwtx4mpg26/HfwVNVDb4oI9RHmx5WGelRVlrtiw43zboCLaxv46AZeB3IlTkwouebTr1y2NjSpHz68WNFjHvupy3q8TFn3Hos2IAk4Ju5dCo8B3wP7VPr/FGaKiG+T+v+TQqIrOqMTL1VdWV1DdmcbO8KXBz6esmYWYKPwDL5b5FA1a0hwapHiom0r/cKaoqr+27/XcrS5UwSMbQAAAABJRU5ErkJggg==)](https://deepwiki.com/gnh1201/welsonjs)
 
-<img src="app/assets/img/logo.svg" height="32" alt=""/> WelsonJS - Build a Windows app on the Windows built-in JavaScript engine.
+<img src="https://catswords.blob.core.windows.net/welsonjs/images/logo.svg" height="32" alt="WelsonJS logo with four diagonal stripes in red, green, blue, and yellow, overlaid with the letters JS."/> WelsonJS - Build a Windows app on the Windows built-in JavaScript engine.
 
-![A Cover Image: Windows in 1999](https://ics.catswords.net/cover.png)
+![A Cover Image: Windows in 1999](https://catswords.blob.core.windows.net/welsonjs/images/cover.png)
 
 Now, You can build a Windows desktop app with JavaScript, TypeScript, CoffeeScript, ReScript, and HTML/CSS on Windows built-in ECMAScript engine.
 
@@ -128,19 +128,21 @@ The WelsonJS framework suggests the following application release methods:
 * **Copy all directories and files**: This is the simplest and most straightforward method.
 
 ## Screenshots
-![(Screenshot 1) GUI environment](https://ics.catswords.net/screenshot.png)
+![(Screenshot 1) GUI environment](https://catswords.blob.core.windows.net/welsonjs/images/screenshot.png)
 
-![(Screenshot 2) Command-line environment](https://ics.catswords.net/screenshot2.png)
+![(Screenshot 2) Command-line environment](https://catswords.blob.core.windows.net/welsonjs/images/screenshot2.png)
 
-![(Screenshot 3) WelsonJS with Microsoft Excel](https://ics.catswords.net/screenshot3.png)
+![(Screenshot 3) WelsonJS with Microsoft Excel](https://catswords.blob.core.windows.net/welsonjs/images/screenshot3.png)
 
-![(Screenshot 4) Write a Windows Services with JavaScript](https://ics.catswords.net/screenshot4.png)
+![(Screenshot 4) Write a Windows Service with JavaScript](https://catswords.blob.core.windows.net/welsonjs/images/screenshot4.png)
 
-![(Screenshot 5) Template Matching on the computer screen](https://ics.catswords.net/screenshot5.png)
+![(Screenshot 5) Template Matching on the computer screen](https://catswords.blob.core.windows.net/welsonjs/images/screenshot5.png)
 
-![(Screenshot 6) The Launcher for WelsonJS Application Packages](https://ics.catswords.net/screenshot6.png)
+![(Screenshot 6) The Launcher for WelsonJS Application Packages](https://catswords.blob.core.windows.net/welsonjs/images/screenshot6.png)
 
-![(Screenshot 7) Microsoft Monaco Editor on WelsonJS Launcher](https://ics.catswords.net/screenshot7.png)
+![(Screenshot 7) Microsoft Monaco Editor on WelsonJS Launcher](https://catswords.blob.core.windows.net/welsonjs/images/screenshot7.png)
+
+![(Screenshot 8) You can run a .js file just like an executable by simply double-clicking it.](https://catswords.blob.core.windows.net/welsonjs/images/screenshot8.png)
 
 ## Thanks to
 * :heart: Artwork (Logo image): [@druidesse](https://github.com/druidesse)
