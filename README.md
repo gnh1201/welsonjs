@@ -13,7 +13,7 @@
 [![Trustpilot](https://img.shields.io/badge/Trustpilot-00B67A?logo=trustpilot&logoColor=fff)](https://www.trustpilot.com/review/catswords.com)
 [![Open to work](https://img.shields.io/badge/%23-OPENTOWORK-green)](https://github.com/gnh1201/welsonjs/discussions/167)
 
-<img src="https://catswords.blob.core.windows.net/welsonjs/images/logo.svg" height="32" alt=""/> WelsonJS - Build a Windows app on the Windows built-in JavaScript engine.
+<img src="https://catswords.blob.core.windows.net/welsonjs/images/logo.svg" height="32" alt="WelsonJS logo with four diagonal stripes in red, green, blue, and yellow, overlaid with the letters JS."/> WelsonJS - Build a Windows app on the Windows built-in JavaScript engine.
 
 ![A Cover Image: Windows in 1999](https://catswords.blob.core.windows.net/welsonjs/images/cover.png)
 
