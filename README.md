@@ -21,19 +21,19 @@ Now, You can build a Windows desktop app with JavaScript, TypeScript, CoffeeScri
 
 WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)*** + :heart:[Contributions](https://github.com/sponsors/gnh1201)
 
-* :kissing_cat: [Download Latest WelsonJS Launcher (ics.catswords.net)](https://ics.catswords.net/welsonjs_launcher_latest.zip)
+* :kissing_cat: [Download Latest WelsonJS Launcher (catswords.blob.core.windows.net)](https://catswords.blob.core.windows.net/welsonjs/welsonjs_launcher_latest.zip)
 * :rocket: [Launch the WelsonJS environment on Microsoft Azure (azuremarketplace.microsoft.com)](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/catswords.catswords-welsonjs-feb2025-02?tab=Overview)
 
 **Note**: The default license for this project is GPL 3.0. However, if the GPL 3.0 license is not compatible with Microsoft products, it is subject to the MS-RL license.
 
 ## Sponsors
 * :octocat: [GitHub Sponsors](https://github.com/sponsors/gnh1201), :coffee: [Buy me a coffee](https://buymeacoffee.com/catswords)
-* <img src="https://ics.catswords.net/serpapi_logo_32.png" height="32" alt=""/> [SerpApi: Search API](https://serpapi.com/?utm_source=welsonjs) - Scrape search engines results with simple API.
-* <img src="https://ics.catswords.net/logo_oss.gif" height="32" alt=""/> [Open SW Portal](https://oss.kr), NIPA National IT Industry Promotion Agency<sup>(정보통신산업진흥원)</sup>
-* <img src="https://ics.catswords.net/signpath_logo.png" height="32" alt=""/> Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org/)
-* <img src="https://ics.catswords.net/f1security_logo.png" height="32" alt=""/> [F1Security<sup>(에프원시큐리티)</sup>](https://f1security.co.kr/) provides [industry-leading](https://www.ksecurity.or.kr/kisis/subIndex/469.do) web security services.
-* <img src="https://ics.catswords.net/microsoft_logo.png" height="32" alt=""/> [Microsoft ISV Success Program](https://www.microsoft.com/en-us/isv/isv-success), Grow your business with powerful tools.
-* :zap: [Integrations (e.g., Aviation, Shopping)...](https://catswords-oss.rdbl.io/5719744820/8278298336)
+* <img src="https://catswords.blob.core.windows.net/welsonjs/images/serpapi_logo_32.png" height="32" alt=""/> [SerpApi: Search API](https://serpapi.com/?utm_source=welsonjs) - Scrape search engines results with simple API.
+* <img src="https://catswords.blob.core.windows.net/welsonjs/images/logo_oss.gif" height="32" alt=""/> [Open SW Portal](https://oss.kr), NIPA National IT Industry Promotion Agency<sup>(정보통신산업진흥원)</sup>
+* <img src="https://catswords.blob.core.windows.net/welsonjs/images/signpath_logo.png" height="32" alt=""/> Free code signing provided by [SignPath.io](https://signpath.io), certificate by [SignPath Foundation](https://signpath.org/)
+* <img src="https://catswords.blob.core.windows.net/welsonjs/images/f1security_logo.png" height="32" alt=""/> [F1Security<sup>(에프원시큐리티)</sup>](https://f1security.co.kr/) provides [industry-leading](https://www.ksecurity.or.kr/kisis/subIndex/469.do) web security services.
+* <img src="https://catswords.blob.core.windows.net/welsonjs/images/microsoft_logo.png" height="32" alt=""/> [Microsoft ISV Success Program](https://www.microsoft.com/en-us/isv/isv-success), Grow your business with powerful tools.
+* :zap: Integrations (e.g., Aviation, Shopping)...
 
 ## System Requirements
 * **Operating Systems**: Windows XP SP3 or later (Currently, Windows 11 24H2)
@@ -73,11 +73,11 @@ WelsonJS is tailored for developers who need a reliable, lightweight JavaScript 
 * Compatible with modern JavaScript specifications: [module.exports](https://nodejs.org/api/modules.html#moduleexports), CommonJS, UMD compatibility, [NPM(Node Package Manager)](https://www.npmjs.com/) compatibility
 * Support a device debugging protocol clients: [Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/), [ADB(Android Debug Bridge)](https://source.android.com/docs/setup/build/adb)
 * RPC(Remote Procedure Call) protocol clients: [gRPC](https://grpc.io/), [JSON-RPC 2.0](https://www.jsonrpc.org/specification)
-* Various types of HTTP clients: [XHR(MSXML)](https://developer.mozilla.org/docs/Glossary/XMLHttpRequest), [cURL](https://curl.se/), [BITS](https://en.m.wikipedia.org/w/index.php?title=Background_Intelligent_Transfer_Service), [CERT](https://github.com/MicrosoftDocs/windowsserverdocs/blob/main/WindowsServerDocs/administration/windows-commands/certutil.md), [Web Proxy, SEO/SERP](https://catswords-oss.rdbl.io/5719744820/1706431912)
+* Various types of HTTP clients: [XHR(MSXML)](https://developer.mozilla.org/docs/Glossary/XMLHttpRequest), [cURL](https://curl.se/), [BITS](https://en.m.wikipedia.org/w/index.php?title=Background_Intelligent_Transfer_Service), [CERT](https://github.com/MicrosoftDocs/windowsserverdocs/blob/main/WindowsServerDocs/administration/windows-commands/certutil.md), Web Proxy, SEO/SERP
 * The native toolkit for Windows environments: Write a Windows Service Application with JavaScript, Control a window handle, Cryptography (e.g., [ISO/IEC 18033-3:2010](https://www.iso.org/standard/54531.html) aka. [HIGHT](https://seed.kisa.or.kr/kisa/algorithm/EgovHightInfo.do)), [Named Shared Memory](https://learn.microsoft.com/en-us/windows/win32/memory/creating-named-shared-memory) based [IPC](https://qiita.com/gnh1201/items/4e70dccdb7adacf0ace5), [NuGet package](https://www.nuget.org/packages/WelsonJS.Toolkit)
-* Generative AI integrations: [Multiple LLM and sLLM](https://catswords-oss.rdbl.io/5719744820/5510319392) (e.g., ChatGPT, Claude, ...)
+* AI integrations: LLM based (generative) AI services. (e.g., ChatGPT, Google Gemini)
 * Aviation Data integrations: [AviationStack](https://aviationstack.com?utm_source=FirstPromoter&utm_medium=Affiliate&fpr=namhyeon71), [SerpApi Google Flights API](https://serpapi.com/google-flights-api?utm_source=welsonjs)
-* VM infrastructure tool integrations: [OVFTool for Broadcom/VMware infrastructures](https://developer.broadcom.com/tools/open-virtualization-format-ovf-tool/latest)
+* OVFTool (VMware) integration: [OVFTool for Broadcom/VMware infrastructures](https://developer.broadcom.com/tools/open-virtualization-format-ovf-tool/latest)
 * ***:fire: NEW!*** Windows bulit-in database engine AKA. [ESENT (ESE) database](https://learn.microsoft.com/en-us/windows/win32/extensible-storage-engine/database-overview) interface library (WelsonJS.Esent)
 * ***:fire: NEW!*** WelsonJS JCTG(JavaScript-Click-To-Go): Run WelsonJS script files written in JavaScript directly from Windows File Explorer with a (double) click. Just like an `.exe` file.
 * Everything you can imagine.
