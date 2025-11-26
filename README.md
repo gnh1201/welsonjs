@@ -175,7 +175,8 @@ I am always open. Collaboration, opportunities, and community activities are all
 You may [request offline distribution](https://forms.gle/4WCnJmnFNDzubUmk7) if you are in a restricted environment, such as one without internet access or with specific security requirements.
 
 ## Special channels
-* [A paid consultation channel (m.expert.naver.com)](https://m.expert.naver.com/mobile/expert/product/detail?storeId=100051156&productId=100144540) is available for Korean<sup>(한국어)</sup> region.
+* [A paid consultation channel (m.expert.naver.com)](https://m.expert.naver.com/mobile/expert/product/detail?storeId=100051156&productId=100144540) is available for Korean<sup>(한국어)</sup> customers.
+* [A paid mentorship program (inflearn.com)](https://mentoring.inflearn.com/mentors/5353) is available for Korean<sup>(한국어)</sup> students or beginners.
 
 ## License
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs?ref=badge_large)
