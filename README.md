@@ -3,15 +3,14 @@
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs?ref=badge_shield)
 [![AppVeyor Status](https://ci.appveyor.com/api/projects/status/github/gnh1201/welsonjs?svg=true)](https://ci.appveyor.com/project/gnh1201/welsonjs)
 [![DOI 10.5281/zenodo.11382384](https://zenodo.org/badge/DOI/10.5281/zenodo.11382384.svg)](https://doi.org/10.5281/zenodo.11382384)
-[![ChatGPT available](https://img.shields.io/badge/ChatGPT-74aa9c?logo=openai&logoColor=white)](https://catswords-oss.rdbl.io/5719744820/5510319392)
-[![Anthropic available](https://img.shields.io/badge/Anthropic-000000?logo=Anthropic&logoColor=white)](https://catswords-oss.rdbl.io/5719744820/5510319392)
-[![Grok available](https://img.shields.io/badge/Grok-000000?logo=x&logoColor=white)](https://catswords-oss.rdbl.io/5719744820/5510319392)
-[![Google Gemini available](https://img.shields.io/badge/Google%20Gemini-886FBF?logo=googlegemini&logoColor=fff)](https://catswords-oss.rdbl.io/5719744820/5510319392)
+[![ChatGPT available](https://img.shields.io/badge/ChatGPT-74aa9c?logo=openai&logoColor=white)](#)
+[![Google Gemini available](https://img.shields.io/badge/Gemini-886FBF?logo=googlegemini&logoColor=fff)](#)
 [![slideshare.net presentation](https://img.shields.io/badge/SlideShare-black?logo=slideshare)](https://www.slideshare.net/slideshow/welsonjs-javascript-framework-presentation-2024/276005486)
 [![YouTube promotion video](https://img.shields.io/badge/YouTube-red?logo=youtube)](https://youtu.be/JavH7Dms8-U)
 [![Discord chat](https://img.shields.io/discord/359930650330923008?logo=discord)](https://discord.gg/XKG5CjtXEj)
 [![Trustpilot](https://img.shields.io/badge/Trustpilot-00B67A?logo=trustpilot&logoColor=fff)](https://www.trustpilot.com/review/catswords.com)
 [![Open to work](https://img.shields.io/badge/%23-OPENTOWORK-green)](https://github.com/gnh1201/welsonjs/discussions/167)
+[![DeepWiki](https://img.shields.io/badge/DeepWiki-gnh1201%2Fwelsonjs-blue.svg?logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACwAAAAyCAYAAAAnWDnqAAAAAXNSR0IArs4c6QAAA05JREFUaEPtmUtyEzEQhtWTQyQLHNak2AB7ZnyXZMEjXMGeK/AIi+QuHrMnbChYY7MIh8g01fJoopFb0uhhEqqcbWTp06/uv1saEDv4O3n3dV60RfP947Mm9/SQc0ICFQgzfc4CYZoTPAswgSJCCUJUnAAoRHOAUOcATwbmVLWdGoH//PB8mnKqScAhsD0kYP3j/Yt5LPQe2KvcXmGvRHcDnpxfL2zOYJ1mFwrryWTz0advv1Ut4CJgf5uhDuDj5eUcAUoahrdY/56ebRWeraTjMt/00Sh3UDtjgHtQNHwcRGOC98BJEAEymycmYcWwOprTgcB6VZ5JK5TAJ+fXGLBm3FDAmn6oPPjR4rKCAoJCal2eAiQp2x0vxTPB3ALO2CRkwmDy5WohzBDwSEFKRwPbknEggCPB/imwrycgxX2NzoMCHhPkDwqYMr9tRcP5qNrMZHkVnOjRMWwLCcr8ohBVb1OMjxLwGCvjTikrsBOiA6fNyCrm8V1rP93iVPpwaE+gO0SsWmPiXB+jikdf6SizrT5qKasx5j8ABbHpFTx+vFXp9EnYQmLx02h1QTTrl6eDqxLnGjporxl3NL3agEvXdT0WmEost648sQOYAeJS9Q7bfUVoMGnjo4AZdUMQku50McDcMWcBPvr0SzbTAFDfvJqwLzgxwATnCgnp4wDl6Aa+Ax283gghmj+vj7feE2KBBRMW3FzOpLOADl0Isb5587h/U4gGvkt5v60Z1VLG8BhYjbzRwyQZemwAd6cCR5/XFWLYZRIMpX39AR0tjaGGiGzLVyhse5C9RKC6ai42ppWPKiBagOvaYk8lO7DajerabOZP46Lby5wKjw1HCRx7p9sVMOWGzb/vA1hwiWc6jm3MvQDTogQkiqIhJV0nBQBTU+3okKCFDy9WwferkHjtxib7t3xIUQtHxnIwtx4mpg26/HfwVNVDb4oI9RHmx5WGelRVlrtiw43zboCLaxv46AZeB3IlTkwouebTr1y2NjSpHz68WNFjHvupy3q8TFn3Hos2IAk4Ju5dCo8B3wP7VPr/FGaKiG+T+v+TQqIrOqMTL1VdWV1DdmcbO8KXBz6esmYWYKPwDL5b5FA1a0hwapHiom0r/cKaoqr+27/XcrS5UwSMbQAAAABJRU5ErkJggg==)](https://deepwiki.com/gnh1201/welsonjs)
 
 <img src="https://catswords.blob.core.windows.net/welsonjs/images/logo.svg" height="32" alt="WelsonJS logo with four diagonal stripes in red, green, blue, and yellow, overlaid with the letters JS."/> WelsonJS - Build a Windows app on the Windows built-in JavaScript engine.
 
@@ -75,10 +74,10 @@ WelsonJS is tailored for developers who need a reliable, lightweight JavaScript 
 * RPC(Remote Procedure Call) protocol clients: [gRPC](https://grpc.io/), [JSON-RPC 2.0](https://www.jsonrpc.org/specification)
 * Various types of HTTP clients: [XHR(MSXML)](https://developer.mozilla.org/docs/Glossary/XMLHttpRequest), [cURL](https://curl.se/), [BITS](https://en.m.wikipedia.org/w/index.php?title=Background_Intelligent_Transfer_Service), [CERT](https://github.com/MicrosoftDocs/windowsserverdocs/blob/main/WindowsServerDocs/administration/windows-commands/certutil.md), Web Proxy, SEO/SERP
 * The native toolkit for Windows environments: Write a Windows Service Application with JavaScript, Control a window handle, Cryptography (e.g., [ISO/IEC 18033-3:2010](https://www.iso.org/standard/54531.html) aka. [HIGHT](https://seed.kisa.or.kr/kisa/algorithm/EgovHightInfo.do)), [Named Shared Memory](https://learn.microsoft.com/en-us/windows/win32/memory/creating-named-shared-memory) based [IPC](https://qiita.com/gnh1201/items/4e70dccdb7adacf0ace5), [NuGet package](https://www.nuget.org/packages/WelsonJS.Toolkit)
-* AI integrations: LLM based (generative) AI services. (e.g., ChatGPT, Google Gemini)
+* AI integrations: LLM-based (generative) AI services (e.g., ChatGPT, Google Gemini).
 * Aviation Data integrations: [AviationStack](https://aviationstack.com?utm_source=FirstPromoter&utm_medium=Affiliate&fpr=namhyeon71), [SerpApi Google Flights API](https://serpapi.com/google-flights-api?utm_source=welsonjs)
 * OVFTool (VMware) integration: [OVFTool for Broadcom/VMware infrastructures](https://developer.broadcom.com/tools/open-virtualization-format-ovf-tool/latest)
-* ***:fire: NEW!*** Windows bulit-in database engine AKA. [ESENT (ESE) database](https://learn.microsoft.com/en-us/windows/win32/extensible-storage-engine/database-overview) interface library (WelsonJS.Esent)
+* ***:fire: NEW!*** Windows built-in database engine AKA. [ESENT (ESE) database](https://learn.microsoft.com/en-us/windows/win32/extensible-storage-engine/database-overview) interface library (WelsonJS.Esent)
 * ***:fire: NEW!*** WelsonJS JCTG(JavaScript-Click-To-Go): Run WelsonJS script files written in JavaScript directly from Windows File Explorer with a (double) click. Just like an `.exe` file.
 * Everything you can imagine.
 
@@ -124,7 +123,7 @@ ended say()
 ## How to release my application?
 The WelsonJS framework suggests the following application release methods:
 
-* **Compress to Zip, and use the launcher**: Compress the files and directories necessary for running the project into a Zip file, and distribute it along with the [WelsonJS Launcher](https://catswords-oss.rdbl.io/5719744820/4131485779).
+* **Compress to Zip, and use the launcher**: Compress the files and directories necessary for running the project into a Zip file, and distribute it along with the WelsonJS Launcher.
 * **Build a setup file**: Use [Inno Setup](https://jrsoftware.org/isinfo.php). The setup profile (the `setup.iss` file) is already included.
 * **Copy all directories and files**: This is the simplest and most straightforward method.
 
@@ -154,22 +153,11 @@ The WelsonJS framework suggests the following application release methods:
 * :sunglasses: Information security companies in Republic of Korea - Use case development
 * :sunglasses: Travel planning(e.g., Airlines, Hotels, Ticketing) related companies - Use case development
 * :sunglasses: Probability-based game prediction in a data analytics company - Use case development
-* :eyes: [Facebook Group "Javascript Programming"(javascript4u)](https://www.facebook.com/javascript4u/posts/build-a-windows-desktop-apps-with-javascript-html-and-cssmorioh-javascript-html-/1484014618472735/)
-* :eyes: [morioh.com](https://morioh.com/a/23c427a82bf1/build-a-windows-desktop-apps-with-javascript-html-and-css)
-* :eyes: CSDN
-* :eyes: Qiita - Knowledge-base about WSH environment
+* :sunglasses: Qiita - Knowledge-base about WSH environment
 * :sunglasses: Redsky Software - PoC(Proof of Concept) of the CommonJS on WSH environment
 * :sunglasses: Inspired by a small-sized JavaScript payload demonstrated by a cybersecurity related group.
 * :sunglasses: Inspired by the use of Named Shared Memory in a cross-runtime IPC implementation written by the unidentified developer.
-* :eyes: Fediverse
-* :eyes: [Hacker News](https://news.ycombinator.com/item?id=41316782)
-* :eyes: [WebToolsWeekly](https://webtoolsweekly.com/archives/issue-585/)
-* :eyes: [GeekNews](https://news.hada.io/weekly/202441) in GeekNews Weekly (2024-09-30 ~ 2024-10-06)
-* :eyes: [daily.dev](https://app.daily.dev/posts/js-libraries-svg-tools-json-databases-8quregz3a)
-* :eyes: [PitchHut](https://www.pitchhut.com/project/proj_Ya136OLSW5at)
-* :eyes: [Disquiet](https://dis.qa/nv6T6)
-* :eyes: [Node Weekly](https://nodeweekly.com/issues/582)
-* :eyes: [Zhouexin (周e信)](https://www.zhouexin.com/issues/321)
+* :eyes: [Hacker News](https://news.ycombinator.com/item?id=41316782), [Node Weekly (#​582 - June 17, 2025)](https://nodeweekly.com/issues/582), [WebToolsWeekly](https://webtoolsweekly.com/archives/issue-585/), [GeekNews in GeekNews Weekly (2024-09-30 ~ 2024-10-06)](https://news.hada.io/weekly/202441), [Facebook Group "Javascript Programming"(javascript4u)](https://www.facebook.com/javascript4u/posts/build-a-windows-desktop-apps-with-javascript-html-and-cssmorioh-javascript-html-/1484014618472735/), [morioh.com](https://morioh.com/a/23c427a82bf1/build-a-windows-desktop-apps-with-javascript-html-and-css), CSDN, Fediverse, [daily.dev](https://app.daily.dev/posts/js-libraries-svg-tools-json-databases-8quregz3a), [PitchHut](https://www.pitchhut.com/project/proj_Ya136OLSW5at), [Disquiet](https://dis.qa/nv6T6), [Zhouexin (周e信)](https://www.zhouexin.com/issues/321), [Echo JS](https://www.echojs.com/news/43008), [Telegram Channel @front_end_dev](https://t.me/front_end_dev/9376?ysclid=mgk4a9hqf0853890652)
 
 ## Report abuse
 * [GitHub Security Advisories (gnh1201/welsonjs)](https://github.com/gnh1201/welsonjs/security)
