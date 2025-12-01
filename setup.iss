@@ -29,7 +29,7 @@ ChangesAssociations=yes
 [Components]
 ; Add an optional component for the user to select during installation
 Name: "fileassoc"; Description: "Associate .js files to run with WelsonJS"; Types: full compact custom;
-Name: "artifacts": Description: "WelsonJS Launcher and Windows Service"; Types: full compact custom;
+Name: "artifacts"; Description: "WelsonJS Launcher and Windows Service"; Types: full compact custom;
 Name: "python"; Description: "Download Python Windows embeddable package"; Types: full;
 Name: "curl"; Description: "Download cURL (Universal HTTP client)"; Types: full;
 Name: "websocat"; Description: "Download websocat (Command-line WebSocket client)"; Types: full;
@@ -47,7 +47,7 @@ Root: HKCR; Subkey: "{cm:AppName}.Script"; ValueType: string; ValueData: "{cm:Ap
 Root: HKCR; Subkey: "{cm:AppName}.Script\DefaultIcon"; ValueType: string; ValueData: "{app}\app\favicon.ico,0"; Flags: uninsdeletekey
 Root: HKCR; Subkey: "{cm:AppName}.Script\shell"; ValueType: string; ValueData: "open"; Components: artifacts; Flags: uninsdeletevalue
 Root: HKCR; Subkey: "{cm:AppName}.Script\shell\open"; ValueType: string; ValueData: "Run with {cm:AppName}"; Components: artifacts; Flags: uninsdeletevalue
-Root: HKCR; Subkey: "{cm:AppName}.Script\shell\open\command"; ValueType: string; ValueData: """{userappdata}\{cm:AppName}\bin\WelsonJS.Launcher.exe"" --file ""%1"""; Components: addtools; Flags: uninsdeletevalue
+Root: HKCR; Subkey: "{cm:AppName}.Script\shell\open\command"; ValueType: string; ValueData: """{userappdata}\{cm:AppName}\bin\WelsonJS.Launcher.exe"" --file ""%1"""; Components: artifacts; Flags: uninsdeletevalue
 Root: HKCR; Subkey: "{cm:AppName}.Script\ScriptEngine"; ValueType: string; ValueData: "JScript"; Flags: uninsdeletevalue
 Root: HKCR; Subkey: "{cm:AppName}.Script\ScriptHostEncode"; ValueType: string; ValueData: "{{85131630-480C-11D2-B1F9-00C04F86C324}}"; Flags: uninsdeletevalue
 Root: HKCR; Subkey: ".js"; ValueType: string; ValueData: "{cm:AppName}.Script"; Components: fileassoc; Flags: uninsdeletevalue;
@@ -93,14 +93,7 @@ Name: "{group}\Uninstall {cm:AppName}"; Filename: "{uninstallexe}"; AfterInstall
 ; Filename: {app}\bin\gtk2-runtime-2.24.33-2021-01-30-ts-win64.exe;
 ; Filename: {app}\bin\nmap-7.92\VC_redist.x86.exe;
 ; Filename: {app}\bin\nmap-7.92\npcap-1.50.exe;
-Filename: "powershell.exe"; \
-  Parameters: "-ExecutionPolicy Bypass -NoProfile -File ""{app}\postInstall.ps1"" " +
-              "-TelemetryProvider posthog " +
-              "-TelemetryApiKey ""{cm:PostHogApiKey}"" " +
-              "-Version ""{#AppVersion}"" " +
-              "-DistinctId ""{computername}"" " +
-              "-Components ""{code:GetSelectedComponents}""";
-  WorkingDir: "{app}"; Components: artifacts; Flags: waituntilterminated
+Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -NoProfile -File ""{app}\postInstall.ps1"" -TelemetryProvider posthog -TelemetryApiKey ""{cm:PostHogApiKey}"" -Version ""{cm:AppVersion}"" -DistinctId ""{computername}"" -Components ""{code:GetSelectedComponents}"""; WorkingDir: "{app}"; Components: artifacts; Flags: waituntilterminated
 Filename: {app}\installService.bat; Components: artifacts; Flags: nowait
 Filename: "{userappdata}\{cm:AppName}\bin\WelsonJS.Launcher.exe"; Components: artifacts; Flags: nowait
 
@@ -112,11 +105,17 @@ Filename: {app}\uninstallService.bat; Components: artifacts; Flags: waituntilter
 
 [CustomMessages]
 AppName=WelsonJS
+AppVersion=0.2.7.57
 PostHogApiKey=phc_pmRHJ0aVEhtULRT4ilexwCjYpGtE9VYRhlA05fwiYt8
 
 [Code]
 const
   UninstSiteURL = 'https://github.com/gnh1201/welsonjs';
+
+function GetSelectedComponents(Value: string): string;
+begin
+  Result := WizardSelectedComponents(False);
+end;
 
 procedure SetElevationBit(Filename: string);
 var
