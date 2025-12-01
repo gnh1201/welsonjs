@@ -557,11 +557,11 @@ try {
             Download-File -Url $url -DestinationPath $WinDivertCompressed
         }
         else {
-            Write-Host "[*] windivert URL not available. Skipping download."
+            Write-Host "[*] WinDivert URL not available. Skipping download."
         }
     }
     else {
-        Write-Host "[*] windivert component not selected. Skipping download."
+        Write-Host "[*] WinDivert component not selected. Skipping download."
     }
 
     # Android Platform Tools (component: android_platform_tools)
@@ -571,11 +571,11 @@ try {
             Download-File -Url $url -DestinationPath $AndroidPlatformToolsCompressed
         }
         else {
-            Write-Host "[*] android_platform_tools URL not available. Skipping download."
+            Write-Host "[*] Android Platform Tools URL not available. Skipping download."
         }
     }
     else {
-        Write-Host "[*] android_platform_tools component not selected. Skipping download."
+        Write-Host "[*] Android Platform Tools component not selected. Skipping download."
     }
 }
 catch {
@@ -809,6 +809,36 @@ try {
     }
     else {
         Write-Host "[*] nmap component not selected. Skipping Npcap/Nmap installation."
+    }
+
+    # windivert (component: windivert)
+    if (Test-ComponentSelected -Name "windivert") {
+        if (Test-Path $WinDivertCompressed) {
+            Extract-CompressedFile `
+                -CompressedPath $WinDivertCompressed `
+                -DestinationDirectory (Join-Path $TargetDir "windivert")
+        }
+        else {
+            Write-Host "[WARN] WinDivert archive not found. Skipping installation."
+        }
+    }
+    else {
+        Write-Host "[*] WinDivert component not selected. Skipping installation."
+    }
+    
+    # Android Platform Tools (component: android_platform_tools)
+    if (Test-ComponentSelected -Name "android_platform_tools") {
+        if (Test-Path $WinDivertCompressed) {
+            Extract-CompressedFile `
+                -CompressedPath $AndroidPlatformToolsCompressed `
+                -DestinationDirectory (Join-Path $TargetDir "android_platform_tools")
+        }
+        else {
+            Write-Host "[WARN] Android Platform Tools archive not found. Skipping installation."
+        }
+    }
+    else {
+        Write-Host "[*] Android Platform Tools component not selected. Skipping installation."
     }
 }
 catch {
