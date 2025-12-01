@@ -70,7 +70,7 @@ Source: "installService.bat"; DestDir: "{app}";
 Source: "uninstallService.bat"; DestDir: "{app}";
 Source: "postInstall.ps1"; DestDir: "{app}";
 Source: "helloworld.*"; DestDir: "{app}";
-Source: "app\*"; Excludes: "assets\img\_templates,assets\tessdata\*,assets\tessdata_best\*,assets\tessdata_fast\*"; DestDir: "{app}/app"; Flags: ignoreversion recursesubdirs;
+Source: "app\*"; DestDir: "{app}/app"; Flags: ignoreversion recursesubdirs;
 Source: "lib\*"; DestDir: "{app}/lib"; Flags: ignoreversion recursesubdirs;
 ; Source: "bin\*"; Excludes: "installer\*"; DestDir: "{app}/bin"; Flags: ignoreversion recursesubdirs;
 Source: "data\*"; Excludes: "*-apikey.txt"; DestDir: "{app}/data"; Flags: ignoreversion recursesubdirs;
@@ -90,18 +90,12 @@ Name: "{group}\Test {cm:AppName}"; Filename: "{app}\bootstrap.bat"; AfterInstall
 Name: "{group}\Uninstall {cm:AppName}"; Filename: "{uninstallexe}"; AfterInstall: SetElevationBit('{group}\Uninstall {cm:AppName}.lnk');
 
 [Run]
-; Filename: {app}\bin\gtk2-runtime-2.24.33-2021-01-30-ts-win64.exe;
-; Filename: {app}\bin\nmap-7.92\VC_redist.x86.exe;
-; Filename: {app}\bin\nmap-7.92\npcap-1.50.exe;
 Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -NoProfile -File ""{app}\postInstall.ps1"" -TelemetryProvider posthog -TelemetryApiKey ""{cm:PostHogApiKey}"" -Version ""{cm:AppVersion}"" -DistinctId ""{computername}"" -Components ""{code:GetSelectedComponents}"""; WorkingDir: "{app}"; Components: artifacts; Flags: waituntilterminated
 Filename: {app}\installService.bat; Components: artifacts; Flags: nowait
 Filename: "{userappdata}\{cm:AppName}\bin\WelsonJS.Launcher.exe"; Components: artifacts; Flags: nowait
 
 [UninstallRun]
 Filename: {app}\uninstallService.bat; Components: artifacts; Flags: waituntilterminated
-; Filename: {code:GetProgramFiles}\GTK2-Runtime Win64\gtk2_runtime_uninst.exe;
-; Filename: {code:GetProgramFiles}\Npcap\Uninstall.exe;
-; Filename: {app}\bin\nmap-7.92\VC_redist.x86.exe;
 
 [CustomMessages]
 AppName=WelsonJS

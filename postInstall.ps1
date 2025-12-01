@@ -25,7 +25,7 @@ else {
 }
 
 # ================================
-# LOAD DOWNLOAD URL TABLE (DownloadUrls.psd1)
+# LOAD DOWNLOAD URL TABLE (DownloadUrls.psd1 in /data folder)
 # ================================
 $DownloadUrls = @{}
 $urlsFilePath = Join-Path $ScriptRoot "data/DownloadUrls.psd1"
@@ -150,9 +150,8 @@ $AllComponentsSelected = $true
 
 if ($Components -and $Components.Trim() -ne "") {
     $SelectedComponents =
-        $Components
-        .Split(",")
-        | ForEach-Object { $_.Trim().ToLowerInvariant() }
+        $Components.Split(",") |
+        ForEach-Object { $_.Trim().ToLowerInvariant() }
 
     $AllComponentsSelected = $false
 }
@@ -181,13 +180,36 @@ Write-Host ""
 # ================================
 # ARCHITECTURE DETECTION
 # ================================
-$arch = $env:PROCESSOR_ARCHITECTURE
+function Get-NativeArchitecture {
+    # 0 = x86, 5 = ARM, 9 = x64
+    # https://learn.microsoft.com/windows/win32/cimwin32prov/win32-processor
+    $arch = $null
 
-if     ($arch -eq "AMD64")                       { $arch = "x64"   }
-elseif ($arch -eq "ARM64")                       { $arch = "arm64" }
-elseif ($arch -eq "x86")                         { $arch = "x86"   }
-elseif ($env:PROCESSOR_ARCHITEW6432 -eq "AMD64") { $arch = "x64"   }
-elseif ($env:PROCESSOR_ARCHITEW6432 -eq "ARM64") { $arch = "arm64" }
+    try {
+        $proc = Get-CimInstance -ClassName Win32_Processor -ErrorAction Stop |
+                Select-Object -First 1
+
+        switch ($proc.Architecture) {
+            0       { $arch = "x86"   }   # 32-bit Intel/AMD
+            5       { $arch = "arm64" }   # treat ARM as arm64 target
+            9       { $arch = "x64"   }   # 64-bit Intel/AMD
+            default { $arch = "x86"   }   # fallback
+        }
+    }
+    catch {
+        # Fallback: only 32/64 bit detection if WMI/CIM is not available
+        if ([System.Environment]::Is64BitOperatingSystem) {
+            $arch = "x64"
+        }
+        else {
+            $arch = "x86"
+        }
+    }
+
+    return $arch
+}
+
+$arch = Get-NativeArchitecture
 
 Write-Host "[*] Detected architecture: $arch"
 Write-Host ""
@@ -727,8 +749,8 @@ try {
         # Find and run VC_redist.x86.exe inside Nmap installation directory
         $searchDirs = @()
 
-        if ($env:"ProgramFiles(x86)") {
-            $searchDirs += (Join-Path $env:"ProgramFiles(x86)" "Nmap")
+        if (${env:ProgramFiles(x86)}) {
+            $searchDirs += (Join-Path ${env:ProgramFiles(x86)} "Nmap")
         }
         if ($env:ProgramFiles) {
             $searchDirs += (Join-Path $env:ProgramFiles "Nmap")

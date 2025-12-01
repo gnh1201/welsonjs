@@ -5,7 +5,7 @@
     python = @{
         x64   = "https://www.python.org/ftp/python/3.14.0/python-3.14.0-embed-amd64.zip"
         arm64 = "https://www.python.org/ftp/python/3.14.0/python-3.14.0-embed-arm64.zip"
-        x86   = "https://www.python.org/ftp/python/3.14.0/python-3.14.0-embed-arm64.zip"
+        x86   = "https://www.python.org/ftp/python/3.13.9/python-3.13.9-embed-win32.zip"
     }
 
     # ===========================
@@ -58,7 +58,7 @@
     # ===========================
     gtk3runtime = @{
         x64   = "https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer/releases/download/2022-01-04/gtk3-runtime-3.24.31-2022-01-04-ts-win64.exe"
-		arm64 = # no official ARM64 build
+		arm64 = $null  # no official ARM64 build
 		x86   = "https://downloads.sourceforge.net/project/gtk-win/files/GTK%2B%20Runtime%20Environment/GTK%2B%202.24/gtk2-runtime-2.24.10-2012-10-10-ash.exe/download"
     }
 	
