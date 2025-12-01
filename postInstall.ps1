@@ -208,7 +208,7 @@ function Get-NativeArchitecture {
 
         switch ($proc.Architecture) {
             0       { $arch = "x86"   }   # 32-bit Intel/AMD
-            5       { $arch = "arm64" }   # treat ARM as arm64 target
+            12      { $arch = "arm64" }   # treat ARM as arm64 target
             9       { $arch = "x64"   }   # 64-bit Intel/AMD
             default { $arch = "x86"   }   # fallback
         }
