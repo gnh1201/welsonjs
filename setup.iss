@@ -42,7 +42,7 @@ Name: "gtk3runtime"; Description: "Download and install GTK3 runtime for Windows
 Name: "gtkserver"; Description: "Download GTK-server (GTK GUI interpreter)"; Types: custom;
 Name: "nmap"; Description: "Download and Nmap and Npcap"; Types: custom;
 Name: "windivert"; Description: "Download WinDivert (Windows Packet Divert)"; Types: custom;
-Name: "android_tools"; Description: "Download Android Platform Tools"; Types: custom;
+Name: "android_platform_tools"; Description: "Download Android Platform Tools"; Types: custom;
 
 [Registry]
 Root: HKCR; Subkey: "{cm:AppName}.Script"; ValueType: string; ValueData: "{cm:AppName} Script"; Flags: uninsdeletekey
