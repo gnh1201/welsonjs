@@ -365,6 +365,8 @@ $TessdataFastCompressed  = Join-Path $TmpDir "tessdata_fast.zip"
 $NpcapInstaller          = Join-Path $TmpDir "npcap-setup.exe"
 $NmapInstaller           = Join-Path $TmpDir "nmap-setup.exe"
 $GtkServerCompressed     = Join-Path $TmpDir "gtkserver.zip"
+$WinDivertCompressed     = Join-Path $TmpDir "windivert.zip"
+$AndroidToolsCompressed  = Join-Path $TmpDir "android-platform-tools.zip"
 
 # ================================
 # DOWNLOAD PHASE
@@ -546,6 +548,34 @@ try {
     }
     else {
         Write-Host "[*] nmap component not selected. Skipping Npcap/Nmap download."
+    }
+    
+    # windivert (component: windivert)
+    if (Test-ComponentSelected -Name "windivert") {
+        $url = Get-DownloadUrl -Component "windivert" -Arch $arch
+        if ($url) {
+            Download-File -Url $url -DestinationPath $WinDivertCompressed
+        }
+        else {
+            Write-Host "[*] windivert URL not available. Skipping download."
+        }
+    }
+    else {
+        Write-Host "[*] windivert component not selected. Skipping download."
+    }
+
+    # Android Platform Tools (component: android_tools)
+    if (Test-ComponentSelected -Name "android_tools") {
+        $url = Get-DownloadUrl -Component "android_tools" -Arch $arch
+        if ($url) {
+            Download-File -Url $url -DestinationPath $AndroidToolsCompressed
+        }
+        else {
+            Write-Host "[*] android_tools URL not available. Skipping download."
+        }
+    }
+    else {
+        Write-Host "[*] android_tools component not selected. Skipping download."
     }
 }
 catch {

@@ -58,17 +58,17 @@
     # ===========================
     gtk3runtime = @{
         x64   = "https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer/releases/download/2022-01-04/gtk3-runtime-3.24.31-2022-01-04-ts-win64.exe"
-		arm64 = $null  # no official ARM64 build
-		x86   = "https://downloads.sourceforge.net/project/gtk-win/files/GTK%2B%20Runtime%20Environment/GTK%2B%202.24/gtk2-runtime-2.24.10-2012-10-10-ash.exe/download"
+        arm64 = $null  # no official ARM64 build
+        x86   = "https://downloads.sourceforge.net/project/gtk-win/files/GTK%2B%20Runtime%20Environment/GTK%2B%202.24/gtk2-runtime-2.24.10-2012-10-10-ash.exe/download"
     }
-	
+    
     # ===========================
     # GTK server
     # ===========================
     gtkserver = @{
         x64   = "https://github.com/jopbrown/gtk-server/releases/download/v2.4.5/gtk-server-2.4.5-gtk-2.24.32-win64.zip"
-		arm64 = $null  # no official ARM64 build
-		x86   = $null  # no official X86 build
+        arm64 = $null  # no official ARM64 build
+        x86   = $null  # no official X86 build
     }
 
     # ===========================
@@ -90,14 +90,32 @@
     # Npcap + Nmap
     # ===========================
     npcap = @{
-        x64 = "https://npcap.com/dist/npcap-1.85.exe"
+        x64   = "https://npcap.com/dist/npcap-1.85.exe"
         arm64 = $null  # no official ARM64 build
-        x86 = "https://npcap.com/dist/npcap-1.85.exe"
+        x86   = "https://npcap.com/dist/npcap-1.85.exe"
     }
 
     nmap = @{
-        x64 = "https://nmap.org/dist/nmap-7.98-setup.exe"
+        x64   = "https://nmap.org/dist/nmap-7.98-setup.exe"
         arm64 = $null  # no official ARM64 build
-        x86 = "https://nmap.org/dist/nmap-7.98-setup.exe"
+        x86   = "https://nmap.org/dist/nmap-7.98-setup.exe"
+    }
+
+    # ===========================
+    # WinDivert
+    # ===========================
+    windivert = @{
+        x64   = "https://github.com/basil00/WinDivert/releases/download/v2.2.2/WinDivert-2.2.2-A.zip",
+        arm64 = $null  # no official ARM64 build
+        x86   = "https://github.com/basil00/WinDivert/releases/download/v2.2.2/WinDivert-2.2.2-A.zip"
+    }
+
+    # ===========================
+    # Android Platform Tools (e.g., ADB)
+    # ===========================
+    android_tools = @{
+        x64   = "https://dl.google.com/android/repository/platform-tools-latest-windows.zip"
+        arm64 = $null  # no official ARM64 build
+        x86   = $null  # no official X86 build
     }
 }
