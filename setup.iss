@@ -38,7 +38,8 @@ Name: "wamr"; Description: "Download WebAssembly Micro Runtime (Add support *.wa
 Name: "tessdata"; Description: "Download Tesseract OCR pre-trained data"; Types: custom;
 Name: "tessdata_best"; Description: "Download the pre-trained Tesseract OCR data (most accurate)"; Types: custom;
 Name: "tessdata_fast"; Description: "Download the pre-trained Tesseract OCR data (faster)"; Types: custom;
-Name: "gtk2runtime"; Description: "Download and install GTK2 runtime for Windows"; Types: custom;
+Name: "gtk3runtime"; Description: "Download and install GTK3 runtime for Windows"; Types: custom;
+Name: "gtkserver"; Description: "Download GTK-server (GTK GUI interpreter)"; Types: custom;
 Name: "nmap"; Description: "Download and Nmap and Npcap"; Types: custom;
 
 [Registry]

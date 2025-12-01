@@ -7,14 +7,74 @@
 # ================================
 param(
     [string]$TelemetryProvider = "",
-    [string]$TelemetryApiKey = "",
-    [string]$Version = "",
-    [string]$DistinctId = "",
-    [string]$Components = ""
+    [string]$TelemetryApiKey   = "",
+    [string]$Version           = "",
+    [string]$DistinctId        = "",
+    [string]$Components        = ""
 )
 
 # ================================
-# TELEMETRY
+# SCRIPT ROOT RESOLUTION
+# ================================
+# Ensure $ScriptRoot is available even on older PowerShell
+if (-not (Get-Variable -Name PSScriptRoot -ErrorAction SilentlyContinue)) {
+    $ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+}
+else {
+    $ScriptRoot = $PSScriptRoot
+}
+
+# ================================
+# LOAD DOWNLOAD URL TABLE (DownloadUrls.psd1)
+# ================================
+$DownloadUrls = @{}
+$urlsFilePath = Join-Path $ScriptRoot "data/DownloadUrls.psd1"
+
+if (Test-Path $urlsFilePath) {
+    try {
+        $DownloadUrls = Import-PowerShellDataFile -Path $urlsFilePath
+    }
+    catch {
+        Write-Host "[WARN] Failed to load DownloadUrls.psd1. Falling back to empty URL table."
+        $DownloadUrls = @{}
+    }
+}
+else {
+    Write-Host "[WARN] DownloadUrls.psd1 not found at: $urlsFilePath"
+    $DownloadUrls = @{}
+}
+
+function Get-DownloadUrl {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Component,
+        [Parameter(Mandatory = $true)]
+        [string]$Arch  # x64, arm64, x86
+    )
+
+    $componentKey = $Component.ToLowerInvariant()
+
+    if (-not $DownloadUrls.ContainsKey($componentKey)) {
+        return $null
+    }
+
+    $entry = $DownloadUrls[$componentKey]
+
+    # Prefer arch-specific URL
+    if ($entry.ContainsKey($Arch)) {
+        return $entry[$Arch]
+    }
+
+    # Fallback to "any" (arch-independent)
+    if ($entry.ContainsKey("any")) {
+        return $entry["any"]
+    }
+
+    return $null
+}
+
+# ================================
+# TELEMETRY (ANONYMOUS BY DEFAULT)
 # ================================
 if ($TelemetryProvider -and $TelemetryProvider.ToLower() -eq "posthog") {
 
@@ -23,7 +83,6 @@ if ($TelemetryProvider -and $TelemetryProvider.ToLower() -eq "posthog") {
         # No-op: continue script
     }
     else {
-
         # Resolve distinct ID (fallback to machine name)
         $finalDistinctId = if ($DistinctId -and $DistinctId.Trim() -ne "") {
             $DistinctId
@@ -31,14 +90,7 @@ if ($TelemetryProvider -and $TelemetryProvider.ToLower() -eq "posthog") {
             $env:COMPUTERNAME
         }
 
-        # Skip if distinct_id is empty (PostHog will ignore anyway)
         if ($finalDistinctId -and $finalDistinctId.Trim() -ne "") {
-
-            # Parse Components into array
-            $componentsList = @()
-            if ($Components -and $Components.Trim() -ne "") {
-                $componentsList = $Components.Split(",") | ForEach-Object { $_.Trim() }
-            }
 
             # Build single event payload for PostHog /i/v0/e endpoint
             # Anonymous event is default: $process_person_profile = false
@@ -51,9 +103,9 @@ if ($TelemetryProvider -and $TelemetryProvider.ToLower() -eq "posthog") {
                     version    = $Version
                     os         = "windows"
                     source     = "post-install.ps1"
-                    components = $componentsList
+                    components = $Components            # Keep raw string here
                 }
-                timestamp   = (Get-Date).ToString("o")    # ISO 8601 format
+                timestamp   = (Get-Date).ToString("o")   # ISO 8601 format
             } | ConvertTo-Json -Depth 5
 
             try {
@@ -69,7 +121,6 @@ if ($TelemetryProvider -and $TelemetryProvider.ToLower() -eq "posthog") {
         }
     }
 }
-
 
 # ================================
 # CONFIGURATION
@@ -87,19 +138,59 @@ Write-Host ""
 New-Item -ItemType Directory -Path $TargetDir -Force | Out-Null
 New-Item -ItemType Directory -Path $TmpDir    -Force | Out-Null
 
+# ================================
+# COMPONENT SELECTION (SINGLE PARSE)
+# ================================
+# Convert Components (string) → array exactly once.
+# Example: "python,curl,websocat"
+# If empty → treat as "all selected" for backward compatibility.
+
+$SelectedComponents    = @()
+$AllComponentsSelected = $true
+
+if ($Components -and $Components.Trim() -ne "") {
+    $SelectedComponents =
+        $Components
+        .Split(",")
+        | ForEach-Object { $_.Trim().ToLowerInvariant() }
+
+    $AllComponentsSelected = $false
+}
+
+function Test-ComponentSelected {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Name
+    )
+
+    if ($AllComponentsSelected) {
+        return $true
+    }
+
+    return $SelectedComponents -contains $Name.ToLowerInvariant()
+}
+
+Write-Host "[*] Selected components (raw): $Components"
+if ($AllComponentsSelected) {
+    Write-Host "[*] Component filter       : <none> (treat as ALL selected)"
+} else {
+    Write-Host "[*] Component filter       : $($SelectedComponents -join ', ')"
+}
+Write-Host ""
 
 # ================================
 # ARCHITECTURE DETECTION
 # ================================
-$arch = "x86"
-if ($env:PROCESSOR_ARCHITECTURE -eq "AMD64") { $arch = "x64" }
-elseif ($env:PROCESSOR_ARCHITECTURE -eq "ARM64") { $arch = "arm64" }
-if ($env:PROCESSOR_ARCHITEW6432 -eq "AMD64") { $arch = "x64" }
+$arch = $env:PROCESSOR_ARCHITECTURE
+
+if     ($arch -eq "AMD64")                       { $arch = "x64"   }
+elseif ($arch -eq "ARM64")                       { $arch = "arm64" }
+elseif ($arch -eq "x86")                         { $arch = "x86"   }
+elseif ($env:PROCESSOR_ARCHITEW6432 -eq "AMD64") { $arch = "x64"   }
 elseif ($env:PROCESSOR_ARCHITEW6432 -eq "ARM64") { $arch = "arm64" }
 
 Write-Host "[*] Detected architecture: $arch"
 Write-Host ""
-
 
 # ================================
 # HELPER FUNCTIONS
@@ -131,23 +222,36 @@ function Download-File {
         [string]$DestinationPath
     )
 
-    Write-Host "[*] Downloading file..."
-    Write-Host "    URL : $Url"
-    Write-Host "    OUT : $DestinationPath"
+    Write-Host "[*] Downloading:"
+    Write-Host "    $Url"
+    Write-Host "    -> $DestinationPath"
 
-    try {
-        Invoke-WebRequest -Uri $Url -OutFile $DestinationPath -UseBasicParsing -ErrorAction Stop
-        Write-Host "[OK] Download completed."
-        Write-Host ""
+    # Ensure destination directory exists
+    $destDir = Split-Path -Parent $DestinationPath
+    if ($destDir -and -not (Test-Path $destDir)) {
+        New-Item -ItemType Directory -Path $destDir -Force | Out-Null
     }
-    catch {
-        Write-Host "[ERROR] Failed to download: $Url"
-        if ($_ -is [System.Exception]) {
-            Write-Host $_.Exception.Message
-        } else {
-            Write-Host $_
+
+    $maxRetries = 3
+    $attempt    = 0
+    $success    = $false
+
+    while (-not $success -and $attempt -lt $maxRetries) {
+        $attempt++
+        try {
+            Invoke-WebRequest -Uri $Url -OutFile $DestinationPath -UseBasicParsing
+            $success = $true
         }
-        throw
+        catch {
+            Write-Host "[WARN] Download failed (attempt $attempt of $maxRetries): $($_.Exception.Message)"
+            if ($attempt -lt $maxRetries) {
+                Start-Sleep -Seconds 5
+            }
+        }
+    }
+
+    if (-not $success) {
+        throw "Failed to download $Url after $maxRetries attempts."
     }
 }
 
@@ -167,54 +271,25 @@ function Extract-CompressedFile {
     Ensure-EmptyDirectory -Path $DestinationDirectory
 
     # Temporary extraction workspace inside destination directory
-    $TemporaryExtractDirectory = Join-Path $DestinationDirectory "__tmp_extract__"
-    Ensure-EmptyDirectory -Path $TemporaryExtractDirectory
+    $tmpExtractDir = Join-Path $DestinationDirectory "_tmp_extract"
+    Ensure-EmptyDirectory -Path $tmpExtractDir
 
-    Write-Host "[DEBUG] Expand-Archive command:"
-    Write-Host "        Expand-Archive -LiteralPath `"$CompressedPath`" -DestinationPath `"$TemporaryExtractDirectory`" -Force"
+    # Extract archive
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    [System.IO.Compression.ZipFile]::ExtractToDirectory($CompressedPath, $tmpExtractDir)
 
-    try {
-        Expand-Archive -LiteralPath $CompressedPath -DestinationPath $TemporaryExtractDirectory -Force -ErrorAction Stop
-    }
-    catch {
-        Write-Host "[ERROR] Failed to extract: $CompressedPath"
-        if ($_ -is [System.Exception]) {
-            Write-Host $_.Exception.Message
-        } else {
-            Write-Host $_
+    # Move all items from temp folder to final destination
+    Get-ChildItem -Path $tmpExtractDir -Force | ForEach-Object {
+        $targetPath = Join-Path $DestinationDirectory $_.Name
+        if (Test-Path $targetPath) {
+            # If the target exists, remove it (file or directory)
+            Remove-Item -Path $targetPath -Recurse -Force
         }
-        throw
+        Move-Item -Path $_.FullName -Destination $targetPath
     }
 
-    # Move extracted content into final destination
-    $entries = Get-ChildItem -LiteralPath $TemporaryExtractDirectory
-
-    if (-not $entries -or $entries.Count -eq 0) {
-        Write-Host "[ERROR] No entries were extracted from archive: $CompressedPath"
-        throw "Archive appears to be empty or extraction failed."
-    }
-
-    if ($entries.Count -eq 1 -and $entries[0].PSIsContainer) {
-        # Single root directory inside archive -> flatten
-        Write-Host "[*] Archive has a single root directory. Flattening..."
-        $innerItems = Get-ChildItem -LiteralPath $entries[0].FullName -Force
-        foreach ($item in $innerItems) {
-            Move-Item -LiteralPath $item.FullName -Destination $DestinationDirectory -Force
-        }
-    }
-    else {
-        # Multiple top-level entries
-        Write-Host "[*] Archive has multiple top-level entries. Moving all..."
-        foreach ($item in $entries) {
-            Move-Item -LiteralPath $item.FullName -Destination $DestinationDirectory -Force
-        }
-    }
-
-    # Clean up temporary extraction directory
-    Remove-Item -LiteralPath $TemporaryExtractDirectory -Recurse -Force
-
-    Write-Host "[OK] Extraction completed."
-    Write-Host ""
+    # Remove the temporary extraction directory
+    Remove-Item -Path $tmpExtractDir -Recurse -Force
 }
 
 function Extract-TarGzArchive {
@@ -244,163 +319,211 @@ function Extract-TarGzArchive {
     try {
         & tar -xzf "$ArchivePath" -C "$DestinationDirectory"
         if ($LASTEXITCODE -ne 0) {
-            throw "tar exited with code $LASTEXITCODE"
+            throw "tar exited with code $LASTEXITCODE."
         }
-        Write-Host "[OK] TAR.GZ extraction completed."
-        Write-Host ""
     }
     catch {
-        Write-Host "[ERROR] Failed to extract TAR.GZ archive: $ArchivePath"
-        if ($_ -is [System.Exception]) {
-            Write-Host $_.Exception.Message
-        } else {
-            Write-Host $_
-        }
-        throw
+        throw "Failed to extract TAR.GZ archive: $($_.Exception.Message)"
     }
 }
 
+# ================================
+# COMPRESSED / INSTALLER PATHS
+# ================================
+$PythonCompressed        = Join-Path $TmpDir "python.zip"
+$CurlCompressed          = Join-Path $TmpDir "curl.zip"
+$YaraCompressed          = Join-Path $TmpDir "yara.zip"
+$WamrArchive             = Join-Path $TmpDir "wamr.tar.gz"
+$WebsocatCompressed      = Join-Path $TmpDir "websocat.zip"
+$ArtifactsCompressed     = Join-Path $TmpDir "artifacts.zip"
+$GtkRuntimeInstaller     = Join-Path $TmpDir "gtk-runtime.exe"
+$TessdataCompressed      = Join-Path $TmpDir "tessdata.zip"
+$TessdataBestCompressed  = Join-Path $TmpDir "tessdata_best.zip"
+$TessdataFastCompressed  = Join-Path $TmpDir "tessdata_fast.zip"
+$NpcapInstaller          = Join-Path $TmpDir "npcap-setup.exe"
+$NmapInstaller           = Join-Path $TmpDir "nmap-setup.exe"
+$GtkServerCompressed     = Join-Path $TmpDir "gtkserver.zip"
 
 # ================================
-# SET DOWNLOAD URLS BASED ON ARCH
+# DOWNLOAD PHASE
 # ================================
-$PythonUrl    = $null
-$CurlUrl      = $null
-$YaraUrl      = $null
-$WamrUrl      = $null
-$WebsocatUrl  = $null
-$ArtifactsUrl = $null
-
-switch ($arch) {
-    "x64" {
-        # Python embeddable (x64)
-        $PythonUrl    = "https://www.python.org/ftp/python/3.14.0/python-3.14.0-embed-amd64.zip"
-
-        # curl (x64, mingw)
-        $CurlUrl      = "https://curl.se/windows/latest.cgi?p=win64-mingw.zip"
-
-        # YARA (x64)
-        $YaraUrl      = "https://github.com/VirusTotal/yara/releases/download/v4.5.5/yara-4.5.5-2368-win64.zip"
-
-        # WAMR (x64)
-        $WamrUrl      = "https://github.com/bytecodealliance/wasm-micro-runtime/releases/download/WAMR-2.4.3/iwasm-2.4.3-x86_64-windows-2022.tar.gz"
-
-        # websocat (x64)
-        $WebsocatUrl  = "https://catswords.blob.core.windows.net/welsonjs/websocat-1.14.0.x86_64-pc-windows-gnu.zip"
-        
-        # WelsonJS binary artifacts (x86 compatible)
-        $ArtifactsUrl = "https://catswords.blob.core.windows.net/welsonjs/artifacts.zip"
-    }
-
-    "arm64" {
-        # Python embeddable (ARM64)
-        $PythonUrl    = "https://www.python.org/ftp/python/3.14.0/python-3.14.0-embed-win32.zip"
-
-        # curl (ARM64)
-        $CurlUrl      = "https://curl.se/windows/latest.cgi?p=win64a-mingw.zip"
-
-        # No YARA / WAMR / websocat / artifacts for ARM64 in this script
-        $YaraUrl      = $null
-        $WamrUrl      = $null
-        $WebsocatUrl  = $null
-        $ArtifactsUrl = $null
-    }
-
-    default {
-        # Python embeddable (x86)
-        $PythonUrl    = "https://www.python.org/ftp/python/3.13.9/python-3.13.9-embeddable-win32.zip"
-
-        # curl (x86)
-        $CurlUrl      = "https://downloads.sourceforge.net/project/muldersoft/cURL/curl-8.17.0-win-x86-full.2025-11-09.zip"
-
-        # YARA (x86)
-        $YaraUrl      = "https://github.com/VirusTotal/yara/releases/download/v4.5.5/yara-4.5.5-2368-win32.zip"
-
-        # No WAMR for x86
-        $WamrUrl      = $null
-
-        # websocat (x86)
-        $WebsocatUrl  = "https://catswords.blob.core.windows.net/welsonjs/websocat-1.14.0.i686-pc-windows-gnu.zip"
-        
-        # WelsonJS binary artifacts (x86 compatible)
-        $ArtifactsUrl = "https://catswords.blob.core.windows.net/welsonjs/artifacts.zip"
-    }
-}
-
-Write-Host "[*] Python URL    : $PythonUrl"
-Write-Host "[*] curl URL      : $CurlUrl"
-if ($YaraUrl) {
-    Write-Host "[*] YARA URL      : $YaraUrl"
-} else {
-    Write-Host "[*] YARA          : skipped on this architecture"
-}
-if ($WamrUrl) {
-    Write-Host "[*] WAMR URL      : $WamrUrl"
-} else {
-    Write-Host "[*] WAMR          : skipped on this architecture"
-}
-if ($WebsocatUrl) {
-    Write-Host "[*] websocat URL  : $WebsocatUrl"
-} else {
-    Write-Host "[*] websocat      : skipped on this architecture"
-}
-if ($ArtifactsUrl) {
-    Write-Host "[*] artifacts URL : $ArtifactsUrl"
-} else {
-    Write-Host "[*] artifacts     : skipped on this architecture"
-}
-Write-Host ""
-
-
-# ================================
-# DOWNLOAD FILES (websocat before artifacts)
-# ================================
-$PythonCompressed    = Join-Path $TmpDir "python.zip"
-$CurlCompressed      = Join-Path $TmpDir "curl.zip"
-$YaraCompressed      = Join-Path $TmpDir "yara.zip"
-$WamrArchive         = Join-Path $TmpDir "wamr.tar.gz"
-$WebsocatCompressed  = Join-Path $TmpDir "websocat.zip"
-$ArtifactsCompressed = Join-Path $TmpDir "artifacts.zip"
-
 try {
-    # Python
-    Download-File -Url $PythonUrl -DestinationPath $PythonCompressed
-
-    # curl
-    Download-File -Url $CurlUrl -DestinationPath $CurlCompressed
-
-    # YARA (optional)
-    if ($YaraUrl) {
-        Download-File -Url $YaraUrl -DestinationPath $YaraCompressed
-    }
-    else
-    {
-        Write-Host "[*] YARA download skipped on this architecture."
-    }
-
-    # WAMR (optional)
-    if ($WamrUrl) {
-        Download-File -Url $WamrUrl -DestinationPath $WamrArchive
-    }
-    else
-    {
-        Write-Host "[*] WAMR download skipped on this architecture."
-    }
-
-    # websocat (optional)
-    if ($WebsocatUrl) {
-        Download-File -Url $WebsocatUrl -DestinationPath $WebsocatCompressed
+    # Python (component: python)
+    if (Test-ComponentSelected -Name "python") {
+        $url = Get-DownloadUrl -Component "python" -Arch $arch
+        if ($url) {
+            Download-File -Url $url -DestinationPath $PythonCompressed
+        }
+        else {
+            Write-Host "[*] Python URL not available for arch: $arch. Skipping download."
+        }
     }
     else {
-        Write-Host "[*] websocat download skipped on this architecture."
+        Write-Host "[*] Python component not selected. Skipping download."
     }
 
-    # artifacts
-    if ($ArtifactsUrl) {
-        Download-File -Url $ArtifactsUrl -DestinationPath $ArtifactsCompressed
+    # curl (component: curl)
+    if (Test-ComponentSelected -Name "curl") {
+        $url = Get-DownloadUrl -Component "curl" -Arch $arch
+        if ($url) {
+            Download-File -Url $url -DestinationPath $CurlCompressed
+        }
+        else {
+            Write-Host "[*] curl URL not available for arch: $arch. Skipping download."
+        }
     }
     else {
-        Write-Host "[*] artifacts download skipped on this architecture."
+        Write-Host "[*] curl component not selected. Skipping download."
+    }
+
+    # YARA (component: yara)
+    if (Test-ComponentSelected -Name "yara") {
+        $url = Get-DownloadUrl -Component "yara" -Arch $arch
+        if ($url) {
+            Download-File -Url $url -DestinationPath $YaraCompressed
+        }
+        else {
+            Write-Host "[*] YARA URL not available for arch: $arch. Skipping download."
+        }
+    }
+    else {
+        Write-Host "[*] YARA component not selected. Skipping download."
+    }
+
+    # WAMR (component: wamr)
+    if (Test-ComponentSelected -Name "wamr") {
+        $url = Get-DownloadUrl -Component "wamr" -Arch $arch
+        if ($url) {
+            Download-File -Url $url -DestinationPath $WamrArchive
+        }
+        else {
+            Write-Host "[*] WAMR URL not available for arch: $arch. Skipping download."
+        }
+    }
+    else {
+        Write-Host "[*] WAMR component not selected. Skipping download."
+    }
+
+    # websocat (component: websocat)
+    if (Test-ComponentSelected -Name "websocat") {
+        $url = Get-DownloadUrl -Component "websocat" -Arch $arch
+        if ($url) {
+            Download-File -Url $url -DestinationPath $WebsocatCompressed
+        }
+        else {
+            Write-Host "[*] websocat URL not available for arch: $arch. Skipping download."
+        }
+    }
+    else {
+        Write-Host "[*] websocat component not selected. Skipping download."
+    }
+
+    # artifacts (component: artifacts)
+    if (Test-ComponentSelected -Name "artifacts") {
+        $url = Get-DownloadUrl -Component "artifacts" -Arch $arch
+        if ($url) {
+            Download-File -Url $url -DestinationPath $ArtifactsCompressed
+        }
+        else {
+            Write-Host "[*] artifacts URL not available for arch: $arch. Skipping download."
+        }
+    }
+    else {
+        Write-Host "[*] artifacts component not selected. Skipping download."
+    }
+
+    # GTK3 runtime (component: gtk3runtime)
+    if (Test-ComponentSelected -Name "gtk3runtime") {
+        $url = Get-DownloadUrl -Component "gtk3runtime" -Arch $arch
+        if ($url) {
+            Download-File -Url $url -DestinationPath $GtkRuntimeInstaller
+        }
+        else {
+            Write-Host "[*] gtk3runtime URL not available for arch: $arch. Skipping download."
+        }
+    }
+    else {
+        Write-Host "[*] gtk3runtime component not selected. Skipping download."
+    }
+
+    # GTK server (component: gtkserver)
+    if (Test-ComponentSelected -Name "gtkserver") {
+        $url = Get-DownloadUrl -Component "gtkserver" -Arch $arch
+        if ($url) {
+            Download-File -Url $url -DestinationPath $GtkServerCompressed
+        }
+        else {
+            Write-Host "[*] gtkserver URL not available for arch: $arch. Skipping download."
+        }
+    }
+    else {
+        Write-Host "[*] gtkserver component not selected. Skipping download."
+    }
+
+    # tessdata (component: tessdata)
+    if (Test-ComponentSelected -Name "tessdata") {
+        $url = Get-DownloadUrl -Component "tessdata" -Arch $arch
+        if ($url) {
+            Download-File -Url $url -DestinationPath $TessdataCompressed
+        }
+        else {
+            Write-Host "[*] tessdata URL not available. Skipping download."
+        }
+    }
+    else {
+        Write-Host "[*] tessdata component not selected. Skipping download."
+    }
+
+    # tessdata_best (component: tessdata_best)
+    if (Test-ComponentSelected -Name "tessdata_best") {
+        $url = Get-DownloadUrl -Component "tessdata_best" -Arch $arch
+        if ($url) {
+            Download-File -Url $url -DestinationPath $TessdataBestCompressed
+        }
+        else {
+            Write-Host "[*] tessdata_best URL not available. Skipping download."
+        }
+    }
+    else {
+        Write-Host "[*] tessdata_best component not selected. Skipping download."
+    }
+
+    # tessdata_fast (component: tessdata_fast)
+    if (Test-ComponentSelected -Name "tessdata_fast") {
+        $url = Get-DownloadUrl -Component "tessdata_fast" -Arch $arch
+        if ($url) {
+            Download-File -Url $url -DestinationPath $TessdataFastCompressed
+        }
+        else {
+            Write-Host "[*] tessdata_fast URL not available. Skipping download."
+        }
+    }
+    else {
+        Write-Host "[*] tessdata_fast component not selected. Skipping download."
+    }
+
+    # Nmap bundle (component: nmap) – includes Npcap + Nmap installer
+    if (Test-ComponentSelected -Name "nmap") {
+        # Npcap
+        $url = Get-DownloadUrl -Component "npcap" -Arch $arch
+        if ($url) {
+            Download-File -Url $url -DestinationPath $NpcapInstaller
+        }
+        else {
+            Write-Host "[*] npcap URL not available. Skipping npcap download."
+        }
+
+        # Nmap
+        $url = Get-DownloadUrl -Component "nmap" -Arch $arch
+        if ($url) {
+            Download-File -Url $url -DestinationPath $NmapInstaller
+        }
+        else {
+            Write-Host "[*] nmap URL not available. Skipping nmap download."
+        }
+    }
+    else {
+        Write-Host "[*] nmap component not selected. Skipping Npcap/Nmap download."
     }
 }
 catch {
@@ -413,47 +536,225 @@ catch {
     exit 1
 }
 
-
 # ================================
-# EXTRACT / INSTALL (websocat before artifacts)
+# EXTRACT / INSTALL PHASE
 # ================================
 try {
-    # Python
-    Extract-CompressedFile -CompressedPath $PythonCompressed -DestinationDirectory (Join-Path $TargetDir "python")
-
-    # curl
-    Extract-CompressedFile -CompressedPath $CurlCompressed   -DestinationDirectory (Join-Path $TargetDir "curl")
-
-    # YARA
-    if ($YaraUrl) {
-        Extract-CompressedFile -CompressedPath $YaraCompressed -DestinationDirectory (Join-Path $TargetDir "yara")
+    # Python (component: python)
+    if (Test-ComponentSelected -Name "python") {
+        if (Test-Path $PythonCompressed) {
+            Extract-CompressedFile `
+                -CompressedPath $PythonCompressed `
+                -DestinationDirectory (Join-Path $TargetDir "python")
+        }
+        else {
+            Write-Host "[WARN] Python archive not found. Skipping installation."
+        }
     }
     else {
-        Write-Host "[*] YARA installation skipped on this architecture."
+        Write-Host "[*] Python component not selected. Skipping installation."
     }
 
-    # WAMR (TAR.GZ)
-    if ($WamrUrl) {
-        Extract-TarGzArchive -ArchivePath $WamrArchive -DestinationDirectory (Join-Path $TargetDir "wamr")
+    # curl (component: curl)
+    if (Test-ComponentSelected -Name "curl") {
+        if (Test-Path $CurlCompressed) {
+            Extract-CompressedFile `
+                -CompressedPath $CurlCompressed `
+                -DestinationDirectory (Join-Path $TargetDir "curl")
+        }
+        else {
+            Write-Host "[WARN] curl archive not found. Skipping installation."
+        }
     }
     else {
-        Write-Host "[*] WAMR installation skipped on this architecture."
+        Write-Host "[*] curl component not selected. Skipping installation."
     }
 
-    # websocat
-    if ($WebsocatUrl) {
-        Extract-CompressedFile -CompressedPath $WebsocatCompressed -DestinationDirectory (Join-Path $TargetDir "websocat")
+    # YARA (component: yara)
+    if (Test-ComponentSelected -Name "yara") {
+        if (Test-Path $YaraCompressed) {
+            Extract-CompressedFile `
+                -CompressedPath $YaraCompressed `
+                -DestinationDirectory (Join-Path $TargetDir "yara")
+        }
+        else {
+            Write-Host "[WARN] YARA archive not found. Skipping installation."
+        }
     }
     else {
-        Write-Host "[*] websocat installation skipped on this architecture."
+        Write-Host "[*] YARA component not selected. Skipping installation."
     }
 
-    # artifacts
-    if ($ArtifactsUrl) {
-        Extract-CompressedFile -CompressedPath $ArtifactsCompressed -DestinationDirectory (Join-Path $TargetDir "bin")
+    # WAMR (component: wamr, TAR.GZ)
+    if (Test-ComponentSelected -Name "wamr") {
+        if (Test-Path $WamrArchive) {
+            Extract-TarGzArchive `
+                -ArchivePath $WamrArchive `
+                -DestinationDirectory (Join-Path $TargetDir "wamr")
+        }
+        else {
+            Write-Host "[WARN] WAMR archive not found. Skipping installation."
+        }
     }
     else {
-        Write-Host "[*] artifacts installation skipped on this architecture."
+        Write-Host "[*] WAMR component not selected. Skipping installation."
+    }
+
+    # websocat (component: websocat)
+    if (Test-ComponentSelected -Name "websocat") {
+        if (Test-Path $WebsocatCompressed) {
+            Extract-CompressedFile `
+                -CompressedPath $WebsocatCompressed `
+                -DestinationDirectory (Join-Path $TargetDir "websocat")
+        }
+        else {
+            Write-Host "[WARN] websocat archive not found. Skipping installation."
+        }
+    }
+    else {
+        Write-Host "[*] websocat component not selected. Skipping installation."
+    }
+
+    # artifacts (component: artifacts)
+    if (Test-ComponentSelected -Name "artifacts") {
+        if (Test-Path $ArtifactsCompressed) {
+            Extract-CompressedFile `
+                -CompressedPath $ArtifactsCompressed `
+                -DestinationDirectory (Join-Path $TargetDir "bin")
+        }
+        else {
+            Write-Host "[WARN] artifacts archive not found. Skipping installation."
+        }
+    }
+    else {
+        Write-Host "[*] artifacts component not selected. Skipping installation."
+    }
+
+    # GTK3 runtime (component: gtk3runtime) – just run installer; no need to wait
+    if (Test-ComponentSelected -Name "gtk3runtime") {
+        if (Test-Path $GtkRuntimeInstaller) {
+            Write-Host "[*] Starting GTK runtime installer (no wait): $GtkRuntimeInstaller"
+            Start-Process -FilePath $GtkRuntimeInstaller
+        }
+        else {
+            Write-Host "[WARN] GTK runtime installer not found. Skipping."
+        }
+    }
+    else {
+        Write-Host "[*] gtk3runtime component not selected. Skipping installation."
+    }
+
+    # GTK server (component: gtkserver) – extract ZIP into AppData
+    if (Test-ComponentSelected -Name "gtkserver") {
+        if (Test-Path $GtkServerCompressed) {
+            Extract-CompressedFile `
+                -CompressedPath $GtkServerCompressed `
+                -DestinationDirectory (Join-Path $TargetDir "gtkserver")
+        }
+        else {
+            Write-Host "[WARN] gtkserver archive not found. Skipping installation."
+        }
+    }
+    else {
+        Write-Host "[*] gtkserver component not selected. Skipping installation."
+    }
+
+    # tessdata (component: tessdata)
+    if (Test-ComponentSelected -Name "tessdata") {
+        if (Test-Path $TessdataCompressed) {
+            Extract-CompressedFile `
+                -CompressedPath $TessdataCompressed `
+                -DestinationDirectory (Join-Path $TargetDir "tessdata")
+        }
+        else {
+            Write-Host "[WARN] tessdata archive not found. Skipping installation."
+        }
+    }
+    else {
+        Write-Host "[*] tessdata component not selected. Skipping installation."
+    }
+
+    # tessdata_best (component: tessdata_best)
+    if (Test-ComponentSelected -Name "tessdata_best") {
+        if (Test-Path $TessdataBestCompressed) {
+            Extract-CompressedFile `
+                -CompressedPath $TessdataBestCompressed `
+                -DestinationDirectory (Join-Path $TargetDir "tessdata_best")
+        }
+        else {
+            Write-Host "[WARN] tessdata_best archive not found. Skipping installation."
+        }
+    }
+    else {
+        Write-Host "[*] tessdata_best component not selected. Skipping installation."
+    }
+
+    # tessdata_fast (component: tessdata_fast)
+    if (Test-ComponentSelected -Name "tessdata_fast") {
+        if (Test-Path $TessdataFastCompressed) {
+            Extract-CompressedFile `
+                -CompressedPath $TessdataFastCompressed `
+                -DestinationDirectory (Join-Path $TargetDir "tessdata_fast")
+        }
+        else {
+            Write-Host "[WARN] tessdata_fast archive not found. Skipping installation."
+        }
+    }
+    else {
+        Write-Host "[*] tessdata_fast component not selected. Skipping installation."
+    }
+
+    # Nmap bundle (component: nmap) – Npcap → Nmap → VC_redist.x86.exe
+    if (Test-ComponentSelected -Name "nmap") {
+        # Npcap
+        if (Test-Path $NpcapInstaller) {
+            Write-Host "[*] Running Npcap installer (wait): $NpcapInstaller"
+            Start-Process -FilePath $NpcapInstaller -ArgumentList "/S" -Wait -ErrorAction Stop
+        }
+        else {
+            Write-Host "[WARN] Npcap installer not found. Skipping Npcap."
+        }
+
+        # Nmap
+        if (Test-Path $NmapInstaller) {
+            Write-Host "[*] Running Nmap installer (wait): $NmapInstaller"
+            Start-Process -FilePath $NmapInstaller -ArgumentList "/S" -Wait -ErrorAction Stop
+        }
+        else {
+            Write-Host "[WARN] Nmap installer not found. Skipping Nmap."
+        }
+
+        # Find and run VC_redist.x86.exe inside Nmap installation directory
+        $searchDirs = @()
+
+        if ($env:"ProgramFiles(x86)") {
+            $searchDirs += (Join-Path $env:"ProgramFiles(x86)" "Nmap")
+        }
+        if ($env:ProgramFiles) {
+            $searchDirs += (Join-Path $env:ProgramFiles "Nmap")
+        }
+
+        $vcRedist = $null
+        foreach ($dir in $searchDirs) {
+            if (Test-Path $dir) {
+                $candidate = Get-ChildItem -Path $dir -Filter "vc_redist.x86.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+                if ($candidate) {
+                    $vcRedist = $candidate
+                    break
+                }
+            }
+        }
+
+        if ($vcRedist) {
+            Write-Host "[*] Running VC_redist.x86 installer: $($vcRedist.FullName)"
+            Start-Process -FilePath $vcRedist.FullName -ArgumentList "/install /quiet /norestart" -Wait -ErrorAction SilentlyContinue
+        }
+        else {
+            Write-Host "[WARN] VC_redist.x86.exe not found under expected Nmap directories."
+        }
+    }
+    else {
+        Write-Host "[*] nmap component not selected. Skipping Npcap/Nmap installation."
     }
 }
 catch {
@@ -465,7 +766,6 @@ catch {
     }
     exit 1
 }
-
 
 # ================================
 # FINISH
