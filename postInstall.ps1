@@ -14,6 +14,23 @@ param(
 )
 
 # ================================
+# LOGO
+# ================================
+$logo = @"
+ __        __   _                     _ ____  
+ \ \      / /__| |___  ___  _ __     | / ___| 
+  \ \ /\ / / _ \ / __|/ _ \| '_ \ _  | \___ \ 
+   \ V  V /  __/ \__ \ (_) | | | | |_| |___) |
+    \_/\_/ \___|_|___/\___/|_| |_| \___/|____/ 
+
+  WelsonJS post-install script
+  https://github.com/gnh1201/welsonjs
+
+"@
+
+Write-Host $logo
+
+# ================================
 # SCRIPT ROOT RESOLUTION
 # ================================
 # Ensure $ScriptRoot is available even on older PowerShell
