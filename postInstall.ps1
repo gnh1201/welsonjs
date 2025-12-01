@@ -1,3 +1,76 @@
+# WelsonJS post-install script
+# Namhyeon Go <gnh1201@catswords.re.kr>, and Catswords OSS contributors.
+# https://github.com/gnh1201/welsonjs
+
+# ================================
+# PARAMETERS
+# ================================
+param(
+    [string]$TelemetryProvider = "",
+    [string]$TelemetryApiKey = "",
+    [string]$Version = "",
+    [string]$DistinctId = "",
+    [string]$Components = ""
+)
+
+# ================================
+# TELEMETRY
+# ================================
+if ($TelemetryProvider -and $TelemetryProvider.ToLower() -eq "posthog") {
+
+    # Skip telemetry if API key is missing
+    if (-not $TelemetryApiKey -or $TelemetryApiKey.Trim() -eq "") {
+        # No-op: continue script
+    }
+    else {
+
+        # Resolve distinct ID (fallback to machine name)
+        $finalDistinctId = if ($DistinctId -and $DistinctId.Trim() -ne "") {
+            $DistinctId
+        } else {
+            $env:COMPUTERNAME
+        }
+
+        # Skip if distinct_id is empty (PostHog will ignore anyway)
+        if ($finalDistinctId -and $finalDistinctId.Trim() -ne "") {
+
+            # Parse Components into array
+            $componentsList = @()
+            if ($Components -and $Components.Trim() -ne "") {
+                $componentsList = $Components.Split(",") | ForEach-Object { $_.Trim() }
+            }
+
+            # Build single event payload for PostHog /i/v0/e endpoint
+            # Anonymous event is default: $process_person_profile = false
+            $body = @{
+                api_key     = $TelemetryApiKey
+                event       = "app_installed"
+                distinct_id = $finalDistinctId
+                properties  = @{
+                    "$process_person_profile" = $false   # Anonymous event (no person profile)
+                    version    = $Version
+                    os         = "windows"
+                    source     = "post-install.ps1"
+                    components = $componentsList
+                }
+                timestamp   = (Get-Date).ToString("o")    # ISO 8601 format
+            } | ConvertTo-Json -Depth 5
+
+            try {
+                Invoke-RestMethod `
+                    -Uri "https://us.i.posthog.com/i/v0/e/" `
+                    -Method Post `
+                    -ContentType "application/json" `
+                    -Body $body | Out-Null
+            }
+            catch {
+                # Ignore telemetry failure (installer must not break)
+            }
+        }
+    }
+}
+
+
 # ================================
 # CONFIGURATION
 # ================================
@@ -201,7 +274,7 @@ $ArtifactsUrl = $null
 switch ($arch) {
     "x64" {
         # Python embeddable (x64)
-        $PythonUrl    = "https://www.python.org/ftp/python/3.13.9/python-3.13.9-embeddable-amd64.zip"
+        $PythonUrl    = "https://www.python.org/ftp/python/3.14.0/python-3.14.0-embed-amd64.zip"
 
         # curl (x64, mingw)
         $CurlUrl      = "https://curl.se/windows/latest.cgi?p=win64-mingw.zip"
@@ -221,7 +294,7 @@ switch ($arch) {
 
     "arm64" {
         # Python embeddable (ARM64)
-        $PythonUrl    = "https://www.python.org/ftp/python/3.13.9/python-3.13.9-embeddable-arm64.zip"
+        $PythonUrl    = "https://www.python.org/ftp/python/3.14.0/python-3.14.0-embed-win32.zip"
 
         # curl (ARM64)
         $CurlUrl      = "https://curl.se/windows/latest.cgi?p=win64a-mingw.zip"
