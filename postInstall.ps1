@@ -99,7 +99,7 @@ if ($TelemetryProvider -and $TelemetryProvider.ToLower() -eq "posthog") {
                 event       = "app_installed"
                 distinct_id = $finalDistinctId
                 properties  = @{
-                    "$process_person_profile" = $false   # Anonymous event (no person profile)
+                    product    = "welsonjs"
                     version    = $Version
                     os         = "windows"
                     source     = "post-install.ps1"
