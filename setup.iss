@@ -40,7 +40,7 @@ Name: "tessdata_best"; Description: "Download the pre-trained Tesseract OCR data
 Name: "tessdata_fast"; Description: "Download the pre-trained Tesseract OCR data (faster)"; Types: custom;
 Name: "gtk3runtime"; Description: "Download and install GTK3 runtime for Windows"; Types: custom;
 Name: "gtkserver"; Description: "Download GTK-server (GTK GUI interpreter)"; Types: custom;
-Name: "nmap"; Description: "Download and Nmap and Npcap"; Types: custom;
+Name: "nmap"; Description: "Download Nmap and Npcap"; Types: custom;
 Name: "windivert"; Description: "Download WinDivert (Windows Packet Divert)"; Types: custom;
 Name: "android_platform_tools"; Description: "Download Android Platform Tools"; Types: custom;
 

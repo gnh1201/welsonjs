@@ -289,28 +289,42 @@ function Extract-CompressedFile {
     Write-Host "    $CompressedPath"
     Write-Host "    -> $DestinationDirectory"
 
-    # Ensure destination directory exists
+    # Ensure destination directory exists (clean)
     Ensure-EmptyDirectory -Path $DestinationDirectory
 
-    # Temporary extraction workspace inside destination directory
+    # Temporary extraction workspace
     $tmpExtractDir = Join-Path $DestinationDirectory "_tmp_extract"
     Ensure-EmptyDirectory -Path $tmpExtractDir
 
-    # Extract archive
+    # Extract all
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     [System.IO.Compression.ZipFile]::ExtractToDirectory($CompressedPath, $tmpExtractDir)
 
-    # Move all items from temp folder to final destination
-    Get-ChildItem -Path $tmpExtractDir -Force | ForEach-Object {
+    # Detect source root to move from
+    $entries    = Get-ChildItem -Path $tmpExtractDir -Force
+    $SourceRoot = $tmpExtractDir
+
+    if ($entries.Count -eq 1 -and $entries[0].PSIsContainer) {
+        # ZIP contains exactly one top-level folder → unwrap that folder
+        $SourceRoot = $entries[0].FullName
+        Write-Host "[*] Detected single root folder inside zip: $($entries[0].Name)"
+        Write-Host "[*] Unwrapping folder content..."
+    }
+    else {
+        Write-Host "[*] Extracting multi-item archive (no root folder unwrapping needed)."
+    }
+
+    # Move all items from source root to final destination
+    Get-ChildItem -Path $SourceRoot -Force | ForEach-Object {
         $targetPath = Join-Path $DestinationDirectory $_.Name
+
         if (Test-Path $targetPath) {
-            # If the target exists, remove it (file or directory)
             Remove-Item -Path $targetPath -Recurse -Force
         }
         Move-Item -Path $_.FullName -Destination $targetPath
     }
 
-    # Remove the temporary extraction directory
+    # Cleanup
     Remove-Item -Path $tmpExtractDir -Recurse -Force
 }
 
@@ -828,7 +842,7 @@ try {
     
     # Android Platform Tools (component: android_platform_tools)
     if (Test-ComponentSelected -Name "android_platform_tools") {
-        if (Test-Path $WinDivertCompressed) {
+        if (Test-Path $AndroidPlatformToolsCompressed) {
             Extract-CompressedFile `
                 -CompressedPath $AndroidPlatformToolsCompressed `
                 -DestinationDirectory (Join-Path $TargetDir "android_platform_tools")
