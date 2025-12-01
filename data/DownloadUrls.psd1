@@ -105,7 +105,7 @@
     # WinDivert
     # ===========================
     windivert = @{
-        x64   = "https://github.com/basil00/WinDivert/releases/download/v2.2.2/WinDivert-2.2.2-A.zip",
+        x64   = "https://github.com/basil00/WinDivert/releases/download/v2.2.2/WinDivert-2.2.2-A.zip"
         arm64 = $null  # no official ARM64 build
         x86   = "https://github.com/basil00/WinDivert/releases/download/v2.2.2/WinDivert-2.2.2-A.zip"
     }

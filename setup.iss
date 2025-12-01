@@ -92,7 +92,7 @@ Name: "{group}\Test {cm:AppName}"; Filename: "{app}\bootstrap.bat"; AfterInstall
 Name: "{group}\Uninstall {cm:AppName}"; Filename: "{uninstallexe}"; AfterInstall: SetElevationBit('{group}\Uninstall {cm:AppName}.lnk');
 
 [Run]
-Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -NoProfile -File ""{app}\postInstall.ps1"" -TelemetryProvider posthog -TelemetryApiKey ""{cm:PostHogApiKey}"" -Version ""{cm:AppVersion}"" -DistinctId ""{computername}"" -Components ""{code:GetSelectedComponents}"""; WorkingDir: "{app}"; Components: artifacts; Flags: waituntilterminated
+Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -NoProfile -File ""{app}\postInstall.ps1"" -TelemetryProvider posthog -TelemetryApiKey ""{cm:PostHogApiKey}"" -Version ""{cm:AppVersion}"" -DistinctId ""{computername}"" -Components ""{code:GetSelectedComponents}"""; WorkingDir: "{app}"; Flags: waituntilterminated
 Filename: {app}\installService.bat; Components: artifacts; Flags: nowait
 Filename: "{userappdata}\{cm:AppName}\bin\WelsonJS.Launcher.exe"; Components: artifacts; Flags: nowait
 

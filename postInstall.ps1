@@ -682,11 +682,11 @@ try {
         Write-Host "[*] artifacts component not selected. Skipping installation."
     }
 
-    # GTK3 runtime (component: gtk3runtime) – just run installer; no need to wait
+    # GTK3 runtime (component: gtk3runtime) – run installer and wait
     if (Test-ComponentSelected -Name "gtk3runtime") {
         if (Test-Path $GtkRuntimeInstaller) {
-            Write-Host "[*] Starting GTK runtime installer (no wait): $GtkRuntimeInstaller"
-            Start-Process -FilePath $GtkRuntimeInstaller
+            Write-Host "[*] Running GTK runtime installer (wait): $GtkRuntimeInstaller"
+            Start-Process -FilePath $GtkRuntimeInstaller -Wait -ErrorAction Stop
         }
         else {
             Write-Host "[WARN] GTK runtime installer not found. Skipping."
@@ -758,10 +758,11 @@ try {
 
     # Nmap bundle (component: nmap) – Npcap → Nmap → VC_redist.x86.exe
     if (Test-ComponentSelected -Name "nmap") {
+
         # Npcap
         if (Test-Path $NpcapInstaller) {
             Write-Host "[*] Running Npcap installer (wait): $NpcapInstaller"
-            Start-Process -FilePath $NpcapInstaller -ArgumentList "/S" -Wait -ErrorAction Stop
+            Start-Process -FilePath $NpcapInstaller -Wait -ErrorAction Stop
         }
         else {
             Write-Host "[WARN] Npcap installer not found. Skipping Npcap."
@@ -770,7 +771,7 @@ try {
         # Nmap
         if (Test-Path $NmapInstaller) {
             Write-Host "[*] Running Nmap installer (wait): $NmapInstaller"
-            Start-Process -FilePath $NmapInstaller -ArgumentList "/S" -Wait -ErrorAction Stop
+            Start-Process -FilePath $NmapInstaller -Wait -ErrorAction Stop
         }
         else {
             Write-Host "[WARN] Nmap installer not found. Skipping Nmap."
@@ -789,7 +790,8 @@ try {
         $vcRedist = $null
         foreach ($dir in $searchDirs) {
             if (Test-Path $dir) {
-                $candidate = Get-ChildItem -Path $dir -Filter "vc_redist.x86.exe" -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
+                $candidate = Get-ChildItem -Path $dir -Filter "vc_redist.x86.exe" -Recurse -ErrorAction SilentlyContinue |
+                             Select-Object -First 1
                 if ($candidate) {
                     $vcRedist = $candidate
                     break
@@ -799,7 +801,7 @@ try {
 
         if ($vcRedist) {
             Write-Host "[*] Running VC_redist.x86 installer: $($vcRedist.FullName)"
-            Start-Process -FilePath $vcRedist.FullName -ArgumentList "/install /quiet /norestart" -Wait -ErrorAction SilentlyContinue
+            Start-Process -FilePath $vcRedist.FullName -Wait -ErrorAction SilentlyContinue
         }
         else {
             Write-Host "[WARN] VC_redist.x86.exe not found under expected Nmap directories."
