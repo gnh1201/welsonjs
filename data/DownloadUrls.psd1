@@ -113,7 +113,7 @@
     # ===========================
     # Android Platform Tools (e.g., ADB)
     # ===========================
-    android_tools = @{
+    android_platform_tools = @{
         x64   = "https://dl.google.com/android/repository/platform-tools-latest-windows.zip"
         arm64 = $null  # no official ARM64 build
         x86   = $null  # no official X86 build

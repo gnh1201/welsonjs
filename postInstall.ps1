@@ -366,7 +366,7 @@ $NpcapInstaller          = Join-Path $TmpDir "npcap-setup.exe"
 $NmapInstaller           = Join-Path $TmpDir "nmap-setup.exe"
 $GtkServerCompressed     = Join-Path $TmpDir "gtkserver.zip"
 $WinDivertCompressed     = Join-Path $TmpDir "windivert.zip"
-$AndroidToolsCompressed  = Join-Path $TmpDir "android-platform-tools.zip"
+$AndroidPlatformToolsCompressed = Join-Path $TmpDir "android-platform-tools.zip"
 
 # ================================
 # DOWNLOAD PHASE
@@ -564,18 +564,18 @@ try {
         Write-Host "[*] windivert component not selected. Skipping download."
     }
 
-    # Android Platform Tools (component: android_tools)
-    if (Test-ComponentSelected -Name "android_tools") {
-        $url = Get-DownloadUrl -Component "android_tools" -Arch $arch
+    # Android Platform Tools (component: android_platform_tools)
+    if (Test-ComponentSelected -Name "android_platform_tools") {
+        $url = Get-DownloadUrl -Component "android_platform_tools" -Arch $arch
         if ($url) {
-            Download-File -Url $url -DestinationPath $AndroidToolsCompressed
+            Download-File -Url $url -DestinationPath $AndroidPlatformToolsCompressed
         }
         else {
-            Write-Host "[*] android_tools URL not available. Skipping download."
+            Write-Host "[*] android_platform_tools URL not available. Skipping download."
         }
     }
     else {
-        Write-Host "[*] android_tools component not selected. Skipping download."
+        Write-Host "[*] android_platform_tools component not selected. Skipping download."
     }
 }
 catch {
