@@ -1,3 +1,8 @@
+# DownloadUrls.psd1
+# External download urls for WelsonJS post-install script
+# Namhyeon Go <gnh1201@catswords.re.kr>
+# https://github.com/gnh1201/welsonjs
+# 
 @{
     # ===========================
     # Python embeddable
@@ -14,7 +19,7 @@
     curl = @{
         x64   = "https://curl.se/windows/latest.cgi?p=win64-mingw.zip"
         arm64 = "https://curl.se/windows/latest.cgi?p=win64a-mingw.zip"
-        x86   = "https://downloads.sourceforge.net/project/muldersoft/cURL/curl-8.17.0-win-x86-full.2025-11-09.zip"
+        x86   = "https://twds.dl.sourceforge.net/project/muldersoft/cURL/curl-8.17.0-win-x86-full.2025-11-09.zip?viasf=1"
     }
 
     # ===========================
@@ -59,7 +64,7 @@
     gtk3runtime = @{
         x64   = "https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer/releases/download/2022-01-04/gtk3-runtime-3.24.31-2022-01-04-ts-win64.exe"
         arm64 = $null  # no official ARM64 build
-        x86   = "https://downloads.sourceforge.net/project/gtk-win/files/GTK%2B%20Runtime%20Environment/GTK%2B%202.24/gtk2-runtime-2.24.10-2012-10-10-ash.exe/download"
+        x86   = "https://twds.dl.sourceforge.net/project/gtk-win/GTK%2B%20Runtime%20Environment/GTK%2B%202.24/gtk2-runtime-2.24.10-2012-10-10-ash.exe?viasf=1"
     }
     
     # ===========================
@@ -118,4 +123,79 @@
         arm64 = $null  # no official ARM64 build
         x86   = $null  # no official X86 build
     }
+    
+    # ===========================
+    # tun2socks
+    # ===========================
+    tun2socks = @{
+        x64v3 = "https://github.com/xjasonlyu/tun2socks/releases/download/v2.6.0/tun2socks-windows-amd64-v3.zip"
+        x64   = "https://github.com/xjasonlyu/tun2socks/releases/download/v2.6.0/tun2socks-windows-amd64.zip"
+        arm64 = "https://github.com/xjasonlyu/tun2socks/releases/download/v2.6.0/tun2socks-windows-arm64.zip"
+        arm32 = "https://github.com/xjasonlyu/tun2socks/releases/download/v2.6.0/tun2socks-windows-arm32v7.zip"
+        x86   = "https://github.com/xjasonlyu/tun2socks/releases/download/v2.6.0/tun2socks-windows-386.zip"
+    }
+    
+    # ===========================
+    # sendboxie
+    # ===========================
+    sendboxie = @{
+        x64   = "https://github.com/sandboxie-plus/Sandboxie/releases/download/v1.16.8/Sandboxie-Plus-x64-v1.16.8.exe"
+        arm64 = "https://github.com/sandboxie-plus/Sandboxie/releases/download/v1.16.8/Sandboxie-Plus-ARM64-v1.16.8.exe"
+        x86   = $null  # no official X86 build
+    }
+
+    # ===========================
+    # ldplayer (Android Emulator)
+    # ===========================
+    ldplayer = @{
+        any = "https://res.ldrescdn.com/download/LDPlayer9.exe?n=LDPlayer9_kr_42479921_ld.exe"
+    }
+    
+    # ===========================
+    # tap_windows6 (Windows TAP driver (NDIS 6))
+    # ===========================
+    tap_windows6 = @{
+        x64   = "https://github.com/OpenVPN/tap-windows6/releases/download/9.27.0/tap-windows-9.27.0-I0-amd64.msm"
+        arm64 = "https://github.com/OpenVPN/tap-windows6/releases/download/9.27.0/tap-windows-9.27.0-I0-arm64.msm"
+        x86   = "https://github.com/OpenVPN/tap-windows6/releases/download/9.27.0/tap-windows-9.27.0-I0-i386.msm"
+    }
+    
+    # ===========================
+    # THC Hydra Windows build
+    # ===========================
+    thc_hydra = @{
+        any = "https://github.com/maaaaz/thc-hydra-windows/releases/download/v9.1/thc-hydra-windows-v9.1.zip"
+    }
+    
+    # ===========================
+    # Shadowsocks
+    # ===========================
+    shadowsocks_libev = @{
+        any = "https://ics.catswords.net/shadowsocks-libev-win-build-20220118.zip"
+    }
+    
+    # ===========================
+    # WinLibs standalone build of GCC and MinGW-w64 for Windows
+    # ===========================
+    winlibs_mingw = @{
+        x64   = "https://github.com/brechtsanders/winlibs_mingw/releases/download/15.2.0posix-13.0.0-ucrt-r3/winlibs-i686-posix-dwarf-gcc-15.2.0-mingw-w64ucrt-13.0.0-r3.zip"
+        arm64 = $null  # no official ARM64 build
+        x86   = "https://github.com/brechtsanders/winlibs_mingw/releases/download/15.2.0posix-13.0.0-ucrt-r3/winlibs-x86_64-posix-seh-gcc-15.2.0-mingw-w64ucrt-13.0.0-r3.zip"
+    }
+	
+    # ===========================
+    # The Go Language Programming
+    # ===========================
+    golang = @{
+        x64   = "https://go.dev/dl/go1.25.4.windows-amd64.zip"
+        arm64 = "https://go.dev/dl/go1.25.4.windows-arm64.zip"
+        x86   = "https://go.dev/dl/go1.25.4.windows-386.zip"
+    }
+	
+    # ===========================
+    # x86dbg
+    # ===========================
+	x86dbg = @{
+		any = "https://twds.dl.sourceforge.net/project/x64dbg/snapshots/snapshot_2025-08-19_19-40.zip?viasf=1"
+	}
 }
