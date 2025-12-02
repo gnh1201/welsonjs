@@ -91,7 +91,7 @@ function Get-DownloadUrl {
 }
 
 # ================================
-# TELEMETRY (ANONYMOUS BY DEFAULT)
+# TELEMETRY
 # ================================
 if ($TelemetryProvider -and $TelemetryProvider.ToLower() -eq "posthog") {
 
@@ -100,17 +100,30 @@ if ($TelemetryProvider -and $TelemetryProvider.ToLower() -eq "posthog") {
         # No-op: continue script
     }
     else {
-        # Resolve distinct ID (fallback to machine name)
+        # Resolve distinct ID (fallback to machine name, then device UID)
         $finalDistinctId = if ($DistinctId -and $DistinctId.Trim() -ne "") {
             $DistinctId
         } else {
-            $env:COMPUTERNAME
+            # Attempt to get the machine name
+            $computerName = $env:COMPUTERNAME
+
+            if ($computerName -and $computerName.Trim() -ne "") {
+                $computerName
+            } else {
+                # Fall back to using the device UUID (if COMPUTERNAME is unavailable)
+                $deviceUid = (Get-WmiObject -Class Win32_ComputerSystemProduct).UUID
+                if ($deviceUid -and $deviceUid.Trim() -ne "") {
+                    $deviceUid
+                } else {
+                    # Optionally, generate a new UUID or use a predefined value if UUID is also unavailable
+                    [guid]::NewGuid().ToString()
+                }
+            }
         }
 
         if ($finalDistinctId -and $finalDistinctId.Trim() -ne "") {
 
             # Build single event payload for PostHog /i/v0/e endpoint
-            # Anonymous event is default: $process_person_profile = false
             $body = @{
                 api_key     = $TelemetryApiKey
                 event       = "app_installed"
@@ -198,7 +211,6 @@ Write-Host ""
 # ARCHITECTURE DETECTION
 # ================================
 function Get-NativeArchitecture {
-    # 0 = x86, 5 = ARM, 9 = x64
     # https://learn.microsoft.com/windows/win32/cimwin32prov/win32-processor
     $arch = $null
 
@@ -208,8 +220,10 @@ function Get-NativeArchitecture {
 
         switch ($proc.Architecture) {
             0       { $arch = "x86"   }   # 32-bit Intel/AMD
+            5       { $arch = "arm32" }   # 32-bit ARM
             12      { $arch = "arm64" }   # treat ARM as arm64 target
             9       { $arch = "x64"   }   # 64-bit Intel/AMD
+            6       { $arch = "ia64"  }   # Intel Itanium
             default { $arch = "x86"   }   # fallback
         }
     }
