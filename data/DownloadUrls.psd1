@@ -202,7 +202,7 @@
     # ===========================
     # 7-zip
     # ===========================
-    7zip = @{
+    w7zip = @{
         x64   = "https://www.7-zip.org/a/7z2501-x64.exe"
         arm64 = "https://www.7-zip.org/a/7z2501-arm64.exe"
         x86   = "https://www.7-zip.org/a/7z2501.exe"
