@@ -91,7 +91,7 @@ function Get-DownloadUrl {
 }
 
 # ================================
-# TELEMETRY (ANONYMOUS BY DEFAULT)
+# TELEMETRY
 # ================================
 if ($TelemetryProvider -and $TelemetryProvider.ToLower() -eq "posthog") {
 
@@ -101,6 +101,7 @@ if ($TelemetryProvider -and $TelemetryProvider.ToLower() -eq "posthog") {
     }
     else {
         # Resolve distinct ID (fallback to machine name)
+        # A distinct ID uses a unique and anonymous identifier.
         $finalDistinctId = if ($DistinctId -and $DistinctId.Trim() -ne "") {
             $DistinctId
         } else {
@@ -110,7 +111,6 @@ if ($TelemetryProvider -and $TelemetryProvider.ToLower() -eq "posthog") {
         if ($finalDistinctId -and $finalDistinctId.Trim() -ne "") {
 
             # Build single event payload for PostHog /i/v0/e endpoint
-            # Anonymous event is default: $process_person_profile = false
             $body = @{
                 api_key     = $TelemetryApiKey
                 event       = "app_installed"
@@ -208,8 +208,10 @@ function Get-NativeArchitecture {
 
         switch ($proc.Architecture) {
             0       { $arch = "x86"   }   # 32-bit Intel/AMD
+            5       { $arch = "arm32" }   # 32-bit ARM
             12      { $arch = "arm64" }   # treat ARM as arm64 target
             9       { $arch = "x64"   }   # 64-bit Intel/AMD
+            6       { $arch = "ia64"  }   # Intel Itanium
             default { $arch = "x86"   }   # fallback
         }
     }
