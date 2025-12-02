@@ -19,7 +19,7 @@
     curl = @{
         x64   = "https://curl.se/windows/latest.cgi?p=win64-mingw.zip"
         arm64 = "https://curl.se/windows/latest.cgi?p=win64a-mingw.zip"
-        x86   = "https://downloads.sourceforge.net/project/muldersoft/cURL/curl-8.17.0-win-x86-full.2025-11-09.zip"
+        x86   = "https://twds.dl.sourceforge.net/project/muldersoft/cURL/curl-8.17.0-win-x86-full.2025-11-09.zip?viasf=1"
     }
 
     # ===========================
@@ -64,7 +64,7 @@
     gtk3runtime = @{
         x64   = "https://github.com/tschoonj/GTK-for-Windows-Runtime-Environment-Installer/releases/download/2022-01-04/gtk3-runtime-3.24.31-2022-01-04-ts-win64.exe"
         arm64 = $null  # no official ARM64 build
-        x86   = "https://downloads.sourceforge.net/project/gtk-win/files/GTK%2B%20Runtime%20Environment/GTK%2B%202.24/gtk2-runtime-2.24.10-2012-10-10-ash.exe/download"
+        x86   = "https://twds.dl.sourceforge.net/project/gtk-win/GTK%2B%20Runtime%20Environment/GTK%2B%202.24/gtk2-runtime-2.24.10-2012-10-10-ash.exe?viasf=1"
     }
     
     # ===========================
@@ -191,4 +191,11 @@
         arm64 = "https://go.dev/dl/go1.25.4.windows-arm64.zip"
         x86   = "https://go.dev/dl/go1.25.4.windows-386.zip"
     }
+	
+    # ===========================
+    # x86dbg
+    # ===========================
+	x86dbg = @{
+		any = "https://twds.dl.sourceforge.net/project/x64dbg/snapshots/snapshot_2025-08-19_19-40.zip?viasf=1"
+	}
 }
