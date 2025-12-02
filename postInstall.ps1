@@ -100,12 +100,25 @@ if ($TelemetryProvider -and $TelemetryProvider.ToLower() -eq "posthog") {
         # No-op: continue script
     }
     else {
-        # Resolve distinct ID (fallback to machine name)
-        # A distinct ID uses a unique and anonymous identifier.
+        # Resolve distinct ID (fallback to machine name, then device UID)
         $finalDistinctId = if ($DistinctId -and $DistinctId.Trim() -ne "") {
             $DistinctId
         } else {
-            $env:COMPUTERNAME
+            # Attempt to get the machine name
+            $computerName = $env:COMPUTERNAME
+
+            if ($computerName -and $computerName.Trim() -ne "") {
+                $computerName
+            } else {
+                # Fall back to using the device UUID (if COMPUTERNAME is unavailable)
+                $deviceUid = (Get-WmiObject -Class Win32_ComputerSystemProduct).UUID
+                if ($deviceUid -and $deviceUid.Trim() -ne "") {
+                    $deviceUid
+                } else {
+                    # Optionally, generate a new UUID or use a predefined value if UUID is also unavailable
+                    [guid]::NewGuid().ToString()
+                }
+            }
         }
 
         if ($finalDistinctId -and $finalDistinctId.Trim() -ne "") {
