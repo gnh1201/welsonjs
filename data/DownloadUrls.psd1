@@ -182,7 +182,7 @@
         arm64 = $null  # no official ARM64 build
         x86   = "https://github.com/brechtsanders/winlibs_mingw/releases/download/15.2.0posix-13.0.0-ucrt-r3/winlibs-x86_64-posix-seh-gcc-15.2.0-mingw-w64ucrt-13.0.0-r3.zip"
     }
-	
+    
     # ===========================
     # The Go Language Programming
     # ===========================
@@ -191,11 +191,36 @@
         arm64 = "https://go.dev/dl/go1.25.4.windows-arm64.zip"
         x86   = "https://go.dev/dl/go1.25.4.windows-386.zip"
     }
-	
+    
     # ===========================
     # x86dbg
     # ===========================
-	x86dbg = @{
-		any = "https://twds.dl.sourceforge.net/project/x64dbg/snapshots/snapshot_2025-08-19_19-40.zip?viasf=1"
-	}
+    x86dbg = @{
+        any = "https://twds.dl.sourceforge.net/project/x64dbg/snapshots/snapshot_2025-08-19_19-40.zip?viasf=1"
+    }
+    
+    # ===========================
+    # 7-zip
+    # ===========================
+    w7zip = @{
+        x64   = "https://www.7-zip.org/a/7z2501-x64.exe"
+        arm64 = "https://www.7-zip.org/a/7z2501-arm64.exe"
+        x86   = "https://www.7-zip.org/a/7z2501.exe"
+    }
+    
+    # ===========================
+    # hashcat
+    # ===========================
+    hashcat = @{
+        any = "https://hashcat.net/files/hashcat-7.1.2.7z"
+    }
+    
+    # ===========================
+    # Microsoft OpenJDK build
+    # ===========================
+    microsoft_jdk = @{
+        x64 = "https://aka.ms/download-jdk/microsoft-jdk-25.0.1-windows-x64.zip"
+        arm64 = $null  # no official ARM64 build
+        x86   = $null  # no official X86 build
+    }
 }
