@@ -211,7 +211,6 @@ Write-Host ""
 # ARCHITECTURE DETECTION
 # ================================
 function Get-NativeArchitecture {
-    # 0 = x86, 5 = ARM, 9 = x64
     # https://learn.microsoft.com/windows/win32/cimwin32prov/win32-processor
     $arch = $null
 
