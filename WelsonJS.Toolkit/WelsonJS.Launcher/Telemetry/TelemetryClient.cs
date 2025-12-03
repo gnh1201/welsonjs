@@ -13,12 +13,10 @@ namespace WelsonJS.Launcher.Telemetry
     public sealed class TelemetryClient : IDisposable
     {
         private readonly ITelemetryProvider _provider;
-        private readonly ICompatibleLogger _logger;
 
         public TelemetryClient(string providerName, TelemetryOptions options, ICompatibleLogger logger = null)
         {
-            _provider = TelemetryProviderFactory.Create(providerName, options);
-            _logger = logger;
+            _provider = TelemetryProviderFactory.Create(providerName, options, logger);
         }
 
         public Task TrackEventAsync(

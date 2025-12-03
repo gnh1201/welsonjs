@@ -16,9 +16,10 @@ namespace WelsonJS.Launcher.Telemetry
     {
         private readonly TelemetryOptions _options;
         private readonly HttpClient _httpClient;
+        private readonly ICompatibleLogger _logger;
         private bool _disposed;
 
-        public PosthogTelemetryProvider(TelemetryOptions options)
+        public PosthogTelemetryProvider(TelemetryOptions options, ICompatibleLogger logger = null)
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
 
@@ -35,6 +36,7 @@ namespace WelsonJS.Launcher.Telemetry
                 _options.DistinctId = $"anon-{Guid.NewGuid():N}";
 
             _httpClient = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
+            _logger = logger;
         }
 
         public async Task TrackEventAsync(
@@ -70,11 +72,15 @@ namespace WelsonJS.Launcher.Telemetry
                     url,
                     new StringContent(json, Encoding.UTF8, "application/json"),
                     cancellationToken
-                )) { /* disposed automatically */ }
+                ))
+                {
+                    response.EnsureSuccessStatusCode();
+                }
             }
-            catch
+            catch (Exception ex)
             {
-                // swallow for fire-and-forget telemetry
+                // Log and swallow for fire-and-forget telemetry
+                _logger?.Error($"Failed to send telemetry event '{eventName}': {ex.Message}");
             }
         }
 

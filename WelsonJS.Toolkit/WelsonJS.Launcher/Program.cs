@@ -104,7 +104,8 @@ namespace WelsonJS.Launcher
             // send event to the telemetry server
             if (_telemetryClient != null)
             {
-                _ = _telemetryClient.TrackAppStartedAsync("WelsonJS.Launcher", "0.2.7.57");
+                var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
+                _ = _telemetryClient.TrackAppStartedAsync("WelsonJS.Launcher", version);
             }
 
             // draw the main form

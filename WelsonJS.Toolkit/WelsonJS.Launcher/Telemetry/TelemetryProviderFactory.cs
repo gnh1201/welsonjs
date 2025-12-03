@@ -9,7 +9,7 @@ namespace WelsonJS.Launcher.Telemetry
 {
     public static class TelemetryProviderFactory
     {
-        public static ITelemetryProvider Create(string provider, TelemetryOptions options)
+        public static ITelemetryProvider Create(string provider, TelemetryOptions options, ICompatibleLogger logger = null)
         {
             if (options == null)
                 throw new ArgumentNullException(nameof(options));
@@ -22,7 +22,7 @@ namespace WelsonJS.Launcher.Telemetry
             switch (provider)
             {
                 case "posthog":
-                    return new PosthogTelemetryProvider(options);
+                    return new PosthogTelemetryProvider(options, logger);
 
                 default:
                     throw new NotSupportedException(
