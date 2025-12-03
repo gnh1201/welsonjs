@@ -66,11 +66,11 @@ namespace WelsonJS.Launcher.Telemetry
 
             try
             {
-                await _httpClient.PostAsync(
+                using (var response = await _httpClient.PostAsync(
                     url,
                     new StringContent(json, Encoding.UTF8, "application/json"),
                     cancellationToken
-                );
+                )) { /* disposed automatically */ }
             }
             catch
             {

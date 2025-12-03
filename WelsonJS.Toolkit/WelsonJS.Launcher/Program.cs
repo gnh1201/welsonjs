@@ -47,15 +47,33 @@ namespace WelsonJS.Launcher
             );
 
             // telemetry
-            string telemetryProvider = GetAppConfig("TelemetryProvider");
-            var telemetryOptions = new TelemetryOptions
+            try
             {
-                ApiKey = GetAppConfig("TelemetryApiKey"),
-                BaseUrl = GetAppConfig("TelemetryBaseUrl"),
-                DistinctId = TelemetryIdentity.GetDistinctId(),
-                Disabled = !string.Equals(GetAppConfig("TelemetryEnabled"), "true", StringComparison.OrdinalIgnoreCase)
-            };
-            _telemetryClient = new TelemetryClient(telemetryProvider, telemetryOptions, _logger);
+                var telemetryProvider = GetAppConfig("TelemetryProvider");
+                var telemetryOptions = new TelemetryOptions
+                {
+                    ApiKey = GetAppConfig("TelemetryApiKey"),
+                    BaseUrl = GetAppConfig("TelemetryBaseUrl"),
+                    DistinctId = TelemetryIdentity.GetDistinctId(),
+                    Disabled = !string.Equals(
+                        GetAppConfig("TelemetryEnabled"),
+                        "true",
+                        StringComparison.OrdinalIgnoreCase)
+                };
+
+                if (!telemetryOptions.Disabled &&
+                    !string.IsNullOrWhiteSpace(telemetryProvider) &&
+                    !string.IsNullOrWhiteSpace(telemetryOptions.ApiKey) &&
+                    !string.IsNullOrWhiteSpace(telemetryOptions.BaseUrl))
+                {
+                    _telemetryClient = new TelemetryClient(telemetryProvider, telemetryOptions, _logger);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Telemetry initialization failed: {ex}");
+                _telemetryClient = null;
+            }
         }
 
         [STAThread]
@@ -84,7 +102,10 @@ namespace WelsonJS.Launcher
             }
 
             // send event to the telemetry server
-            _telemetryClient.TrackAppStartedAsync("WelsonJS.Launcher", "0.2.7.57");
+            if (_telemetryClient != null)
+            {
+                _ = _telemetryClient.TrackAppStartedAsync("WelsonJS.Launcher", "0.2.7.57");
+            }
 
             // draw the main form
             Application.EnableVisualStyles();
