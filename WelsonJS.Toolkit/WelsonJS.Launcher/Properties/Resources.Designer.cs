@@ -379,6 +379,42 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
+        ///   phc_pmRHJ0aVEhtULRT4ilexwCjYpGtE9VYRhlA05fwiYt8과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string TelemetryApiKey {
+            get {
+                return ResourceManager.GetString("TelemetryApiKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   https://us.i.posthog.com과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string TelemetryBaseUrl {
+            get {
+                return ResourceManager.GetString("TelemetryBaseUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   false과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string TelemetryDisabled {
+            get {
+                return ResourceManager.GetString("TelemetryDisabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   posthog과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string TelemetryProvider {
+            get {
+                return ResourceManager.GetString("TelemetryProvider", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   141.101.82.1과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string WhoisClientAddress {

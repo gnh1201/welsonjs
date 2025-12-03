@@ -229,4 +229,16 @@
   <data name="icon_editor_32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\icon_editor_32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="TelemetryApiKey" xml:space="preserve">
+    <value>phc_pmRHJ0aVEhtULRT4ilexwCjYpGtE9VYRhlA05fwiYt8</value>
+  </data>
+  <data name="TelemetryBaseUrl" xml:space="preserve">
+    <value>https://us.i.posthog.com</value>
+  </data>
+  <data name="TelemetryProvider" xml:space="preserve">
+    <value>posthog</value>
+  </data>
+  <data name="TelemetryDisabled" xml:space="preserve">
+    <value>false</value>
+  </data>
 </root>

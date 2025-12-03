@@ -11,6 +11,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
+using WelsonJS.Launcher.Telemetry;
 
 namespace WelsonJS.Launcher
 {
@@ -21,6 +22,7 @@ namespace WelsonJS.Launcher
         public static Mutex _mutex;
         public static ResourceServer _resourceServer;
         public static string _dateTimeFormat;
+        public static TelemetryClient _telemetryClient;
 
         static Program()
         {
@@ -32,10 +34,10 @@ namespace WelsonJS.Launcher
 
             // load native libraries
             string appDataSubDirectory = "WelsonJS";
-           bool requireSigned = string.Equals(
-               GetAppConfig("NativeRequireSigned"),
-               "true",
-               StringComparison.OrdinalIgnoreCase);
+            bool requireSigned = string.Equals(
+                GetAppConfig("NativeRequireSigned"),
+                "true",
+                StringComparison.OrdinalIgnoreCase);
 
             NativeBootstrap.Init(
                 dllNames: new[] { "ChakraCore.dll" },
@@ -43,6 +45,17 @@ namespace WelsonJS.Launcher
                 logger: _logger,
                 requireSigned: requireSigned
             );
+
+            // telemetry
+            var telemetryProvider = GetAppConfig("TelemetryProvider");
+            var telemetryOptions = new TelemetryOptions
+            {
+                ApiKey = GetAppConfig("TelemetryApiKey"),
+                BaseUrl = GetAppConfig("TelemetryBaseUrl"),
+                DistinctId = Environment.MachineName,
+                Disabled = string.Equals(GetAppConfig("TelemetryDisabled"), "true", StringComparison.OrdinalIgnoreCase)
+            };
+            _telemetryClient = new TelemetryClient(telemetryProvider, telemetryOptions, _logger);
         }
 
         [STAThread]
@@ -69,6 +82,9 @@ namespace WelsonJS.Launcher
                 _logger.Info("WelsonJS Launcher already running.");
                 return;
             }
+
+            // send event to the telemetry server
+            _telemetryClient.TrackAppStartedAsync("WelsonJS.Launcher", "0.2.7.57");
 
             // draw the main form
             Application.EnableVisualStyles();
