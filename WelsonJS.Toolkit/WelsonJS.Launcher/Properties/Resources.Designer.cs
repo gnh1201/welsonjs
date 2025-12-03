@@ -397,11 +397,11 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
-        ///   false과(와) 유사한 지역화된 문자열을 찾습니다.
+        ///   true과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
-        internal static string TelemetryDisabled {
+        internal static string TelemetryEnabled {
             get {
-                return ResourceManager.GetString("TelemetryDisabled", resourceCulture);
+                return ResourceManager.GetString("TelemetryEnabled", resourceCulture);
             }
         }
         

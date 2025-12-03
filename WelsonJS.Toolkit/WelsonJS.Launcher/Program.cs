@@ -47,15 +47,19 @@ namespace WelsonJS.Launcher
             );
 
             // telemetry
-            var telemetryProvider = GetAppConfig("TelemetryProvider");
-            var telemetryOptions = new TelemetryOptions
+            bool telemetryEnabled = string.Equals(GetAppConfig("TelemetryEnabled"), "true", StringComparison.OrdinalIgnoreCase);
+            if (!telemetryEnabled)
             {
-                ApiKey = GetAppConfig("TelemetryApiKey"),
-                BaseUrl = GetAppConfig("TelemetryBaseUrl"),
-                DistinctId = Environment.MachineName,
-                Disabled = string.Equals(GetAppConfig("TelemetryDisabled"), "true", StringComparison.OrdinalIgnoreCase)
-            };
-            _telemetryClient = new TelemetryClient(telemetryProvider, telemetryOptions, _logger);
+                string telemetryProvider = GetAppConfig("TelemetryProvider");
+                var telemetryOptions = new TelemetryOptions
+                {
+                    ApiKey = GetAppConfig("TelemetryApiKey"),
+                    BaseUrl = GetAppConfig("TelemetryBaseUrl"),
+                    DistinctId = Environment.MachineName,
+                    Disabled = !telemetryEnabled
+                };
+                _telemetryClient = new TelemetryClient(telemetryProvider, telemetryOptions, _logger);
+            }
         }
 
         [STAThread]

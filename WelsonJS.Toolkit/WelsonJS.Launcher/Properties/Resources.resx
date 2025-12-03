@@ -238,7 +238,7 @@
   <data name="TelemetryProvider" xml:space="preserve">
     <value>posthog</value>
   </data>
-  <data name="TelemetryDisabled" xml:space="preserve">
-    <value>false</value>
+  <data name="TelemetryEnabled" xml:space="preserve">
+    <value>true</value>
   </data>
 </root>
