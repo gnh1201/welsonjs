@@ -22,11 +22,14 @@ namespace WelsonJS.Launcher.Telemetry
         {
             _options = options ?? throw new ArgumentNullException(nameof(options));
 
-            if (string.IsNullOrWhiteSpace(_options.ApiKey))
-                throw new ArgumentException("PostHog API key is missing.");
+            if (!_options.Disabled)
+            {
+                if (string.IsNullOrWhiteSpace(_options.ApiKey))
+                    throw new ArgumentException("PostHog API key is missing.");
 
-            if (string.IsNullOrWhiteSpace(_options.BaseUrl))
-                throw new ArgumentException("PostHog BaseUrl is missing.");
+                if (string.IsNullOrWhiteSpace(_options.BaseUrl))
+                    throw new ArgumentException("PostHog BaseUrl is missing.");
+            }
 
             if (string.IsNullOrWhiteSpace(_options.DistinctId))
                 _options.DistinctId = $"anon-{Guid.NewGuid():N}";
