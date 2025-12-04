@@ -223,7 +223,9 @@ namespace WelsonJS.Launcher
                     IntPtr h = LoadLibrary(localPath);
                     if (h == IntPtr.Zero)
                     {
-                        Logger.Error("LoadLibrary failed for {0}", localPath);
+                        int errorCode = Marshal.GetLastWin32Error();
+                        Logger.Error("LoadLibrary failed for {0} with error code {1}", localPath, errorCode);
+                        throw new InvalidOperationException($"Failed to load native module: {fileName} (error: {errorCode})");
                     }
                     else
                     {
@@ -372,6 +374,12 @@ namespace WelsonJS.Launcher
 
         private static void EnsureSignedFileOrThrow(string path, string logicalName)
         {
+            if (!File.Exists(path))
+            {
+                Logger.Error("File does not exist for signature verification: {0}", logicalName);
+                throw new FileNotFoundException("File not found for signature verification: " + logicalName, path);
+            }
+
             FileSignatureStatus status = VerifySignature(path);
 
             if (status == FileSignatureStatus.Valid)
