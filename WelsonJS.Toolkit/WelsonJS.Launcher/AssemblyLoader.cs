@@ -144,25 +144,28 @@ namespace WelsonJS.Launcher
         /// </summary>
         public static void Register()
         {
-            if (_registered)
-                return;
-
-            if (string.IsNullOrWhiteSpace(BaseUrl))
+            lock (SyncRoot)
             {
-                Logger.Error("AssemblyLoader.Register() called but BaseUrl is not set.");
-                throw new InvalidOperationException("AssemblyLoader.BaseUrl must be configured before Register().");
+                if (_registered)
+                    return;
+
+                if (string.IsNullOrWhiteSpace(BaseUrl))
+                {
+                    Logger.Error("AssemblyLoader.Register() called but BaseUrl is not set.");
+                    throw new InvalidOperationException("AssemblyLoader.BaseUrl must be configured before Register().");
+                }
+
+                if (!BaseUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                {
+                    Logger.Error("AssemblyLoader.BaseUrl must use HTTPS for security.");
+                    throw new InvalidOperationException("AssemblyLoader.BaseUrl must use HTTPS.");
+                }
+
+                AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
+                _registered = true;
+
+                Logger.Info("AssemblyLoader: AssemblyResolve handler registered.");
             }
-
-            if (!BaseUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-            {
-                Logger.Error("AssemblyLoader.BaseUrl must use HTTPS for security.");
-                throw new InvalidOperationException("AssemblyLoader.BaseUrl must use HTTPS.");
-            }
-
-            AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
-            _registered = true;
-
-            Logger.Info("AssemblyLoader: AssemblyResolve handler registered.");
         }
 
 
@@ -186,8 +189,15 @@ namespace WelsonJS.Launcher
                 string cacheDir = Path.Combine(appData, "WelsonJS", "assembly", ownerAssemblyName, versionString);
                 Directory.CreateDirectory(cacheDir);
 
-                try { SetDllDirectory(cacheDir); }
-                catch { }
+                try
+                {
+                    if (!SetDllDirectory(cacheDir))
+                        Logger.Warn("SetDllDirectory failed for: {0}", cacheDir);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Warn("SetDllDirectory threw exception: {0}", ex.Message);
+                }
 
                 foreach (string raw in fileNames)
                 {
@@ -226,7 +236,18 @@ namespace WelsonJS.Launcher
 
         public static void LoadNativeModules(Assembly asm, IList<string> fileNames)
         {
+            if (asm == null)
+                throw new ArgumentNullException(nameof(asm));
+            if (fileNames == null)
+                throw new ArgumentNullException(nameof(fileNames));
+
             AssemblyName an = asm.GetName();
+
+            if (an == null)
+                throw new InvalidOperationException("Assembly.GetName() returned null.");
+            if (an.Name == null || an.Version == null)
+                throw new InvalidOperationException("Assembly name or version is missing.");
+
             LoadNativeModules(an.Name, an.Version, fileNames);
         }
 
@@ -302,7 +323,7 @@ namespace WelsonJS.Launcher
                 res = Http.GetAsync(url).GetAwaiter().GetResult();
                 if (res.StatusCode == HttpStatusCode.NotFound)
                 {
-                    Logger.Warn("DownloadFile: 404 Not Found for {0}", url);
+                    Logger.Warn("404 Not Found for {0}", url);
                     return;
                 }
 
@@ -313,11 +334,25 @@ namespace WelsonJS.Launcher
                 {
                     s.CopyTo(fs);
                 }
+
+                if (!File.Exists(dest))
+                {
+                    throw new FileNotFoundException("File not found after download", dest);
+                }
             }
             catch (HttpRequestException ex)
             {
-                Logger.Error("DownloadFile: HTTP error for {0}: {1}", url, ex.Message);
+                Logger.Error("HTTP error for {0}: {1}", url, ex.Message);
                 throw;
+            }
+            catch (Exception ex)
+            {
+                Logger.Error("Error downloading {0}: {1}", url, ex.Message);
+                throw;
+            }
+            finally
+            {
+                res?.Dispose();
             }
         }
 
@@ -331,7 +366,7 @@ namespace WelsonJS.Launcher
                    name == "WindowsBase" ||
                    name == "PresentationCore" ||
                    name == "PresentationFramework" ||
-                   name.StartsWith(LoaderNamespace);
+                   name.StartsWith(LoaderNamespace, StringComparison.OrdinalIgnoreCase);
         }
 
 
