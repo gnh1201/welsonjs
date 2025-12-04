@@ -241,4 +241,7 @@
   <data name="TelemetryEnabled" xml:space="preserve">
     <value>true</value>
   </data>
+  <data name="AssemblyBaseUrl" xml:space="preserve">
+    <value>https://catswords.blob.core.windows.net/welsonjs/packages</value>
+  </data>
 </root>

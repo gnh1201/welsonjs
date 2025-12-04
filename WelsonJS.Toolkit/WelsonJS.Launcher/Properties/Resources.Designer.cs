@@ -61,6 +61,15 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
+        ///   https://catswords.blob.core.windows.net/welsonjs/packages과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string AssemblyBaseUrl {
+            get {
+                return ResourceManager.GetString("AssemblyBaseUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string AzureAiServiceApiKey {
