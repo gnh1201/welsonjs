@@ -32,19 +32,11 @@ namespace WelsonJS.Launcher
             // set up logger
             _logger = new TraceLogger();
 
-            // load native libraries
-            string appDataSubDirectory = "WelsonJS";
-            bool requireSigned = string.Equals(
-                GetAppConfig("NativeRequireSigned"),
-                "true",
-                StringComparison.OrdinalIgnoreCase);
-
-            NativeBootstrap.Init(
-                dllNames: new[] { "ChakraCore.dll" },
-                appDataSubdirectory: appDataSubDirectory,
-                logger: _logger,
-                requireSigned: requireSigned
-            );
+            // load external assemblies
+            AssemblyLoader.BaseUrl = GetAppConfig("AssemblyBaseUrl");
+            AssemblyLoader.Logger = _logger;
+            AssemblyLoader.Register();
+            AssemblyLoader.LoadNativeModules("ChakraCore", new Version(1, 13, 0, 0), new[] { "ChakraCore.dll" });
 
             // telemetry
             try

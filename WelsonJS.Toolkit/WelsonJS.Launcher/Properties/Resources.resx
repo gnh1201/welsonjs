@@ -208,9 +208,6 @@
   <data name="ChromiumDevToolsTimeout" xml:space="preserve">
     <value>5</value>
   </data>
-  <data name="NativeRequireSigned" xml:space="preserve">
-    <value>false</value>
-  </data>
   <data name="ChromiumAppMode" xml:space="preserve">
     <value>true</value>
   </data>
@@ -240,5 +237,8 @@
   </data>
   <data name="TelemetryEnabled" xml:space="preserve">
     <value>true</value>
+  </data>
+  <data name="AssemblyBaseUrl" xml:space="preserve">
+    <value>https://catswords.blob.core.windows.net/welsonjs/packages</value>
   </data>
 </root>
