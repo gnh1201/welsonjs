@@ -29,13 +29,16 @@ namespace WelsonJS.Launcher
         /// Must be set before Register() or LoadNativeModules().
         /// </summary>
         public static string BaseUrl { get; set; } = null;
+        public static ICompatibleLogger Logger { get; set; } = null;
 
         private static readonly object SyncRoot = new object();
         private static bool _registered;
 
         private static readonly string LoaderNamespace = typeof(AssemblyLoader).Namespace ?? "WelsonJS.Launcher";
-        private static readonly HttpClient Http = new HttpClient();
-        private static readonly ICompatibleLogger Logger = new TraceLogger();
+        private static readonly HttpClient Http = new HttpClient
+        {
+            Timeout = TimeSpan.FromSeconds(300)  // 5 minutes
+        };
 
         // -------------------- kernel32 native loading --------------------
 
@@ -148,6 +151,12 @@ namespace WelsonJS.Launcher
             {
                 Logger.Error("AssemblyLoader.Register() called but BaseUrl is not set.");
                 throw new InvalidOperationException("AssemblyLoader.BaseUrl must be configured before Register().");
+            }
+
+            if (!BaseUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+            {
+                Logger.Error("AssemblyLoader.BaseUrl must use HTTPS for security.");
+                throw new InvalidOperationException("AssemblyLoader.BaseUrl must use HTTPS.");
             }
 
             AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;

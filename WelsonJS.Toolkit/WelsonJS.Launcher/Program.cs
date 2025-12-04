@@ -34,6 +34,7 @@ namespace WelsonJS.Launcher
 
             // load external assemblies
             AssemblyLoader.BaseUrl = GetAppConfig("AssemblyBaseUrl");
+            AssemblyLoader.Logger = _logger;
             AssemblyLoader.Register();
             AssemblyLoader.LoadNativeModules("ChakraCore", new Version(1, 13, 0, 0), new[] { "ChakraCore.dll" });
 
