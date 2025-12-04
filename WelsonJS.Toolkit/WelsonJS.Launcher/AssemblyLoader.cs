@@ -49,9 +49,9 @@ namespace WelsonJS.Launcher
 
         private const uint ERROR_SUCCESS = 0x00000000;
         private const uint TRUST_E_NOSIGNATURE = 0x800B0100;
-        private const uint TRUST_E_EXPLICIT_DISTRUST = 0x800B0111;
-        private const uint TRUST_E_SUBJECT_NOT_TRUSTED = 0x800B0004;
-        private const uint CRYPT_E_SECURITY_SETTINGS = 0x80092026;
+        //private const uint TRUST_E_EXPLICIT_DISTRUST = 0x800B0111;
+        //private const uint TRUST_E_SUBJECT_NOT_TRUSTED = 0x800B0004;
+        //private const uint CRYPT_E_SECURITY_SETTINGS = 0x80092026;
 
         private static readonly Guid WINTRUST_ACTION =
             new Guid("00aac56b-cd44-11d0-8cc2-00c04fc295ee");
