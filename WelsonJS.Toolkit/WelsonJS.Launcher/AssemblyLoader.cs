@@ -367,6 +367,8 @@ namespace WelsonJS.Launcher
 
         private static bool TryDownloadGzipToFile(string gzUrl, string dest)
         {
+            string tempFile = dest + ".tmp";
+
             try
             {
                 using (var res = Http.GetAsync(gzUrl).GetAwaiter().GetResult())
@@ -378,18 +380,36 @@ namespace WelsonJS.Launcher
 
                     using (Stream s = res.Content.ReadAsStreamAsync().GetAwaiter().GetResult())
                     using (var gz = new GZipStream(s, CompressionMode.Decompress))
-                    using (var fs = new FileStream(dest, FileMode.Create, FileAccess.Write))
+                    using (var fs = new FileStream(tempFile, FileMode.Create, FileAccess.Write))
                     {
                         gz.CopyTo(fs);
                     }
 
+                    File.Move(tempFile, dest);
+
                     return true;
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                return false;
+                Logger?.Warn("Failed to download or decompress gzipped file from {0}: {1}", gzUrl, ex.Message);
             }
+            finally
+            {
+                if (File.Exists(tempFile))
+                {
+                    try
+                    {
+                        File.Delete(tempFile);
+                    }
+                    catch (Exception ex)
+                    {
+                       Logger?.Info("Failed to delete temp file {0}: {1}", tempFile, ex.Message);
+                    }
+                }
+            }
+
+            return false;
         }
 
 
