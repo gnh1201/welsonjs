@@ -6,6 +6,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
@@ -322,30 +323,35 @@ namespace WelsonJS.Launcher
 
             try
             {
-                res = Http.GetAsync(url).GetAwaiter().GetResult();
-                if (res.StatusCode == HttpStatusCode.NotFound)
+                string gzUrl = url + ".gz";
+                bool isDll = url.EndsWith(".dll", StringComparison.OrdinalIgnoreCase); // *.dll.gz
+                bool downloaded = false;
+
+                if (isDll && TryDownloadGzipToFile(gzUrl, dest))
                 {
-                    Logger.Warn("404 Not Found for {0}", url);
-                    return;
+                    Logger.Info("Downloaded and decompressed gzip file to: {0}", dest);
+                    downloaded = true;
                 }
 
-                res.EnsureSuccessStatusCode();
-
-                using (Stream s = res.Content.ReadAsStreamAsync().GetAwaiter().GetResult())
-                using (FileStream fs = new FileStream(dest, FileMode.Create, FileAccess.Write))
+                if (!downloaded)
                 {
-                    s.CopyTo(fs);
+                    Logger.Info("Downloading file from: {0}", url);
+                    res = Http.GetAsync(url).GetAwaiter().GetResult();
+                    res.EnsureSuccessStatusCode();
+
+                    using (Stream s = res.Content.ReadAsStreamAsync().GetAwaiter().GetResult())
+                    using (var fs = new FileStream(dest, FileMode.Create, FileAccess.Write))
+                    {
+                        s.CopyTo(fs);
+                    }
+
+                    Logger.Info("Downloaded file to: {0}", dest);
                 }
 
                 if (!File.Exists(dest))
                 {
                     throw new FileNotFoundException("File not found after download", dest);
                 }
-            }
-            catch (HttpRequestException ex)
-            {
-                Logger.Error("HTTP error for {0}: {1}", url, ex.Message);
-                throw;
             }
             catch (Exception ex)
             {
@@ -355,6 +361,34 @@ namespace WelsonJS.Launcher
             finally
             {
                 res?.Dispose();
+            }
+        }
+
+
+        private static bool TryDownloadGzipToFile(string gzUrl, string dest)
+        {
+            try
+            {
+                using (var res = Http.GetAsync(gzUrl).GetAwaiter().GetResult())
+                {
+                    if (res.StatusCode == HttpStatusCode.NotFound)
+                        return false;
+
+                    res.EnsureSuccessStatusCode();
+
+                    using (Stream s = res.Content.ReadAsStreamAsync().GetAwaiter().GetResult())
+                    using (var gz = new GZipStream(s, CompressionMode.Decompress))
+                    using (var fs = new FileStream(dest, FileMode.Create, FileAccess.Write))
+                    {
+                        gz.CopyTo(fs);
+                    }
+
+                    return true;
+                }
+            }
+            catch
+            {
+                return false;
             }
         }
 
