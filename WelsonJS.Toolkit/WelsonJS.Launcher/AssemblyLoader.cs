@@ -1,6 +1,6 @@
 ﻿// AssemblyLoader.cs
 // SPDX-License-Identifier: GPL-3.0-or-later
-// SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
+// SPDX-FileCopyrightText: Namhyeon Go <gnh1201@catswords.re.kr>, 2025 Catswords OSS and WelsonJS Contributors
 // https://github.com/gnh1201/welsonjs
 // 
 using System;
@@ -36,10 +36,23 @@ namespace WelsonJS.Launcher
         private static bool _registered;
 
         private static readonly string LoaderNamespace = typeof(AssemblyLoader).Namespace ?? "WelsonJS.Launcher";
-        private static readonly HttpClient Http = new HttpClient
+        private static readonly HttpClientHandler LegacyHttpHandler = new HttpClientHandler();
+        private static readonly HttpClientHandler HttpHandler = new HttpClientHandler
         {
-            Timeout = TimeSpan.FromSeconds(300)  // 5 minutes
+            AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
         };
+        private static readonly HttpClient LegacyHttp = CreateClient(LegacyHttpHandler); // No the Accept-Encoding (e.g., gzip, deflate) header
+        private static readonly HttpClient Http = CreateClient(HttpHandler); // With the Accept-Encoding (e.g., gzip, deflate) header
+
+        private static HttpClient CreateClient(HttpMessageHandler handler)
+        {
+            var client = new HttpClient(handler, disposeHandler: false)
+            {
+                Timeout = TimeSpan.FromSeconds(300) // 5 minutes
+            };
+
+            return client;
+        }
 
         // -------------------- kernel32 native loading --------------------
 
@@ -327,9 +340,9 @@ namespace WelsonJS.Launcher
                 bool isDll = url.EndsWith(".dll", StringComparison.OrdinalIgnoreCase); // *.dll.gz
                 bool downloaded = false;
 
-                if (isDll && TryDownloadGzipToFile(gzUrl, dest))
+                if (isDll && TryDownloadCompressedFile(gzUrl, dest))
                 {
-                    Logger.Info("Downloaded and decompressed gzip file to: {0}", dest);
+                    Logger.Info("Downloaded and decompressed file to: {0}", dest);
                     downloaded = true;
                 }
 
@@ -365,13 +378,13 @@ namespace WelsonJS.Launcher
         }
 
 
-        private static bool TryDownloadGzipToFile(string gzUrl, string dest)
+        private static bool TryDownloadCompressedFile(string gzUrl, string dest)
         {
             string tempFile = dest + ".tmp";
 
             try
             {
-                using (var res = Http.GetAsync(gzUrl).GetAwaiter().GetResult())
+                using (var res = LegacyHttp.GetAsync(gzUrl).GetAwaiter().GetResult())
                 {
                     if (res.StatusCode == HttpStatusCode.NotFound)
                         return false;
