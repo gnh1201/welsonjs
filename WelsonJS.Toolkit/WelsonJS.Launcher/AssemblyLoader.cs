@@ -369,9 +369,14 @@ namespace WelsonJS.Launcher
                     throw new FileNotFoundException("File not found after download", dest);
                 }
             }
+            catch (HttpRequestException ex)
+            {
+                Logger?.Error("Network or I/O error downloading {0}: {1}", url, ex.Message);
+                throw;
+            }
             catch (Exception ex)
             {
-                Logger?.Error("Error downloading {0}: {1}", url, ex.Message);
+                Logger?.Error("Unexpected error downloading {0}: {1}", url, ex.Message);
                 throw;
             }
             finally
@@ -404,14 +409,23 @@ namespace WelsonJS.Launcher
                         gz.CopyTo(fs);
                     }
 
+                    if (File.Exists(dest))
+                        File.Delete(dest);
+
                     File.Move(tempFile, dest);
 
                     return true;
                 }
             }
+            catch (HttpRequestException ex)
+            {
+                Logger?.Warn("Network or I/O error downloading compressed file from {0}: {1}", gzUrl, ex.Message);
+                throw;
+            }
             catch (Exception ex)
             {
-                Logger?.Warn("Failed to download or decompress gzipped file from {0}: {1}", gzUrl, ex.Message);
+                Logger?.Error("Unexpected error downloading compressed file from {0}: {1}", gzUrl, ex.Message);
+                throw;
             }
             finally
             {
@@ -423,12 +437,10 @@ namespace WelsonJS.Launcher
                     }
                     catch (Exception ex)
                     {
-                       Logger?.Info("Failed to delete temp file {0}: {1}", tempFile, ex.Message);
+                       Logger?.Info("Failed to delete temporary file {0}: {1}", tempFile, ex.Message);
                     }
                 }
             }
-
-            return false;
         }
 
 
