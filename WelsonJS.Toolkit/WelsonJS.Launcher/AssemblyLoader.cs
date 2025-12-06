@@ -36,13 +36,16 @@ namespace WelsonJS.Launcher
         private static bool _registered;
 
         private static readonly string LoaderNamespace = typeof(AssemblyLoader).Namespace ?? "WelsonJS.Launcher";
-        private static readonly HttpClientHandler LegacyHttpHandler = new HttpClientHandler();
+        private static readonly HttpClientHandler LegacyHttpHandler = new HttpClientHandler
+        {
+            AutomaticDecompression = DecompressionMethods.None
+        };
         private static readonly HttpClientHandler HttpHandler = new HttpClientHandler
         {
             AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
         };
-        private static readonly HttpClient LegacyHttp = CreateClient(LegacyHttpHandler); // No the Accept-Encoding (e.g., gzip, deflate) header
-        private static readonly HttpClient Http = CreateClient(HttpHandler); // With the Accept-Encoding (e.g., gzip, deflate) header
+        private static readonly HttpClient LegacyHttp = CreateClient(LegacyHttpHandler); // Does not send Accept-Encoding (gzip, deflate)
+        private static readonly HttpClient Http = CreateClient(HttpHandler); // Sends Accept-Encoding (gzip, deflate) and auto-decompresses
 
         private static HttpClient CreateClient(HttpMessageHandler handler)
         {
@@ -387,7 +390,10 @@ namespace WelsonJS.Launcher
                 using (var res = LegacyHttp.GetAsync(gzUrl).GetAwaiter().GetResult())
                 {
                     if (res.StatusCode == HttpStatusCode.NotFound)
+                    {
+                        Logger?.Info("No gzipped variant at {0}; falling back to uncompressed URL.", gzUrl);
                         return false;
+                    }
 
                     res.EnsureSuccessStatusCode();
 
