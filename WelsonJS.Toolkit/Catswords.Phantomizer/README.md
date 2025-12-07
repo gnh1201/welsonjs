@@ -96,6 +96,11 @@ Once Phantomizer is initialized, your application will automatically fetch missi
 
 ---
 
+## Download the pre-compiled `Catswords.Phantomizer.dll.gz` file
+* https://catswords.blob.core.windows.net/welsonjs/packages/managed/Catswords.Phantomizer/1.0.0.0/Catswords.Phantomizer.dll.gz
+
+---
+
 ## Report abuse
 * [GitHub Security Advisories (gnh1201/welsonjs)](https://github.com/gnh1201/welsonjs/security)
 * [abuse@catswords.re.kr](mailto:abuse@catswords.re.kr)
