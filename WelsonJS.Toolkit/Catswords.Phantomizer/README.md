@@ -12,6 +12,7 @@ It allows your application to fetch and load assemblies directly from your CDN (
 * CDN-friendly URL structure
 * Easy bootstrap through a small embedded loader
 * Loader is implemented using **pure .NET BCL only**, ensuring stable operation without external dependencies
+* Built-in **code-signing verification** support to ensure assemblies are trusted and tamper-free
 
 ---
 
