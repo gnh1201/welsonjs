@@ -1,10 +1,11 @@
-﻿// AssemblyLoader.cs
-// SPDX-License-Identifier: GPL-3.0-or-later
+﻿// AssemblyLoader.cs (Catswords.Phantomizer)
+// SPDX-License-Identifier: MIT
 // SPDX-FileCopyrightText: Namhyeon Go <gnh1201@catswords.re.kr>, 2025 Catswords OSS and WelsonJS Contributors
 // https://github.com/gnh1201/welsonjs
 // 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
@@ -12,14 +13,14 @@ using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace WelsonJS.Launcher
+namespace Catswords.Phantomizer
 {
     /// <summary>
     /// Network-aware loader for managed (.NET) and native (C/C++) binaries.
     /// - Managed assemblies resolve via AssemblyResolve
     /// - Native modules explicitly loaded via LoadNativeModules(...)
     /// - All DLLs must have valid Authenticode signatures
-    /// - Cached at: %APPDATA%\WelsonJS\assembly\{Name}\{Version}\
+    /// - Cached at: %APPDATA%\Catswords\assembly\{Name}\{Version}\
     /// - BaseUrl must be set by Main() before calling Register()
     /// </summary>
     public static class AssemblyLoader
@@ -30,12 +31,12 @@ namespace WelsonJS.Launcher
         /// Must be set before Register() or LoadNativeModules().
         /// </summary>
         public static string BaseUrl { get; set; } = null;
-        public static ICompatibleLogger Logger { get; set; } = null;
+        public static string LoaderNamespace { get; set; } = typeof(AssemblyLoader).Namespace;
+        public static string AppName { get; set; } = "Catswords";
 
         private static readonly object SyncRoot = new object();
         private static bool _registered;
 
-        private static readonly string LoaderNamespace = typeof(AssemblyLoader).Namespace ?? "WelsonJS.Launcher";
         private static readonly HttpClientHandler LegacyHttpHandler = new HttpClientHandler
         {
             AutomaticDecompression = DecompressionMethods.None
@@ -168,20 +169,20 @@ namespace WelsonJS.Launcher
 
                 if (string.IsNullOrWhiteSpace(BaseUrl))
                 {
-                    Logger?.Error("AssemblyLoader.Register() called but BaseUrl is not set.");
+                    Trace.TraceError("AssemblyLoader.Register() called but BaseUrl is not set.");
                     throw new InvalidOperationException("AssemblyLoader.BaseUrl must be configured before Register().");
                 }
 
                 if (!BaseUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
                 {
-                    Logger?.Error("AssemblyLoader.BaseUrl must use HTTPS for security.");
+                    Trace.TraceError("AssemblyLoader.BaseUrl must use HTTPS for security.");
                     throw new InvalidOperationException("AssemblyLoader.BaseUrl must use HTTPS.");
                 }
 
                 AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
                 _registered = true;
 
-                Logger?.Info("AssemblyLoader: AssemblyResolve handler registered.");
+                Trace.TraceInformation("AssemblyLoader: AssemblyResolve handler registered.");
             }
         }
 
@@ -203,17 +204,17 @@ namespace WelsonJS.Launcher
             lock (SyncRoot)
             {
                 string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                string cacheDir = Path.Combine(appData, "WelsonJS", "assembly", ownerAssemblyName, versionString);
+                string cacheDir = Path.Combine(appData, AppName, "assembly", ownerAssemblyName, versionString);
                 Directory.CreateDirectory(cacheDir);
 
                 try
                 {
                     if (!SetDllDirectory(cacheDir))
-                        Logger?.Warn("SetDllDirectory failed for: {0}", cacheDir);
+                        Trace.TraceWarning("SetDllDirectory failed for: {0}", cacheDir);
                 }
                 catch (Exception ex)
                 {
-                    Logger?.Warn("SetDllDirectory threw exception: {0}", ex.Message);
+                    Trace.TraceWarning("SetDllDirectory threw exception: {0}", ex.Message);
                 }
 
                 foreach (string raw in fileNames)
@@ -228,11 +229,11 @@ namespace WelsonJS.Launcher
                     {
                         string url = $"{BaseUrl.TrimEnd('/')}/native/{ownerAssemblyName}/{versionString}/{fileName}";
                         DownloadFile(url, localPath);
-                        Logger?.Info("Downloaded native module: {0}", fileName);
+                        Trace.TraceInformation("Downloaded native module: {0}", fileName);
                     }
                     else
                     {
-                        Logger?.Info("Using cached native module: {0}", localPath);
+                        Trace.TraceInformation("Using cached native module: {0}", localPath);
                     }
 
                     EnsureSignedFileOrThrow(localPath, fileName);
@@ -241,12 +242,12 @@ namespace WelsonJS.Launcher
                     if (h == IntPtr.Zero)
                     {
                         int errorCode = Marshal.GetLastWin32Error();
-                        Logger?.Error("LoadLibrary failed for {0} with error code {1}", localPath, errorCode);
+                        Trace.TraceError("LoadLibrary failed for {0} with error code {1}", localPath, errorCode);
                         throw new InvalidOperationException($"Failed to load native module: {fileName} (error: {errorCode})");
                     }
                     else
                     {
-                        Logger?.Info("Loaded native module: {0}", fileName);
+                        Trace.TraceInformation("Loaded native module: {0}", fileName);
                     }
                 }
             }
@@ -277,7 +278,7 @@ namespace WelsonJS.Launcher
 
         private static Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
         {
-            Logger?.Info("AssemblyResolve: {0}", args.Name);
+            Trace.TraceInformation("AssemblyResolve: {0}", args.Name);
 
             AssemblyName req = new AssemblyName(args.Name);
             string simpleName = req.Name;
@@ -290,7 +291,7 @@ namespace WelsonJS.Launcher
                 var entryName = entry.GetName().Name;
                 if (string.Equals(simpleName, entryName, StringComparison.OrdinalIgnoreCase))
                 {
-                    Logger?.Info("AssemblyResolve: skipping entry assembly {0}", simpleName);
+                    Trace.TraceInformation("AssemblyResolve: skipping entry assembly {0}", simpleName);
                     return null;
                 }
             }
@@ -301,7 +302,7 @@ namespace WelsonJS.Launcher
             lock (SyncRoot)
             {
                 string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-                string cacheDir = Path.Combine(appData, "WelsonJS", "assembly", simpleName, versionStr);
+                string cacheDir = Path.Combine(appData, AppName, "assembly", simpleName, versionStr);
                 string dllPath = Path.Combine(cacheDir, simpleName + ".dll");
 
                 Directory.CreateDirectory(cacheDir);
@@ -310,16 +311,16 @@ namespace WelsonJS.Launcher
                 {
                     string url = $"{BaseUrl.TrimEnd('/')}/managed/{simpleName}/{versionStr}/{simpleName}.dll";
                     DownloadFile(url, dllPath);
-                    Logger?.Info("Downloaded managed assembly: {0}", simpleName);
+                    Trace.TraceInformation("Downloaded managed assembly: {0}", simpleName);
                 }
                 else
                 {
-                    Logger?.Info("Using cached managed assembly: {0}", dllPath);
+                    Trace.TraceInformation("Using cached managed assembly: {0}", dllPath);
                 }
 
                 if (!File.Exists(dllPath))
                 {
-                    Logger?.Warn("AssemblyResolve: managed assembly not found after download attempt: {0}", simpleName);
+                    Trace.TraceWarning("AssemblyResolve: managed assembly not found after download attempt: {0}", simpleName);
                     return null;
                 }
 
@@ -345,13 +346,13 @@ namespace WelsonJS.Launcher
 
                 if (isDll && TryDownloadCompressedFile(gzUrl, dest))
                 {
-                    Logger?.Info("Downloaded and decompressed file to: {0}", dest);
+                    Trace.TraceInformation("Downloaded and decompressed file to: {0}", dest);
                     downloaded = true;
                 }
 
                 if (!downloaded)
                 {
-                    Logger?.Info("Downloading file from: {0}", url);
+                    Trace.TraceInformation("Downloading file from: {0}", url);
                     res = Http.GetAsync(url).GetAwaiter().GetResult();
                     res.EnsureSuccessStatusCode();
 
@@ -361,7 +362,7 @@ namespace WelsonJS.Launcher
                         s.CopyTo(fs);
                     }
 
-                    Logger?.Info("Downloaded file to: {0}", dest);
+                    Trace.TraceInformation("Downloaded file to: {0}", dest);
                 }
 
                 if (!File.Exists(dest))
@@ -371,12 +372,12 @@ namespace WelsonJS.Launcher
             }
             catch (HttpRequestException ex)
             {
-                Logger?.Error("Network or I/O error downloading {0}: {1}", url, ex.Message);
+                Trace.TraceError("Network or I/O error downloading {0}: {1}", url, ex.Message);
                 throw;
             }
             catch (Exception ex)
             {
-                Logger?.Error("Unexpected error downloading {0}: {1}", url, ex.Message);
+                Trace.TraceError("Unexpected error downloading {0}: {1}", url, ex.Message);
                 throw;
             }
             finally
@@ -396,7 +397,7 @@ namespace WelsonJS.Launcher
                 {
                     if (res.StatusCode == HttpStatusCode.NotFound)
                     {
-                        Logger?.Info("No gzipped variant at {0}; falling back to uncompressed URL.", gzUrl);
+                        Trace.TraceInformation("No gzipped variant at {0}; falling back to uncompressed URL.", gzUrl);
                         return false;
                     }
 
@@ -419,12 +420,12 @@ namespace WelsonJS.Launcher
             }
             catch (HttpRequestException ex)
             {
-                Logger?.Warn("Network or I/O error downloading compressed file from {0}: {1}", gzUrl, ex.Message);
+                Trace.TraceWarning("Network or I/O error downloading compressed file from {0}: {1}", gzUrl, ex.Message);
                 throw;
             }
             catch (Exception ex)
             {
-                Logger?.Error("Unexpected error downloading compressed file from {0}: {1}", gzUrl, ex.Message);
+                Trace.TraceError("Unexpected error downloading compressed file from {0}: {1}", gzUrl, ex.Message);
                 throw;
             }
             finally
@@ -437,7 +438,7 @@ namespace WelsonJS.Launcher
                     }
                     catch (Exception ex)
                     {
-                       Logger?.Info("Failed to delete temporary file {0}: {1}", tempFile, ex.Message);
+                       Trace.TraceInformation("Failed to delete temporary file {0}: {1}", tempFile, ex.Message);
                     }
                 }
             }
@@ -461,7 +462,7 @@ namespace WelsonJS.Launcher
         {
             if (!File.Exists(path))
             {
-                Logger?.Error("File does not exist for signature verification: {0}", logicalName);
+                Trace.TraceError("File does not exist for signature verification: {0}", logicalName);
                 throw new FileNotFoundException("File not found for signature verification: " + logicalName, path);
             }
 
@@ -469,17 +470,17 @@ namespace WelsonJS.Launcher
 
             if (status == FileSignatureStatus.Valid)
             {
-                Logger?.Info("Signature OK: {0}", logicalName);
+                Trace.TraceInformation("Signature OK: {0}", logicalName);
                 return;
             }
 
             if (status == FileSignatureStatus.NoSignature)
             {
-                Logger?.Error("BLOCKED unsigned binary: {0}", logicalName);
+                Trace.TraceError("BLOCKED unsigned binary: {0}", logicalName);
                 throw new InvalidOperationException("Unsigned binary blocked: " + logicalName);
             }
 
-            Logger?.Error("BLOCKED invalid signature: {0}", logicalName);
+            Trace.TraceError("BLOCKED invalid signature: {0}", logicalName);
             throw new InvalidOperationException("Invalid signature: " + logicalName);
         }
 
