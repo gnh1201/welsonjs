@@ -2,6 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <Company>Catswords Research</Company>
+    <Authors>Namhyeon Go, 2025 Catswords OSS and WelsonJS Contributors</Authors>
+    <PackageProjectUrl>https://github.com/gnh1201/welsonjs</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/gnh1201/welsonjs</RepositoryUrl>
+    <PackageTags>loader</PackageTags>
+    <Description>Catswords.Phantomizer is an HTTP-based dynamic-link library (DLL) loader designed for .NET applications. It allows your application to fetch and load assemblies directly from your CDN (Azure Blob, S3, Cloudflare R2, etc.) at runtime, with optional GZip compression support.</Description>
   </PropertyGroup>
 
 </Project>

@@ -24,8 +24,8 @@ after_build:
    - cmd: mkdir artifacts
    #- cmd: xcopy /s /y WelsonJS.Toolkit\WelsonJS.Toolkit\bin\x86\%CONFIGURATION%\* artifacts\
    - cmd: xcopy /s /y WelsonJS.Toolkit\WelsonJS.Service\bin\x86\%CONFIGURATION%\* artifacts\
-   - cmd: xcopy /s /y WelsonJS.Toolkit\WelsonJS.Launcher\bin\x86\%CONFIGURATION%\* artifacts\
-   - cmd: xcopy /s /y WelsonJS.Toolkit\Catswords.Phantomizer\bin\x86\%CONFIGURATION%\* artifacts\
+   - cmd: xcopy /s /y WelsonJS.Toolkit\WelsonJS.Launcher\bin\%CONFIGURATION%\* artifacts\
+   - cmd: xcopy /s /y WelsonJS.Toolkit\Catswords.Phantomizer\bin\%CONFIGURATION%\netstandard2.0\* artifacts\
    - cmd: nuget pack WelsonJS.Toolkit\WelsonJS.Toolkit\ -properties Configuration=%CONFIGURATION% -properties Platform=x86 -OutputDirectory artifacts\
    - ps: Start-BitsTransfer -Source "https://catswords.blob.core.windows.net/welsonjs/welsonjs_setup_unsigned.exe" -Destination "artifacts\welsonjs_setup.exe"
    - ps: Start-BitsTransfer -Source "https://catswords.blob.core.windows.net/welsonjs/chakracore-build/x86_release/ChakraCore.dll" -Destination "artifacts\ChakraCore.dll"
