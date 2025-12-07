@@ -28,7 +28,9 @@ Place the following code inside your `Main` method, static constructor, or any e
 
 ```csharp
 static Program() {
+    // ...
     InitializeAssemblyLoader();
+    // ...
 }
 
 private static void InitializeAssemblyLoader()
@@ -91,3 +93,17 @@ Upload your managed and native assemblies to your CDN following the URL pattern 
 ### 4. 🎉 Start loading assemblies over HTTP
 
 Once Phantomizer is initialized, your application will automatically fetch missing assemblies from your CDN.
+
+---
+
+## Report abuse
+* [GitHub Security Advisories (gnh1201/welsonjs)](https://github.com/gnh1201/welsonjs/security)
+* [abuse@catswords.re.kr](mailto:abuse@catswords.re.kr)
+
+## Join the community
+I am always open. Collaboration, opportunities, and community activities are all welcome.
+
+* ActivityPub [@catswords_oss@catswords.social](https://catswords.social/@catswords_oss)
+* XMPP [catswords@conference.omemo.id](xmpp:catswords@conference.omemo.id?join)
+* [Join Catswords OSS on Microsoft Teams (teams.live.com)](https://teams.live.com/l/community/FEACHncAhq8ldnojAI)
+* [Join Catswords OSS #welsonjs on Discord (discord.gg)](https://discord.gg/XKG5CjtXEj)
