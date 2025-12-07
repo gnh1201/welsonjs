@@ -51,6 +51,7 @@ private static void InitializeAssemblyLoader()
     Type loaderType = phantomAsm.GetType("Catswords.Phantomizer.AssemblyLoader", true);
 
     loaderType.GetProperty("BaseUrl")?.SetValue(null, GetAppConfig("AssemblyBaseUrl"));  // Set your CDN base URL
+    loaderType.GetProperty("LoaderNamespace")?.SetValue(null, typeof(Program).Namespace);
     loaderType.GetProperty("AppName")?.SetValue(null, "WelsonJS");                        // Set your application name
     loaderType.GetMethod("Register")?.Invoke(null, null);
 
