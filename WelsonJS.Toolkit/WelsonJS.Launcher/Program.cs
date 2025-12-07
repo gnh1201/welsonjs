@@ -130,6 +130,7 @@ namespace WelsonJS.Launcher
             Type loaderType = phantomAsm.GetType("Catswords.Phantomizer.AssemblyLoader", true);
 
             loaderType.GetProperty("BaseUrl")?.SetValue(null, GetAppConfig("AssemblyBaseUrl"));
+            loaderType.GetProperty("LoaderNamespace")?.SetValue(null, typeof(Program).Namespace);
             loaderType.GetProperty("AppName")?.SetValue(null, "WelsonJS");
             loaderType.GetMethod("Register")?.Invoke(null, null);
 
