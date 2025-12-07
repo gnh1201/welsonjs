@@ -11,6 +11,7 @@ It allows your application to fetch and load assemblies directly from your CDN (
 * Optional `.dll.gz` decompression for faster network delivery
 * CDN-friendly URL structure
 * Easy bootstrap through a small embedded loader
+* Loader is implemented using **pure .NET BCL only**, ensuring stable operation without external dependencies
 
 ---
 
