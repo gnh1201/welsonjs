@@ -343,6 +343,16 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
+        ///   System.Byte[] 형식의 지역화된 리소스를 찾습니다.
+        /// </summary>
+        internal static byte[] Phantomizer {
+            get {
+                object obj = ResourceManager.GetObject("Phantomizer", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
         ///   https://github.com/gnh1201/welsonjs과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string RepositoryUrl {

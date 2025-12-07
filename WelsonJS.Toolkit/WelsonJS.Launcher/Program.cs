@@ -8,7 +8,9 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 using WelsonJS.Launcher.Telemetry;
@@ -33,10 +35,7 @@ namespace WelsonJS.Launcher
             _logger = new TraceLogger();
 
             // load external assemblies
-            AssemblyLoader.BaseUrl = GetAppConfig("AssemblyBaseUrl");
-            AssemblyLoader.Logger = _logger;
-            AssemblyLoader.Register();
-            AssemblyLoader.LoadNativeModules("ChakraCore", new Version(1, 13, 0, 0), new[] { "ChakraCore.dll" });
+            InitializeAssemblyLoader();
 
             // telemetry
             try
@@ -113,6 +112,48 @@ namespace WelsonJS.Launcher
             catch { /* ignore if not owned */ }
             _mutex.Dispose();
         }
+
+        private static void InitializeAssemblyLoader()
+        {
+            byte[] gzBytes = Properties.Resources.Phantomizer;
+
+            byte[] dllBytes;
+            using (var input = new MemoryStream(gzBytes))
+            using (var gz = new GZipStream(input, CompressionMode.Decompress))
+            using (var output = new MemoryStream())
+            {
+                gz.CopyTo(output);
+                dllBytes = output.ToArray();
+            }
+
+            Assembly phantomAsm = Assembly.Load(dllBytes);
+            Type loaderType = phantomAsm.GetType("Catswords.Phantomizer.AssemblyLoader", true);
+
+            loaderType.GetProperty("BaseUrl")?.SetValue(null, GetAppConfig("AssemblyBaseUrl"));
+            loaderType.GetProperty("AppName")?.SetValue(null, "WelsonJS");
+            loaderType.GetMethod("Register")?.Invoke(null, null);
+
+            var loadNativeModulesMethod = loaderType.GetMethod(
+                "LoadNativeModules",
+                BindingFlags.Public | BindingFlags.Static,
+                binder: null,
+                types: new[] { typeof(string), typeof(Version), typeof(string[]) },
+                modifiers: null
+            );
+
+            if (loadNativeModulesMethod == null)
+            {
+                throw new InvalidOperationException("LoadNativeModules(string, Version, string[]) method not found.");
+            }
+
+            loadNativeModulesMethod.Invoke(null, new object[]
+            {
+                "ChakraCore",
+                new Version(1, 13, 0, 0),
+                new[] { "ChakraCore.dll" }
+            });
+        }
+
 
         public static void RecordFirstDeployTime(string directory, string instanceId)
         {
