@@ -20,12 +20,12 @@ It allows your application to fetch and load assemblies directly from your CDN (
 
 ### 1. Embed Phantomizer into your project
 
-Add `Catswords.Phantomizer.dll.gz` to your `Resources.resx` file. (It can be drag and drop in Microsoft Visual Studio)
+Add `Catswords.Phantomizer.dll.gz` to your `Resources.resx` file. (You can simply drag and drop it in Visual Studio):
 
 ```xml
-  <data name="Phantomizer" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Catswords.Phantomizer.dll.gz;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
+<data name="Phantomizer" type="System.Resources.ResXFileRef, System.Windows.Forms">
+  <value>..\Resources\Catswords.Phantomizer.dll.gz;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+</data>
 ```
 
 ---
