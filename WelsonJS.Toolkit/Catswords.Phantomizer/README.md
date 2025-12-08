@@ -9,7 +9,7 @@ It allows your application to fetch and load assemblies directly from your CDN (
 
 ## 🚀 Features
 
-* Load managed (`*.dll`) and native (`*.dll`) assemblies over HTTP
+* Load managed (`*.dll`) and native (`*.dll`) assemblies over HTTP **(HTTPS only)**
 * Optional `.dll.gz` decompression for faster network delivery
 * CDN-friendly URL structure
 * Easy bootstrap through a small embedded loader
