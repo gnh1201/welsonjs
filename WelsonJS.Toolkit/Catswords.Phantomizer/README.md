@@ -89,7 +89,7 @@ private static void InitializeAssemblyLoader()
 }
 ```
 
-If you prefer not to embed, you can reference Phantomizer directly with a normal `using` statement:
+If embedding is not required, you can reference Phantomizer directly:
 
 ```csharp
 using Catswords.Phantomizer;
