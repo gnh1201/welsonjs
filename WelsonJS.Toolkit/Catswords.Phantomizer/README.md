@@ -3,6 +3,8 @@
 **Catswords.Phantomizer** is an HTTP-based dynamic-link library (DLL) loader designed for .NET applications.
 It allows your application to fetch and load assemblies directly from your CDN (Azure Blob, S3, Cloudflare R2, etc.) at runtime, with optional GZip compression support.
 
+![Catswords.Phantomizer Structure Overview](https://catswords.blob.core.windows.net/welsonjs/images/phantomizer_cover.png)
+
 ---
 
 ## 🚀 Features
@@ -20,7 +22,13 @@ It allows your application to fetch and load assemblies directly from your CDN (
 
 ### 1. Embed Phantomizer into your project
 
-Add `Catswords.Phantomizer.dll.gz` to your `Resources.resx` file.
+You can include **Catswords.Phantomizer** in your project using one of the following methods:
+
+| Method | Description | When to Use | Setup Steps |
+|-------|-------------|--------------|-------------|
+| **Resources.resx Embedded File** | Stores `Catswords.Phantomizer.dll.gz` inside `Resources.resx` and loads it at runtime. | Recommended when you want the loader fully self-contained inside your executable. | Add file to `Resources.resx` → Access via `Properties.Resources.Phantomizer`. |
+| **Embedded Resource** | Embeds `Catswords.Phantomizer.dll.gz` directly into the assembly manifest (outside of `resx`). | Useful when you prefer not to maintain `.resx` files but still want Phantomizer embedded. | Add file to project → Set *Build Action* = `Embedded Resource` → Load via `GetManifestResourceStream()`. |
+| **Normal Assembly Reference (no embedding)** | References `Catswords.Phantomizer.dll` normally through project references. | Use this when you distribute Phantomizer as a standalone DLL instead of embedding it. | Add Phantomizer DLL to your project references → `using Catswords.Phantomizer;`. |
 
 ---
 
@@ -30,13 +38,20 @@ Place the following code inside your `Main` method, static constructor, or any e
 
 ```csharp
 static Program() {
-    // ...
     InitializeAssemblyLoader();
-    // ...
 }
 
 private static void InitializeAssemblyLoader()
 {
+    /*
+    // Example for Embedded Resource:
+    var asm = Assembly.GetExecutingAssembly();
+    using (var stream = asm.GetManifestResourceStream(typeof(Program).Namespace + ".Resources.Catswords.Phantomizer.dll.gz"))
+    {
+        // decompress and load...
+    }
+    */
+
     byte[] gzBytes = Properties.Resources.Phantomizer;
 
     byte[] dllBytes;
@@ -51,9 +66,9 @@ private static void InitializeAssemblyLoader()
     Assembly phantomAsm = Assembly.Load(dllBytes);
     Type loaderType = phantomAsm.GetType("Catswords.Phantomizer.AssemblyLoader", true);
 
-    loaderType.GetProperty("BaseUrl")?.SetValue(null, GetAppConfig("AssemblyBaseUrl"));  // Set your CDN base URL
+    loaderType.GetProperty("BaseUrl")?.SetValue(null, GetAppConfig("AssemblyBaseUrl"));  // Set the CDN base URL
     loaderType.GetProperty("LoaderNamespace")?.SetValue(null, typeof(Program).Namespace);
-    loaderType.GetProperty("AppName")?.SetValue(null, "WelsonJS");                        // Set your application name
+    loaderType.GetProperty("AppName")?.SetValue(null, "WelsonJS");                       // Application name
     loaderType.GetMethod("Register")?.Invoke(null, null);
 
     var loadNativeModulesMethod = loaderType.GetMethod(
@@ -73,6 +88,26 @@ private static void InitializeAssemblyLoader()
         new Version(1, 13, 0, 0),
         new[] { "ChakraCore.dll" }
     });
+}
+```
+
+If embedding is not required, you can reference Phantomizer directly:
+
+```csharp
+using Catswords.Phantomizer;
+
+static void Main(string[] args)
+{
+    AssemblyLoader.BaseUrl = GetAppConfig("AssemblyBaseUrl");   // Configure CDN base URL
+    AssemblyLoader.LoaderNamespace = typeof(Program).Namespace;
+    AssemblyLoader.AppName = "WelsonJS";
+    AssemblyLoader.Register();
+
+    AssemblyLoader.LoadNativeModules(
+        "ChakraCore",
+        new Version(1, 13, 0, 0),
+        new[] { "ChakraCore.dll" }
+    );
 }
 ```
 
