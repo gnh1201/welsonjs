@@ -1,4 +1,4 @@
-# Catswords.Phantomizer
+# Phantomizer
 
 **Catswords.Phantomizer** is an HTTP-based dynamic-link library (DLL) loader designed for .NET applications.
 It allows your application to fetch and load assemblies directly from your CDN (Azure Blob, S3, Cloudflare R2, etc.) at runtime, with optional GZip compression support.
