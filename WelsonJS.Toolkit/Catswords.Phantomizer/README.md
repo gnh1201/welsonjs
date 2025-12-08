@@ -20,7 +20,13 @@ It allows your application to fetch and load assemblies directly from your CDN (
 
 ### 1. Embed Phantomizer into your project
 
-Add `Catswords.Phantomizer.dll.gz` to your `Resources.resx` file.
+Add `Catswords.Phantomizer.dll.gz` to your `Resources.resx` file. (It can be drag and drop in Microsoft Visual Studio)
+
+```xml
+  <data name="Phantomizer" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Catswords.Phantomizer.dll.gz;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+```
 
 ---
 
@@ -30,9 +36,7 @@ Place the following code inside your `Main` method, static constructor, or any e
 
 ```csharp
 static Program() {
-    // ...
     InitializeAssemblyLoader();
-    // ...
 }
 
 private static void InitializeAssemblyLoader()
@@ -51,9 +55,9 @@ private static void InitializeAssemblyLoader()
     Assembly phantomAsm = Assembly.Load(dllBytes);
     Type loaderType = phantomAsm.GetType("Catswords.Phantomizer.AssemblyLoader", true);
 
-    loaderType.GetProperty("BaseUrl")?.SetValue(null, GetAppConfig("AssemblyBaseUrl"));  // Set your CDN base URL
+    loaderType.GetProperty("BaseUrl")?.SetValue(null, GetAppConfig("AssemblyBaseUrl"));  // Set the CDN base URL
     loaderType.GetProperty("LoaderNamespace")?.SetValue(null, typeof(Program).Namespace);
-    loaderType.GetProperty("AppName")?.SetValue(null, "WelsonJS");                        // Set your application name
+    loaderType.GetProperty("AppName")?.SetValue(null, "WelsonJS");                       // Application name
     loaderType.GetMethod("Register")?.Invoke(null, null);
 
     var loadNativeModulesMethod = loaderType.GetMethod(
@@ -73,6 +77,26 @@ private static void InitializeAssemblyLoader()
         new Version(1, 13, 0, 0),
         new[] { "ChakraCore.dll" }
     });
+}
+```
+
+**If you prefer not to use `Resources.resx`**, You can reference Phantomizer directly with a normal `using` statement:
+
+```csharp
+using Catswords.Phantomizer;
+
+static void Main(string[] args)
+{
+    AssemblyLoader.BaseUrl = GetAppConfig("AssemblyBaseUrl");   // Configure CDN base URL
+    AssemblyLoader.LoaderNamespace = typeof(Program).Namespace;
+    AssemblyLoader.AppName = "WelsonJS";
+    AssemblyLoader.Register();
+
+    AssemblyLoader.LoadNativeModules(
+        "ChakraCore",
+        new Version(1, 13, 0, 0),
+        new[] { "ChakraCore.dll" }
+    );
 }
 ```
 
