@@ -20,13 +20,13 @@ It allows your application to fetch and load assemblies directly from your CDN (
 
 ### 1. Embed Phantomizer into your project
 
-Add `Catswords.Phantomizer.dll.gz` to your `Resources.resx` file. (You can simply drag and drop it in Visual Studio):
+You can include **Catswords.Phantomizer** in your project using one of the following methods:
 
-```xml
-<data name="Phantomizer" type="System.Resources.ResXFileRef, System.Windows.Forms">
-  <value>..\Resources\Catswords.Phantomizer.dll.gz;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-</data>
-```
+| Method | Description | When to Use | Setup Steps |
+|-------|-------------|--------------|-------------|
+| **Resources.resx Embedded File** | Stores `Catswords.Phantomizer.dll.gz` inside `Resources.resx` and loads it at runtime. | Recommended when you want the loader fully self-contained inside your executable. | Add file to `Resources.resx` → Access via `Properties.Resources.Phantomizer`. |
+| **Embedded Resource** | Embeds `Catswords.Phantomizer.dll.gz` directly into the assembly manifest (outside of `resx`). | Useful when you prefer not to maintain `.resx` files but still want Phantomizer embedded. | Add file to project → Set *Build Action* = `Embedded Resource` → Load via `GetManifestResourceStream()`. |
+| **Normal Assembly Reference (no embedding)** | References `Catswords.Phantomizer.dll` normally through project references. | Use this when you distribute Phantomizer as a standalone DLL instead of embedding it. | Add Phantomizer DLL to your project references → `using Catswords.Phantomizer;`. |
 
 ---
 
@@ -41,6 +41,15 @@ static Program() {
 
 private static void InitializeAssemblyLoader()
 {
+    /*
+    // if use the Embedded Resource
+    var asm = Assembly.GetExecutingAssembly();
+    using (var stream = asm.GetManifestResourceStream("MyApp.Resources.Catswords.Phantomizer.dll.gz"))
+    {
+        // decompress and load...
+    }
+    */
+
     byte[] gzBytes = Properties.Resources.Phantomizer;
 
     byte[] dllBytes;
@@ -80,7 +89,7 @@ private static void InitializeAssemblyLoader()
 }
 ```
 
-**If you prefer not to use `Resources.resx`**, You can reference Phantomizer directly with a normal `using` statement:
+If you prefer not to embed, you can reference Phantomizer directly with a normal `using` statement:
 
 ```csharp
 using Catswords.Phantomizer;
