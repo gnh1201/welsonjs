@@ -42,9 +42,9 @@ static Program() {
 private static void InitializeAssemblyLoader()
 {
     /*
-    // if use the Embedded Resource
+    // Example for Embedded Resource:
     var asm = Assembly.GetExecutingAssembly();
-    using (var stream = asm.GetManifestResourceStream("MyApp.Resources.Catswords.Phantomizer.dll.gz"))
+    using (var stream = asm.GetManifestResourceStream(typeof(Program).Namespace + ".Resources.Catswords.Phantomizer.dll.gz"))
     {
         // decompress and load...
     }
