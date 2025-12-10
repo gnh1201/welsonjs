@@ -137,12 +137,6 @@ Once Phantomizer is initialized, your application will automatically fetch missi
 
 ---
 
-## 📥 Download the pre-compiled file
-
-* [Download Catswords.Phantomizer.dll.gz (catswords.blob.core.windows.net)](https://catswords.blob.core.windows.net/welsonjs/packages/managed/Catswords.Phantomizer/1.0.0.0/Catswords.Phantomizer.dll.gz)
-
----
-
 ## 🛡 Integrity Manifest (Integrity URL)
 
 Phantomizer can verify assemblies before loading them by downloading an integrity manifest (XML).
@@ -189,6 +183,12 @@ Once uploaded and pinned, the file cannot be silently modified without changing 
   </Hashes>
 </AssemblyIntegrity>
 ```
+
+---
+
+## 📥 Download the pre-compiled file
+
+* [Download Catswords.Phantomizer.dll.gz (catswords.blob.core.windows.net)](https://catswords.blob.core.windows.net/welsonjs/packages/managed/Catswords.Phantomizer/1.0.0.0/Catswords.Phantomizer.dll.gz)
 
 ---
 
