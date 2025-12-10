@@ -3,6 +3,9 @@
 // SPDX-FileCopyrightText: Namhyeon Go <gnh1201@catswords.re.kr>, 2025 Catswords OSS and WelsonJS Contributors
 // https://github.com/gnh1201/welsonjs
 // 
+using System.Security.Cryptography;
+using System.Text;
+using System.Xml.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -33,6 +36,12 @@ namespace Catswords.Phantomizer
         public static string BaseUrl { get; set; } = null;
         public static string LoaderNamespace { get; set; } = typeof(AssemblyLoader).Namespace;
         public static string AppName { get; set; } = "Catswords";
+        public static string IntegrityUrl { get; set; } = null;
+
+        // Hash whitelist (values only)
+        private static HashSet<string> _integrityHashes = null;
+        private static bool _integrityLoaded = false;
+        private static readonly object IntegritySyncRoot = new object();
 
         private static readonly object SyncRoot = new object();
         private static bool _registered;
@@ -167,16 +176,28 @@ namespace Catswords.Phantomizer
                 if (_registered)
                     return;
 
-                if (string.IsNullOrWhiteSpace(BaseUrl))
+                try
                 {
-                    Trace.TraceError("AssemblyLoader.Register() called but BaseUrl is not set.");
-                    throw new InvalidOperationException("AssemblyLoader.BaseUrl must be configured before Register().");
-                }
+                    if (!_integrityLoaded)
+                        LoadIntegrityManifest();
 
-                if (!BaseUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                    if (string.IsNullOrWhiteSpace(BaseUrl))
+                        throw new InvalidOperationException("BaseUrl must be configured before Register().");
+
+                    if (Uri.TryCreate(BaseUrl, UriKind.Absolute, out Uri uri))
+                    {
+                        if (uri.Scheme != Uri.UriSchemeHttps)
+                            throw new InvalidOperationException("BaseUrl must use HTTPS for security.");
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("BaseUrl is not a valid absolute URI.");
+                    }
+                }
+                catch (Exception ex)
                 {
-                    Trace.TraceError("AssemblyLoader.BaseUrl must use HTTPS for security.");
-                    throw new InvalidOperationException("AssemblyLoader.BaseUrl must use HTTPS.");
+                    Trace.TraceError("AssemblyLoader: failed to initialize: {0}", ex.Message);
+                    throw;
                 }
 
                 AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
@@ -236,6 +257,7 @@ namespace Catswords.Phantomizer
                         Trace.TraceInformation("Using cached native module: {0}", localPath);
                     }
 
+                    EnsureIntegrityOrThrow(localPath);
                     EnsureSignedFileOrThrow(localPath, fileName);
 
                     IntPtr h = LoadLibrary(localPath);
@@ -324,6 +346,7 @@ namespace Catswords.Phantomizer
                     return null;
                 }
 
+                EnsureIntegrityOrThrow(dllPath);
                 EnsureSignedFileOrThrow(dllPath, simpleName);
                 return Assembly.LoadFrom(dllPath);
             }
@@ -447,14 +470,85 @@ namespace Catswords.Phantomizer
 
         private static bool IsFrameworkAssembly(string name)
         {
-            return name.StartsWith("System", StringComparison.OrdinalIgnoreCase) ||
-                   name.StartsWith("Microsoft", StringComparison.OrdinalIgnoreCase) ||
+            return name.StartsWith("System.", StringComparison.OrdinalIgnoreCase) ||
+                   name.StartsWith("Microsoft.", StringComparison.OrdinalIgnoreCase) ||
                    name == "mscorlib" ||
                    name == "netstandard" ||
                    name == "WindowsBase" ||
                    name == "PresentationCore" ||
                    name == "PresentationFramework" ||
-                   name.StartsWith(LoaderNamespace, StringComparison.OrdinalIgnoreCase);
+                   name.StartsWith($"{LoaderNamespace}.", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static void LoadIntegrityManifest()
+        {
+            lock (IntegritySyncRoot)
+            {
+                if (_integrityLoaded)
+                    return;
+
+                _integrityHashes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                if (string.IsNullOrWhiteSpace(IntegrityUrl))
+                {
+                    _integrityLoaded = true;
+                    return; // integrity disabled
+                }
+
+                XDocument doc;
+
+                try
+                {
+                    if (Uri.TryCreate(IntegrityUrl, UriKind.Absolute, out Uri uri))
+                    {
+                        if (uri.Scheme != Uri.UriSchemeHttps)
+                            throw new InvalidOperationException("IntegrityUrl must use HTTPS for security.");
+
+                        using (var res = Http.GetAsync(uri).GetAwaiter().GetResult())
+                        {
+                            res.EnsureSuccessStatusCode();
+                            using (var stream = res.Content.ReadAsStreamAsync().GetAwaiter().GetResult())
+                            {
+                                doc = XDocument.Load(stream);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("IntegrityUrl is not a valid absolute URI.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Trace.TraceError("AssemblyIntegrity: failed to load manifest: {0}", ex.Message);
+                    throw new InvalidOperationException("Failed to load AssemblyIntegrity manifest.", ex);
+                }
+
+                XElement hashes = doc.Root?.Element("Hashes");
+                if (hashes == null)
+                {
+                    Trace.TraceWarning("AssemblyIntegrity: <Hashes> not found. Integrity disabled.");
+                    _integrityLoaded = true;
+                    return;
+                }
+
+                foreach (var h in hashes.Elements("Hash"))
+                {
+                    var algorithm = h.Attribute("algorithm")?.Value?.Trim();
+
+                    if (!string.Equals(algorithm, "SHA256", StringComparison.OrdinalIgnoreCase))
+                        continue; // only SHA256 supported
+
+                    string val = h.Attribute("value")?.Value?.Trim();
+                    if (string.IsNullOrWhiteSpace(val))
+                        continue;
+
+                    _integrityHashes.Add(val);
+                }
+
+                _integrityLoaded = true;
+                Trace.TraceInformation("AssemblyIntegrity: loaded {0} allowed hashes.", _integrityHashes.Count);
+            }
         }
 
 
@@ -484,6 +578,32 @@ namespace Catswords.Phantomizer
             throw new InvalidOperationException("Invalid signature: " + logicalName);
         }
 
+        private static void EnsureIntegrityOrThrow(string path)
+        {
+            if (string.IsNullOrWhiteSpace(IntegrityUrl))
+                return; // disabled
+
+            if (_integrityHashes == null || _integrityHashes.Count == 0)
+            {
+                Trace.TraceWarning("AssemblyIntegrity: no hashes loaded → skipping check.");
+                return;
+            }
+
+            byte[] bytes = File.ReadAllBytes(path);
+
+            // Compute hashes
+            string sha256 = ComputeHashHex(bytes, SHA256.Create());
+
+            // Check match
+            if (_integrityHashes.Contains(sha256))
+            {
+                Trace.TraceInformation("AssemblyIntegrity: hash OK for {0}", Path.GetFileName(path));
+                return;
+            }
+
+            Trace.TraceError("AssemblyIntegrity: hash mismatch! SHA256={0}", sha256);
+            throw new InvalidOperationException("AssemblyIntegrity check failed for: " + path);
+        }
 
         private static FileSignatureStatus VerifySignature(string file)
         {
@@ -501,6 +621,18 @@ namespace Catswords.Phantomizer
             if (result == TRUST_E_NOSIGNATURE) return FileSignatureStatus.NoSignature;
 
             return FileSignatureStatus.Invalid;
+        }
+
+        private static string ComputeHashHex(byte[] data, HashAlgorithm algorithm)
+        {
+            using (algorithm)
+            {
+                var hash = algorithm.ComputeHash(data);
+                var sb = new StringBuilder(hash.Length * 2);
+                foreach (var b in hash)
+                    sb.Append(b.ToString("x2"));
+                return sb.ToString();
+            }
         }
     }
 }
