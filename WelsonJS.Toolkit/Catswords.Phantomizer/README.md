@@ -160,16 +160,6 @@ Once uploaded and pinned, the file cannot be silently modified without changing 
 <AssemblyIntegrity schemaVersion="1" generatedAt="2025-12-10T00:00:00Z">
   <Hashes>
     <Hash
-      value="b43b1019451c5bdacb5ed993c94e1d3b"
-      algorithm="MD5"
-      assemblyName="ChakraCore"
-      assemblyType="native"
-      version="1.13.0.0"
-      platform="x86"
-      compression="none"
-      fileName="ChakraCore.dll" />
-    
-    <Hash
       value="5e274b47fc60c74159b4d1e21e70c0edf8e0936bdabc46b632525d09ca2fbae8"
       algorithm="SHA256"
       assemblyName="ChakraCore"
