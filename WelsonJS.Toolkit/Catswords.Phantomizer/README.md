@@ -67,6 +67,7 @@ private static void InitializeAssemblyLoader()
     Type loaderType = phantomAsm.GetType("Catswords.Phantomizer.AssemblyLoader", true);
 
     loaderType.GetProperty("BaseUrl")?.SetValue(null, GetAppConfig("AssemblyBaseUrl"));  // Set the CDN base URL
+    //loaderType.GetProperty("IntegrityUrl")?.SetValue(null, GetAppConfig("IntegrityUrl"));  // (Optional) Set the integrity URL
     loaderType.GetProperty("LoaderNamespace")?.SetValue(null, typeof(Program).Namespace);
     loaderType.GetProperty("AppName")?.SetValue(null, "WelsonJS");                       // Application name
     loaderType.GetMethod("Register")?.Invoke(null, null);
@@ -99,6 +100,7 @@ using Catswords.Phantomizer;
 static void Main(string[] args)
 {
     AssemblyLoader.BaseUrl = GetAppConfig("AssemblyBaseUrl");   // Configure CDN base URL
+    //AssemblyLoader.IntegrityUrl  // (Optional) Set the integrity URL
     AssemblyLoader.LoaderNamespace = typeof(Program).Namespace;
     AssemblyLoader.AppName = "WelsonJS";
     AssemblyLoader.Register();
@@ -134,8 +136,54 @@ Once Phantomizer is initialized, your application will automatically fetch missi
 
 ---
 
-## Download the pre-compiled file
+## 📥 Download the pre-compiled file
+
 * [Download Catswords.Phantomizer.dll.gz (catswords.blob.core.windows.net)](https://catswords.blob.core.windows.net/welsonjs/packages/managed/Catswords.Phantomizer/1.0.0.0/Catswords.Phantomizer.dll.gz)
+
+---
+
+## 🛡 Integrity Manifest (Integrity URL)
+
+Phantomizer can verify assemblies before loading them by downloading an integrity manifest (XML).
+
+You can host this integrity file anywhere — **preferably separate from your main CDN**, to prevent tampering and ensure independent verification of assembly integrity.
+
+### ✔ Recommended: Filebase (IPFS-pinning, NFT-grade immutability)
+
+Filebase provides **immutable IPFS-based storage**, which is widely used in blockchain ecosystems — including **NFT metadata storage** — due to its strong guarantees of *content-addressing* and *tamper resistance*.
+Once uploaded and pinned, the file cannot be silently modified without changing its IPFS hash (CID), making it ideal for hosting integrity manifests.
+
+👉 **Recommended signup (with pinning support):** [Filebase](https://console.filebase.com/signup?ref=d44f5cc9cff7)
+
+### ✔ Integrity Manifest Example (from `integrity.xml`)
+
+```xml
+<AssemblyIntegrity schemaVersion="1" generatedAt="2025-12-10T00:00:00Z">
+  <Hashes>
+    <Hash
+      value="b43b1019451c5bdacb5ed993c94e1d3b"
+      algorithm="MD5"
+      assemblyName="ChakraCore"
+      assemblyType="native"
+      version="1.13.0.0"
+      platform="x86"
+      compression="none"
+      fileName="ChakraCore.dll" />
+    
+    <Hash
+      value="5e274b47fc60c74159b4d1e21e70c0edf8e0936bdabc46b632525d09ca2fbae8"
+      algorithm="SHA256"
+      assemblyName="ChakraCore"
+      assemblyType="native"
+      version="1.13.0.0"
+      platform="x86"
+      compression="none"
+      fileName="ChakraCore.dll" />
+
+    <!-- ... more entries ... -->
+  </Hashes>
+</AssemblyIntegrity>
+```
 
 ---
 
