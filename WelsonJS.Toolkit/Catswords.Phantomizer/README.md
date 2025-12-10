@@ -13,7 +13,7 @@ It allows your application to fetch and load assemblies directly from your CDN (
 * Optional `.dll.gz` decompression for faster network delivery
 * CDN-friendly URL structure
 * Easy bootstrap through a small embedded loader
-* Loader is implemented using **pure .NET BCL only**, ensuring stable operation without external dependencies (Both .NET Framework and .NET Core supported)
+* Loader is implemented using **pure .NET BCL only** without external dependencies (.NET Fx/Core fully supported)
 * Built-in **code-signing verification** support to ensure assemblies are trusted and tamper-free
 * An efficient integrity verification process based on an integrity manifest (NFT-grade immutability)
 
