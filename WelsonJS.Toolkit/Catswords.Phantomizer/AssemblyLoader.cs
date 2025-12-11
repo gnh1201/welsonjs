@@ -551,7 +551,6 @@ namespace Catswords.Phantomizer
             }
         }
 
-
         private static void EnsureSignedFileOrThrow(string path, string logicalName)
         {
             if (!File.Exists(path))
@@ -602,6 +601,21 @@ namespace Catswords.Phantomizer
             }
 
             Trace.TraceError("AssemblyIntegrity: hash mismatch! SHA256={0}", sha256);
+
+            // Delete corrupted file so the next run can re-download a clean copy.
+            if (File.Exists(path))
+            {
+                try
+                {
+                    File.Delete(path);
+                    Trace.TraceInformation("AssemblyIntegrity: deleted corrupted file {0}", path);
+                }
+                catch (Exception ex)
+                {
+                    Trace.TraceWarning("AssemblyIntegrity: failed to delete corrupted file {0}: {1}", path, ex.Message);
+                }
+            }
+
             throw new InvalidOperationException("AssemblyIntegrity check failed for: " + path);
         }
 

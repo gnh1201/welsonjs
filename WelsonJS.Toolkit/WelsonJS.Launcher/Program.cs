@@ -132,7 +132,7 @@ namespace WelsonJS.Launcher
             loaderType.GetProperty("BaseUrl")?.SetValue(null, GetAppConfig("AssemblyBaseUrl"));
             loaderType.GetProperty("LoaderNamespace")?.SetValue(null, typeof(Program).Namespace);
             loaderType.GetProperty("AppName")?.SetValue(null, "WelsonJS");
-            //loaderType.GetProperty("IntegrityUrl")?.SetValue(null, GetAppConfig("AssemblyIntegrityUrl")); // In the future, we may use this to verify integrity.
+            loaderType.GetProperty("IntegrityUrl")?.SetValue(null, GetAppConfig("AssemblyIntegrityUrl"));
             loaderType.GetMethod("Register")?.Invoke(null, null);
 
             var loadNativeModulesMethod = loaderType.GetMethod(
@@ -154,6 +154,21 @@ namespace WelsonJS.Launcher
                 new Version(1, 13, 0, 0),
                 new[] { "ChakraCore.dll" }
             });
+
+            /*
+            // Alternative way using direct type reference
+            AssemblyLoader.BaseUrl = GetAppConfig("AssemblyBaseUrl");   // Configure CDN base URL
+            AssemblyLoader.IntegrityUrl = GetAppConfig("AssemblyIntegrityUrl");   // (Optional) Set the integrity URL
+            AssemblyLoader.LoaderNamespace = typeof(Program).Namespace;
+            AssemblyLoader.AppName = "WelsonJS";
+            AssemblyLoader.Register();
+
+            AssemblyLoader.LoadNativeModules(
+                "ChakraCore",
+                new Version(1, 13, 0, 0),
+                new[] { "ChakraCore.dll" }
+            );
+            */
         }
 
 
