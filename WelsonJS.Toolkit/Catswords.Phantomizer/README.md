@@ -178,7 +178,7 @@ Once uploaded and pinned, the file cannot be silently modified without changing 
 
 ## 📥 Download the pre-compiled file
 
-* [Download Catswords.Phantomizer.dll.gz (catswords.blob.core.windows.net)](https://catswords.blob.core.windows.net/welsonjs/packages/managed/Catswords.Phantomizer/1.0.0.0/Catswords.Phantomizer.dll.gz)
+* [Download Catswords.Phantomizer.dll.gz (catswords.blob.core.windows.net)](https://catswords.blob.core.windows.net/welsonjs/packages/managed/Catswords.Phantomizer/1.0.0.1/Catswords.Phantomizer.dll.gz)
 
 ---
 
