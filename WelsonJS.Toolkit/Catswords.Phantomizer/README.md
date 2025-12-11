@@ -101,7 +101,7 @@ using Catswords.Phantomizer;
 static void Main(string[] args)
 {
     AssemblyLoader.BaseUrl = GetAppConfig("AssemblyBaseUrl");   // Configure CDN base URL
-    //AssemblyLoader.IntegrityUrl  // (Optional) Set the integrity URL
+    //AssemblyLoader.IntegrityUrl = GetAppConfig("AssemblyIntegrityUrl");  // (Optional) Set the integrity URL
     AssemblyLoader.LoaderNamespace = typeof(Program).Namespace;
     AssemblyLoader.AppName = "WelsonJS";
     AssemblyLoader.Register();
