@@ -244,4 +244,7 @@
   <data name="Phantomizer" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Catswords.Phantomizer.dll.gz;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="AssemblyIntegrityUrl" xml:space="preserve">
+    <value>https://spare-yellow-cicada.myfilebase.com/ipfs/QmYL29Z7BRvE6dnL4HPKeNvJyNJrh2LnVhzo3k9bp3wBZf</value>
+  </data>
 </root>

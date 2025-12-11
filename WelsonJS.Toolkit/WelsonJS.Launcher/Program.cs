@@ -132,6 +132,7 @@ namespace WelsonJS.Launcher
             loaderType.GetProperty("BaseUrl")?.SetValue(null, GetAppConfig("AssemblyBaseUrl"));
             loaderType.GetProperty("LoaderNamespace")?.SetValue(null, typeof(Program).Namespace);
             loaderType.GetProperty("AppName")?.SetValue(null, "WelsonJS");
+            //loaderType.GetProperty("IntegrityUrl")?.SetValue(null, GetAppConfig("AssemblyIntegrityUrl")); // In the future, we may use this to verify integrity.
             loaderType.GetMethod("Register")?.Invoke(null, null);
 
             var loadNativeModulesMethod = loaderType.GetMethod(

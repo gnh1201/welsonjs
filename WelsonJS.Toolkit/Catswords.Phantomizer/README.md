@@ -1,4 +1,4 @@
-# Phantomizer
+# Catswords.Phantomizer
 
 **Catswords.Phantomizer** is an HTTP-based dynamic-link library (DLL) loader designed for .NET applications.
 It allows your application to fetch and load assemblies directly from your CDN (Azure Blob, S3, Cloudflare R2, etc.) at runtime, with optional GZip compression support.
@@ -9,12 +9,13 @@ It allows your application to fetch and load assemblies directly from your CDN (
 
 ## 🚀 Features
 
-* Load managed (`*.dll`) and native (`*.dll`) assemblies over HTTP **(HTTPS only)**
+* Load managed (`*.dll`) and native (`*.dll`) assemblies over **HTTPS only**
 * Optional `.dll.gz` decompression for faster network delivery
 * CDN-friendly URL structure
 * Easy bootstrap through a small embedded loader
-* Loader is implemented using **pure .NET BCL only**, ensuring stable operation without external dependencies
+* Loader is implemented using **pure .NET BCL only** without external dependencies (.NET Fx/Core fully supported)
 * Built-in **code-signing verification** support to ensure assemblies are trusted and tamper-free
+* An efficient integrity verification process based on an integrity manifest (NFT-grade immutability)
 
 ---
 
@@ -67,6 +68,7 @@ private static void InitializeAssemblyLoader()
     Type loaderType = phantomAsm.GetType("Catswords.Phantomizer.AssemblyLoader", true);
 
     loaderType.GetProperty("BaseUrl")?.SetValue(null, GetAppConfig("AssemblyBaseUrl"));  // Set the CDN base URL
+    //loaderType.GetProperty("IntegrityUrl")?.SetValue(null, GetAppConfig("IntegrityUrl"));  // (Optional) Set the integrity URL
     loaderType.GetProperty("LoaderNamespace")?.SetValue(null, typeof(Program).Namespace);
     loaderType.GetProperty("AppName")?.SetValue(null, "WelsonJS");                       // Application name
     loaderType.GetMethod("Register")?.Invoke(null, null);
@@ -99,6 +101,7 @@ using Catswords.Phantomizer;
 static void Main(string[] args)
 {
     AssemblyLoader.BaseUrl = GetAppConfig("AssemblyBaseUrl");   // Configure CDN base URL
+    //AssemblyLoader.IntegrityUrl  // (Optional) Set the integrity URL
     AssemblyLoader.LoaderNamespace = typeof(Program).Namespace;
     AssemblyLoader.AppName = "WelsonJS";
     AssemblyLoader.Register();
@@ -134,7 +137,47 @@ Once Phantomizer is initialized, your application will automatically fetch missi
 
 ---
 
-## Download the pre-compiled file
+## 🛡 Integrity Manifest (Integrity URL)
+
+Phantomizer can verify assemblies before loading them by downloading an integrity manifest (XML).
+
+You can host this integrity file anywhere — **preferably separate from your main CDN**, to prevent tampering and ensure independent verification of assembly integrity.
+
+### 🔒 Why separate Integrity URL and main CDN?
+
+Separating them prevents a compromised CDN bucket from serving malicious DLLs **and falsifying the integrity file**. Phantomizer can **trust the integrity manifest**, even if the main CDN is partially compromised.
+
+### ✔ Recommended: Filebase (IPFS-pinning, NFT-grade immutability)
+
+Filebase provides **immutable IPFS-based storage**, which is widely used in blockchain ecosystems — including **NFT metadata storage** — due to its strong guarantees of *content-addressing* and *tamper resistance*.
+Once uploaded and pinned, the file cannot be silently modified without changing its IPFS hash (CID), making it ideal for hosting integrity manifests.
+
+👉 **Recommended signup (with pinning support):** [Filebase](https://console.filebase.com/signup?ref=d44f5cc9cff7)
+
+### ✔ Integrity Manifest Example (from `integrity.xml`)
+
+```xml
+<AssemblyIntegrity schemaVersion="1" generatedAt="2025-12-10T00:00:00Z">
+  <Hashes>
+    <Hash
+      value="5e274b47fc60c74159b4d1e21e70c0edf8e0936bdabc46b632525d09ca2fbae8"
+      algorithm="SHA256"
+      assemblyName="ChakraCore"
+      assemblyType="native"
+      version="1.13.0.0"
+      platform="x86"
+      compression="none"
+      fileName="ChakraCore.dll" />
+
+    <!-- ... more entries ... -->
+  </Hashes>
+</AssemblyIntegrity>
+```
+
+---
+
+## 📥 Download the pre-compiled file
+
 * [Download Catswords.Phantomizer.dll.gz (catswords.blob.core.windows.net)](https://catswords.blob.core.windows.net/welsonjs/packages/managed/Catswords.Phantomizer/1.0.0.0/Catswords.Phantomizer.dll.gz)
 
 ---
