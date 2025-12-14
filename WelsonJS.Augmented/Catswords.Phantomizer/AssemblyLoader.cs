@@ -288,6 +288,10 @@ namespace Catswords.Phantomizer
             if (!Uri.CheckSchemeName(scheme))
                 throw new ArgumentException("Invalid URI scheme name.", nameof(scheme));
 
+            if (!scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
+                    !scheme.Equals(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
+                throw new ArgumentException("Only HTTPS or HTTP schemes are supported.", nameof(scheme));
+
             if (scheme.Equals(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
                 Trace.TraceWarning("Warning: Adding 'http' to allowed URI schemes reduces security.");
 
