@@ -46,6 +46,10 @@ namespace Catswords.Phantomizer
         private static readonly object SyncRoot = new object();
         private static bool _registered;
 
+        private static List<string> _allowSchemes = new List<string> {
+            Uri.UriSchemeHttps
+        };
+
         private static readonly HttpClientHandler LegacyHttpHandler = new HttpClientHandler
         {
             AutomaticDecompression = DecompressionMethods.None
@@ -186,8 +190,8 @@ namespace Catswords.Phantomizer
 
                     if (Uri.TryCreate(BaseUrl, UriKind.Absolute, out Uri uri))
                     {
-                        if (uri.Scheme != Uri.UriSchemeHttps)
-                            throw new InvalidOperationException("BaseUrl must use HTTPS for security.");
+                        if (!IsValidUriScheme(uri))
+                            throw new InvalidOperationException("BaseUrl has an invalid URI scheme.");
                     }
                     else
                     {
@@ -275,6 +279,27 @@ namespace Catswords.Phantomizer
             }
         }
 
+        public static void AddAllowedUriScheme(string scheme)
+        {
+            if (string.IsNullOrWhiteSpace(scheme))
+                throw new ArgumentNullException(nameof(scheme));
+
+            int colonIndex = scheme.IndexOf(':');
+            if (colonIndex > -1)
+                scheme = scheme.Substring(0, colonIndex);
+
+            if (!Uri.CheckSchemeName(scheme))
+                throw new ArgumentException("Invalid URI scheme name.", nameof(scheme));
+
+            if (scheme.Equals(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
+                Trace.TraceWarning("Warning: Adding 'http' to allowed URI schemes reduces security.");
+
+            lock (SyncRoot)
+            {
+                if (!_allowSchemes.Contains(scheme))
+                    _allowSchemes.Add(scheme);
+            }
+        }
 
         public static void LoadNativeModules(Assembly asm, IList<string> fileNames)
         {
@@ -461,7 +486,7 @@ namespace Catswords.Phantomizer
                     }
                     catch (Exception ex)
                     {
-                       Trace.TraceInformation("Failed to delete temporary file {0}: {1}", tempFile, ex.Message);
+                        Trace.TraceInformation("Failed to delete temporary file {0}: {1}", tempFile, ex.Message);
                     }
                 }
             }
@@ -501,8 +526,8 @@ namespace Catswords.Phantomizer
                 {
                     if (Uri.TryCreate(IntegrityUrl, UriKind.Absolute, out Uri uri))
                     {
-                        if (uri.Scheme != Uri.UriSchemeHttps)
-                            throw new InvalidOperationException("IntegrityUrl must use HTTPS for security.");
+                        if (!IsValidUriScheme(uri))
+                            throw new InvalidOperationException("IntegrityUrl has an invalid URI scheme.");
 
                         using (var res = Http.GetAsync(uri).GetAwaiter().GetResult())
                         {
@@ -647,6 +672,14 @@ namespace Catswords.Phantomizer
                     sb.Append(b.ToString("x2"));
                 return sb.ToString();
             }
+        }
+
+        private static bool IsValidUriScheme(Uri uri)
+        {
+            if (uri == null)
+                return false;
+
+            return _allowSchemes.Contains(uri.Scheme);
         }
     }
 }
