@@ -15,26 +15,25 @@ environment:
       SIGNING_POLICY_SLUG: release-signing
 
 before_build:
-  - git submodule update --init --recursive
-  - nuget restore welsonjs-dotnet
+  - nuget restore WelsonJS.Toolkit
 
 build_script:
-  - msbuild "C:\projects\welsonjs\welsonjs-dotnet\WelsonJS.Toolkit.sln" /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" /p:Configuration=%CONFIGURATION% /p:Platform="x86"
+  - msbuild "C:\projects\welsonjs\WelsonJS.Toolkit\WelsonJS.Toolkit.sln" /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" /p:Configuration=%CONFIGURATION% /p:Platform="x86"
 
 after_build:
    - cmd: mkdir artifacts
-   #- cmd: xcopy /s /y welsonjs-dotnet\WelsonJS.Toolkit\bin\x86\%CONFIGURATION%\* artifacts\
-   - cmd: xcopy /s /y welsonjs-dotnet\WelsonJS.Service\bin\x86\%CONFIGURATION%\* artifacts\
-   - cmd: xcopy /s /y welsonjs-dotnet\WelsonJS.Launcher\bin\x86\%CONFIGURATION%\* artifacts\
-   - cmd: xcopy /s /y welsonjs-dotnet\Catswords.Phantomizer\bin\%CONFIGURATION%\netstandard2.0\* artifacts\
-   - cmd: nuget pack welsonjs-dotnet\WelsonJS.Toolkit\ -properties Configuration=%CONFIGURATION% -properties Platform=x86 -OutputDirectory artifacts\
+   #- cmd: xcopy /s /y WelsonJS.Toolkit\WelsonJS.Toolkit\bin\x86\%CONFIGURATION%\* artifacts\
+   - cmd: xcopy /s /y WelsonJS.Toolkit\WelsonJS.Service\bin\x86\%CONFIGURATION%\* artifacts\
+   - cmd: xcopy /s /y WelsonJS.Toolkit\WelsonJS.Launcher\bin\x86\%CONFIGURATION%\* artifacts\
+   - cmd: xcopy /s /y WelsonJS.Toolkit\Catswords.Phantomizer\bin\%CONFIGURATION%\netstandard2.0\* artifacts\
+   - cmd: nuget pack WelsonJS.Toolkit\WelsonJS.Toolkit\ -properties Configuration=%CONFIGURATION% -properties Platform=x86 -OutputDirectory artifacts\
    - ps: Start-BitsTransfer -Source "https://catswords.blob.core.windows.net/welsonjs/welsonjs_setup_unsigned.exe" -Destination "artifacts\welsonjs_setup.exe"
    - ps: Start-BitsTransfer -Source "https://catswords.blob.core.windows.net/welsonjs/chakracore-build/x86_release/ChakraCore.dll" -Destination "artifacts\ChakraCore.dll"
    - cmd: 7z a artifacts.zip artifacts\*
 
 artifacts:
   - path: artifacts.zip
-    name: welsonjs-dotnet
+    name: WelsonJS.Toolkit
 
 deploy:
 - provider: Webhook
