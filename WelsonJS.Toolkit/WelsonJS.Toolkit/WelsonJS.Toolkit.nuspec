@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package >
+  <metadata>
+    <id>$id$</id>
+    <version>0.2.7.49</version>
+    <title>$title$</title>
+    <authors>Namhyeon Go, Catswords OSS</authors>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <license type="expression">GPL-3.0-only</license>
+    <icon>logo.png</icon>
+	<readme>README.md</readme>
+    <projectUrl>https://github.com/gnh1201/welsonjs</projectUrl>
+    <description>Native toolkit for WelsonJS framework-based RPA applications.</description>
+    <releaseNotes>Updated release</releaseNotes>
+    <copyright>$copyright$</copyright>
+    <tags>rpa com scripting library javascript ini window-handle named-shared-memory</tags>
+  </metadata>
+  <files>
+    <file src="assets\img\logo.png" />
+    <file src="assets\docs\README.md" />
+  </files>
+</package>

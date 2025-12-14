@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WelsonJS Editor</title>
+    <meta name="title" content="WelsonJS Editor">
+    <meta name="description" content="WelsonJS can build a Windows app on the Windows built-in JavaScript engine.">
+    <meta name="keywords" content="ecmascript, javascript, windows">
+    <meta name="robots" content="noindex, nofollow">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="language" content="English">
+    <meta name="author" content="2025 Catswords OSS and WelsonJS Contributors (GPL-3.0-or-later)">
+    <style>
+        html, body, #app, #app > .app {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        #container {
+            border: 1px solid grey;
+            height: calc(100% - 167px);
+            display: flex;
+            overflow: hidden;
+        }
+
+        #editor {
+            flex: 3;
+        }
+
+        #promptEditor {
+            flex: 1;
+        }
+
+        .banner {
+            padding: 10px;
+            background-color: #f1f1f1;
+            font-size: 14px;
+        }
+
+        .banner a {
+            text-decoration: none;
+            color: #000;
+        }
+
+        .banner a:hover {
+            text-decoration: none;
+            font-weight: bold;
+            color: inherit; /* keeps contrast consistent */
+        }
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+    <script>
+        var require = {
+            paths: {
+                vs: 'http://localhost:3000/ajax/libs/monaco-editor/0.52.2/min/vs'
+            }
+        };
+    </script>
+    <script src="http://localhost:3000/ajax/libs/lodash/4.17.21/lodash.min.js" integrity="sha384-H6KKS1H1WwuERMSm+54dYLzjg0fKqRK5ZRyASdbrI/lwrCc6bXEmtGYr5SwvP1pZ" crossorigin="anonymous"></script>
+    <script src="http://localhost:3000/ajax/libs/jsoneditor/10.1.3/jsoneditor.min.js" integrity="sha384-NdVVc20Tze856ZAWEoJNCk0mL4zJrGztRwULc5Hz25HUXQQgYtmjFtgVAxR4p5dD" crossorigin="anonymous"></script>
+    <script src="http://localhost:3000/ajax/libs/react/18.3.1/umd/react.production.min.js" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
+    <script src="http://localhost:3000/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js" integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
+    <script src="http://localhost:3000/ajax/libs/axios/1.8.4/axios.min.js" integrity="sha384-06w+raHvkSL3+E7mbQ2X6DZwI5A3veU8Ba+NLrAPxxRGw4Xy78sihHDHQMustMM4" crossorigin="anonymous"></script>
+    <script src="http://localhost:3000/ajax/libs/fast-xml-parser/4.5.1/fxparser.min.js" integrity="sha384-ae/HepOQ8hiJ/VA6yGwPMGXQXOkT/lJpjlcQ7EUgibUcfnBltuozgNj4IgOZ9QLc" crossorigin="anonymous"></script>
+    <script src="http://localhost:3000/ajax/libs/dompurify/3.2.4/purify.min.js" integrity="sha384-eEu5CTj3qGvu9PdJuS+YlkNi7d2XxQROAFYOr59zgObtlcux1ae1Il3u7jvdCSWu" crossorigin="anonymous"></script>
+    <script src="http://localhost:3000/ajax/libs/monaco-editor/0.52.2/min/vs/loader.js" integrity="sha384-pHG02SG8pId94Np3AbPmBEJ1yPqaH0IkJGLSNGXYmuGhkazT8Lr/57WYpbkGjJtu" crossorigin="anonymous"></script>
+    <script src="http://localhost:3000/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.js" integrity="sha384-fj9z+NUc93I3woCCy5IRQfrQ8Amu1E27tllwgb5gz3d9Vr1ymS13xcF6two3e4KH" crossorigin="anonymous"></script>
+    <script>
+        function loadResource(url, mimeType, integrity) {
+            mimeType = mimeType || 'application/javascript';
+
+            return new Promise((resolve, reject) => {
+                let el;
+
+                if (mimeType === 'text/css') {
+                    el = document.createElement('link');
+                    el.rel = 'stylesheet';
+                    el.type = mimeType;
+                    el.href = url;
+                } else {
+                    el = document.createElement('script');
+                    el.type = mimeType;
+                    el.src = url;
+                }
+
+                if (integrity) {
+                    el.integrity = integrity;
+                    el.crossOrigin = 'anonymous';
+                }
+
+                el.onload = resolve;
+                el.onerror = reject;
+
+                (mimeType === 'text/css' ? document.head : document.body).appendChild(el);
+            });
+        }
+
+        Promise.all([
+            loadResource("http://localhost:3000/ajax/libs/metroui/dev/lib/metro.css", "text/css", "sha384-4XgOiXH2ZMaWt5s5B35yKi7EAOabhZvx7wO8Jr71q2vZ+uONdRza/6CsK2kpyocd"),
+            loadResource("http://localhost:3000/ajax/libs/metroui/dev/lib/icons.css", "text/css", "sha384-FuLND994etg+RtnpPSPMyNBvL+fEz+xGhbN61WUWuDEeZ+wJzcQ8SGqAMuI5hWrt"),
+            loadResource("http://localhost:3000/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.css", "text/css", "sha384-06yHXpYRlHEPaR4AS0fB/W+lMN09Zh5e1XMtfkNQdHV38OlhfkOEW5M+pCj3QskC"),
+            loadResource("http://localhost:3000/ajax/libs/jsoneditor/10.1.3/jsoneditor.min.css", "text/css", "sha384-cj1rYBc4/dVYAknZMTkVCDRL6Knzugf32igVqsuFW0iRWFHKH8Ci8+ekC8gNsFZ+")
+        ]).then(() => {
+            const _e = React.createElement;
+
+            function Button({ id, icon, caption, onClick }) {
+                return _e(
+                    'button',
+                    { id, className: 'ribbon-button', onClick },
+                    _e('span', { className: `icon ${icon}` }),
+                    _e('span', { className: 'caption' }, caption)
+                );
+            }
+
+            function Group({ title, buttons }) {
+                return _e(
+                    'div',
+                    { className: 'group' },
+                    buttons.map((btn, index) =>
+                        _e(Button, { key: index, ...btn })
+                    ),
+                    _e('span', { className: 'title' }, title)
+                );
+            }
+
+            function RibbonMenu({
+                onOpenFileClick, onSaveFileClick, onCopliotClick, onAzureAiClick,
+                onSavePromptClick, onLoadPromptClick, onQueryWhoisClick, onQueryDnsClick,
+                onQueryIpClick
+            }) {
+                const fileButtons = [
+                    {
+                        id: 'btnOpenFile',
+                        icon: 'mif-folder-open',
+                        caption: 'Open File',
+                        onClick: onOpenFileClick
+                    },
+                    {
+                        id: 'btnSaveFile',
+                        icon: 'mif-floppy-disks',
+                        caption: 'Save File',
+                        onClick: onSaveFileClick
+                    }
+                ];
+
+                const aiButtons = [
+                    { id: 'btnCopilot', icon: 'mif-rocket', caption: 'Copilot', onClick: onCopliotClick },
+                    { id: 'btnAzureAi', icon: 'mif-rocket', caption: 'Azure AI', onClick: onAzureAiClick },
+                    { id: 'btnSavePrompt', icon: 'mif-floppy-disks', caption: 'Save', onClick: onSavePromptClick },
+                    { id: 'btnLoadPrompt', icon: 'mif-file-upload', caption: 'Load', onClick: onLoadPromptClick }
+                ];
+
+                const networkToolsButtons = [
+                    { id: 'btnWhois', icon: 'mif-earth', caption: 'Whois', onClick: onQueryWhoisClick },
+                    { id: 'btnQueryDns', icon: 'mif-earth', caption: 'DNS', onClick: onQueryDnsClick },
+                    { id: 'btnQueryIp', icon: 'mif-user-secret', caption: 'IP', onClick: onQueryIpClick }
+                ];
+
+                return _e(
+                    'nav',
+                    { 'className': 'ribbon-menu' },
+                    _e('ul', { className: 'tabs-holder' },
+                        _e('li', { className: 'static' }, _e('a', { href: '#heading-tab' }, 'WelsonJS')),
+                        _e('li', { className: 'active' }, _e('a', { href: '#editor-tab' }, 'Editor'))
+                    ),
+                    _e('div', { className: 'content-holder' },
+                        _e('div', { className: 'section active', id: 'editor-tab' },
+                            _e(Group, { title: 'File', buttons: fileButtons }),
+                            _e(Group, { title: 'Generative AI', buttons: aiButtons }),
+                            _e(Group, { title: 'Network tools', buttons: networkToolsButtons })
+                        )
+                    )
+                );
+            }
+
+            function Editor({ editorRef }) {
+                const containerRef = React.useRef(null);
+
+                const getSuggestions = (word, range) => axios.get(`/completion/${encodeURIComponent(word)}`)
+                    .then(response => {
+                        const parser = new XMLParser();
+                        const result = parser.parse(response.data);
+
+                        const suggestions = ((item) => Array.isArray(item) ? item : [item])(result.suggestions.item).map((item) => {
+                            return {
+                                label: item.label,
+                                kind: monaco.languages.CompletionItemKind.Text,
+                                documentation: item.documentation || "",
+                                insertText: '"' + item.insertText + '"',
+                                range: range
+                            };
+                        });
+
+                        return {
+                            suggestions: suggestions
+                        };
+                    })
+                    .catch(function () {
+                        return {
+                            suggestions: []
+                        };
+                    });
+
+                React.useEffect(() => {
+                    if (!containerRef.current)
+                        return;
+
+                    require(['vs/editor/editor.main'], () => {
+                        const instance = monaco.editor.create(containerRef.current, {
+                            value: ['// lib/sayhello.js', 'function say() {', '    console.log("hello");', '}', '', 'exports.say = say;', '', 'exports.VERSIONINFO = "SayHello (sayhello.js) version 0.1";', 'exports.AUTHOR = "oss@catswords.re.kr";', 'exports.global = global;', 'exports.require = global.require;'].join('\n'),
+                            language: 'javascript'
+                        });
+
+                        monaco.languages.registerCompletionItemProvider('javascript', {
+                            provideCompletionItems: function (model, position) {
+                                const word = model.getWordUntilPosition(position);
+                                const range = {
+                                    startLineNumber: position.lineNumber,
+                                    endLineNumber: position.lineNumber,
+                                    startColumn: word.startColumn,
+                                    endColumn: word.endColumn
+                                };
+
+                                return getSuggestions(word.word, range);
+                            }
+                        });
+
+                        editorRef.current = instance;
+                    });
+                }, []);
+
+                return _e('div', { id: 'editor', ref: containerRef });
+            }
+
+            function PromptEditor({ promptEditorRef, promptMessagesRef }) {
+                const containerRef = React.useRef(null);
+
+                React.useEffect(() => {
+                    if (!containerRef.current)
+                        return;
+
+                    const invoke = () => {
+                        try {
+                            if (promptEditorRef.current) {
+                                const updated = promptEditorRef.current.get();
+                                promptMessagesRef.current = updated;
+                            } else {
+                                throw new Error("promptEditorRef.current is null");
+                            }
+                        } catch (e) {
+                            console.error("Invalid JSON structure", e);
+                        }
+                    };
+
+                    const throttledInvoke = _.throttle(invoke, 300, {
+                        leading: true,
+                        trailing: true
+                    });
+
+                    const options = {
+                        onChange: throttledInvoke
+                    };
+
+                    const instance = new JSONEditor(containerRef.current, options);
+                    instance.set(promptMessagesRef.current);
+
+                    promptEditorRef.current = instance;
+
+                    return () => {
+                        if (instance) {
+                            throttledInvoke.flush();
+                            throttledInvoke.cancel();
+                            instance.destroy();
+                        }
+                    };
+                }, []);
+
+                return _e('div', { id: 'promptEditor', ref: containerRef });
+            }
+
+            function App() {
+                const editorRef = React.useRef(null);
+                const promptEditorRef = React.useRef(null);
+                const settingsRef = React.useRef({});
+                const fileNameRef = React.useRef('sayhello.js');
+                const promptMessagesRef = React.useRef([]);
+
+                const fetchSettings = () => axios.get(`/settings`)
+                    .then(response => {
+                        const parser = new XMLParser();
+                        const result = parser.parse(response.data);
+                        settingsRef.current = result.settings;
+                    });
+
+                const resizeEditor = () => {
+                    if (editorRef.current) {
+                        const ribbon = document.querySelector('nav')?.offsetHeight || 0;
+                        const banner = document.querySelector('.banner')?.offsetHeight || 0;
+                        const h = document.documentElement.clientHeight - ribbon - banner;
+                        const editorDiv = document.getElementById('editor');
+                        if (editorDiv) editorDiv.style.height = h + 'px';
+                        if (editorRef.current) editorRef.current.layout();
+                    }
+                };
+
+                const pushPromptMessage = (role, content) => {
+                    promptMessagesRef.current.push({
+                        role: role,
+                        content: content
+                    });
+                    promptEditorRef.current.set(promptMessagesRef.current);
+                };
+
+                const navigate = (href) => {
+                    const a = document.createElement("a");
+                    a.href = href;
+                    a.target = "_blank";
+                    document.body.appendChild(a);
+                    a.click();
+                };
+
+                const appendTextToEditor = (text) => {
+                    const editor = editorRef.current;
+                    const position = editor.getPosition();
+                    const range = new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column);
+                    editor.executeEdits('', [{
+                        range: range,
+                        text: "\n" + text,
+                        forceMoveMarkers: true
+                    }]);
+                    resizeEditor();
+                };
+
+                const openFile = () => {
+                    const fileInput = document.createElement('input');
+                    fileInput.type = 'file';
+                    fileInput.onchange = () => {
+                        const file = fileInput.files[0];
+
+                        if (!file)
+                            return;
+
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            const fileName = file.name;
+                            const ext = fileName.split('.').pop().toLowerCase();
+                            const langMap = {
+                                js: 'javascript', ts: 'typescript', html: 'html',
+                                css: 'css', json: 'json', py: 'python', java: 'java',
+                                c: 'c', cpp: 'cpp', cs: 'csharp', php: 'php',
+                                rb: 'ruby', go: 'go', rs: 'rust'
+                            };
+                            const lang = langMap[ext] || 'plaintext';
+
+                            monaco.editor.setModelLanguage(editorRef.current.getModel(), lang);
+                            editorRef.current.setValue(e.target.result);
+
+                            fileNameRef.current = fileName;
+                        };
+                        reader.readAsText(file);
+                    };
+                    fileInput.click();
+                };
+
+                const saveFile = () => {
+                    const text = editorRef.current.getValue();
+                    const fileName = prompt("Enter file name:", fileNameRef.current);
+
+                    if (!fileName)
+                        return;
+
+                    const blob = new Blob([text], { type: 'text/plain' });
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = fileNameRef.current;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                };
+
+                const sendMessageToCopilot = () => {
+                    const promptMessage = prompt("Enter a prompt message:", '');
+                    if (!promptMessage || promptMessage.trim() == '') {
+                        alert("A prompt message is required.");
+                        return;
+                    }
+
+                    appendTextToEditor(`\n// ${promptMessage}... Generating text with Copilot...`);
+                    pushPromptMessage("user", promptMessage);
+
+                    (async () => {
+                        const targetWsUrl = await getTargetByUrl('copilot.microsoft.com');
+                        if (targetWsUrl) {
+                            await _sendMessageToCopilot(targetWsUrl, promptMessage);
+                        } else {
+                            alert("Microsoft Copilot not running. Please visit copilot.microsoft.com first.");
+                        }
+                    })();
+                };
+
+                const _sendMessageToCopilot = async (wsUrl, promptMessage) => {
+                    const socket = new WebSocket(wsUrl);
+                    const steps = [
+                        {
+                            id: 1,
+                            method: 'Input.insertText',
+                            params: {
+                                text: promptMessage
+                            }
+                        },
+                        {
+                            id: 2,
+                            method: 'Input.dispatchKeyEvent',
+                            params: {
+                                type: 'keyDown',
+                                key: 'Enter',
+                                code: 'Enter'
+                            }
+                        },
+                        {
+                            id: 3,
+                            method: 'Runtime.evaluate',
+                            params: {
+                                expression: '((e)=>e[e.length-1].querySelector("code")?.innerText||e[e.length-1].innerText)(document.querySelectorAll("[data-content=ai-message]"))'
+                            }
+                        }
+                    ];
+
+                    socket.onopen = () => {
+                        steps.forEach((step) => {
+                            if (step.id == 3) {
+                                setTimeout(() => {
+                                    socket.send(JSON.stringify(step));
+                                }, 9000);
+                            } else {
+                                socket.send(JSON.stringify(step));
+                            }
+                        });
+                    };
+
+                    socket.onmessage = (event) => {
+                        const response = JSON.parse(event.data);
+                        console.log("Sent successfully:", response.result);
+
+                        if (response.id == 3) {
+                            const responseContent = response.result.result.value;
+
+                            appendTextToEditor("/*\n" + responseContent + "\n*/");
+                            pushPromptMessage("assistant", responseContent);
+
+                            socket.close();
+                        }
+                    };
+                };
+
+                const getTargetByUrl = async (urlPart) => {
+                    const response = await fetch(`/devtools/json`);
+                    const targets = await response.json();
+
+                    const target = targets.find(target => target.url.includes(urlPart));
+
+                    if (target) {
+                        console.log(`Found target: ${target.title} (${target.id})`);
+                        return target.webSocketDebuggerUrl;
+                    } else {
+                        console.log('Target not found');
+                        return null;
+                    }
+                };
+
+                const sendMessageToAzureAi = () => {
+                    const promptMessage = prompt("Enter a prompt message:", '');
+                    if (!promptMessage || promptMessage.trim() == '') {
+                        alert("A prompt message is required.");
+                        return;
+                    }
+
+                    appendTextToEditor(`\n// ${promptMessage}... Generating text with Azure AI...`);
+                    pushPromptMessage("user", promptMessage);
+
+                    const apiKey = settingsRef.current.AzureAiServiceApiKey;
+                    if (!apiKey || apiKey.trim() == '') {
+                        alert("Azure AI API key is not set.");
+                        return;
+                    }
+
+                    const url = `${settingsRef.current.AzureAiServicePrefix}models/chat/completions?api-version=${settingsRef.current.AzureAiServiceApiVersion}`;
+
+                    const data = {
+                        messages: promptMessagesRef.current,
+                        max_tokens: 2048,
+                        temperature: 0.8,
+                        top_p: 0.1,
+                        presence_penalty: 0,
+                        frequency_penalty: 0,
+                        model: 'Phi-4'
+                    };
+
+                    axios.post(url, data, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'api-key': apiKey
+                        }
+                    }).then(response => {
+                        response.data.choices.forEach(x => {
+                            const responseContent = x.message.content;
+                            pushPromptMessage("assistant", responseContent);
+
+                            const responseText = DOMPurify.sanitize(responseContent, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+                            appendTextToEditor(`/*\n${responseText}\n*/`);
+                        });
+                    })
+                        .catch(error => {
+                            console.error('Error:', error.response?.data || error.message);
+                        });
+                };
+
+                const savePromptMessages = () => {
+                    const text = JSON.stringify(promptMessagesRef.current, null, 4);
+                    const blob = new Blob([text], { type: 'text/plain' });
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = "prompt.json";
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                };
+
+                const loadPromptMessages = () => {
+                    const fileInput = document.createElement('input');
+                    fileInput.type = 'file';
+                    fileInput.accept = '.json';
+                    fileInput.onchange = function (event) {
+                        const file = event.target.files[0];
+
+                        if (!file)
+                            return;
+
+                        let reader = new FileReader();
+                        reader.onload = function (e) {
+                            promptMessagesRef.current = JSON.parse(e.target.result);
+                            promptEditorRef.current.set(promptMessagesRef.current);
+                            appendTextToEditor("\n//Prompt loaded successfully.");
+                        };
+                        reader.readAsText(file);
+                    };
+                    fileInput.click();
+                };
+
+                const queryWhois = () => {
+                    const hostname = prompt("Enter a hostname or IP address:", '');
+                    if (!hostname || hostname.trim() == '') {
+                        appendTextToEditor("\n// A hostname or IP address is required.");
+                        return;
+                    }
+
+                    axios.get(`/whois/${hostname}`).then(response => {
+                        const responseText = DOMPurify.sanitize(response.data, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+                        appendTextToEditor(`/*\nHostname:${hostname}\n\n${responseText}\n*/`);
+                        pushPromptMessage("system", responseText);
+                    }).catch(error => {
+                        console.error(error);
+                    });
+                };
+
+                const queryDns = () => {
+                    const hostname = prompt("Enter a hostname or IP address:", '');
+                    if (!hostname || hostname.trim() == '') {
+                        appendTextToEditor("\n// A hostname or IP address is required.");
+                        return;
+                    }
+
+                    axios.get(`/dns-query/${hostname}`).then(response => {
+                        const responseText = response.data;
+                        appendTextToEditor(`/*\nHostname:${hostname}\n\n${responseText}\n*/`);
+                        pushPromptMessage("system", responseText);
+                    }).catch(error => {
+                        console.error(error);
+                    });
+                };
+
+                const queryIp = () => {
+                    const hostname = prompt("Enter IP address:", '');
+                    if (!hostname || hostname.trim() === '') {
+                        appendTextToEditor("\n// IP address is required.");
+                        return;
+                    }
+                    const ip = encodeURIComponent(hostname.trim());
+
+                    axios.get(`/ip-query/${hostname}`).then(res => {
+                        if (!res || !res.data) {
+                            appendTextToEditor("\n// No data returned from server.");
+                            return;
+                        }
+
+                        // Parse XML and keep attributes (provider, status)
+                        const parser = new XMLParser({ ignoreAttributes: false, attributeNamePrefix: "@_" });
+                        const parsed = parser.parse(res.data);
+
+                        // Expected XML:
+                        // <result target="...">
+                        //   <response provider="criminalip" status="200">
+                        //     <text>{ "...raw json..." }</text>
+                        //   </response>
+                        //   <response provider="abuseipdb" status="200">
+                        //     <text>{ "...raw json..." }</text>
+                        //   </response>
+                        // </result>
+
+                        // Normalize to an array of <response> nodes
+                        const responsesNode = parsed?.result?.response;
+                        const responses = Array.isArray(responsesNode)
+                            ? responsesNode
+                            : (responsesNode ? [responsesNode] : []);
+
+                        if (responses.length === 0) {
+                            appendTextToEditor("\n// No <response> nodes found.");
+                            return;
+                        }
+
+                        // Extract each <response><text> content and print
+                        let out = "\n// --- IP Query Results ---";
+                        for (const r of responses) {
+                            const provider = r?.["@_provider"] || "unknown";
+                            const status = r?.["@_status"] || "n/a";
+
+                            // Fast-XML-Parser usually makes <text> a string, but be safe:
+                            let txt = r?.text;
+                            if (txt && typeof txt === "object") {
+                                // If parser produced an object with a '#text' key or similar
+                                txt = txt["#text"] || JSON.stringify(txt);
+                            }
+                            if (txt == null) txt = "";
+
+                            out += `\n// provider=${provider}, status=${status}\n${txt}\n`;
+                        }
+                        out = "\n/*" + out + "*/\n";
+
+                        appendTextToEditor(out);
+                        pushPromptMessage("system", out);
+                    }).catch(error => {
+                        console.error(error);
+                        appendTextToEditor(`\n// Failed to query the IP: ${error.message}`);
+                    });
+                };
+
+                React.useEffect(() => {
+                    window.addEventListener('resize', () => {
+                        resizeEditor();
+                    });
+                    window.dispatchEvent(new Event('resize'));
+                }, []);
+
+                fetchSettings();
+
+                return _e('div', { className: 'app' },
+                    _e(RibbonMenu, {
+                        onOpenFileClick: openFile,
+                        onSaveFileClick: saveFile,
+                        onCopliotClick: sendMessageToCopilot,
+                        onAzureAiClick: sendMessageToAzureAi,
+                        onSavePromptClick: savePromptMessages,
+                        onLoadPromptClick: loadPromptMessages,
+                        onQueryWhoisClick: queryWhois,
+                        onQueryDnsClick: queryDns,
+                        onQueryIpClick: queryIp
+                    }),
+                    _e('div', { id: 'container' },
+                        _e(Editor, { editorRef }),
+                        _e(PromptEditor, { promptEditorRef, promptMessagesRef })
+                    ),
+                    _e('div', { className: 'banner' }, _e('a', { href: 'https://github.com/gnh1201/welsonjs' }, '❤️ Contribute this project')),
+                );
+            }
+
+            const container = document.getElementById('app');
+            const root = ReactDOM.createRoot(container);
+            root.render(_e(App));
+        });
+    </script>
+</body>
+</html>
