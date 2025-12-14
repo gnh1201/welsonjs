@@ -188,15 +188,9 @@ namespace Catswords.Phantomizer
                     if (string.IsNullOrWhiteSpace(BaseUrl))
                         throw new InvalidOperationException("BaseUrl must be configured before Register().");
 
-                    if (Uri.TryCreate(BaseUrl, UriKind.Absolute, out Uri uri))
-                    {
-                        if (!IsValidUriScheme(uri))
-                            throw new InvalidOperationException("BaseUrl has an invalid URI scheme.");
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException("BaseUrl is not a valid absolute URI.");
-                    }
+                    TryVerifyUrl(BaseUrl, out bool verified);
+                    if (!verified)
+                        throw new InvalidOperationException("BaseUrl verification failed.");
                 }
                 catch (Exception ex)
                 {
@@ -217,8 +211,9 @@ namespace Catswords.Phantomizer
         /// </summary>
         public static void LoadNativeModules(string ownerAssemblyName, Version version, IList<string> fileNames)
         {
-            if (string.IsNullOrWhiteSpace(BaseUrl))
-                throw new InvalidOperationException("AssemblyLoader.BaseUrl must be set before loading native modules.");
+            TryVerifyUrl(BaseUrl, out bool verified);
+            if (!verified)
+                throw new InvalidOperationException("BaseUrl verification failed.");
 
             if (ownerAssemblyName == null) throw new ArgumentNullException("ownerAssemblyName");
             if (version == null) throw new ArgumentNullException("version");
@@ -298,8 +293,7 @@ namespace Catswords.Phantomizer
 
             lock (AllowSchemesSyncRoot)
             {
-                if (!_allowSchemes.Contains(scheme))
-                    _allowSchemes.Add(scheme);
+                _allowSchemes.Add(scheme);
             }
         }
 
@@ -526,23 +520,17 @@ namespace Catswords.Phantomizer
 
                 try
                 {
-                    if (Uri.TryCreate(IntegrityUrl, UriKind.Absolute, out Uri uri))
-                    {
-                        if (!IsValidUriScheme(uri))
-                            throw new InvalidOperationException("IntegrityUrl has an invalid URI scheme.");
+                    TryVerifyUrl(IntegrityUrl, out bool verified);
+                    if (!verified)
+                        throw new InvalidOperationException("IntegrityUrl verification failed.");
 
-                        using (var res = Http.GetAsync(uri).GetAwaiter().GetResult())
-                        {
-                            res.EnsureSuccessStatusCode();
-                            using (var stream = res.Content.ReadAsStreamAsync().GetAwaiter().GetResult())
-                            {
-                                doc = XDocument.Load(stream);
-                            }
-                        }
-                    }
-                    else
+                    using (var res = Http.GetAsync(IntegrityUrl).GetAwaiter().GetResult())
                     {
-                        throw new InvalidOperationException("IntegrityUrl is not a valid absolute URI.");
+                        res.EnsureSuccessStatusCode();
+                        using (var stream = res.Content.ReadAsStreamAsync().GetAwaiter().GetResult())
+                        {
+                            doc = XDocument.Load(stream);
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -684,6 +672,33 @@ namespace Catswords.Phantomizer
             lock (AllowSchemesSyncRoot)
             {
                 return _allowSchemes.Contains(uri.Scheme);
+            }
+        }
+
+        private static void TryVerifyUrl(string url, out bool verified)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(url))
+                    throw new InvalidOperationException("URL is null or empty.");
+
+                if (Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
+                {
+                    if (!IsValidUriScheme(uri))
+                        throw new InvalidOperationException(
+                            $"URI scheme '{uri.Scheme}' is not allowed. Use AddAllowedUriScheme() to permit additional schemes.");
+                }
+                else
+                {
+                    throw new InvalidOperationException("Not a valid absolute URI.");
+                }
+
+                verified = true;
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError("URL verification failed for {0}: {1}", url, ex.Message);
+                verified = false;
             }
         }
     }
