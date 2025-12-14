@@ -274,6 +274,17 @@ namespace Catswords.Phantomizer
             }
         }
 
+        /// <summary>
+        /// Adds an allowed URI scheme for assembly and module loading.
+        /// Only HTTP and HTTPS schemes are supported. HTTPS is the default.
+        /// Adding HTTP reduces security and will log a warning.
+        /// </summary>
+        /// <param name="scheme">The URI scheme to allow (e.g., "http" or "https"). Trailing colons are automatically removed.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="scheme"/> is null or whitespace.</exception>
+        /// <exception cref="ArgumentException">Thrown when the scheme is invalid or not HTTP/HTTPS.</exception>
+        /// <remarks>
+        /// This method is thread-safe and can be called before Register() or LoadNativeModules().
+        /// </remarks>
         public static void AddAllowedUriScheme(string scheme)
         {
             if (string.IsNullOrWhiteSpace(scheme))
