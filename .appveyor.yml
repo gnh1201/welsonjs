@@ -15,7 +15,7 @@ environment:
       SIGNING_POLICY_SLUG: release-signing
 
 before_build:
-  - nuget restore WelsonJS.Toolkit
+  - nuget restore WelsonJS.Augmented
 
 build_script:
   - msbuild "C:\projects\welsonjs\WelsonJS.Augmented\WelsonJS.Toolkit.sln" /verbosity:minimal /logger:"C:\Program Files\AppVeyor\BuildAgent\Appveyor.MSBuildLogger.dll" /p:Configuration=%CONFIGURATION% /p:Platform="x86"
