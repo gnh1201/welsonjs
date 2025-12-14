@@ -1,3 +1,3 @@
-[submodule "WelsonJS.Toolkit/ChakraCore"]
-	path = WelsonJS.Toolkit/ChakraCore
+[submodule "WelsonJS.NET/ChakraCore"]
+	path = WelsonJS.NET/ChakraCore
 	url = https://github.com/chakra-core/ChakraCore

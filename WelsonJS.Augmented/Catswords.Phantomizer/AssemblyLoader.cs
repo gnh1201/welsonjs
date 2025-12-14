@@ -38,13 +38,17 @@ namespace Catswords.Phantomizer
         public static string AppName { get; set; } = "Catswords";
         public static string IntegrityUrl { get; set; } = null;
 
-        // Hash whitelist (values only)
         private static HashSet<string> _integrityHashes = null;
         private static bool _integrityLoaded = false;
-        private static readonly object IntegritySyncRoot = new object();
-
-        private static readonly object SyncRoot = new object();
         private static bool _registered;
+
+        private static readonly object AllowSchemesSyncRoot = new object();
+        private static readonly object IntegritySyncRoot = new object();
+        private static readonly object SyncRoot = new object();
+
+        private static readonly HashSet<string> _allowSchemes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
+            Uri.UriSchemeHttps
+        };
 
         private static readonly HttpClientHandler LegacyHttpHandler = new HttpClientHandler
         {
@@ -184,15 +188,9 @@ namespace Catswords.Phantomizer
                     if (string.IsNullOrWhiteSpace(BaseUrl))
                         throw new InvalidOperationException("BaseUrl must be configured before Register().");
 
-                    if (Uri.TryCreate(BaseUrl, UriKind.Absolute, out Uri uri))
-                    {
-                        if (uri.Scheme != Uri.UriSchemeHttps)
-                            throw new InvalidOperationException("BaseUrl must use HTTPS for security.");
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException("BaseUrl is not a valid absolute URI.");
-                    }
+                    TryVerifyUrl(BaseUrl, out bool verified);
+                    if (!verified)
+                        throw new InvalidOperationException("BaseUrl verification failed.");
                 }
                 catch (Exception ex)
                 {
@@ -213,8 +211,9 @@ namespace Catswords.Phantomizer
         /// </summary>
         public static void LoadNativeModules(string ownerAssemblyName, Version version, IList<string> fileNames)
         {
-            if (string.IsNullOrWhiteSpace(BaseUrl))
-                throw new InvalidOperationException("AssemblyLoader.BaseUrl must be set before loading native modules.");
+            TryVerifyUrl(BaseUrl, out bool verified);
+            if (!verified)
+                throw new InvalidOperationException("BaseUrl verification failed.");
 
             if (ownerAssemblyName == null) throw new ArgumentNullException("ownerAssemblyName");
             if (version == null) throw new ArgumentNullException("version");
@@ -275,6 +274,43 @@ namespace Catswords.Phantomizer
             }
         }
 
+        /// <summary>
+        /// Adds an allowed URI scheme for assembly and module loading.
+        /// Only HTTP and HTTPS schemes are supported. HTTPS is the default.
+        /// Adding HTTP reduces security and will log a warning.
+        /// </summary>
+        /// <param name="scheme">The URI scheme to allow (e.g., "http" or "https"). Trailing colons are automatically removed.</param>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="scheme"/> is null or whitespace.</exception>
+        /// <exception cref="ArgumentException">Thrown when the scheme is invalid or not HTTP/HTTPS.</exception>
+        /// <remarks>
+        /// This method is thread-safe and can be called before Register() or LoadNativeModules().
+        /// </remarks>
+        public static void AddAllowedUriScheme(string scheme)
+        {
+            if (string.IsNullOrWhiteSpace(scheme))
+                throw new ArgumentNullException(nameof(scheme));
+
+            int colonIndex = scheme.IndexOf(':');
+            if (colonIndex > -1)
+                scheme = scheme.Substring(0, colonIndex);
+
+            scheme = scheme.ToLowerInvariant();
+
+            if (!Uri.CheckSchemeName(scheme))
+                throw new ArgumentException("Invalid URI scheme name.", nameof(scheme));
+
+            if (!scheme.Equals(Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase) &&
+                    !scheme.Equals(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
+                throw new ArgumentException("Only HTTPS or HTTP schemes are supported.", nameof(scheme));
+
+            if (scheme.Equals(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
+                Trace.TraceWarning("Warning: Adding 'http' to allowed URI schemes reduces security.");
+
+            lock (AllowSchemesSyncRoot)
+            {
+                _allowSchemes.Add(scheme);
+            }
+        }
 
         public static void LoadNativeModules(Assembly asm, IList<string> fileNames)
         {
@@ -461,7 +497,7 @@ namespace Catswords.Phantomizer
                     }
                     catch (Exception ex)
                     {
-                       Trace.TraceInformation("Failed to delete temporary file {0}: {1}", tempFile, ex.Message);
+                        Trace.TraceInformation("Failed to delete temporary file {0}: {1}", tempFile, ex.Message);
                     }
                 }
             }
@@ -499,23 +535,17 @@ namespace Catswords.Phantomizer
 
                 try
                 {
-                    if (Uri.TryCreate(IntegrityUrl, UriKind.Absolute, out Uri uri))
-                    {
-                        if (uri.Scheme != Uri.UriSchemeHttps)
-                            throw new InvalidOperationException("IntegrityUrl must use HTTPS for security.");
+                    TryVerifyUrl(IntegrityUrl, out bool verified);
+                    if (!verified)
+                        throw new InvalidOperationException("IntegrityUrl verification failed.");
 
-                        using (var res = Http.GetAsync(uri).GetAwaiter().GetResult())
-                        {
-                            res.EnsureSuccessStatusCode();
-                            using (var stream = res.Content.ReadAsStreamAsync().GetAwaiter().GetResult())
-                            {
-                                doc = XDocument.Load(stream);
-                            }
-                        }
-                    }
-                    else
+                    using (var res = Http.GetAsync(IntegrityUrl).GetAwaiter().GetResult())
                     {
-                        throw new InvalidOperationException("IntegrityUrl is not a valid absolute URI.");
+                        res.EnsureSuccessStatusCode();
+                        using (var stream = res.Content.ReadAsStreamAsync().GetAwaiter().GetResult())
+                        {
+                            doc = XDocument.Load(stream);
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -646,6 +676,44 @@ namespace Catswords.Phantomizer
                 foreach (var b in hash)
                     sb.Append(b.ToString("x2"));
                 return sb.ToString();
+            }
+        }
+
+        private static bool IsValidUriScheme(Uri uri)
+        {
+            if (uri == null)
+                return false;
+
+            lock (AllowSchemesSyncRoot)
+            {
+                return _allowSchemes.Contains(uri.Scheme);
+            }
+        }
+
+        private static void TryVerifyUrl(string url, out bool verified)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(url))
+                    throw new InvalidOperationException("URL is null or empty.");
+
+                if (Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
+                {
+                    if (!IsValidUriScheme(uri))
+                        throw new InvalidOperationException(
+                            $"URI scheme '{uri.Scheme}' is not allowed. Use AddAllowedUriScheme() to permit additional schemes.");
+                }
+                else
+                {
+                    throw new InvalidOperationException("Not a valid absolute URI.");
+                }
+
+                verified = true;
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError("URL verification failed for {0}: {1}", url, ex.Message);
+                verified = false;
             }
         }
     }
