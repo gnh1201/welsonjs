@@ -71,6 +71,7 @@ private static void InitializeAssemblyLoader()
     //loaderType.GetProperty("IntegrityUrl")?.SetValue(null, GetAppConfig("IntegrityUrl"));  // (Optional) Set the integrity URL
     loaderType.GetProperty("LoaderNamespace")?.SetValue(null, typeof(Program).Namespace);
     loaderType.GetProperty("AppName")?.SetValue(null, "WelsonJS");                       // Application name
+    //loaderType.GetMethod("AddAllowedUriScheme")?.Invoke(null, Uri.UriSchemeHttp); // (Optional) Allow insecure HTTP (not recommended)
     loaderType.GetMethod("Register")?.Invoke(null, null);
 
     var loadNativeModulesMethod = loaderType.GetMethod(
@@ -104,6 +105,7 @@ static void Main(string[] args)
     //AssemblyLoader.IntegrityUrl = GetAppConfig("AssemblyIntegrityUrl");  // (Optional) Set the integrity URL
     AssemblyLoader.LoaderNamespace = typeof(Program).Namespace;
     AssemblyLoader.AppName = "WelsonJS";
+    //AssemblyLoader.AddAllowedUriScheme(Uri.UriSchemeHttp); // (Optional) Allow insecure HTTP (not recommended)
     AssemblyLoader.Register();
 
     AssemblyLoader.LoadNativeModules(
