@@ -46,7 +46,7 @@ namespace Catswords.Phantomizer
         private static readonly object SyncRoot = new object();
         private static bool _registered;
 
-        private static List<string> _allowSchemes = new List<string> {
+        private static readonly HashSet<string> _allowSchemes = new HashSet<string>(StringComparer.OrdinalIgnoreCase) {
             Uri.UriSchemeHttps
         };
 
@@ -290,6 +290,8 @@ namespace Catswords.Phantomizer
 
             if (!Uri.CheckSchemeName(scheme))
                 throw new ArgumentException("Invalid URI scheme name.", nameof(scheme));
+
+            scheme = scheme.ToLowerInvariant();
 
             if (scheme.Equals(Uri.UriSchemeHttp, StringComparison.OrdinalIgnoreCase))
                 Trace.TraceWarning("Warning: Adding 'http' to allowed URI schemes reduces security.");
@@ -679,7 +681,10 @@ namespace Catswords.Phantomizer
             if (uri == null)
                 return false;
 
-            return _allowSchemes.Contains(uri.Scheme);
+            lock (SyncRoot)
+            {
+                return _allowSchemes.Contains(uri.Scheme);
+            }
         }
     }
 }
