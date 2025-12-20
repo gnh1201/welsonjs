@@ -1,5 +1,6 @@
 # WelsonJS post-install script
 # Namhyeon Go <gnh1201@catswords.re.kr>, and Catswords OSS contributors.
+# Updated on: 2025-12-20
 # https://github.com/gnh1201/welsonjs
 
 # ================================
@@ -45,11 +46,14 @@ try {
 # SCRIPT ROOT RESOLUTION
 # ================================
 # Ensure $ScriptRoot is available even on older PowerShell
-if (-not (Get-Variable -Name PSScriptRoot -ErrorAction SilentlyContinue)) {
-    $ScriptRoot = Split-Path -Parent $MyInvocation.MyCommand.Path
+$ScriptRoot = if ($PSScriptRoot) {
+    $PSScriptRoot
+}
+elseif ($MyInvocation.MyCommand.Path) {
+    Split-Path -Parent $MyInvocation.MyCommand.Path
 }
 else {
-    $ScriptRoot = $PSScriptRoot
+    (Get-Location).Path
 }
 
 # ================================
@@ -329,10 +333,45 @@ function Download-File {
     }
 }
 
+function Invoke-7zr {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string[]]$Arguments,
+
+        [Parameter(Mandatory = $false)]
+        [string[]]$PipeToArguments
+    )
+
+    $sevenZip = Join-Path $ScriptRoot "bin\x86\7zr.exe"
+    if (-not (Test-Path $sevenZip)) {
+        throw "7zr.exe is missing: $sevenZip"
+    }
+
+    Write-Host "[INFO] Using 7zr.exe:"
+    Write-Host "       $sevenZip"
+    Write-Host "[DEBUG] 7zr args:"
+    Write-Host "        $($Arguments -join ' ')"
+
+    if ($PipeToArguments) {
+        Write-Host "[DEBUG] 7zr pipe-to args:"
+        Write-Host "        $($PipeToArguments -join ' ')"
+
+        & $sevenZip @Arguments | & $sevenZip @PipeToArguments
+    }
+    else {
+        & $sevenZip @Arguments
+    }
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "7zr exited with code $LASTEXITCODE."
+    }
+}
+
 function Extract-CompressedFile {
     param(
         [Parameter(Mandatory = $true)]
         [string]$CompressedPath,
+
         [Parameter(Mandatory = $true)]
         [string]$DestinationDirectory
     )
@@ -341,32 +380,46 @@ function Extract-CompressedFile {
     Write-Host "    $CompressedPath"
     Write-Host "    -> $DestinationDirectory"
 
-    # Ensure destination directory exists (clean)
     Ensure-EmptyDirectory -Path $DestinationDirectory
 
-    # Temporary extraction workspace
     $tmpExtractDir = Join-Path $DestinationDirectory "_tmp_extract"
     Ensure-EmptyDirectory -Path $tmpExtractDir
 
-    # Extract all
-    Add-Type -AssemblyName System.IO.Compression.FileSystem
-    [System.IO.Compression.ZipFile]::ExtractToDirectory($CompressedPath, $tmpExtractDir)
+    $extractedOk = $false
+    $zipErrorMsg = $null
 
-    # Detect source root to move from
+    # Try ZipFile first
+    try {
+        Add-Type -AssemblyName System.IO.Compression.FileSystem -ErrorAction Stop
+        [System.IO.Compression.ZipFile]::ExtractToDirectory($CompressedPath, $tmpExtractDir)
+        $extractedOk = $true
+    }
+    catch {
+        $zipErrorMsg = $_.Exception.Message
+        Write-Host "[WARN] ZipFile extraction failed. Falling back to 7zr.exe."
+        Write-Host "       $zipErrorMsg"
+    }
+
+    # Fallback: 7zr.exe
+    if (-not $extractedOk) {
+        Invoke-7zr -Arguments @("x", $CompressedPath, "-o$tmpExtractDir", "-y")
+        $extractedOk = $true
+    }
+
+    # Detect root folder unwrap
     $entries    = Get-ChildItem -Path $tmpExtractDir -Force
     $SourceRoot = $tmpExtractDir
 
     if ($entries.Count -eq 1 -and $entries[0].PSIsContainer) {
-        # ZIP contains exactly one top-level folder → unwrap that folder
         $SourceRoot = $entries[0].FullName
-        Write-Host "[*] Detected single root folder inside zip: $($entries[0].Name)"
+        Write-Host "[*] Detected single root folder inside archive: $($entries[0].Name)"
         Write-Host "[*] Unwrapping folder content..."
     }
     else {
         Write-Host "[*] Extracting multi-item archive (no root folder unwrapping needed)."
     }
 
-    # Move all items from source root to final destination
+    # Move items into final destination
     Get-ChildItem -Path $SourceRoot -Force | ForEach-Object {
         $targetPath = Join-Path $DestinationDirectory $_.Name
 
@@ -376,7 +429,6 @@ function Extract-CompressedFile {
         Move-Item -Path $_.FullName -Destination $targetPath
     }
 
-    # Cleanup
     Remove-Item -Path $tmpExtractDir -Recurse -Force
 }
 
@@ -384,6 +436,7 @@ function Extract-TarGzArchive {
     param(
         [Parameter(Mandatory = $true)]
         [string]$ArchivePath,
+
         [Parameter(Mandatory = $true)]
         [string]$DestinationDirectory
     )
@@ -394,26 +447,26 @@ function Extract-TarGzArchive {
 
     Ensure-EmptyDirectory -Path $DestinationDirectory
 
-    # Validate tar availability
+    # Try tar first
     $tarCommand = Get-Command tar -ErrorAction SilentlyContinue
-    if (-not $tarCommand) {
-        Write-Host "[ERROR] 'tar' command not found."
-        throw "tar not available on this system."
-    }
+    if ($tarCommand) {
+        Write-Host "[DEBUG] tar command:"
+        Write-Host "        tar -xzf `"$ArchivePath`" -C `"$DestinationDirectory`""
 
-    Write-Host "[DEBUG] tar command:"
-    Write-Host "        tar -xzf `"$ArchivePath`" -C `"$DestinationDirectory`""
-
-    try {
         & tar -xzf "$ArchivePath" -C "$DestinationDirectory"
         if ($LASTEXITCODE -ne 0) {
             throw "tar exited with code $LASTEXITCODE."
         }
+        return
     }
-    catch {
-        throw "Failed to extract TAR.GZ archive: $($_.Exception.Message)"
-    }
+
+    Write-Host "[WARN] 'tar' not found. Falling back to 7zr.exe."
+
+    Invoke-7zr `
+        -Arguments @("x", $ArchivePath, "-so") `
+        -PipeToArguments @("x", "-ttar", "-si", "-o$DestinationDirectory", "-y")
 }
+
 
 # ================================
 # COMPRESSED / INSTALLER PATHS
