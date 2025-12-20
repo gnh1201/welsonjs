@@ -56,7 +56,7 @@ $urlsFilePath = Join-Path $ScriptRoot "data/DownloadUrls.psd1"
 if (Test-Path $urlsFilePath) {
     try {
         if (Get-Command Import-PowerShellDataFile -ErrorAction SilentlyContinue) {
-            $DownloadUrls = Import-PowerShellDataFile $urlsFilePath
+            $DownloadUrls = Import-PowerShellDataFile -Path $urlsFilePath
         } else {
             $DownloadUrls = Invoke-Expression (Get-Content $urlsFilePath -Raw)  # Tested in Windows 8.1
         }
