@@ -137,6 +137,8 @@ if ($TelemetryProvider -and $TelemetryProvider.ToLower() -eq "posthog") {
         }
 
         if ($finalDistinctId -and $finalDistinctId.Trim() -ne "") {
+            # Get current script file name
+            $scriptName = Split-Path $PSCommandPath -Leaf
 
             # Build single event payload for PostHog /i/v0/e endpoint
             $body = @{
@@ -147,7 +149,7 @@ if ($TelemetryProvider -and $TelemetryProvider.ToLower() -eq "posthog") {
                     product    = "welsonjs"
                     version    = $Version
                     os         = "windows"
-                    source     = "post-install.ps1"
+                    source     = $scriptName
                     components = $Components            # Keep raw string here
                 }
                 timestamp   = (Get-Date).ToString("o")   # ISO 8601 format
