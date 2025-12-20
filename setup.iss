@@ -76,6 +76,8 @@ Source: "app\*"; DestDir: "{app}/app"; Flags: ignoreversion recursesubdirs;
 Source: "lib\*"; DestDir: "{app}/lib"; Flags: ignoreversion recursesubdirs;
 ; Source: "bin\*"; Excludes: "installer\*"; DestDir: "{app}/bin"; Flags: ignoreversion recursesubdirs;
 Source: "bin\x86\7zr.exe"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
+Source: "bin\x86\curl.exe"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
+Source: "bin\x86\curl-ca-bundle.crt"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
 Source: "bin\x86\WelsonJS.Launcher.exe"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
 Source: "bin\x86\WelsonJS.Launcher.exe.config"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
 Source: "data\*"; Excludes: "*-apikey.txt"; DestDir: "{app}/data"; Flags: ignoreversion recursesubdirs;

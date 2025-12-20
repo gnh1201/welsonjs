@@ -1,6 +1,6 @@
 # WelsonJS post-install script
 # Namhyeon Go <gnh1201@catswords.re.kr>, and Catswords OSS contributors.
-# Updated on: 2025-12-20
+# Updated on: 2025-12-21
 # https://github.com/gnh1201/welsonjs
 
 # ================================
@@ -298,11 +298,9 @@ function Download-File {
         $protocol = [Net.SecurityProtocolType]::Tls12 -bor `
                     [Net.SecurityProtocolType]::Tls11 -bor `
                     [Net.SecurityProtocolType]::Tls
-
         try {
             $protocol = $protocol -bor [Enum]::Parse([Net.SecurityProtocolType], 'Tls13')
         } catch {}
-
         [Net.ServicePointManager]::SecurityProtocol = $protocol
     }
     catch {
@@ -334,7 +332,26 @@ function Download-File {
     }
 
     if (-not $success) {
-        throw "Failed to download $Url after $maxRetries attempts."
+        Write-Host "[WARN] PowerShell download failed. Falling back to curl."
+
+        $curlPath = Join-Path $ScriptRoot "bin\x86\curl.exe"
+        if (-not (Test-Path $curlPath)) {
+            throw "curl not found at $curlPath"
+        }
+
+        $curlArgs = @(
+            "-L"
+            "--fail"
+            "--retry", "3"
+            "--retry-delay", "5"
+            "-o", $DestinationPath
+            $Url
+        )
+
+        $proc = Start-Process -FilePath $curlPath -ArgumentList $curlArgs -NoNewWindow -Wait -PassThru
+        if ($proc.ExitCode -ne 0 -or -not (Test-Path $DestinationPath)) {
+            throw "curl download failed with exit code $($proc.ExitCode)."
+        }
     }
 }
 
