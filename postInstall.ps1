@@ -31,17 +31,6 @@ $logo = @"
 
 Write-Host $logo
 
-# Fix TLS 1.2 connectivity issue (Tested in Windows 8.1)
-# Enable TLS 1.2 and TLS 1.3 (if available) - avoid deprecated TLS 1.0/1.1
-try {
-    [Net.ServicePointManager]::SecurityProtocol = `
-        [Net.SecurityProtocolType]::Tls12 -bor `
-        [Net.SecurityProtocolType]::Tls13
-} catch {
-    # TLS 1.3 not available, fall back to TLS 1.2 only
-    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-}
-
 # ================================
 # SCRIPT ROOT RESOLUTION
 # ================================
@@ -303,6 +292,17 @@ function Download-File {
     Write-Host "[*] Downloading:"
     Write-Host "    $Url"
     Write-Host "    -> $DestinationPath"
+    
+    # Fix TLS 1.2 connectivity issue (Tested in Windows 8.1)
+    # Enable TLS 1.2 and TLS 1.3 (if available) - avoid deprecated TLS 1.0/1.1
+    try {
+        [Net.ServicePointManager]::SecurityProtocol = `
+            [Net.SecurityProtocolType]::Tls12 -bor `
+            [Net.SecurityProtocolType]::Tls13
+    } catch {
+        # TLS 1.3 not available, fall back to TLS 1.2 only
+        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    }
 
     # Ensure destination directory exists
     $destDir = Split-Path -Parent $DestinationPath
