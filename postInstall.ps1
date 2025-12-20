@@ -30,6 +30,12 @@ $logo = @"
 
 Write-Host $logo
 
+# Fix TLS 1.2 connectivity issue (Tested in Windows 8.1)
+[Net.ServicePointManager]::SecurityProtocol = `
+    [Net.SecurityProtocolType]::Tls12 -bor `
+    [Net.SecurityProtocolType]::Tls11 -bor `
+    [Net.SecurityProtocolType]::Tls
+
 # ================================
 # SCRIPT ROOT RESOLUTION
 # ================================
@@ -49,7 +55,11 @@ $urlsFilePath = Join-Path $ScriptRoot "data/DownloadUrls.psd1"
 
 if (Test-Path $urlsFilePath) {
     try {
-        $DownloadUrls = Import-PowerShellDataFile -Path $urlsFilePath
+        if (Get-Command Import-PowerShellDataFile -ErrorAction SilentlyContinue) {
+            $DownloadUrls = Import-PowerShellDataFile $urlsFilePath
+        } else {
+            $DownloadUrls = Invoke-Expression (Get-Content $urlsFilePath -Raw)  # Tested in Windows 8.1
+        }
     }
     catch {
         Write-Host "[WARN] Failed to load DownloadUrls.psd1. Falling back to empty URL table."
