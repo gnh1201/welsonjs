@@ -138,7 +138,11 @@ if ($TelemetryProvider -and $TelemetryProvider.ToLower() -eq "posthog") {
 
         if ($finalDistinctId -and $finalDistinctId.Trim() -ne "") {
             # Get current script file name
-            $scriptName = Split-Path $PSCommandPath -Leaf
+            $scriptName = if (Get-Variable -Name PSCommandPath -ErrorAction SilentlyContinue) {
+                Split-Path $PSCommandPath -Leaf
+            } else {
+                Split-Path $MyInvocation.MyCommand.Path -Leaf
+            }
 
             # Build single event payload for PostHog /i/v0/e endpoint
             $body = @{
