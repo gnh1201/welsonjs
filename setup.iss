@@ -1,5 +1,5 @@
 ; @created_on 2020-06-26
-; @updated_on 2025-12-01
+; @updated_on 2025-12-20
 ; @author Namhyeon Go <gnh1201@catswords.re.kr> and Catswords OSS contributors.
 
 [Setup]
@@ -49,7 +49,7 @@ Root: HKCR; Subkey: "{cm:AppName}.Script"; ValueType: string; ValueData: "{cm:Ap
 Root: HKCR; Subkey: "{cm:AppName}.Script\DefaultIcon"; ValueType: string; ValueData: "{app}\app\favicon.ico,0"; Flags: uninsdeletekey
 Root: HKCR; Subkey: "{cm:AppName}.Script\shell"; ValueType: string; ValueData: "open"; Components: artifacts; Flags: uninsdeletevalue
 Root: HKCR; Subkey: "{cm:AppName}.Script\shell\open"; ValueType: string; ValueData: "Run with {cm:AppName}"; Components: artifacts; Flags: uninsdeletevalue
-Root: HKCR; Subkey: "{cm:AppName}.Script\shell\open\command"; ValueType: string; ValueData: """{userappdata}\{cm:AppName}\bin\WelsonJS.Launcher.exe"" --file ""%1"""; Components: artifacts; Flags: uninsdeletevalue
+Root: HKCR; Subkey: "{cm:AppName}.Script\shell\open\command"; ValueType: string; ValueData: """{app}\bin\x86\WelsonJS.Launcher.exe"" --file ""%1"""; Components: artifacts; Flags: uninsdeletevalue
 Root: HKCR; Subkey: "{cm:AppName}.Script\ScriptEngine"; ValueType: string; ValueData: "JScript"; Flags: uninsdeletevalue
 Root: HKCR; Subkey: "{cm:AppName}.Script\ScriptHostEncode"; ValueType: string; ValueData: "{{85131630-480C-11D2-B1F9-00C04F86C324}}"; Flags: uninsdeletevalue
 Root: HKCR; Subkey: ".js"; ValueType: string; ValueData: "{cm:AppName}.Script"; Components: fileassoc; Flags: uninsdeletevalue;
@@ -75,6 +75,11 @@ Source: "helloworld.*"; DestDir: "{app}";
 Source: "app\*"; DestDir: "{app}/app"; Flags: ignoreversion recursesubdirs;
 Source: "lib\*"; DestDir: "{app}/lib"; Flags: ignoreversion recursesubdirs;
 ; Source: "bin\*"; Excludes: "installer\*"; DestDir: "{app}/bin"; Flags: ignoreversion recursesubdirs;
+Source: "bin\x86\7zr.exe"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
+Source: "bin\x86\curl.exe"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
+Source: "bin\x86\curl-ca-bundle.crt"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
+Source: "bin\x86\WelsonJS.Launcher.exe"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
+Source: "bin\x86\WelsonJS.Launcher.exe.config"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
 Source: "data\*"; Excludes: "*-apikey.txt"; DestDir: "{app}/data"; Flags: ignoreversion recursesubdirs;
 ; Source: "node_modules\*"; DestDir: "{app}/node_modules"; Flags: ignoreversion recursesubdirs;
 ; Source: "bower_components\*"; DestDir: "{app}/node_modules"; Flags: ignoreversion recursesubdirs;
@@ -87,14 +92,14 @@ Name: "{app}\tmp";
 ; Type: files; Name: "{app}\defaultService.js"
 
 [Icons]
-Name: "{group}\Start {cm:AppName} Launcher"; Filename: "{userappdata}\{cm:AppName}\bin\WelsonJS.Launcher.exe"; Components: artifacts; AfterInstall: SetElevationBit('{group}\Start {cm:AppName} Launcher.lnk');
+Name: "{group}\Start {cm:AppName} Launcher"; Filename: "{app}\bin\x86\WelsonJS.Launcher.exe"; Components: artifacts; AfterInstall: SetElevationBit('{group}\Start {cm:AppName} Launcher.lnk');
 Name: "{group}\Test {cm:AppName}"; Filename: "{app}\bootstrap.bat"; AfterInstall: SetElevationBit('{group}\Test {cm:AppName}.lnk');
 Name: "{group}\Uninstall {cm:AppName}"; Filename: "{uninstallexe}"; AfterInstall: SetElevationBit('{group}\Uninstall {cm:AppName}.lnk');
 
 [Run]
 Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -NoProfile -File ""{app}\postInstall.ps1"" -TelemetryProvider posthog -TelemetryApiKey ""{cm:PostHogApiKey}"" -Version ""{cm:AppVersion}"" -DistinctId ""{computername}"" -Components ""{code:GetSelectedComponents}"""; WorkingDir: "{app}"; Flags: waituntilterminated
-Filename: {app}\installService.bat; Components: artifacts; Flags: nowait
-Filename: "{userappdata}\{cm:AppName}\bin\WelsonJS.Launcher.exe"; Components: artifacts; Flags: nowait
+Filename: "{app}\installService.bat"; Components: artifacts; Flags: nowait
+Filename: "{app}\bin\x86\WelsonJS.Launcher.exe"; Components: artifacts; Flags: nowait
 
 [UninstallRun]
 Filename: {app}\uninstallService.bat; Components: artifacts; Flags: waituntilterminated
