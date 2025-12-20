@@ -292,16 +292,21 @@ function Download-File {
     Write-Host "[*] Downloading:"
     Write-Host "    $Url"
     Write-Host "    -> $DestinationPath"
-    
-    # Fix TLS 1.2 connectivity issue (Tested in Windows 8.1)
-    # Enable TLS 1.2 and TLS 1.3 (if available) - avoid deprecated TLS 1.0/1.1
+
+    # Fix TLS connectivity issues (Tested in Windows 8.1)
     try {
-        [Net.ServicePointManager]::SecurityProtocol = `
-            [Net.SecurityProtocolType]::Tls12 -bor `
-            [Net.SecurityProtocolType]::Tls13
-    } catch {
-        # TLS 1.3 not available, fall back to TLS 1.2 only
-        [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+        $protocol = [Net.SecurityProtocolType]::Tls12 -bor `
+                    [Net.SecurityProtocolType]::Tls11 -bor `
+                    [Net.SecurityProtocolType]::Tls
+
+        try {
+            $protocol = $protocol -bor [Enum]::Parse([Net.SecurityProtocolType], 'Tls13')
+        } catch {}
+
+        [Net.ServicePointManager]::SecurityProtocol = $protocol
+    }
+    catch {
+        Write-Host "[WARN] TLS configuration failed: $($_.Exception.Message)"
     }
 
     # Ensure destination directory exists
