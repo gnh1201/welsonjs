@@ -13,7 +13,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
-using WelsonJS.Launcher.Telemetry;
 
 namespace WelsonJS.Launcher
 {
@@ -24,7 +23,6 @@ namespace WelsonJS.Launcher
         public static Mutex _mutex;
         public static ResourceServer _resourceServer;
         public static string _dateTimeFormat;
-        public static TelemetryClient _telemetryClient;
 
         static Program()
         {
@@ -36,35 +34,6 @@ namespace WelsonJS.Launcher
 
             // load external assemblies
             InitializeAssemblyLoader();
-
-            // telemetry
-            try
-            {
-                var telemetryProvider = GetAppConfig("TelemetryProvider");
-                var telemetryOptions = new TelemetryOptions
-                {
-                    ApiKey = GetAppConfig("TelemetryApiKey"),
-                    BaseUrl = GetAppConfig("TelemetryBaseUrl"),
-                    DistinctId = TelemetryIdentity.GetDistinctId(),
-                    Disabled = !string.Equals(
-                        GetAppConfig("TelemetryEnabled"),
-                        "true",
-                        StringComparison.OrdinalIgnoreCase)
-                };
-
-                if (!telemetryOptions.Disabled &&
-                    !string.IsNullOrWhiteSpace(telemetryProvider) &&
-                    !string.IsNullOrWhiteSpace(telemetryOptions.ApiKey) &&
-                    !string.IsNullOrWhiteSpace(telemetryOptions.BaseUrl))
-                {
-                    _telemetryClient = new TelemetryClient(telemetryProvider, telemetryOptions, _logger);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.Error($"Telemetry initialization failed: {ex}");
-                _telemetryClient = null;
-            }
         }
 
         [STAThread]
@@ -90,13 +59,6 @@ namespace WelsonJS.Launcher
             {
                 _logger.Info("WelsonJS Launcher already running.");
                 return;
-            }
-
-            // send event to the telemetry server
-            if (_telemetryClient != null)
-            {
-                var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version?.ToString() ?? "unknown";
-                _ = _telemetryClient.TrackAppStartedAsync("WelsonJS.Launcher", version);
             }
 
             // draw the main form
@@ -133,6 +95,9 @@ namespace WelsonJS.Launcher
             loaderType.GetProperty("LoaderNamespace")?.SetValue(null, typeof(Program).Namespace);
             loaderType.GetProperty("AppName")?.SetValue(null, "WelsonJS");
             loaderType.GetProperty("IntegrityUrl")?.SetValue(null, GetAppConfig("AssemblyIntegrityUrl"));
+            // curl.exe integrity hash can be added here if needed
+            // e.g., 23b24c6a2dc39dbfd83522968d99096fc6076130a6de7a489bc0380cce89143d (curl-8.17.0-win-x86-full.2025-11-09, Muldersoft)
+            loaderType.GetMethod("AddIntegrityHash")?.Invoke(null, new object[] { GetAppConfig("IntegrityHashCurl") });
             loaderType.GetMethod("Register")?.Invoke(null, null);
 
             var loadNativeModulesMethod = loaderType.GetMethod(
@@ -161,6 +126,9 @@ namespace WelsonJS.Launcher
             AssemblyLoader.IntegrityUrl = GetAppConfig("AssemblyIntegrityUrl");   // (Optional) Set the integrity URL
             AssemblyLoader.LoaderNamespace = typeof(Program).Namespace;
             AssemblyLoader.AppName = "WelsonJS";
+            // curl.exe integrity hash can be added here if needed
+            // e.g., 23b24c6a2dc39dbfd83522968d99096fc6076130a6de7a489bc0380cce89143d (curl-8.17.0-win-x86-full.2025-11-09, Muldersoft)
+            AssemblyLoader.AddIntegrityHash(GetAppConfig("IntegrityHashCurl"));
             AssemblyLoader.Register();
 
             AssemblyLoader.LoadNativeModules(
@@ -170,7 +138,6 @@ namespace WelsonJS.Launcher
             );
             */
         }
-
 
         public static void RecordFirstDeployTime(string directory, string instanceId)
         {

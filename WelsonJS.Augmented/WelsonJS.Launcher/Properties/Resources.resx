@@ -226,18 +226,6 @@
   <data name="icon_editor_32" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\icon_editor_32.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="TelemetryApiKey" xml:space="preserve">
-    <value>phc_pmRHJ0aVEhtULRT4ilexwCjYpGtE9VYRhlA05fwiYt8</value>
-  </data>
-  <data name="TelemetryBaseUrl" xml:space="preserve">
-    <value>https://us.i.posthog.com</value>
-  </data>
-  <data name="TelemetryProvider" xml:space="preserve">
-    <value>posthog</value>
-  </data>
-  <data name="TelemetryEnabled" xml:space="preserve">
-    <value>true</value>
-  </data>
   <data name="AssemblyBaseUrl" xml:space="preserve">
     <value>https://catswords.blob.core.windows.net/welsonjs/packages</value>
   </data>
@@ -246,5 +234,8 @@
   </data>
   <data name="AssemblyIntegrityUrl" xml:space="preserve">
     <value>https://spare-yellow-cicada.myfilebase.com/ipfs/QmYL29Z7BRvE6dnL4HPKeNvJyNJrh2LnVhzo3k9bp3wBZf</value>
+  </data>
+  <data name="IntegrityHashCurl" xml:space="preserve">
+    <value>23b24c6a2dc39dbfd83522968d99096fc6076130a6de7a489bc0380cce89143d</value>
   </data>
 </root>

@@ -19,7 +19,7 @@ namespace WelsonJS.Launcher.Properties {
     // 클래스에서 자동으로 생성되었습니다.
     // 멤버를 추가하거나 제거하려면 .ResX 파일을 편집한 다음 /str 옵션을 사용하여 ResGen을
     // 다시 실행하거나 VS 프로젝트를 다시 빌드하십시오.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -316,6 +316,15 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
+        ///   23b24c6a2dc39dbfd83522968d99096fc6076130a6de7a489bc0380cce89143d과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string IntegrityHashCurl {
+            get {
+                return ResourceManager.GetString("IntegrityHashCurl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string IpQueryApiKey {
@@ -394,42 +403,6 @@ namespace WelsonJS.Launcher.Properties {
         internal static string ResourceServerPrefix {
             get {
                 return ResourceManager.GetString("ResourceServerPrefix", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   phc_pmRHJ0aVEhtULRT4ilexwCjYpGtE9VYRhlA05fwiYt8과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string TelemetryApiKey {
-            get {
-                return ResourceManager.GetString("TelemetryApiKey", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   https://us.i.posthog.com과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string TelemetryBaseUrl {
-            get {
-                return ResourceManager.GetString("TelemetryBaseUrl", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   true과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string TelemetryEnabled {
-            get {
-                return ResourceManager.GetString("TelemetryEnabled", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   posthog과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string TelemetryProvider {
-            get {
-                return ResourceManager.GetString("TelemetryProvider", resourceCulture);
             }
         }
         

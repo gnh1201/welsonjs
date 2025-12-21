@@ -180,6 +180,12 @@ namespace Catswords.Phantomizer
                 if (_registered)
                     return;
 
+                // Fix TLS connectivity issues
+                EnsureSecurityProtocols(SecurityProtocolType.Tls12);
+                EnsureSecurityProtocolByName("Tls13");  // Add if available
+                // EnsureSecurityProtocols(SecurityProtocolType.Tls11, SecurityProtocolType.Tls);  // Optional legacy compatibility (uncomment if needed)
+
+                // Load integrity manifest
                 try
                 {
                     if (!_integrityLoaded)
@@ -198,17 +204,12 @@ namespace Catswords.Phantomizer
                     throw;
                 }
 
-                EnsureSecurityProtocols(SecurityProtocolType.Tls12);
-                EnsureSecurityProtocolByName("Tls13");  // Add if available
-                // EnsureSecurityProtocols(SecurityProtocolType.Tls11, SecurityProtocolType.Tls);  // Optional legacy compatibility (uncomment if needed)
-
                 AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
                 _registered = true;
 
                 Trace.TraceInformation("AssemblyLoader: AssemblyResolve handler registered.");
             }
         }
-
 
         /// <summary>
         /// Loads native modules associated with an assembly (explicit).
@@ -333,6 +334,19 @@ namespace Catswords.Phantomizer
             LoadNativeModules(an.Name, an.Version, fileNames);
         }
 
+        public static void AddIntegrityHash(string hash)
+        {
+            if (string.IsNullOrWhiteSpace(hash))
+                throw new ArgumentNullException(nameof(hash));
+
+            lock (IntegritySyncRoot)
+            {
+                if (_integrityHashes == null)
+                    _integrityHashes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                _integrityHashes.Add(hash.Trim().ToLower());
+            }
+        }
 
         // ========================================================================
         // ASSEMBLY RESOLVE HANDLER (MANAGED)
@@ -399,8 +413,6 @@ namespace Catswords.Phantomizer
 
         private static void DownloadFile(string url, string dest)
         {
-            HttpResponseMessage res = null;
-
             try
             {
                 string gzUrl = url + ".gz";
@@ -416,13 +428,11 @@ namespace Catswords.Phantomizer
                 if (!downloaded)
                 {
                     Trace.TraceInformation("Downloading file from: {0}", url);
-                    res = Http.GetAsync(url).GetAwaiter().GetResult();
-                    res.EnsureSuccessStatusCode();
 
-                    using (Stream s = res.Content.ReadAsStreamAsync().GetAwaiter().GetResult())
+                    using (var stream = GetStreamFromUrl(url))
                     using (var fs = new FileStream(dest, FileMode.Create, FileAccess.Write))
                     {
-                        s.CopyTo(fs);
+                        stream.CopyTo(fs);
                     }
 
                     Trace.TraceInformation("Downloaded file to: {0}", dest);
@@ -442,10 +452,6 @@ namespace Catswords.Phantomizer
             {
                 Trace.TraceError("Unexpected error downloading {0}: {1}", url, ex.Message);
                 throw;
-            }
-            finally
-            {
-                res?.Dispose();
             }
         }
 
@@ -527,8 +533,6 @@ namespace Catswords.Phantomizer
                 if (_integrityLoaded)
                     return;
 
-                _integrityHashes = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
                 if (string.IsNullOrWhiteSpace(IntegrityUrl))
                 {
                     _integrityLoaded = true;
@@ -543,18 +547,24 @@ namespace Catswords.Phantomizer
                     if (!verified)
                         throw new InvalidOperationException("IntegrityUrl verification failed.");
 
-                    using (var res = Http.GetAsync(IntegrityUrl).GetAwaiter().GetResult())
+                    using (var stream = GetStreamFromUrl(IntegrityUrl))
                     {
-                        res.EnsureSuccessStatusCode();
-                        using (var stream = res.Content.ReadAsStreamAsync().GetAwaiter().GetResult())
-                        {
-                            doc = XDocument.Load(stream);
-                        }
+                        doc = XDocument.Load(stream);
                     }
                 }
                 catch (Exception ex)
                 {
-                    Trace.TraceError("AssemblyIntegrity: failed to load manifest: {0}", ex.Message);
+                    Trace.TraceError("AssemblyIntegrity: failed to load manifest.\n{0}", ex.ToString());
+
+                    Exception inner = ex.InnerException;
+                    int depth = 0;
+                    while (inner != null && depth < 8)
+                    {
+                        Trace.TraceError("AssemblyIntegrity: inner[{0}]\n{1}", depth, inner.ToString());
+                        inner = inner.InnerException;
+                        depth++;
+                    }
+
                     throw new InvalidOperationException("Failed to load AssemblyIntegrity manifest.", ex);
                 }
 
@@ -577,7 +587,7 @@ namespace Catswords.Phantomizer
                     if (string.IsNullOrWhiteSpace(val))
                         continue;
 
-                    _integrityHashes.Add(val);
+                    AddIntegrityHash(val);
                 }
 
                 _integrityLoaded = true;
@@ -760,7 +770,7 @@ namespace Catswords.Phantomizer
         }
 
         // Adds protocol by enum name when available (e.g., "Tls13"), otherwise no-op.
-        public static void EnsureSecurityProtocolByName(string protocolName)
+        private static void EnsureSecurityProtocolByName(string protocolName)
         {
             if (string.IsNullOrEmpty(protocolName))
                 return;
@@ -817,6 +827,124 @@ namespace Catswords.Phantomizer
                     ex
                 );
             }
+        }
+
+        public static Stream CurlGetAsStream(string url)
+        {
+            Trace.TraceInformation("Trying curl.exe to get URL: {0}", url);
+
+            // Resolve curl.exe only from the application base directory
+            string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+            string curlExePath = Path.Combine(baseDir, "curl.exe");
+
+            // Check existence of curl.exe
+            if (!File.Exists(curlExePath))
+                throw new FileNotFoundException("curl.exe was not found in the application directory.", curlExePath);
+
+            // Check integrity of curl.exe
+            byte[] bytes = File.ReadAllBytes(curlExePath);
+            string sha256 = ComputeHashHex(bytes, SHA256.Create());
+            if (_integrityHashes == null || !_integrityHashes.Contains(sha256))
+                throw new InvalidOperationException("curl.exe integrity check failed.");
+
+            // Prepare process start info
+            var psi = new ProcessStartInfo
+            {
+                FileName = curlExePath,
+                Arguments =
+                    "-f -sS -L --retry 3 --retry-delay 1 " +
+                    "--connect-timeout 10 --max-time 30 " +
+                    "\"" + url + "\"",
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            };
+
+            var process = new Process { StartInfo = psi };
+            if (!process.Start())
+                throw new InvalidOperationException("Failed to start curl.exe process.");
+
+            // Drain stderr asynchronously.
+            // If any error line is received, log it immediately.
+            process.ErrorDataReceived += (s, e) =>
+            {
+                if (!string.IsNullOrEmpty(e.Data))
+                {
+                    Trace.TraceError("curl stderr: {0}", e.Data);
+                }
+            };
+            process.BeginErrorReadLine();
+
+            var memory = new MemoryStream();
+
+            // Read stdout fully; this completes when stdout is closed (EOF)
+            process.StandardOutput.BaseStream.CopyTo(memory);
+
+            // Enforce a hard timeout so we never wait forever
+            if (!process.WaitForExit(60000))
+            {
+                try { process.Kill(); } catch { }
+                throw new TimeoutException("curl.exe did not exit within the hard timeout.");
+            }
+
+            if (process.ExitCode != 0)
+                throw new InvalidOperationException("curl.exe failed with exit code " + process.ExitCode + ".");
+
+            memory.Position = 0;
+            return memory; // Caller must dispose the stream
+        }
+
+        private static T ExecuteWithFallback<T>(Func<T> primaryAction, Func<Exception, bool> shouldFallback, Func<T> fallbackAction)
+        {
+            try
+            {
+                return primaryAction();
+            }
+            catch (Exception ex)
+            {
+                if (shouldFallback != null && shouldFallback(ex))
+                    return fallbackAction();
+
+                throw;
+            }
+        }
+
+        private static Stream GetStreamFromUrl(string url)
+        {
+            Trace.TraceInformation("Getting stream from URL: {0}", url);
+
+            return ExecuteWithFallback(
+                primaryAction: () =>
+                {
+                    var res = Http.GetAsync(url).GetAwaiter().GetResult();
+                    res.EnsureSuccessStatusCode();
+                    return res.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
+                },
+                shouldFallback: IsTlsHandshakeFailure,
+                fallbackAction: () =>
+                {
+                    return CurlGetAsStream(url);
+                }
+            );
+        }
+
+        private static bool IsTlsHandshakeFailure(Exception ex)
+        {
+            bool isTlsException = ex is HttpRequestException httpEx &&
+                httpEx.InnerException is WebException webEx &&
+                webEx.Status == WebExceptionStatus.SecureChannelFailure;
+
+            if (isTlsException)
+            {
+                Trace.TraceWarning("TLS handshake failure: {0}", ex.Message);
+            }
+            else
+            {
+                Trace.TraceInformation("HttpRequestException is not a TLS handshake failure: {0}", ex.Message);
+            }
+
+            return isTlsException;
         }
     }
 }
