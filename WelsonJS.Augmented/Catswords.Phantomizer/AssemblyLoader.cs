@@ -429,7 +429,7 @@ namespace Catswords.Phantomizer
                 {
                     Trace.TraceInformation("Downloading file from: {0}", url);
 
-                    using (var stream = GetStreamFromUrl(url))
+                    using (var stream = GetStreamFromUrl(Http, url))
                     using (var fs = new FileStream(dest, FileMode.Create, FileAccess.Write))
                     {
                         stream.CopyTo(fs);
@@ -462,30 +462,19 @@ namespace Catswords.Phantomizer
 
             try
             {
-                using (var res = LegacyHttp.GetAsync(gzUrl).GetAwaiter().GetResult())
+                using (var stream = GetStreamFromUrl(LegacyHttp, gzUrl))
+                using (var gz = new GZipStream(stream, CompressionMode.Decompress))
+                using (var fs = new FileStream(tempFile, FileMode.Create, FileAccess.Write))
                 {
-                    if (res.StatusCode == HttpStatusCode.NotFound)
-                    {
-                        Trace.TraceInformation("No gzipped variant at {0}; falling back to uncompressed URL.", gzUrl);
-                        return false;
-                    }
-
-                    res.EnsureSuccessStatusCode();
-
-                    using (Stream s = res.Content.ReadAsStreamAsync().GetAwaiter().GetResult())
-                    using (var gz = new GZipStream(s, CompressionMode.Decompress))
-                    using (var fs = new FileStream(tempFile, FileMode.Create, FileAccess.Write))
-                    {
-                        gz.CopyTo(fs);
-                    }
-
-                    if (File.Exists(dest))
-                        File.Delete(dest);
-
-                    File.Move(tempFile, dest);
-
-                    return true;
+                    gz.CopyTo(fs);
                 }
+
+                if (File.Exists(dest))
+                    File.Delete(dest);
+
+                File.Move(tempFile, dest);
+
+                return true;
             }
             catch (HttpRequestException ex)
             {
@@ -547,7 +536,7 @@ namespace Catswords.Phantomizer
                     if (!verified)
                         throw new InvalidOperationException("IntegrityUrl verification failed.");
 
-                    using (var stream = GetStreamFromUrl(IntegrityUrl))
+                    using (var stream = GetStreamFromUrl(Http, IntegrityUrl))
                     {
                         doc = XDocument.Load(stream);
                     }
@@ -915,15 +904,19 @@ namespace Catswords.Phantomizer
             }
         }
 
-        private static Stream GetStreamFromUrl(string url)
+        private static Stream GetStreamFromUrl(HttpClient client, string url)
         {
             Trace.TraceInformation("Getting stream from URL: {0}", url);
 
             return ExecuteWithFallback(
                 primaryAction: () =>
                 {
-                    var res = Http.GetAsync(url).GetAwaiter().GetResult();
+                    var res = client.GetAsync(url).GetAwaiter().GetResult();
                     res.EnsureSuccessStatusCode();
+
+                    if (res.StatusCode == HttpStatusCode.NotFound)
+                        throw new FileNotFoundException("Resource not found at URL: " + url);
+
                     return res.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
                 },
                 shouldFallback: IsTlsHandshakeFailure,
