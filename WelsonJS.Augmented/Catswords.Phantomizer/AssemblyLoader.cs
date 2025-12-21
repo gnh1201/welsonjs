@@ -917,9 +917,6 @@ namespace Catswords.Phantomizer
                     var res = client.GetAsync(url).GetAwaiter().GetResult();
                     res.EnsureSuccessStatusCode();
 
-                    if (res.StatusCode == HttpStatusCode.NotFound)
-                        throw new FileNotFoundException("Resource not found at URL: " + url);
-
                     return res.Content.ReadAsStreamAsync().GetAwaiter().GetResult();
                 },
                 shouldFallback: IsTlsHandshakeFailure,
