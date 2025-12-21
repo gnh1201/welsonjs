@@ -198,6 +198,10 @@ namespace Catswords.Phantomizer
                     throw;
                 }
 
+                EnsureSecurityProtocols(SecurityProtocolType.Tls12);
+                EnsureSecurityProtocolByName("Tls13");  // Add if available
+                // EnsureSecurityProtocols(SecurityProtocolType.Tls11, SecurityProtocolType.Tls);  // Optional legacy compatibility (uncomment if needed)
+
                 AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
                 _registered = true;
 
@@ -714,6 +718,104 @@ namespace Catswords.Phantomizer
             {
                 Trace.TraceError("URL verification failed for {0}: {1}", url, ex.Message);
                 verified = false;
+            }
+        }
+
+        // Adds protocol flags without overwriting existing ones.
+        // Safe on older .NET/Windows where some enum members (e.g., Tls13) may not exist.
+        private static void EnsureSecurityProtocols(params SecurityProtocolType[] protocols)
+        {
+            try
+            {
+                SecurityProtocolType original = ServicePointManager.SecurityProtocol;
+                SecurityProtocolType current = original;
+
+                foreach (var protocol in protocols)
+                    current |= protocol;
+
+                if (current != original)
+                {
+                    ServicePointManager.SecurityProtocol = current;
+                    Trace.TraceInformation(
+                        "SecurityProtocol updated: {0} -> {1}",
+                        original, current
+                    );
+                }
+                else
+                {
+                    Trace.TraceInformation(
+                        "SecurityProtocol unchanged: {0}",
+                        original
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError(
+                    "Failed to ensure security protocols ({0}): {1}",
+                    string.Join(", ", protocols),
+                    ex
+                );
+            }
+        }
+
+        // Adds protocol by enum name when available (e.g., "Tls13"), otherwise no-op.
+        public static void EnsureSecurityProtocolByName(string protocolName)
+        {
+            if (string.IsNullOrEmpty(protocolName))
+                return;
+
+            try
+            {
+                SecurityProtocolType original = ServicePointManager.SecurityProtocol;
+                SecurityProtocolType current = original;
+
+                try
+                {
+                    SecurityProtocolType p =
+                        (SecurityProtocolType)Enum.Parse(
+                            typeof(SecurityProtocolType),
+                            protocolName
+                        );
+
+                    current |= p;
+                }
+                catch (Exception ex)
+                {
+                    Trace.TraceWarning(
+                        "SecurityProtocol '{0}' not available in this runtime: {1}",
+                        protocolName,
+                        ex.Message
+                    );
+                    return;
+                }
+
+                if (current != original)
+                {
+                    ServicePointManager.SecurityProtocol = current;
+                    Trace.TraceInformation(
+                        "SecurityProtocol '{0}' enabled: {1} -> {2}",
+                        protocolName,
+                        original,
+                        current
+                    );
+                }
+                else
+                {
+                    Trace.TraceInformation(
+                        "SecurityProtocol '{0}' already enabled: {1}",
+                        protocolName,
+                        original
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.TraceError(
+                    "Failed to enable SecurityProtocol '{0}': {1}",
+                    protocolName,
+                    ex
+                );
             }
         }
     }
