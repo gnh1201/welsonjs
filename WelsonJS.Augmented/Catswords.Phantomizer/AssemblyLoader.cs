@@ -785,7 +785,8 @@ namespace Catswords.Phantomizer
                     SecurityProtocolType p =
                         (SecurityProtocolType)Enum.Parse(
                             typeof(SecurityProtocolType),
-                            protocolName
+                            protocolName,
+                            true
                         );
 
                     current |= p;
@@ -841,10 +842,14 @@ namespace Catswords.Phantomizer
             if (!File.Exists(curlExePath))
                 throw new FileNotFoundException("curl.exe was not found in the application directory.", curlExePath);
 
+            // Check that integrity hashes are loaded
+            if (_integrityHashes == null)
+                throw new InvalidOperationException("Integrity hashes not loaded. Call AddIntegrityHash before using curl fallback.");
+
             // Check integrity of curl.exe
             byte[] bytes = File.ReadAllBytes(curlExePath);
             string sha256 = ComputeHashHex(bytes, SHA256.Create());
-            if (_integrityHashes == null || !_integrityHashes.Contains(sha256))
+            if (!_integrityHashes.Contains(sha256))
                 throw new InvalidOperationException("curl.exe integrity check failed.");
 
             // Prepare process start info
