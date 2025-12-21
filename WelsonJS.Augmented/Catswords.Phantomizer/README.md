@@ -199,7 +199,7 @@ AssemblyLoader.AddIntegrityHash(GetAppConfig("IntegrityHashCurl"));
 
 ## 📥 Download the pre-compiled file
 
-* [Download Catswords.Phantomizer.dll.gz (catswords.blob.core.windows.net)](https://catswords.blob.core.windows.net/welsonjs/packages/managed/Catswords.Phantomizer/1.0.0.1/Catswords.Phantomizer.dll.gz)
+* [Download Catswords.Phantomizer.dll.gz (catswords.blob.core.windows.net)](https://catswords.blob.core.windows.net/welsonjs/packages/managed/Catswords.Phantomizer/1.0.0.2/Catswords.Phantomizer.dll.gz)
 
 ---
 
