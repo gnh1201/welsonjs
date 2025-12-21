@@ -180,6 +180,12 @@ Once uploaded and pinned, the file cannot be silently modified without changing 
 
 ### 🔄 curl.exe Fallback on Legacy Windows
 
+An example error when TLS connection fails:
+
+```
+The request was aborted: Could not create SSL/TLS secure channel.
+```
+
 If TLS connectivity issues occur on older versions of Windows (earlier than Windows 10), it is possible to fall back to using `curl.exe`. In this case, the `curl.exe` binary must pass an integrity check.
 
 ```csharp
