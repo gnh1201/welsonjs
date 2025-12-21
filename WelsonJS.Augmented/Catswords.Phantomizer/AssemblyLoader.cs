@@ -337,7 +337,10 @@ namespace Catswords.Phantomizer
         public static void AddIntegrityHash(string hash)
         {
             if (string.IsNullOrWhiteSpace(hash))
-                throw new ArgumentNullException(nameof(hash));
+            {
+                Trace.TraceWarning("AddIntegrityHash: empty or null hash ignored.");
+                return;
+            }
 
             lock (IntegritySyncRoot)
             {
