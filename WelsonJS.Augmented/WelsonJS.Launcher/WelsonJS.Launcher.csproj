@@ -128,12 +128,6 @@
       <DependentUpon>GlobalSettingsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="ResourceServer.cs" />
-    <Compile Include="Telemetry\ITelemetryProvider.cs" />
-    <Compile Include="Telemetry\PosthogTelemetryProvider.cs" />
-    <Compile Include="Telemetry\TelemetryClient.cs" />
-    <Compile Include="Telemetry\TelemetryIdentity.cs" />
-    <Compile Include="Telemetry\TelemetryOptions.cs" />
-    <Compile Include="Telemetry\TelemetryProviderFactory.cs" />
     <Compile Include="TraceLogger.cs" />
     <Compile Include="WebSocketManager.cs" />
     <EmbeddedResource Include="EnvForm.resx">

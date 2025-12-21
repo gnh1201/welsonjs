@@ -178,9 +178,34 @@ Once uploaded and pinned, the file cannot be silently modified without changing 
 
 ---
 
+### 🔄 curl.exe Fallback on Legacy Windows
+
+An example error when TLS connection fails:
+
+```
+The request was aborted: Could not create SSL/TLS secure channel.
+```
+
+If TLS connectivity issues occur on older versions of Windows (earlier than Windows 10), it is possible to fall back to using `curl.exe`. In this case, the `curl.exe` binary must pass an integrity check.
+
+```csharp
+// curl.exe integrity hash can be added here if needed
+// e.g., 23b24c6a2dc39dbfd83522968d99096fc6076130a6de7a489bc0380cce89143d (curl-8.17.0-win-x86-full.2025-11-09, Muldersoft)
+loaderType.GetMethod("AddIntegrityHash")?.Invoke(null, new object[] { GetAppConfig("IntegrityHashCurl") });
+
+/*
+// if use non-reflective call
+// curl.exe integrity hash can be added here if needed
+// e.g., 23b24c6a2dc39dbfd83522968d99096fc6076130a6de7a489bc0380cce89143d (curl-8.17.0-win-x86-full.2025-11-09, Muldersoft)
+AssemblyLoader.AddIntegrityHash(GetAppConfig("IntegrityHashCurl"));
+*/
+```
+
+---
+
 ## 📥 Download the pre-compiled file
 
-* [Download Catswords.Phantomizer.dll.gz (catswords.blob.core.windows.net)](https://catswords.blob.core.windows.net/welsonjs/packages/managed/Catswords.Phantomizer/1.0.0.1/Catswords.Phantomizer.dll.gz)
+* [Download Catswords.Phantomizer.dll.gz (catswords.blob.core.windows.net)](https://catswords.blob.core.windows.net/welsonjs/packages/managed/Catswords.Phantomizer/1.0.0.2/Catswords.Phantomizer.dll.gz)
 
 ---
 

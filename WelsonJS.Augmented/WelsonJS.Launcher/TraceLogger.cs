@@ -52,8 +52,11 @@ namespace WelsonJS.Launcher
                     Trace.Listeners.Add(new TextWriterTraceListener(writer)
                     {
                         Name = "FileTraceListener",
-                        TraceOutputOptions = TraceOptions.DateTime
+                        TraceOutputOptions = TraceOptions.DateTime,
+                        Filter = new EventTypeFilter(SourceLevels.Information)
                     });
+
+                    Trace.Listeners.Add(new ConsoleTraceListener());
                 }
             }
             catch (Exception ex)
