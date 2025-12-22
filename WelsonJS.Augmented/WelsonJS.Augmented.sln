@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.8.34322.80
+# Visual Studio Version 18
+VisualStudioVersion = 18.1.11312.151 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WelsonJS.Toolkit", "WelsonJS.Toolkit\WelsonJS.Toolkit.csproj", "{D6007282-B4F7-4694-AC67-BB838D91B77A}"
 EndProject
@@ -18,6 +18,8 @@ EndProject
 Project("{778DAE3C-4631-46EA-AA77-85C1314464D9}") = "WelsonJS.Cryptography.Test", "WelsonJS.Cryptography.Test\WelsonJS.Cryptography.Test.vbproj", "{C65EC34B-71C7-47CF-912E-D304283EB412}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Catswords.Phantomizer", "Catswords.Phantomizer\Catswords.Phantomizer.csproj", "{59C67003-C14E-4703-927F-318BFF15F903}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Catswords.TlsReport", "Catswords.TlsReport\Catswords.TlsReport.csproj", "{05EE55FD-76C6-482E-9886-72EB5BD3C621}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -91,6 +93,14 @@ Global
 		{59C67003-C14E-4703-927F-318BFF15F903}.Release|Any CPU.Build.0 = Release|Any CPU
 		{59C67003-C14E-4703-927F-318BFF15F903}.Release|x86.ActiveCfg = Release|Any CPU
 		{59C67003-C14E-4703-927F-318BFF15F903}.Release|x86.Build.0 = Release|Any CPU
+		{05EE55FD-76C6-482E-9886-72EB5BD3C621}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05EE55FD-76C6-482E-9886-72EB5BD3C621}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05EE55FD-76C6-482E-9886-72EB5BD3C621}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{05EE55FD-76C6-482E-9886-72EB5BD3C621}.Debug|x86.Build.0 = Debug|Any CPU
+		{05EE55FD-76C6-482E-9886-72EB5BD3C621}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05EE55FD-76C6-482E-9886-72EB5BD3C621}.Release|Any CPU.Build.0 = Release|Any CPU
+		{05EE55FD-76C6-482E-9886-72EB5BD3C621}.Release|x86.ActiveCfg = Release|Any CPU
+		{05EE55FD-76C6-482E-9886-72EB5BD3C621}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
