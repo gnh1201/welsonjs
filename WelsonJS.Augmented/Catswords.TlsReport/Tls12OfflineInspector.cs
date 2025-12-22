@@ -652,6 +652,7 @@ namespace Catswords.TlsReport
                     object v = key.GetValue(valueName, null);
                     if (v == null) return null;
                     if (v is int i) return i;
+                    if (v is long l) return (int)l; // Handle 64-bit to 32-bit conversion
                     if (v is byte[] b && b.Length >= 4) return BitConverter.ToInt32(b, 0);
                     return null;
                 }
