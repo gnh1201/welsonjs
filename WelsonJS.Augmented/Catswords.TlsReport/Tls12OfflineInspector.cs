@@ -27,6 +27,8 @@ namespace Catswords.TlsReport
         {
             var ctx = new Context();
             var items = new List<Item>();
+            if (!IsAdministrator())
+                items.Add(Warn("Administrator privileges", "Not running as Administrator; some registry checks may not be accessible."));
 
             // 0) Environment / runtime surface
             items.Add(CheckOsVersion(ctx));
