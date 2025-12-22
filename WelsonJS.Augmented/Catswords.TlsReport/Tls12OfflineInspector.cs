@@ -7,13 +7,14 @@
 //   var report = Tls12OfflineInspector.Evaluate();
 //   Console.WriteLine(report.ToText());
 
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security.Authentication;
 using System.Security.Principal;
-using Microsoft.Win32;
 
 namespace Catswords.TlsReport
 {
@@ -152,7 +153,7 @@ namespace Catswords.TlsReport
 
         private static Item CheckSystemDllPresence(Context ctx, string dll)
         {
-            string path = ctx.SystemDir + "\\" + dll;
+            string path = Path.Combine(ctx.SystemDir, dll);
             bool exists;
             try { exists = System.IO.File.Exists(path); }
             catch { exists = false; }
