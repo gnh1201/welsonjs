@@ -28,6 +28,8 @@ namespace Catswords.TlsReport
         {
             var ctx = new Context();
             var items = new List<Item>();
+            if (!IsAdministrator())
+                items.Add(Warn("Administrator privileges", "Not running as Administrator; some registry checks may not be accessible."));
 
             // 0) Environment / runtime surface
             items.Add(CheckOsVersion(ctx));
@@ -399,7 +401,7 @@ namespace Catswords.TlsReport
 
             var funcs = ReadMultiStringHKLM(k, "Functions");
             if (funcs == null)
-                return Warn("Cipher suite policy Functions", "Functions value not readable or not set.");
+                return Fail("Cipher suite policy Functions", "Policy key exists, but Functions value is missing, unreadable, or not REG_MULTI_SZ. This can block TLS handshakes.");
             if (funcs.Length == 0)
                 return Fail("Cipher suite policy Functions", "Functions list is empty. This can block TLS handshakes.");
             return Info("Cipher suite policy Functions", "Functions count=" + funcs.Length);
@@ -653,6 +655,7 @@ namespace Catswords.TlsReport
                     object v = key.GetValue(valueName, null);
                     if (v == null) return null;
                     if (v is int i) return i;
+                    if (v is long l) return (int)l; // Handle 64-bit to 32-bit conversion
                     if (v is byte[] b && b.Length >= 4) return BitConverter.ToInt32(b, 0);
                     return null;
                 }
