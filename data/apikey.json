@@ -1,5 +1,5 @@
 {
-    "chatgpt": "file:data/chatgpt_apikey.txt",
+    "openai": "file:data/openai_apikey.txt",
     "anthropic": "file:data/anthropic_apikey.txt",
     "groq": "file:data/groq_apikey.txt",
     "grok": "file:data/grok_apikey.txt",

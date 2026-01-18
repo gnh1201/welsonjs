@@ -1369,10 +1369,19 @@ var test_implements = {
     },
 
     "outlook_open_outlook_with_chatgpt": function () {
-        var keyword = "test";
-        var maxCount = 1;
+        // Process: Microsoft Outlook -> OpenAI -> Get Response
+        var Office = require("lib/msoffice");
+        var LIE = require("lib/language-inference-engine");
+        
+        var prompt_texts = [];
+        
+        var keyword = "example.com";
+        var maxCount = 10;
+        var previewLen = 160;
 
-        console.log("Running an end-to-end Outlook automation test.");
+        console.log("Searching mails by sender OR recipient contains: '" + keyword + "'.");
+        console.log("This test uses Restrict (Sender/To/CC/BCC) + Recipients verification.");
+        console.log("Body preview length: " + previewLen);
 
         var Office = require("lib/msoffice");
 
@@ -1380,24 +1389,49 @@ var test_implements = {
         outlook.open();
         outlook.selectFolder(Office.Outlook.Folders.Inbox);
 
-        console.log("Searching mails by subject contains: '" + keyword + "'.");
-        var results = outlook.searchSubjectContains(keyword);
+        var results = outlook.searchBySenderOrRecipientContains(keyword);
+        console.log("Printing search results. (max " + maxCount + ")");
 
-        var found = false;
-        results.forEach(function (m) {
-            found = true;
-            console.log("Subject: " + String(m.getSubject()));
-            console.log("From: " + String(m.getSenderEmailAddress()));
-            console.log("Body preview:");
-            console.log(String(m.getBody() || "").substr(0, 200));
+        results.forEach(function (m, i) {
+            var body = String(m.getBody() || "");
+            var preview = body.replace(/\r/g, "").replace(/\n+/g, " ").substr(0, previewLen);
+            
+            var text = "#" + String(i) +
+                " | From: " + String(m.getSenderEmailAddress()) +
+                " | To: " + String(m.mail.To || "") +
+                " | Subject: " + String(m.getSubject()) +
+                " | Received: " + String(m.getReceivedTime());
+
+            console.log(text);
+            console.log("  Body: " + preview);
+            
+            // Add an email data to the prompt text context
+            prompt_texts.push(text);
+            
+            // The body to reduce token usage and avoid sending overly large/sensitive content.
+            var bodyForPrompt = body;
+            var maxBodyLengthForPrompt = 2000; // Keep the body snippet short
+            if (bodyForPrompt.length > maxBodyLengthForPrompt) {
+                bodyForPrompt = bodyForPrompt.substring(0, maxBodyLengthForPrompt) + "...";
+            }
+            prompt_texts.push("  Body: " + bodyForPrompt);
         }, maxCount);
 
-        console.log(found ?
-            "End-to-end test executed successfully." :
-            "No matching mail found; end-to-end test could not complete.");
-
         outlook.close();
-        console.log("End-to-end Outlook test completed.");
+        
+        // build a AI prompt text
+        var instruction_text = "This is an email exchange between the buyer and me, and I would appreciate it if you could help me write the most appropriate reply.";
+        prompt_texts.push(instruction_text);
+        
+        // complete the prompt text
+        var prompt_text_completed = prompt_texts.join("\r\n");
+        
+        //console.log(prompt_text_completed);  // print all prompt text
+        
+        // get a response from AI
+        var response_text = LIE.create().setProvider("openai").inference(prompt_text_completed, 0).join(' ');
+        
+        console.log(response_text);
     }
 };
 
