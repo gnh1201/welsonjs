@@ -1143,21 +1143,23 @@ var test_implements = {
     
     "outlook_open_session": function () {
         console.log("Starting Outlook COM automation.");
-        var ol = new Outlook().open();
 
-        console.log(typeof ol.application !== "undefined" ?
+        var outlook = new Office.Outlook();
+        outlook.open();
+
+        console.log(typeof outlook.application !== "undefined" ?
             "Outlook.Application object has been created." :
             "Failed to create Outlook.Application object.");
 
-        console.log(typeof ol.namespace !== "undefined" ?
+        console.log(typeof outlook.namespace !== "undefined" ?
             "Connected to MAPI namespace." :
             "Failed to connect to MAPI namespace.");
 
-        console.log(ol.currentFolder !== null ?
+        console.log(outlook.currentFolder !== null ?
             "Default folder (Inbox) has been selected." :
             "Failed to select default folder (Inbox).");
 
-        ol.close();
+        outlook.close();
         console.log("Outlook COM automation has been closed.");
     },
 
@@ -1165,14 +1167,17 @@ var test_implements = {
         var maxCount = 10;
 
         console.log("Listing recent mails from Inbox. (max " + maxCount + ")");
-        var ol = new Outlook().open().selectFolder(Outlook.Folders.Inbox);
 
-        var items = ol.getItems();
+        var outlook = new Office.Outlook();
+        outlook.open();
+        outlook.selectFolder(Office.Outlook.Folders.Inbox);
+
+        var items = outlook.getItems();
         var count = items.count();
         console.log("Inbox item count: " + String(count));
 
         items.forEach(function (it, i) {
-            if (it instanceof Outlook.MailItem) {
+            if (it instanceof Office.Outlook.MailItem) {
                 console.log(
                     "#" + String(i) +
                     " | From: " + String(it.getSenderName()) +
@@ -1184,35 +1189,36 @@ var test_implements = {
             }
         }, maxCount);
 
-        ol.close();
+        outlook.close();
         console.log("Recent mail listing completed.");
     },
 
     "outlook_read_mail_body": function () {
         console.log("Reading the first mail body from Inbox.");
-        var ol = new Outlook().open().selectFolder(Outlook.Folders.Inbox);
 
-        var first = ol.getItems().get(1);
+        var outlook = new Office.Outlook();
+        outlook.open();
+        outlook.selectFolder(Office.Outlook.Folders.Inbox);
 
-        console.log(first instanceof Outlook.MailItem ?
+        var first = outlook.getItems().get(1);
+
+        console.log(first instanceof Office.Outlook.MailItem ?
             "The first item is a MailItem." :
             "The first item is not a MailItem.");
 
-        if (first instanceof Outlook.MailItem) {
+        if (first instanceof Office.Outlook.MailItem) {
             console.log("Subject: " + String(first.getSubject()));
-            console.log("From: " + String(first.getSenderName()) + " <" + String(first.getSenderEmailAddress()) + ">");
+            console.log("From: " + String(first.getSenderName()) +
+                " <" + String(first.getSenderEmailAddress()) + ">");
             console.log("Received: " + String(first.getReceivedTime()));
 
             var body = String(first.getBody() || "");
             console.log("Body length (text): " + String(body.length));
             console.log("Body preview (text):");
             console.log(body.substr(0, 300));
-
-            // var html = String(first.getHtmlBody() || "");
-            // console.log("Body length (html): " + String(html.length));
         }
 
-        ol.close();
+        outlook.close();
         console.log("Mail body read test completed.");
     },
 
@@ -1221,9 +1227,12 @@ var test_implements = {
         var maxCount = 10;
 
         console.log("Searching mails by sender contains: '" + keyword + "'.");
-        var ol = new Outlook().open().selectFolder(Outlook.Folders.Inbox);
 
-        var results = ol.searchBySenderContains(keyword);
+        var outlook = new Office.Outlook();
+        outlook.open();
+        outlook.selectFolder(Office.Outlook.Folders.Inbox);
+
+        var results = outlook.searchBySenderContains(keyword);
         console.log("Printing search results. (max " + maxCount + ")");
 
         results.forEach(function (m, i) {
@@ -1235,7 +1244,7 @@ var test_implements = {
             );
         }, maxCount);
 
-        ol.close();
+        outlook.close();
         console.log("Sender search test completed.");
     },
 
@@ -1244,9 +1253,12 @@ var test_implements = {
         var maxCount = 10;
 
         console.log("Searching mails by recipient contains (To/CC/BCC): '" + keyword + "'.");
-        var ol = new Outlook().open().selectFolder(Outlook.Folders.Inbox);
 
-        var results = ol.searchByRecipientContains(keyword);
+        var outlook = new Office.Outlook();
+        outlook.open();
+        outlook.selectFolder(Office.Outlook.Folders.Inbox);
+
+        var results = outlook.searchByRecipientContains(keyword);
         console.log("Printing search results. (max " + maxCount + ")");
 
         results.forEach(function (m, i) {
@@ -1259,7 +1271,7 @@ var test_implements = {
             );
         }, maxCount);
 
-        ol.close();
+        outlook.close();
         console.log("Recipient search test completed.");
     },
 
@@ -1268,10 +1280,13 @@ var test_implements = {
         var maxCount = 10;
 
         console.log("Searching mails by sender OR recipient contains: '" + keyword + "'.");
-        console.log("This test uses Restrict (Sender/To/CC/BCC) + Recipients collection verification.");
-        var ol = new Outlook().open().selectFolder(Outlook.Folders.Inbox);
+        console.log("This test uses Restrict (Sender/To/CC/BCC) + Recipients verification.");
 
-        var results = ol.searchBySenderOrRecipientContains(keyword);
+        var outlook = new Office.Outlook();
+        outlook.open();
+        outlook.selectFolder(Office.Outlook.Folders.Inbox);
+
+        var results = outlook.searchBySenderOrRecipientContains(keyword);
         console.log("Printing search results. (max " + maxCount + ")");
 
         results.forEach(function (m, i) {
@@ -1284,21 +1299,23 @@ var test_implements = {
             );
         }, maxCount);
 
-        ol.close();
+        outlook.close();
         console.log("Sender/Recipient combined search test completed.");
     },
 
     "outlook_create_draft_mail": function () {
         console.log("Creating a draft mail item in Outlook. (will not send)");
-        var ol = new Outlook().open();
 
-        var draft = ol.createMail();
+        var outlook = new Office.Outlook();
+        outlook.open();
 
-        console.log(draft instanceof Outlook.MailItem ?
+        var draft = outlook.createMail();
+
+        console.log(draft instanceof Office.Outlook.MailItem ?
             "MailItem has been created." :
             "Failed to create MailItem.");
 
-        if (draft instanceof Outlook.MailItem) {
+        if (draft instanceof Office.Outlook.MailItem) {
             draft
                 .setTo("test@example.com")
                 .setSubject("WelsonJS Outlook Draft Test")
@@ -1309,7 +1326,7 @@ var test_implements = {
             console.log("Draft mail item has been saved.");
         }
 
-        ol.close();
+        outlook.close();
         console.log("Draft creation test completed.");
     },
 
@@ -1317,14 +1334,17 @@ var test_implements = {
         var keyword = "test";
         var maxCount = 1;
 
-        console.log("Running an end-to-end Outlook automation test (session -> search -> body preview).");
-        var ol = new Outlook().open().selectFolder(Outlook.Folders.Inbox);
+        console.log("Running an end-to-end Outlook automation test.");
+
+        var outlook = new Office.Outlook();
+        outlook.open();
+        outlook.selectFolder(Office.Outlook.Folders.Inbox);
 
         console.log("Searching mails by subject contains: '" + keyword + "'.");
-        var results = ol.searchSubjectContains(keyword);
+        var results = outlook.searchSubjectContains(keyword);
 
         var found = false;
-        results.forEach(function (m, i) {
+        results.forEach(function (m) {
             found = true;
             console.log("Subject: " + String(m.getSubject()));
             console.log("From: " + String(m.getSenderEmailAddress()));
@@ -1334,9 +1354,9 @@ var test_implements = {
 
         console.log(found ?
             "End-to-end test executed successfully." :
-            "No matching mail found; end-to-end test could not complete the preview step.");
+            "No matching mail found; end-to-end test could not complete.");
 
-        ol.close();
+        outlook.close();
         console.log("End-to-end Outlook test completed.");
     }
 };
