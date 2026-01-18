@@ -1139,6 +1139,205 @@ var test_implements = {
             job.setResourceName(resourceName);
             job.saveTo("D:\\");
         });
+    },
+    
+    "outlook_open_session": function () {
+        console.log("Starting Outlook COM automation.");
+        var ol = new Outlook().open();
+
+        console.log(typeof ol.application !== "undefined" ?
+            "Outlook.Application object has been created." :
+            "Failed to create Outlook.Application object.");
+
+        console.log(typeof ol.namespace !== "undefined" ?
+            "Connected to MAPI namespace." :
+            "Failed to connect to MAPI namespace.");
+
+        console.log(ol.currentFolder !== null ?
+            "Default folder (Inbox) has been selected." :
+            "Failed to select default folder (Inbox).");
+
+        ol.close();
+        console.log("Outlook COM automation has been closed.");
+    },
+
+    "outlook_list_inbox_recent": function () {
+        var maxCount = 10;
+
+        console.log("Listing recent mails from Inbox. (max " + maxCount + ")");
+        var ol = new Outlook().open().selectFolder(Outlook.Folders.Inbox);
+
+        var items = ol.getItems();
+        var count = items.count();
+        console.log("Inbox item count: " + String(count));
+
+        items.forEach(function (it, i) {
+            if (it instanceof Outlook.MailItem) {
+                console.log(
+                    "#" + String(i) +
+                    " | From: " + String(it.getSenderName()) +
+                    " | Subject: " + String(it.getSubject()) +
+                    " | Received: " + String(it.getReceivedTime())
+                );
+            } else {
+                console.log("#" + String(i) + " | Non-mail item: class=" + String(it.getClass()));
+            }
+        }, maxCount);
+
+        ol.close();
+        console.log("Recent mail listing completed.");
+    },
+
+    "outlook_read_mail_body": function () {
+        console.log("Reading the first mail body from Inbox.");
+        var ol = new Outlook().open().selectFolder(Outlook.Folders.Inbox);
+
+        var first = ol.getItems().get(1);
+
+        console.log(first instanceof Outlook.MailItem ?
+            "The first item is a MailItem." :
+            "The first item is not a MailItem.");
+
+        if (first instanceof Outlook.MailItem) {
+            console.log("Subject: " + String(first.getSubject()));
+            console.log("From: " + String(first.getSenderName()) + " <" + String(first.getSenderEmailAddress()) + ">");
+            console.log("Received: " + String(first.getReceivedTime()));
+
+            var body = String(first.getBody() || "");
+            console.log("Body length (text): " + String(body.length));
+            console.log("Body preview (text):");
+            console.log(body.substr(0, 300));
+
+            // var html = String(first.getHtmlBody() || "");
+            // console.log("Body length (html): " + String(html.length));
+        }
+
+        ol.close();
+        console.log("Mail body read test completed.");
+    },
+
+    "outlook_search_by_sender_contains": function () {
+        var keyword = "example.com";
+        var maxCount = 10;
+
+        console.log("Searching mails by sender contains: '" + keyword + "'.");
+        var ol = new Outlook().open().selectFolder(Outlook.Folders.Inbox);
+
+        var results = ol.searchBySenderContains(keyword);
+        console.log("Printing search results. (max " + maxCount + ")");
+
+        results.forEach(function (m, i) {
+            console.log(
+                "#" + String(i) +
+                " | From: " + String(m.getSenderEmailAddress()) +
+                " | Subject: " + String(m.getSubject()) +
+                " | Received: " + String(m.getReceivedTime())
+            );
+        }, maxCount);
+
+        ol.close();
+        console.log("Sender search test completed.");
+    },
+
+    "outlook_search_by_recipient_contains": function () {
+        var keyword = "example.com";
+        var maxCount = 10;
+
+        console.log("Searching mails by recipient contains (To/CC/BCC): '" + keyword + "'.");
+        var ol = new Outlook().open().selectFolder(Outlook.Folders.Inbox);
+
+        var results = ol.searchByRecipientContains(keyword);
+        console.log("Printing search results. (max " + maxCount + ")");
+
+        results.forEach(function (m, i) {
+            console.log(
+                "#" + String(i) +
+                " | To: " + String(m.mail.To || "") +
+                " | CC: " + String(m.mail.CC || "") +
+                " | Subject: " + String(m.getSubject()) +
+                " | Received: " + String(m.getReceivedTime())
+            );
+        }, maxCount);
+
+        ol.close();
+        console.log("Recipient search test completed.");
+    },
+
+    "outlook_search_by_sender_or_recipient_contains": function () {
+        var keyword = "example.com";
+        var maxCount = 10;
+
+        console.log("Searching mails by sender OR recipient contains: '" + keyword + "'.");
+        console.log("This test uses Restrict (Sender/To/CC/BCC) + Recipients collection verification.");
+        var ol = new Outlook().open().selectFolder(Outlook.Folders.Inbox);
+
+        var results = ol.searchBySenderOrRecipientContains(keyword);
+        console.log("Printing search results. (max " + maxCount + ")");
+
+        results.forEach(function (m, i) {
+            console.log(
+                "#" + String(i) +
+                " | From: " + String(m.getSenderEmailAddress()) +
+                " | To: " + String(m.mail.To || "") +
+                " | Subject: " + String(m.getSubject()) +
+                " | Received: " + String(m.getReceivedTime())
+            );
+        }, maxCount);
+
+        ol.close();
+        console.log("Sender/Recipient combined search test completed.");
+    },
+
+    "outlook_create_draft_mail": function () {
+        console.log("Creating a draft mail item in Outlook. (will not send)");
+        var ol = new Outlook().open();
+
+        var draft = ol.createMail();
+
+        console.log(draft instanceof Outlook.MailItem ?
+            "MailItem has been created." :
+            "Failed to create MailItem.");
+
+        if (draft instanceof Outlook.MailItem) {
+            draft
+                .setTo("test@example.com")
+                .setSubject("WelsonJS Outlook Draft Test")
+                .setBody("This is a draft created by WelsonJS test.\r\nDo not send.");
+
+            console.log("Saving the draft mail item.");
+            draft.save();
+            console.log("Draft mail item has been saved.");
+        }
+
+        ol.close();
+        console.log("Draft creation test completed.");
+    },
+
+    "outlook_open_outlook_with_chatgpt": function () {
+        var keyword = "test";
+        var maxCount = 1;
+
+        console.log("Running an end-to-end Outlook automation test (session -> search -> body preview).");
+        var ol = new Outlook().open().selectFolder(Outlook.Folders.Inbox);
+
+        console.log("Searching mails by subject contains: '" + keyword + "'.");
+        var results = ol.searchSubjectContains(keyword);
+
+        var found = false;
+        results.forEach(function (m, i) {
+            found = true;
+            console.log("Subject: " + String(m.getSubject()));
+            console.log("From: " + String(m.getSenderEmailAddress()));
+            console.log("Body preview:");
+            console.log(String(m.getBody() || "").substr(0, 200));
+        }, maxCount);
+
+        console.log(found ?
+            "End-to-end test executed successfully." :
+            "No matching mail found; end-to-end test could not complete the preview step.");
+
+        ol.close();
+        console.log("End-to-end Outlook test completed.");
     }
 };
 
