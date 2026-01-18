@@ -1139,6 +1139,265 @@ var test_implements = {
             job.setResourceName(resourceName);
             job.saveTo("D:\\");
         });
+    },
+    
+    "outlook_open_session": function () {
+        console.log("Starting Outlook automation.");
+
+        var Office = require("lib/msoffice");
+
+        var outlook = new Office.Outlook();
+        outlook.open();
+
+        console.log(typeof outlook.application !== "undefined" ?
+            "Outlook.Application object has been created." :
+            "Failed to create Outlook.Application object.");
+
+        console.log(typeof outlook.namespace !== "undefined" ?
+            "Connected to MAPI namespace." :
+            "Failed to connect to MAPI namespace.");
+
+        console.log(outlook.currentFolder !== null ?
+            "Default folder (Inbox) has been selected." :
+            "Failed to select default folder (Inbox).");
+
+        outlook.close();
+        console.log("Outlook automation has been closed.");
+    },
+
+    "outlook_list_inbox_recent": function () {
+        var maxCount = 10;
+        var previewLen = 160;
+
+        console.log("Listing recent mails from Inbox. (max " + maxCount + ")");
+        console.log("Body preview length: " + previewLen);
+
+        var Office = require("lib/msoffice");
+
+        var outlook = new Office.Outlook();
+        outlook.open();
+        outlook.selectFolder(Office.Outlook.Folders.Inbox);
+
+        var items = outlook.getItems();
+        var count = items.count();
+        console.log("Inbox item count: " + String(count));
+
+        items.forEach(function (it, i) {
+            if (it instanceof Office.Outlook.MailItem) {
+                var body = String(it.getBody() || "");
+                var preview = body.replace(/\r/g, "").replace(/\n+/g, " ").substr(0, previewLen);
+
+                console.log(
+                    "#" + String(i) +
+                    " | From: " + String(it.getSenderName()) +
+                    " | Subject: " + String(it.getSubject()) +
+                    " | Received: " + String(it.getReceivedTime())
+                );
+                console.log("  Body: " + preview);
+            } else {
+                console.log("#" + String(i) + " | Non-mail item: class=" + String(it.getClass()));
+            }
+        }, maxCount);
+
+        outlook.close();
+        console.log("Recent mail listing completed.");
+    },
+
+    "outlook_read_mail_body": function () {
+        console.log("Reading the first mail body from Inbox.");
+
+        var Office = require("lib/msoffice");
+
+        var outlook = new Office.Outlook();
+        outlook.open();
+        outlook.selectFolder(Office.Outlook.Folders.Inbox);
+
+        var first = outlook.getItems().get(1);
+
+        console.log(first instanceof Office.Outlook.MailItem ?
+            "The first item is a MailItem." :
+            "The first item is not a MailItem.");
+
+        if (first instanceof Office.Outlook.MailItem) {
+            console.log("Subject: " + String(first.getSubject()));
+            console.log("From: " + String(first.getSenderName()) +
+                " <" + String(first.getSenderEmailAddress()) + ">");
+            console.log("Received: " + String(first.getReceivedTime()));
+
+            var body = String(first.getBody() || "");
+            console.log("Body length (text): " + String(body.length));
+            console.log("Body preview (text):");
+            console.log(body.substr(0, 300));
+        }
+
+        outlook.close();
+        console.log("Mail body read test completed.");
+    },
+
+    "outlook_search_by_sender_contains": function () {
+        var keyword = "example.com";
+        var maxCount = 10;
+        var previewLen = 160;
+
+        console.log("Searching mails by sender contains: '" + keyword + "'.");
+        console.log("Body preview length: " + previewLen);
+
+        var Office = require("lib/msoffice");
+
+        var outlook = new Office.Outlook();
+        outlook.open();
+        outlook.selectFolder(Office.Outlook.Folders.Inbox);
+
+        var results = outlook.searchBySenderContains(keyword);
+        console.log("Printing search results. (max " + maxCount + ")");
+
+        results.forEach(function (m, i) {
+            var body = String(m.getBody() || "");
+            var preview = body.replace(/\r/g, "").replace(/\n+/g, " ").substr(0, previewLen);
+
+            console.log(
+                "#" + String(i) +
+                " | From: " + String(m.getSenderEmailAddress()) +
+                " | Subject: " + String(m.getSubject()) +
+                " | Received: " + String(m.getReceivedTime())
+            );
+            console.log("  Body: " + preview);
+        }, maxCount);
+
+        outlook.close();
+        console.log("Sender search test completed.");
+    },
+
+    "outlook_search_by_recipient_contains": function () {
+        var keyword = "example.com";
+        var maxCount = 10;
+        var previewLen = 160;
+
+        console.log("Searching mails by recipient contains (To/CC/BCC): '" + keyword + "'.");
+        console.log("Body preview length: " + previewLen);
+
+        var Office = require("lib/msoffice");
+
+        var outlook = new Office.Outlook();
+        outlook.open();
+        outlook.selectFolder(Office.Outlook.Folders.Inbox);
+
+        var results = outlook.searchByRecipientContains(keyword);
+        console.log("Printing search results. (max " + maxCount + ")");
+
+        results.forEach(function (m, i) {
+            var body = String(m.getBody() || "");
+            var preview = body.replace(/\r/g, "").replace(/\n+/g, " ").substr(0, previewLen);
+
+            console.log(
+                "#" + String(i) +
+                " | To: " + String(m.mail.To || "") +
+                " | CC: " + String(m.mail.CC || "") +
+                " | Subject: " + String(m.getSubject()) +
+                " | Received: " + String(m.getReceivedTime())
+            );
+            console.log("  Body: " + preview);
+        }, maxCount);
+
+        outlook.close();
+        console.log("Recipient search test completed.");
+    },
+
+    "outlook_search_by_sender_or_recipient_contains": function () {
+        var keyword = "example.com";
+        var maxCount = 10;
+        var previewLen = 160;
+
+        console.log("Searching mails by sender OR recipient contains: '" + keyword + "'.");
+        console.log("This test uses Restrict (Sender/To/CC/BCC) + Recipients verification.");
+        console.log("Body preview length: " + previewLen);
+
+        var Office = require("lib/msoffice");
+
+        var outlook = new Office.Outlook();
+        outlook.open();
+        outlook.selectFolder(Office.Outlook.Folders.Inbox);
+
+        var results = outlook.searchBySenderOrRecipientContains(keyword);
+        console.log("Printing search results. (max " + maxCount + ")");
+
+        results.forEach(function (m, i) {
+            var body = String(m.getBody() || "");
+            var preview = body.replace(/\r/g, "").replace(/\n+/g, " ").substr(0, previewLen);
+
+            console.log(
+                "#" + String(i) +
+                " | From: " + String(m.getSenderEmailAddress()) +
+                " | To: " + String(m.mail.To || "") +
+                " | Subject: " + String(m.getSubject()) +
+                " | Received: " + String(m.getReceivedTime())
+            );
+            console.log("  Body: " + preview);
+        }, maxCount);
+
+        outlook.close();
+        console.log("Sender/Recipient combined search test completed.");
+    },
+
+    "outlook_create_draft_mail": function () {
+        console.log("Creating a draft mail item in Outlook. (will not send)");
+
+        var Office = require("lib/msoffice");
+
+        var outlook = new Office.Outlook();
+        outlook.open();
+
+        var draft = outlook.createMail();
+
+        console.log(draft instanceof Office.Outlook.MailItem ?
+            "MailItem has been created." :
+            "Failed to create MailItem.");
+
+        if (draft instanceof Office.Outlook.MailItem) {
+            draft
+                .setTo("test@example.com")
+                .setSubject("WelsonJS Outlook Draft Test")
+                .setBody("This is a draft created by WelsonJS test.\r\nDo not send.");
+
+            console.log("Saving the draft mail item.");
+            draft.save();
+            console.log("Draft mail item has been saved.");
+        }
+
+        outlook.close();
+        console.log("Draft creation test completed.");
+    },
+
+    "outlook_open_outlook_with_chatgpt": function () {
+        var keyword = "test";
+        var maxCount = 1;
+
+        console.log("Running an end-to-end Outlook automation test.");
+
+        var Office = require("lib/msoffice");
+
+        var outlook = new Office.Outlook();
+        outlook.open();
+        outlook.selectFolder(Office.Outlook.Folders.Inbox);
+
+        console.log("Searching mails by subject contains: '" + keyword + "'.");
+        var results = outlook.searchSubjectContains(keyword);
+
+        var found = false;
+        results.forEach(function (m) {
+            found = true;
+            console.log("Subject: " + String(m.getSubject()));
+            console.log("From: " + String(m.getSenderEmailAddress()));
+            console.log("Body preview:");
+            console.log(String(m.getBody() || "").substr(0, 200));
+        }, maxCount);
+
+        console.log(found ?
+            "End-to-end test executed successfully." :
+            "No matching mail found; end-to-end test could not complete.");
+
+        outlook.close();
+        console.log("End-to-end Outlook test completed.");
     }
 };
 
