@@ -1143,6 +1143,8 @@ var test_implements = {
     
     "outlook_open_session": function () {
         console.log("Starting Outlook COM automation.");
+        
+        var Office = require("lib/msoffice");
 
         var outlook = new Office.Outlook();
         outlook.open();
@@ -1167,6 +1169,8 @@ var test_implements = {
         var maxCount = 10;
 
         console.log("Listing recent mails from Inbox. (max " + maxCount + ")");
+        
+        var Office = require("lib/msoffice");
 
         var outlook = new Office.Outlook();
         outlook.open();
@@ -1195,6 +1199,8 @@ var test_implements = {
 
     "outlook_read_mail_body": function () {
         console.log("Reading the first mail body from Inbox.");
+        
+        var Office = require("lib/msoffice");
 
         var outlook = new Office.Outlook();
         outlook.open();
@@ -1227,6 +1233,8 @@ var test_implements = {
         var maxCount = 10;
 
         console.log("Searching mails by sender contains: '" + keyword + "'.");
+        
+        var Office = require("lib/msoffice");
 
         var outlook = new Office.Outlook();
         outlook.open();
@@ -1253,6 +1261,8 @@ var test_implements = {
         var maxCount = 10;
 
         console.log("Searching mails by recipient contains (To/CC/BCC): '" + keyword + "'.");
+        
+        var Office = require("lib/msoffice");
 
         var outlook = new Office.Outlook();
         outlook.open();
@@ -1281,6 +1291,8 @@ var test_implements = {
 
         console.log("Searching mails by sender OR recipient contains: '" + keyword + "'.");
         console.log("This test uses Restrict (Sender/To/CC/BCC) + Recipients verification.");
+        
+        var Office = require("lib/msoffice");
 
         var outlook = new Office.Outlook();
         outlook.open();
@@ -1305,6 +1317,8 @@ var test_implements = {
 
     "outlook_create_draft_mail": function () {
         console.log("Creating a draft mail item in Outlook. (will not send)");
+
+        var Office = require("lib/msoffice");
 
         var outlook = new Office.Outlook();
         outlook.open();
@@ -1335,6 +1349,8 @@ var test_implements = {
         var maxCount = 1;
 
         console.log("Running an end-to-end Outlook automation test.");
+        
+        var Office = require("lib/msoffice");
 
         var outlook = new Office.Outlook();
         outlook.open();
