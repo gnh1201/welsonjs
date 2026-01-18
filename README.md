@@ -54,7 +54,7 @@ WelsonJS is an advanced JavaScript framework designed to operate in extreme cond
 * **Automation and Scripting**: Ideal for executing scripts in constrained environments, enabling automated workflows and system-level scripting.
 * **Embedded Applications**: Suitable for devices and systems with strict resource constraints, such as industrial controllers and embedded platforms.
 * **Security-Focused Environments**: Useful in security-sensitive applications where dependencies on external network connections are limited.
-* **Office Automation**: Suitable for office automation tasks using Microsoft Office and various LLM-based AI (such as ChatGPT).
+* **Office Automation**: Suitable for office automation tasks using Microsoft Office (Excel, PowerPoint, Word, Outlook, and more...) and various LLM-based AI (such as ChatGPT).
 
 WelsonJS is tailored for developers who need a reliable, lightweight JavaScript framework in environments where traditional solutions are impractical. Whether working with legacy systems, embedded devices, or security-critical applications, WelsonJS ensures that JavaScript remains a viable and efficient option.
 
