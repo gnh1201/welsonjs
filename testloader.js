@@ -1142,8 +1142,8 @@ var test_implements = {
     },
     
     "outlook_open_session": function () {
-        console.log("Starting Outlook COM automation.");
-        
+        console.log("Starting Outlook automation.");
+
         var Office = require("lib/msoffice");
 
         var outlook = new Office.Outlook();
@@ -1162,14 +1162,16 @@ var test_implements = {
             "Failed to select default folder (Inbox).");
 
         outlook.close();
-        console.log("Outlook COM automation has been closed.");
+        console.log("Outlook automation has been closed.");
     },
 
     "outlook_list_inbox_recent": function () {
         var maxCount = 10;
+        var previewLen = 160;
 
         console.log("Listing recent mails from Inbox. (max " + maxCount + ")");
-        
+        console.log("Body preview length: " + previewLen);
+
         var Office = require("lib/msoffice");
 
         var outlook = new Office.Outlook();
@@ -1182,12 +1184,16 @@ var test_implements = {
 
         items.forEach(function (it, i) {
             if (it instanceof Office.Outlook.MailItem) {
+                var body = String(it.getBody() || "");
+                var preview = body.replace(/\r/g, "").replace(/\n+/g, " ").substr(0, previewLen);
+
                 console.log(
                     "#" + String(i) +
                     " | From: " + String(it.getSenderName()) +
                     " | Subject: " + String(it.getSubject()) +
                     " | Received: " + String(it.getReceivedTime())
                 );
+                console.log("  Body: " + preview);
             } else {
                 console.log("#" + String(i) + " | Non-mail item: class=" + String(it.getClass()));
             }
@@ -1199,7 +1205,7 @@ var test_implements = {
 
     "outlook_read_mail_body": function () {
         console.log("Reading the first mail body from Inbox.");
-        
+
         var Office = require("lib/msoffice");
 
         var outlook = new Office.Outlook();
@@ -1231,9 +1237,11 @@ var test_implements = {
     "outlook_search_by_sender_contains": function () {
         var keyword = "example.com";
         var maxCount = 10;
+        var previewLen = 160;
 
         console.log("Searching mails by sender contains: '" + keyword + "'.");
-        
+        console.log("Body preview length: " + previewLen);
+
         var Office = require("lib/msoffice");
 
         var outlook = new Office.Outlook();
@@ -1244,12 +1252,16 @@ var test_implements = {
         console.log("Printing search results. (max " + maxCount + ")");
 
         results.forEach(function (m, i) {
+            var body = String(m.getBody() || "");
+            var preview = body.replace(/\r/g, "").replace(/\n+/g, " ").substr(0, previewLen);
+
             console.log(
                 "#" + String(i) +
                 " | From: " + String(m.getSenderEmailAddress()) +
                 " | Subject: " + String(m.getSubject()) +
                 " | Received: " + String(m.getReceivedTime())
             );
+            console.log("  Body: " + preview);
         }, maxCount);
 
         outlook.close();
@@ -1259,9 +1271,11 @@ var test_implements = {
     "outlook_search_by_recipient_contains": function () {
         var keyword = "example.com";
         var maxCount = 10;
+        var previewLen = 160;
 
         console.log("Searching mails by recipient contains (To/CC/BCC): '" + keyword + "'.");
-        
+        console.log("Body preview length: " + previewLen);
+
         var Office = require("lib/msoffice");
 
         var outlook = new Office.Outlook();
@@ -1272,6 +1286,9 @@ var test_implements = {
         console.log("Printing search results. (max " + maxCount + ")");
 
         results.forEach(function (m, i) {
+            var body = String(m.getBody() || "");
+            var preview = body.replace(/\r/g, "").replace(/\n+/g, " ").substr(0, previewLen);
+
             console.log(
                 "#" + String(i) +
                 " | To: " + String(m.mail.To || "") +
@@ -1279,6 +1296,7 @@ var test_implements = {
                 " | Subject: " + String(m.getSubject()) +
                 " | Received: " + String(m.getReceivedTime())
             );
+            console.log("  Body: " + preview);
         }, maxCount);
 
         outlook.close();
@@ -1288,10 +1306,12 @@ var test_implements = {
     "outlook_search_by_sender_or_recipient_contains": function () {
         var keyword = "example.com";
         var maxCount = 10;
+        var previewLen = 160;
 
         console.log("Searching mails by sender OR recipient contains: '" + keyword + "'.");
         console.log("This test uses Restrict (Sender/To/CC/BCC) + Recipients verification.");
-        
+        console.log("Body preview length: " + previewLen);
+
         var Office = require("lib/msoffice");
 
         var outlook = new Office.Outlook();
@@ -1302,6 +1322,9 @@ var test_implements = {
         console.log("Printing search results. (max " + maxCount + ")");
 
         results.forEach(function (m, i) {
+            var body = String(m.getBody() || "");
+            var preview = body.replace(/\r/g, "").replace(/\n+/g, " ").substr(0, previewLen);
+
             console.log(
                 "#" + String(i) +
                 " | From: " + String(m.getSenderEmailAddress()) +
@@ -1309,6 +1332,7 @@ var test_implements = {
                 " | Subject: " + String(m.getSubject()) +
                 " | Received: " + String(m.getReceivedTime())
             );
+            console.log("  Body: " + preview);
         }, maxCount);
 
         outlook.close();
@@ -1349,7 +1373,7 @@ var test_implements = {
         var maxCount = 1;
 
         console.log("Running an end-to-end Outlook automation test.");
-        
+
         var Office = require("lib/msoffice");
 
         var outlook = new Office.Outlook();
