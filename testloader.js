@@ -1408,7 +1408,13 @@ var test_implements = {
             // Add an email data to the prompt text context
             prompt_texts.push(text);
             
-            prompt_texts.push("  Body: " + body);  // No preview, it is a full text
+            // The body to reduce token usage and avoid sending overly large/sensitive content.
+            var bodyForPrompt = body;
+            var maxBodyLengthForPrompt = 2000; // Keep the body snippet short
+            if (bodyForPrompt.length > maxBodyLengthForPrompt) {
+                bodyForPrompt = bodyForPrompt.substring(0, maxBodyLengthForPrompt) + "...";
+            }
+            prompt_texts.push("  Body: " + bodyForPrompt);
         }, maxCount);
 
         outlook.close();
