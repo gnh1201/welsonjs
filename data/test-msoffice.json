@@ -1,6 +1,6 @@
 {
     "description": "WelsonJS test profile for Microsoft Office",
-    "updated_on": "2024-06-02",
+    "updated_on": "2026-01-18",
     "dependencies": {
         "welsonjs": "0.2.7"
     },
@@ -38,33 +38,73 @@
     "tests": [
         {
             "id": "open_excel_file",
-            "description": "마이크로소프트 엑셀 파일 열기 및 편집 가능 여부 확인",
+            "description": "Verify whether a Microsoft Excel file can be opened and edited",
             "tags": ["Office", "Excel"]
         },
         {
             "id": "open_excel_new",
-            "description": "마이크로소프트 엑셀 새로운 파일로 진행 가능 여부 확인",
+            "description": "Verify whether it is possible to proceed with a new Microsoft Excel file",
             "tags": ["Office", "Excel"]
         },
         {
             "id": "open_excel_with_chatgpt",
-            "description": "마이크로소프트 엑셀 파일 열기 및 ChatGPT를 이용한 편집 가능 여부 확인",
+            "description": "Verify whether a Microsoft Excel file can be opened and edited using ChatGPT",
             "tags": ["Office", "Excel"]
         },
         {
             "id": "open_powerpoint_file",
-            "description": "마이크로소프트 파워포인트 파일 열기 및 편집 가능 여부 확인",
+            "description": "Verify whether a Microsoft PowerPoint file can be opened and edited",
             "tags": ["Office", "PowerPoint"]
         },
         {
             "id": "open_powerpoint_new",
-            "description": "마이크로소프트 파워포인트 새로운 파일로 진행 가능 여부 확인",
+            "description": "Verify whether it is possible to proceed with a new Microsoft PowerPoint file",
             "tags": ["Office", "PowerPoint"]
         },
         {
             "id": "open_word_file",
-            "description": "마이크로소프트 워드 파일 열기 및 편집 가능 여부 확인",
+            "description": "Verify whether a Microsoft Word file can be opened and edited",
             "tags": ["Office", "Word"]
+        },
+        {
+            "id": "open_outlook_session",
+            "description": "Verify whether a Microsoft Outlook MAPI session can be opened and Inbox can be selected",
+            "tags": ["Office", "Outlook"]
+        },
+        {
+            "id": "list_inbox_recent",
+            "description": "Verify whether it is possible to read recent mail metadata (Subject/Sender/ReceivedTime) from Inbox",
+            "tags": ["Office", "Outlook"]
+        },
+        {
+            "id": "read_mail_body",
+            "description": "Verify whether it is possible to read mail body text (Body/HTMLBody) from a mail item",
+            "tags": ["Office", "Outlook"]
+        },
+        {
+            "id": "search_by_sender_contains",
+            "description": "Verify whether it is possible to search mails by sender (SenderName/SenderEmailAddress) using Restrict",
+            "tags": ["Office", "Outlook"]
+        },
+        {
+            "id": "search_by_recipient_contains",
+            "description": "Verify whether it is possible to search mails by recipients (To/CC/BCC) using Restrict",
+            "tags": ["Office", "Outlook"]
+        },
+        {
+            "id": "search_by_sender_or_recipient_contains",
+            "description": "Verify whether it is possible to search mails by sender or recipient (To/CC/BCC + Recipients collection) using Restrict + JS filter",
+            "tags": ["Office", "Outlook"]
+        },
+        {
+            "id": "create_draft_mail",
+            "description": "Verify whether it is possible to create a draft mail item and save it (no send)",
+            "tags": ["Office", "Outlook"]
+        },
+        {
+            "id": "open_outlook_with_chatgpt",
+            "description": "Verify whether Outlook automation tasks can be executed using ChatGPT-generated script (session + search + body read)",
+            "tags": ["Office", "Outlook"]
         }
     ]
 }
