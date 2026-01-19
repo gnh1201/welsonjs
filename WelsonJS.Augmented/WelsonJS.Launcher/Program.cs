@@ -201,57 +201,137 @@ namespace WelsonJS.Launcher
 
         private static void HandleTargetFilePath(string filePath)
         {
-            string fileExtension = Path.GetExtension(filePath);
+            if (string.IsNullOrWhiteSpace(filePath))
+                throw new ArgumentException("filePath is null or empty.", nameof(filePath));
 
-            if (String.IsNullOrEmpty(fileExtension))
-            {
-                throw new ArgumentException("The file extension is null or empty");
-            }
+            if (!File.Exists(filePath))
+                throw new FileNotFoundException("Target file not found.", filePath);
 
-            if (fileExtension.Equals(".zip", StringComparison.OrdinalIgnoreCase))
-            {
+            string ext = Path.GetExtension(filePath);
+            if (string.IsNullOrEmpty(ext))
+                throw new ArgumentException("The file extension is null or empty.", nameof(filePath));
+
+            if (ext.Equals(".zip", StringComparison.OrdinalIgnoreCase))
                 throw new NotImplementedException("Not implemented yet.");
-            }
 
-            if (fileExtension.Equals(".js", StringComparison.OrdinalIgnoreCase))
+            if (!ext.Equals(".js", StringComparison.OrdinalIgnoreCase))
+                throw new NotSupportedException($"Unsupported file type: {ext}");
+
+            string instanceId = Guid.NewGuid().ToString();
+            string workingDirectory = CreateInstanceDirectory(instanceId);
+
+            string appRoot = GetAppRootDirectory();
+            if (string.IsNullOrWhiteSpace(appRoot) || !Directory.Exists(appRoot))
+                throw new DirectoryNotFoundException($"Application root not found: {appRoot}");
+
+            DeployBaseFiles(appRoot, workingDirectory);
+            DeployOptionalDataFiles(appRoot, workingDirectory);
+            DeployEntrypoint(filePath, workingDirectory);
+
+            RecordFirstDeployTime(workingDirectory, instanceId);
+
+            RunCommandPrompt(
+                workingDirectory: workingDirectory,
+                entryFileName: "app.js",
+                scriptName: "bootstrap",
+                isConsoleApplication: true,
+                isInteractiveServiceApplication: false
+            );
+        }
+
+        private static void DeployBaseFiles(string appRoot, string workingDirectory)
+        {
+            CopyFile(
+                Path.Combine(appRoot, "app.js"),
+                Path.Combine(workingDirectory, "app.js"),
+                isRequired: true
+            );
+
+            CopyDirectoryRecursive(
+                Path.Combine(appRoot, "app", "assets", "js"),
+                Path.Combine(workingDirectory, "app", "assets", "js"),
+                isRequired: true
+            );
+
+            CopyDirectoryRecursive(
+                Path.Combine(appRoot, "lib"),
+                Path.Combine(workingDirectory, "lib"),
+                isRequired: true
+            );
+        }
+
+        private static void DeployOptionalDataFiles(string appRoot, string workingDirectory)
+        {
+            CopyFile(
+                Path.Combine(appRoot, "data", "apikey.json"),
+                Path.Combine(workingDirectory, "data", "apikey.json"),
+                isRequired: false
+            );
+
+            CopyFile(
+                Path.Combine(appRoot, "data", "available_proxies.json"),
+                Path.Combine(workingDirectory, "data", "available_proxies.json"),
+                isRequired: false
+            );
+
+            CopyFile(
+                Path.Combine(appRoot, "data", "filetypes.json"),
+                Path.Combine(workingDirectory, "data", "filetypes.json"),
+                isRequired: false
+            );
+        }
+
+        private static void DeployEntrypoint(string sourceJsPath, string workingDirectory)
+        {
+            CopyFile(
+                sourceJsPath,
+                Path.Combine(workingDirectory, "bootstrap.js"),
+                isRequired: true
+            );
+        }
+
+        private static void CopyDirectoryRecursive(
+            string sourceDir,
+            string destinationDir,
+            bool isRequired = false
+        )
+        {
+            if (!Directory.Exists(sourceDir))
             {
-                string instanceId = Guid.NewGuid().ToString();
-                string workingDirectory = CreateInstanceDirectory(instanceId);
-
-                string appRoot = GetAppRootDirectory();
-                string appBaseSource = Path.Combine(appRoot, "app.js");
-                if (!File.Exists(appBaseSource))
-                {
-                    throw new FileNotFoundException("app.js not found in application root.", appBaseSource);
-                }
-
-                string appBaseDestination = Path.Combine(workingDirectory, "app.js");
-                File.Copy(appBaseSource, appBaseDestination, overwrite: true);
-
-                string assetsSource = Path.Combine(appRoot, "app", "assets", "js");
-                string assetsDestination = Path.Combine(workingDirectory, "app", "assets", "js");
-                CopyDirectoryRecursive(assetsSource, assetsDestination);
-
-                string libSource = Path.Combine(appRoot, "lib");
-                string libDestination = Path.Combine(workingDirectory, "lib");
-                CopyDirectoryRecursive(libSource, libDestination);
-
-                string entrypointDestination = Path.Combine(workingDirectory, "bootstrap.js");
-                File.Copy(filePath, entrypointDestination, overwrite: true);
-
-                RecordFirstDeployTime(workingDirectory, instanceId);
-
-                RunCommandPrompt(
-                    workingDirectory: workingDirectory,
-                    entryFileName: "app.js",
-                    scriptName: "bootstrap",
-                    isConsoleApplication: true,
-                    isInteractiveServiceApplication: false
-                );
+                if (isRequired)
+                    throw new DirectoryNotFoundException($"Required directory not found: {sourceDir}");
                 return;
             }
 
-            throw new NotSupportedException($"Unsupported file type: {fileExtension}");
+            Directory.CreateDirectory(destinationDir);
+
+            foreach (string file in Directory.GetFiles(sourceDir))
+            {
+                string destFile = Path.Combine(destinationDir, Path.GetFileName(file));
+                File.Copy(file, destFile, overwrite: true);
+            }
+
+            foreach (string subDir in Directory.GetDirectories(sourceDir))
+            {
+                string destSubDir = Path.Combine(destinationDir, Path.GetFileName(subDir));
+                CopyDirectoryRecursive(subDir, destSubDir, isRequired);
+            }
+        }
+
+        private static void CopyFile(string sourcePath, string destinationPath, bool isRequired)
+        {
+            if (!File.Exists(sourcePath))
+            {
+                if (isRequired)
+                    throw new FileNotFoundException("Required file not found.", sourcePath);
+                return;
+            }
+
+            string parent = Path.GetDirectoryName(destinationPath);
+            if (!string.IsNullOrEmpty(parent))
+                Directory.CreateDirectory(parent);
+
+            File.Copy(sourcePath, destinationPath, overwrite: true);
         }
 
         private static string GetAppRootDirectory()
@@ -297,33 +377,6 @@ namespace WelsonJS.Launcher
             }
 
             return workingDirectory;
-        }
-
-        private static void CopyDirectoryRecursive(string sourceDir, string destDir)
-        {
-            if (!Directory.Exists(sourceDir))
-            {
-                throw new DirectoryNotFoundException("Source directory not found: " + sourceDir);
-            }
-
-            Directory.CreateDirectory(destDir);
-
-            foreach (var file in Directory.GetFiles(sourceDir, "*", SearchOption.AllDirectories))
-            {
-                string normalizedSource = sourceDir.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-                string relativePath = file.Substring(normalizedSource.Length + 1).TrimStart(
-                    Path.DirectorySeparatorChar,
-                    Path.AltDirectorySeparatorChar
-                );
-                string targetPath = Path.Combine(destDir, relativePath);
-                string targetDir = Path.GetDirectoryName(targetPath);
-                if (!Directory.Exists(targetDir))
-                {
-                    Directory.CreateDirectory(targetDir);
-                }
-
-                File.Copy(file, targetPath, overwrite: true);
-            }
         }
 
         public static void RunCommandPrompt(string workingDirectory, string entryFileName, string scriptName, bool isConsoleApplication = false, bool isInteractiveServiceApplication = false)
