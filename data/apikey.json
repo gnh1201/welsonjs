@@ -8,6 +8,7 @@
     "deepseek": "file:data/deepseek_apikey.txt",
     "moonshot": "file:data/moonshot_apikey.txt",
     "clovastudio": "file:data/clovastudio_apikey.txt",
+    "friendiai": "file:data/friendiai_apikey.txt",
     "catswords-ai": "file:data/catswords_ai_apikey.txt",
     "scrapeops": "file:data/scrapeops_apikey.txt",
     "serpapi": "file:data/serpapi_apikey.txt",
