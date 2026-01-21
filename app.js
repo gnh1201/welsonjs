@@ -189,6 +189,10 @@ if (typeof CreateObject === "undefined") {
 
 if (typeof UseObject === "undefined") {
     var UseObject = function(progId, callback, dispose) {
+        if (typeof callback !== "function") {
+            return null;
+        }
+        
         if (typeof dispose !== "function") {
             dispose = function(obj) {
                 try {
@@ -199,8 +203,7 @@ if (typeof UseObject === "undefined") {
         
         var obj = CreateObject(progId);
         try {
-            return (typeof callback === "function" ?
-                callback(obj) : null);
+            return callback(obj);
         } finally {
             dispose(obj);
             obj = null;
