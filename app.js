@@ -188,18 +188,27 @@ if (typeof CreateObject === "undefined") {
 }
 
 if (typeof UseObject === "undefined") {
-    var UseObject = function(progId, callback) {
-        var _dispose = function(obj) {
-            try {
-                obj.Close();
-            } catch (e) { /* ignore */ }
-        };
+    var UseObject = function(progId, callback, dispose, fallback) {
+        if (typeof callback !== "function") {
+            return null;
+        }
+        
+        if (typeof dispose !== "function") {
+            dispose = function(obj) {
+                try {
+                    obj.Close();
+                } catch (e) { /* ignore */ }
+            };
+        }
         
         var obj = CreateObject(progId);
         try {
             return callback(obj);
+        } catch (e) {
+            return (typeof fallback === "function" ?
+                fallback(obj, e) : null);
         } finally {
-            _dispose(obj);
+            dispose(obj);
             obj = null;
         }
     }
