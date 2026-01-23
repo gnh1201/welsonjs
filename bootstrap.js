@@ -12,7 +12,9 @@ var SHELL = require("lib/shell");
 var appName = "welsonjs";
 var isDisabledRegisterURIScheme = false;
 
-exports.main = function(args) {
+function main(args) {
+    //console.trace();
+    
     // unlock file
     console.log("Starting unlock files...");
     PS.execCommand("dir | Unblock-File");
@@ -67,3 +69,6 @@ exports.main = function(args) {
     // print welcome
     console.log("welcome");
 };
+
+//exports.main = __export__(main, "main");
+exports.main = main;
