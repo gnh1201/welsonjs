@@ -120,6 +120,14 @@ var console = {
     debug: function() {
         this._echo(arguments, "debug");
     },
+    trace: function() {
+        try {
+            var callee = arguments.callee.caller.caller;
+            throw new TraceError("DEBUG", "", callee);
+        } catch (e) {
+            this.debug(e.message);
+        }
+    },
     time: function(label) {
         label = label || "default";
         if (!(label in this._timers)) {
@@ -153,6 +161,118 @@ var console = {
         }
     }
 };
+
+function TraceError(severity, message, callee) {
+    var MAX_DEPTH = 20;
+
+    var SEVERITY_MAP = {
+        "": "ERROR",
+        "LOG": "INFO",
+        "INFO": "INFO",
+        "WARN": "WARN",
+        "WARNING": "WARN",
+        "ERROR": "ERROR",
+        "ERR": "ERROR",
+        "CRITICAL": "ERROR",
+        "FATAL": "ERROR",
+        "DEBUG": "DEBUG"
+    };
+
+    var CONSOLE_METHOD_MAP = {
+        "ERROR": "error",
+        "WARN": "warn",
+        "INFO": "info",
+        "DEBUG": "debug"
+    };
+
+    function fnName(fn) {
+        return fn ? (fn.__name__ || fn.name || "(anonymous)") : "(null)";
+    }
+
+    function normSeverity(s) {
+        s = (s == null) ? "" : String(s);
+        s = s.toUpperCase();
+        return SEVERITY_MAP[s] || (s || "ERROR");
+    }
+
+    function callersOf(startFn) {
+        var out = [];
+        var f = startFn;
+        var i = 0;
+
+        while (f && i < MAX_DEPTH) {
+            out[out.length] = fnName(f);
+            try {
+                f = f.caller;
+            } catch (e) {
+                break;
+            }
+            i++;
+        }
+        return out;
+    }
+
+    function pickConsoleFn(sev) {
+        if (typeof console === "undefined" || !console)
+            return null;
+
+        var methodName = CONSOLE_METHOD_MAP[sev] || "log";
+        var fn = console[methodName] || console.log;
+
+        if (!fn)
+            return null;
+
+        return (function (fns) {
+            var i;
+
+            return function (s) {
+                for (i = 0; i < fns.length; i++) {
+                    try {
+                        fns[i](s);
+                        return;
+                    } catch (e) {
+                        // try next
+                    }
+                }
+            };
+        })([
+            function (s) { fn.call(console, s); },  // 1) severity-specific console
+            function (s) { console.log(s); },  // 2) generic console.log
+            function (s) { WScript.Echo(s); }  // 3) WSH fallback
+        ]);
+    }
+
+    function buildMessage(name, sev, msg, chain) {
+        var s = name + " [" + sev + "]";
+        if (msg) s += ": " + msg;
+        if (chain) s += "\r\n" + chain;
+        return s;
+    }
+
+    this.name = "TraceException";
+    this.severity = normSeverity(severity);
+    this.message = message || "";
+    this.description = this.message; // IE friendly
+    this.callee = callee || null;
+
+    this.callers = callersOf(this.callee);
+    this.callChain = this.callers.length ? this.callers.join("\r\n  <- ") : "";
+
+    this.fullMessage = buildMessage(this.name, this.severity, this.message, this.callChain);
+    this.toString = function () {
+        return this.fullMessage;
+    };
+
+    this._logFn = pickConsoleFn(this.severity);
+
+    this.log = function () {
+        if (this._logFn)
+            this._logFn(this.fullMessage);
+    };
+    
+    this.log();
+}
+TraceError.prototype = new Error;
 
 if (typeof CreateObject === "undefined") {
     var CreateObject = function(progId, serverName, callback) {
@@ -223,6 +343,47 @@ function __evalFile__(FN) {
     } catch (e) {
         console.error(e.message);
     }
+}
+
+/**
+ * @f {Function} a function object
+ * @name {string} a name of the exported function
+ */
+function __export__(f, name) {
+    if (typeof f !== "function") 
+        return f;
+    
+    name = (name == null) ? "" : String(name);
+    
+    if (!name)
+        name = "(exported)";
+    
+    try {
+        f.__name__ = name;
+    } catch (e) {}
+    
+    try {
+        f.name = name;
+    } catch (e) {}
+
+    var wrapped = function () {
+        try {
+            return f.apply(this, arguments);
+        } catch (e) {
+            if (typeof TraceError === "function") {
+                throw new TraceError(
+                    "ERROR",
+                    (e && (e.message || e.description)) ? (e.message || e.description) : "error",
+                    arguments.callee
+                );
+            }
+        }
+    };
+    
+    wrapped.__name__ = name;
+    wrapped.__target__ = f;
+
+    return wrapped;
 }
 
 /**
