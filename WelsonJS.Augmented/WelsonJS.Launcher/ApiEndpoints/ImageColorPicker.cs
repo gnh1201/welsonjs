@@ -3,6 +3,7 @@
 // SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
 // https://github.com/gnh1201/welsonjs
 //
+using log4net;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -29,14 +30,14 @@ namespace WelsonJS.Launcher.ResourceTools
     ///  - Request parse: JsSerializer.Load/ExtractFrom (engine) + tiny local decoders for literals.
     ///  - Response encode: Dictionary<string, object> → JsSerializer.Serialize(...).
     /// </summary>
-    public class ImageColorPicker : IResourceTool
+    public class ImageColorPicker : IApiEndpoint
     {
         private readonly ResourceServer Server;
         private readonly HttpClient _httpClient;
-        private readonly ICompatibleLogger _logger;
+        private readonly ILog _logger;
         private const string Prefix = "image-color-picker";
 
-        public ImageColorPicker(ResourceServer server, HttpClient httpClient, ICompatibleLogger logger)
+        public ImageColorPicker(ResourceServer server, HttpClient httpClient, ILog logger)
         {
             Server = server;
 

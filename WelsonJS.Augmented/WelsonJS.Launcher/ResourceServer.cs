@@ -3,6 +3,9 @@
 // SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
 // https://github.com/gnh1201/welsonjs
 // 
+using log4net;
+using log4net.Core;
+using Microsoft.Isam.Esent.Interop;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -28,9 +31,9 @@ namespace WelsonJS.Launcher
         private bool _isRunning;
         private string _prefix;
         private string _resourceName;
-        private List<IResourceTool> _tools = new List<IResourceTool>();
+        private List<IApiEndpoint> _tools = new List<IApiEndpoint>();
         private BlobConfig _blobConfig;
-        private readonly ICompatibleLogger _logger;
+        private readonly ILog _logger;
 
         private static readonly HttpClient _httpClient = new HttpClient();
         private static readonly string _defaultMimeType = "application/octet-stream";
@@ -46,10 +49,10 @@ namespace WelsonJS.Launcher
             TryParseAllowedOrigins();
         }
 
-        public ResourceServer(string prefix, string resourceName, ICompatibleLogger logger = null)
+        public ResourceServer(string prefix, string resourceName, ILog logger = null)
         {
             // Set the logger
-            _logger = logger ?? new TraceLogger();
+            _logger = _logger ?? LogManager.GetLogger(typeof(Program));
 
             // Initialize
             _prefix = prefix;
@@ -471,7 +474,7 @@ namespace WelsonJS.Launcher
             }
         }
 
-        private static void TryParseAllowedOrigins(ICompatibleLogger logger = null)
+        private static void TryParseAllowedOrigins(ILog logger = null)
         {
             var raw = Program.GetAppConfig("ResourceServerAllowOrigins");
 

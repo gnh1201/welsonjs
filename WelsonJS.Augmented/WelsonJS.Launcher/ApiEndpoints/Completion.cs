@@ -14,18 +14,19 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Net.Http;
 using System.Collections.Concurrent;
+using log4net;
 
 namespace WelsonJS.Launcher.ResourceTools
 {
-    public class Completion : IResourceTool
+    public class Completion : IApiEndpoint
     {
         private readonly ResourceServer Server;
         private readonly HttpClient _httpClient;
-        private readonly ICompatibleLogger _logger;
+        private readonly ILog _logger;
         private const string Prefix = "completion/";
         private readonly ConcurrentBag<string> DiscoveredExecutables = new ConcurrentBag<string>();
 
-        public Completion(ResourceServer server, HttpClient httpClient, ICompatibleLogger logger)
+        public Completion(ResourceServer server, HttpClient httpClient, ILog logger)
         {
             Server = server;
 
@@ -154,7 +155,7 @@ namespace WelsonJS.Launcher.ResourceTools
         {
             if (!Directory.Exists(path))
             {
-                _logger.Info("Directory does not exist: {0}", path);
+                _logger.Info(string.Format("Directory does not exist: {0}", path));
                 return;
             }
 
@@ -169,7 +170,7 @@ namespace WelsonJS.Launcher.ResourceTools
             }
             catch (Exception ex)
             {
-                _logger.Info("Error enumerating executables in '{0}': {1}", path, ex.Message);
+                _logger.Info(string.Format("Error enumerating executables in '{0}': {1}", path, ex.Message));
             }
         }
 

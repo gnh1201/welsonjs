@@ -3,28 +3,29 @@
 // SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
 // https://github.com/gnh1201/welsonjs
 // 
+using log4net;
 using System;
-using System.Linq;
-using System.Security.Cryptography;
 using System.Collections.Generic;
-using System.Net;
-using System.Threading.Tasks;
-using System.Net.Http;
-using System.Text;
 using System.IO;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace WelsonJS.Launcher.ResourceTools
 {
-    public class TwoFactorAuth : IResourceTool
+    public class TwoFactorAuth : IApiEndpoint
     {
         private readonly ResourceServer Server;
         private readonly HttpClient _httpClient;
-        private readonly ICompatibleLogger _logger;
+        private readonly ILog _logger;
         private const string Prefix = "tfa/";
         private const string Base32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
         private static readonly int[] ValidKeyCharLengths = new[] { 16, 32 };
 
-        public TwoFactorAuth(ResourceServer server, HttpClient httpClient, ICompatibleLogger logger)
+        public TwoFactorAuth(ResourceServer server, HttpClient httpClient, ILog logger)
         {
             Server = server;
 

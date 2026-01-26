@@ -3,6 +3,7 @@
 // SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
 // https://github.com/gnh1201/welsonjs
 // 
+using log4net;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -16,14 +17,14 @@ using System.Xml.Linq;
 
 namespace WelsonJS.Launcher.ResourceTools
 {
-    public class Settings : IResourceTool
+    public class Settings : IApiEndpoint
     {
         private readonly ResourceServer Server;
         private readonly HttpClient _httpClient;
-        private readonly ICompatibleLogger _logger;
+        private readonly ILog _logger;
         private const string Prefix = "settings";
 
-        public Settings(ResourceServer server, HttpClient httpClient, ICompatibleLogger logger)
+        public Settings(ResourceServer server, HttpClient httpClient, ILog logger)
         {
             Server = server;
 
