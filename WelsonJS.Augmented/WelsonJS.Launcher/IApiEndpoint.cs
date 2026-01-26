@@ -11,7 +11,7 @@ namespace WelsonJS.Launcher
     /// <summary>
     /// Defines a contract for resource tools that can handle specific HTTP requests.
     /// </summary>
-    public interface IResourceTool
+    public interface IApiEndpoint
     {
         /// <summary>
         /// Determines whether this tool can handle the specified path.

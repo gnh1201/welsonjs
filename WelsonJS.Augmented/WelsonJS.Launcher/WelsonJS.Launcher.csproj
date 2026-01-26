@@ -74,6 +74,9 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="log4net, Version=3.2.0.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.3.2.0\lib\net462\log4net.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
@@ -88,19 +91,18 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ICompatibleLogger.cs" />
-    <Compile Include="IResourceTool.cs" />
+    <Compile Include="IApiEndpoint.cs" />
     <Compile Include="JsCore.cs" />
     <Compile Include="JsNative.cs" />
     <Compile Include="JsSerializer.cs" />
-    <Compile Include="ResourceTools\ImageColorPicker.cs" />
-    <Compile Include="ResourceTools\IpQuery.cs" />
-    <Compile Include="ResourceTools\Settings.cs" />
-    <Compile Include="ResourceTools\Completion.cs" />
-    <Compile Include="ResourceTools\ChromiumDevTools.cs" />
-    <Compile Include="ResourceTools\DnsQuery.cs" />
-    <Compile Include="ResourceTools\TwoFactorAuth.cs" />
-    <Compile Include="ResourceTools\Whois.cs" />
+    <Compile Include="ApiEndpoints\ImageColorPicker.cs" />
+    <Compile Include="ApiEndpoints\IpQuery.cs" />
+    <Compile Include="ApiEndpoints\Settings.cs" />
+    <Compile Include="ApiEndpoints\Completion.cs" />
+    <Compile Include="ApiEndpoints\ChromiumDevTools.cs" />
+    <Compile Include="ApiEndpoints\DnsQuery.cs" />
+    <Compile Include="ApiEndpoints\TwoFactorAuth.cs" />
+    <Compile Include="ApiEndpoints\Whois.cs" />
     <Compile Include="EnvForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -113,6 +115,7 @@
     <Compile Include="InstancesForm.Designer.cs">
       <DependentUpon>InstancesForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="LoggingBootstrap.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -128,7 +131,6 @@
       <DependentUpon>GlobalSettingsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="ResourceServer.cs" />
-    <Compile Include="TraceLogger.cs" />
     <Compile Include="WebSocketManager.cs" />
     <EmbeddedResource Include="EnvForm.resx">
       <DependentUpon>EnvForm.cs</DependentUpon>
@@ -148,6 +150,10 @@
       <DependentUpon>GlobalSettingsForm.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />
+    <None Include="log4net.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

@@ -3,6 +3,7 @@
 // SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
 // https://github.com/gnh1201/welsonjs
 // 
+using log4net;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -18,7 +19,7 @@ namespace WelsonJS.Launcher
 {
     internal static class Program
     {
-        private static readonly ICompatibleLogger _logger;
+        private static readonly ILog _logger;
 
         public static Mutex _mutex;
         public static ResourceServer _resourceServer;
@@ -30,7 +31,8 @@ namespace WelsonJS.Launcher
             _dateTimeFormat = GetAppConfig("DateTimeFormat");
 
             // set up logger
-            _logger = new TraceLogger();
+            LoggingBootstrap.Init("dev");
+            _logger = LogManager.GetLogger(typeof(Program));
 
             // load external assemblies
             InitializeAssemblyLoader();
