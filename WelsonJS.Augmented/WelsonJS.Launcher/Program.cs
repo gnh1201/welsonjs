@@ -31,7 +31,11 @@ namespace WelsonJS.Launcher
             _dateTimeFormat = GetAppConfig("DateTimeFormat");
 
             // set up logger
+#if DEBUG
             LoggingBootstrap.Init("dev");
+#else
+            LoggingBootstrap.Init("prod");
+#endif
             _logger = LogManager.GetLogger(typeof(Program));
 
             // load external assemblies
