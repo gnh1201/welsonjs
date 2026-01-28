@@ -52,7 +52,7 @@ namespace WelsonJS.Launcher
         public ResourceServer(string prefix, string resourceName, ILog logger = null)
         {
             // Set the logger
-            _logger = _logger ?? LogManager.GetLogger(typeof(Program));
+            _logger = logger ?? LogManager.GetLogger(typeof(Program));
 
             // Initialize
             _prefix = prefix;
