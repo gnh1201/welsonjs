@@ -14,7 +14,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WelsonJS.Launcher.ResourceTools
+namespace WelsonJS.Launcher.ApiEndpoints
 {
     public class TwoFactorAuth : IApiEndpoint
     {

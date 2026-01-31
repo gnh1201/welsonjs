@@ -15,7 +15,7 @@ using System.Resources;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace WelsonJS.Launcher.ResourceTools
+namespace WelsonJS.Launcher.ApiEndpoints
 {
     public class Settings : IApiEndpoint
     {

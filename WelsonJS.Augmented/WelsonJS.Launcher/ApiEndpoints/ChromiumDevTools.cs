@@ -11,7 +11,7 @@ using System.Net.Http;
 using System.Security;
 using System.Threading.Tasks;
 
-namespace WelsonJS.Launcher.ResourceTools
+namespace WelsonJS.Launcher.ApiEndpoints
 {
     public class ChromiumDevTools : IApiEndpoint
     {

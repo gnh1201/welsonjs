@@ -16,7 +16,7 @@ using System.Net.Http;
 using System.Collections.Concurrent;
 using log4net;
 
-namespace WelsonJS.Launcher.ResourceTools
+namespace WelsonJS.Launcher.ApiEndpoints
 {
     public class Completion : IApiEndpoint
     {

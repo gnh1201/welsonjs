@@ -25,7 +25,7 @@ using System.Threading.Tasks;
 using System.Web;
 using System.Xml.Linq;
 
-namespace WelsonJS.Launcher.ResourceTools
+namespace WelsonJS.Launcher.ApiEndpoints
 {
     public class IpQuery : IApiEndpoint
     {

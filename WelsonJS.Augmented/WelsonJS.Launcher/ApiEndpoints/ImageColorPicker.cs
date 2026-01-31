@@ -14,7 +14,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace WelsonJS.Launcher.ResourceTools
+namespace WelsonJS.Launcher.ApiEndpoints
 {
     /// <summary>
     /// POST image-color-picker/ with a unified JSON body:

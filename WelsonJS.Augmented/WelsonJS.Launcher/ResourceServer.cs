@@ -67,14 +67,14 @@ namespace WelsonJS.Launcher
             }, TaskScheduler.Default);
 
             // Add API endpoints
-            _apis.Add(new ResourceTools.Completion(this, _httpClient, _logger));
-            _apis.Add(new ResourceTools.Settings(this, _httpClient, _logger));
-            _apis.Add(new ResourceTools.ChromiumDevTools(this, _httpClient, _logger));
-            _apis.Add(new ResourceTools.DnsQuery(this, _httpClient, _logger));
-            _apis.Add(new ResourceTools.IpQuery(this, _httpClient, _logger));
-            _apis.Add(new ResourceTools.TwoFactorAuth(this, _httpClient, _logger));
-            _apis.Add(new ResourceTools.Whois(this, _httpClient, _logger));
-            _apis.Add(new ResourceTools.ImageColorPicker(this, _httpClient, _logger));
+            _apis.Add(new ApiEndpoints.Completion(this, _httpClient, _logger));
+            _apis.Add(new ApiEndpoints.Settings(this, _httpClient, _logger));
+            _apis.Add(new ApiEndpoints.ChromiumDevTools(this, _httpClient, _logger));
+            _apis.Add(new ApiEndpoints.DnsQuery(this, _httpClient, _logger));
+            _apis.Add(new ApiEndpoints.IpQuery(this, _httpClient, _logger));
+            _apis.Add(new ApiEndpoints.TwoFactorAuth(this, _httpClient, _logger));
+            _apis.Add(new ApiEndpoints.Whois(this, _httpClient, _logger));
+            _apis.Add(new ApiEndpoints.ImageColorPicker(this, _httpClient, _logger));
 
             // Register the prefix
             _listener.Prefixes.Add(prefix);
