@@ -154,7 +154,7 @@ namespace WelsonJS.Launcher
             // Serve from a resource tool
             foreach (var api in _apis)
             {
-                if (api.CanHandle(path))
+                if (api.CanHandle(context, path))
                 {
                     await api.HandleAsync(context, path);
                     return;

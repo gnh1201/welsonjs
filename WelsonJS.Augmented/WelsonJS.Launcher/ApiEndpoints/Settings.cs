@@ -32,7 +32,7 @@ namespace WelsonJS.Launcher.ResourceTools
             _logger = logger;
         }
 
-        public bool CanHandle(string path)
+        public bool CanHandle(HttpListenerContext context, string path)
         {
             return path.Equals(Prefix, StringComparison.OrdinalIgnoreCase);
         }

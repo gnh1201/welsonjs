@@ -14,47 +14,47 @@ namespace WelsonJS.Launcher
     public interface IApiEndpoint
     {
         /// <summary>
-        /// Determines whether this endpoint can handle a request
-        /// based solely on the request path.
+        /// Determines whether this endpoint is able to handle the given HTTP request.
         /// </summary>
         /// <remarks>
-        /// This method is typically used for fast, lightweight routing decisions
-        /// before inspecting headers, HTTP methods, or request bodies.
-        /// Implementations should avoid side effects and expensive operations.
-        /// </remarks>
-        /// <param name="path">The normalized request path (e.g. "/api/status").</param>
-        /// <returns>
-        /// <c>true</c> if this endpoint is responsible for the given path;
-        /// otherwise, <c>false</c>.
-        /// </returns>
-        bool CanHandle(string path);
-
-        /// <summary>
-        /// Determines whether this endpoint can handle the given HTTP request
-        /// using the full <see cref="HttpListenerContext"/>.
-        /// </summary>
-        /// <remarks>
-        /// This overload allows more advanced routing decisions based on
-        /// HTTP method, headers, query parameters, authentication state,
-        /// or other contextual information.
+        /// This method is invoked by the request dispatcher to decide which endpoint
+        /// should process the incoming request.
+        ///
+        /// Implementations may use the provided <paramref name="path"/> for fast
+        /// routing decisions, while the full <paramref name="context"/> can be
+        /// inspected for HTTP method, headers, query parameters, authentication
+        /// state, or other request-specific information.
+        ///
+        /// This method should be free of side effects and must not write to the response.
         /// </remarks>
         /// <param name="context">
-        /// The HTTP listener context containing request and connection details.
+        /// The HTTP listener context containing the incoming request details.
+        /// </param>
+        /// <param name="path">
+        /// The normalized request path extracted from the request URL
+        /// (e.g. "/api/status").
         /// </param>
         /// <returns>
-        /// <c>true</c> if this endpoint can process the request;
+        /// <c>true</c> if this endpoint is responsible for handling the request;
         /// otherwise, <c>false</c>.
         /// </returns>
-        bool CanHandle(HttpListenerContext context);
+        bool CanHandle(HttpListenerContext context, string path);
 
         /// <summary>
-        /// Asynchronously processes the HTTP request handled by this endpoint.
+        /// Asynchronously handles the HTTP request assigned to this endpoint.
         /// </summary>
+        /// <remarks>
+        /// This method is called only after <see cref="CanHandle"/> has returned
+        /// <c>true</c> for the same request.
+        ///
+        /// Implementations are responsible for writing the response and properly
+        /// terminating the request lifecycle.
+        /// </remarks>
         /// <param name="context">
         /// The HTTP listener context containing request and response objects.
         /// </param>
         /// <param name="path">
-        /// The request path associated with this handler.
+        /// The request path associated with this endpoint.
         /// </param>
         /// <returns>
         /// A task that represents the asynchronous handling operation.

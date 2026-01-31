@@ -36,7 +36,7 @@ namespace WelsonJS.Launcher.ResourceTools
             DnsServer = Program.GetAppConfig("DnsServerAddress");
         }
 
-        public bool CanHandle(string path)
+        public bool CanHandle(HttpListenerContext context, string path)
         {
             return path.StartsWith(Prefix, StringComparison.OrdinalIgnoreCase);
         }

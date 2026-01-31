@@ -38,7 +38,7 @@ namespace WelsonJS.Launcher.ResourceTools
             Task.Run(async () => await SafeDiscoverAsync(DiscoverFromProgramDirectories));
         }
 
-        public bool CanHandle(string path)
+        public bool CanHandle(HttpListenerContext context, string path)
         {
             return path.StartsWith(Prefix, StringComparison.OrdinalIgnoreCase);
         }
