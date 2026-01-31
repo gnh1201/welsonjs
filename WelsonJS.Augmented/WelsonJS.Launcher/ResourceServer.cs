@@ -31,7 +31,7 @@ namespace WelsonJS.Launcher
         private bool _isRunning;
         private string _prefix;
         private string _resourceName;
-        private List<IApiEndpoint> _tools = new List<IApiEndpoint>();
+        private List<IApiEndpoint> _apis = new List<IApiEndpoint>();
         private BlobConfig _blobConfig;
         private readonly ILog _logger;
 
@@ -66,15 +66,15 @@ namespace WelsonJS.Launcher
                     _logger?.Error($"FetchBlobConfig failed: {t.Exception}");
             }, TaskScheduler.Default);
 
-            // Add resource tools
-            _tools.Add(new ResourceTools.Completion(this, _httpClient, _logger));
-            _tools.Add(new ResourceTools.Settings(this, _httpClient, _logger));
-            _tools.Add(new ResourceTools.ChromiumDevTools(this, _httpClient, _logger));
-            _tools.Add(new ResourceTools.DnsQuery(this, _httpClient, _logger));
-            _tools.Add(new ResourceTools.IpQuery(this, _httpClient, _logger));
-            _tools.Add(new ResourceTools.TwoFactorAuth(this, _httpClient, _logger));
-            _tools.Add(new ResourceTools.Whois(this, _httpClient, _logger));
-            _tools.Add(new ResourceTools.ImageColorPicker(this, _httpClient, _logger));
+            // Add API endpoints
+            _apis.Add(new ResourceTools.Completion(this, _httpClient, _logger));
+            _apis.Add(new ResourceTools.Settings(this, _httpClient, _logger));
+            _apis.Add(new ResourceTools.ChromiumDevTools(this, _httpClient, _logger));
+            _apis.Add(new ResourceTools.DnsQuery(this, _httpClient, _logger));
+            _apis.Add(new ResourceTools.IpQuery(this, _httpClient, _logger));
+            _apis.Add(new ResourceTools.TwoFactorAuth(this, _httpClient, _logger));
+            _apis.Add(new ResourceTools.Whois(this, _httpClient, _logger));
+            _apis.Add(new ResourceTools.ImageColorPicker(this, _httpClient, _logger));
 
             // Register the prefix
             _listener.Prefixes.Add(prefix);
@@ -152,11 +152,11 @@ namespace WelsonJS.Launcher
             }
 
             // Serve from a resource tool
-            foreach (var tool in _tools)
+            foreach (var api in _apis)
             {
-                if (tool.CanHandle(path))
+                if (api.CanHandle(path))
                 {
-                    await tool.HandleAsync(context, path);
+                    await api.HandleAsync(context, path);
                     return;
                 }
             }
