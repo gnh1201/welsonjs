@@ -34,7 +34,7 @@ namespace WelsonJS.Launcher.ResourceTools
 
         public bool CanHandle(HttpListenerContext context, string path)
         {
-            return path.Equals(Prefix, StringComparison.OrdinalIgnoreCase);
+            return path != null && path.Equals(Prefix, StringComparison.OrdinalIgnoreCase);
         }
 
         public async Task HandleAsync(HttpListenerContext context, string path)

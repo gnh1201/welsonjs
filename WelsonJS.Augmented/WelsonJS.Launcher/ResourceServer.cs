@@ -31,7 +31,7 @@ namespace WelsonJS.Launcher
         private bool _isRunning;
         private string _prefix;
         private string _resourceName;
-        private List<IApiEndpoint> _apis = new List<IApiEndpoint>();
+        private readonly List<IApiEndpoint> _apis = new List<IApiEndpoint>();
         private BlobConfig _blobConfig;
         private readonly ILog _logger;
 
@@ -151,7 +151,7 @@ namespace WelsonJS.Launcher
                 return;
             }
 
-            // Serve from a resource tool
+            // Serve via API endpoints
             foreach (var api in _apis)
             {
                 if (api.CanHandle(context, path))
