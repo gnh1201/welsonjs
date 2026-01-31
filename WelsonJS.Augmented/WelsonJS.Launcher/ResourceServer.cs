@@ -31,7 +31,7 @@ namespace WelsonJS.Launcher
         private bool _isRunning;
         private string _prefix;
         private string _resourceName;
-        private List<IApiEndpoint> _tools = new List<IApiEndpoint>();
+        private readonly List<IApiEndpoint> _apis = new List<IApiEndpoint>();
         private BlobConfig _blobConfig;
         private readonly ILog _logger;
 
@@ -66,15 +66,15 @@ namespace WelsonJS.Launcher
                     _logger?.Error($"FetchBlobConfig failed: {t.Exception}");
             }, TaskScheduler.Default);
 
-            // Add resource tools
-            _tools.Add(new ResourceTools.Completion(this, _httpClient, _logger));
-            _tools.Add(new ResourceTools.Settings(this, _httpClient, _logger));
-            _tools.Add(new ResourceTools.ChromiumDevTools(this, _httpClient, _logger));
-            _tools.Add(new ResourceTools.DnsQuery(this, _httpClient, _logger));
-            _tools.Add(new ResourceTools.IpQuery(this, _httpClient, _logger));
-            _tools.Add(new ResourceTools.TwoFactorAuth(this, _httpClient, _logger));
-            _tools.Add(new ResourceTools.Whois(this, _httpClient, _logger));
-            _tools.Add(new ResourceTools.ImageColorPicker(this, _httpClient, _logger));
+            // Add API endpoints
+            _apis.Add(new ApiEndpoints.Completion(this, _httpClient, _logger));
+            _apis.Add(new ApiEndpoints.Settings(this, _httpClient, _logger));
+            _apis.Add(new ApiEndpoints.ChromiumDevTools(this, _httpClient, _logger));
+            _apis.Add(new ApiEndpoints.DnsQuery(this, _httpClient, _logger));
+            _apis.Add(new ApiEndpoints.IpQuery(this, _httpClient, _logger));
+            _apis.Add(new ApiEndpoints.TwoFactorAuth(this, _httpClient, _logger));
+            _apis.Add(new ApiEndpoints.Whois(this, _httpClient, _logger));
+            _apis.Add(new ApiEndpoints.ImageColorPicker(this, _httpClient, _logger));
 
             // Register the prefix
             _listener.Prefixes.Add(prefix);
@@ -151,12 +151,12 @@ namespace WelsonJS.Launcher
                 return;
             }
 
-            // Serve from a resource tool
-            foreach (var tool in _tools)
+            // Serve via API endpoints
+            foreach (var api in _apis)
             {
-                if (tool.CanHandle(path))
+                if (api.CanHandle(context, path))
                 {
-                    await tool.HandleAsync(context, path);
+                    await api.HandleAsync(context, path);
                     return;
                 }
             }

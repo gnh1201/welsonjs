@@ -16,7 +16,7 @@ using System.Net.Http;
 using System.Collections.Concurrent;
 using log4net;
 
-namespace WelsonJS.Launcher.ResourceTools
+namespace WelsonJS.Launcher.ApiEndpoints
 {
     public class Completion : IApiEndpoint
     {
@@ -38,9 +38,9 @@ namespace WelsonJS.Launcher.ResourceTools
             Task.Run(async () => await SafeDiscoverAsync(DiscoverFromProgramDirectories));
         }
 
-        public bool CanHandle(string path)
+        public bool CanHandle(HttpListenerContext context, string path)
         {
-            return path.StartsWith(Prefix, StringComparison.OrdinalIgnoreCase);
+            return path != null && path.StartsWith(Prefix, StringComparison.OrdinalIgnoreCase);
         }
 
         public async Task HandleAsync(HttpListenerContext context, string path)

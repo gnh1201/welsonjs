@@ -15,7 +15,7 @@ using System.Resources;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace WelsonJS.Launcher.ResourceTools
+namespace WelsonJS.Launcher.ApiEndpoints
 {
     public class Settings : IApiEndpoint
     {
@@ -32,9 +32,9 @@ namespace WelsonJS.Launcher.ResourceTools
             _logger = logger;
         }
 
-        public bool CanHandle(string path)
+        public bool CanHandle(HttpListenerContext context, string path)
         {
-            return path.Equals(Prefix, StringComparison.OrdinalIgnoreCase);
+            return path != null && path.Equals(Prefix, StringComparison.OrdinalIgnoreCase);
         }
 
         public async Task HandleAsync(HttpListenerContext context, string path)
