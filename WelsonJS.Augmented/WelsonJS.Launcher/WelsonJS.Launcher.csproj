@@ -91,9 +91,11 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApiEndpoints\JsonRpc2.cs" />
     <Compile Include="IApiEndpoint.cs" />
     <Compile Include="JsCore.cs" />
     <Compile Include="JsNative.cs" />
+    <Compile Include="JsonRpc2Dispatcher.cs" />
     <Compile Include="JsSerializer.cs" />
     <Compile Include="ApiEndpoints\ImageColorPicker.cs" />
     <Compile Include="ApiEndpoints\IpQuery.cs" />
@@ -131,6 +133,7 @@
       <DependentUpon>GlobalSettingsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="ResourceServer.cs" />
+    <Compile Include="StdioServer.cs" />
     <Compile Include="WebSocketManager.cs" />
     <EmbeddedResource Include="EnvForm.resx">
       <DependentUpon>EnvForm.cs</DependentUpon>
@@ -153,6 +156,7 @@
     <None Include="log4net.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <EmbeddedResource Include="McpToolsList.json" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

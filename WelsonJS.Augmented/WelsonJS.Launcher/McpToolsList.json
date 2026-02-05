@@ -1,0 +1,28 @@
+{
+  "id": 1,
+  "jsonrpc": "2.0",
+  "result": {
+    "tools": [
+      {
+        "name": "run_jsrt_script",
+        "title": "Run JSRT Script",
+        "description": "Execute a JavaScript script on WelsonJS and WSH JSRT (JScript).\n\nOnly ES3-compatible syntax is allowed. ES5 or newer language syntax is not supported.\nA very limited set of ES5 runtime APIs may be available through host-provided compatibility shims, on a best-effort basis and without guarantees.\nDo not rely on strict mode, modern language features, or full polyfill behavior.\nAssume a minimal ES3 execution environment.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "script": {
+              "type": "string",
+              "description": "JavaScript source code to execute. The script must be written using ES3-compatible syntax and must be suitable for execution in WSH JSRT / WelsonJS."
+            },
+            "timeoutMs": {
+              "type": "integer",
+              "description": "Maximum execution time in milliseconds. If the timeout is exceeded, the script execution may be forcibly terminated by the host.",
+              "minimum": 0
+            }
+          },
+          "required": [ "script" ]
+        }
+      }
+    ]
+  }
+}

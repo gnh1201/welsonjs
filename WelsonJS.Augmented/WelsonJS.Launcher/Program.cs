@@ -11,9 +11,14 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection;
+using System.Runtime.Remoting.Contexts;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Tab;
 
 namespace WelsonJS.Launcher
 {
@@ -49,13 +54,21 @@ namespace WelsonJS.Launcher
             string targetFilePath = GetTargetFilePath(args);
             if (!string.IsNullOrEmpty(targetFilePath))
             {
-                try {
+                try
+                {
                     HandleTargetFilePath(targetFilePath);
                 }
                 catch (Exception e)
                 {
                     _logger.Error($"Initialization failed: {e}");
                 }
+                return;
+            }
+
+            // if use stdio JSON-RPC 2.0 mode
+            if (HasArg(args, "--stdio-jsonrpc2"))
+            {
+                RunJsonRpc2StdioServer();
                 return;
             }
 
@@ -79,6 +92,54 @@ namespace WelsonJS.Launcher
             }
             catch { /* ignore if not owned */ }
             _mutex.Dispose();
+        }
+
+        private static bool HasArg(string[] args, string key)
+        {
+            if (args == null)
+                return false;
+
+            for (int i = 0; i < args.Length; i++)
+                if (string.Equals(args[i], key, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            
+            return false;
+        }
+
+        private static void RunJsonRpc2StdioServer()
+        {
+            var server = new StdioServer(async (payload, ct) =>
+            {
+                var dispatcher = new JsonRpc2Dispatcher(_logger);
+                var body = Encoding.UTF8.GetString(payload);
+
+                using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(300)))
+                {
+                    string result = await dispatcher.HandleAsync(
+                        body,
+                        async (method, ser, _ct) =>
+                        {
+                            switch (method)
+                            {
+                                case "tools/list":
+                                    return Encoding.UTF8.GetString(ResourceServer.GetResource("McpToolList.json"));
+
+                                case "tools/call":
+                                    // TODO: implement tool call handling
+                                    return string.Empty;
+
+                                default:
+                                    return string.Empty;
+                            }
+                        },
+                        cts.Token);
+
+                    // Fix: Convert string result to byte[] before returning
+                    return Encoding.UTF8.GetBytes(result);
+                }
+            });
+
+            server.Run();
         }
 
         private static void InitializeAssemblyLoader()
@@ -182,7 +243,8 @@ namespace WelsonJS.Launcher
 
         private static string GetTargetFilePath(string[] args)
         {
-            if (args == null || args.Length == 0) return null;
+            if (args == null || args.Length == 0)
+                return null;
 
             for (int i = 0; i < args.Length; i++)
             {
@@ -498,7 +560,7 @@ namespace WelsonJS.Launcher
 
         public static void InitializeResourceServer()
         {
-            lock(typeof(Program))
+            lock (typeof(Program))
             {
                 if (_resourceServer == null)
                 {

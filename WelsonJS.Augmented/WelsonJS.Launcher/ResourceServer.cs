@@ -4,8 +4,6 @@
 // https://github.com/gnh1201/welsonjs
 // 
 using log4net;
-using log4net.Core;
-using Microsoft.Isam.Esent.Interop;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -75,6 +73,7 @@ namespace WelsonJS.Launcher
             _apis.Add(new ApiEndpoints.TwoFactorAuth(this, _httpClient, _logger));
             _apis.Add(new ApiEndpoints.Whois(this, _httpClient, _logger));
             _apis.Add(new ApiEndpoints.ImageColorPicker(this, _httpClient, _logger));
+            _apis.Add(new ApiEndpoints.JsonRpc2(this, _httpClient, _logger));
 
             // Register the prefix
             _listener.Prefixes.Add(prefix);
@@ -164,8 +163,8 @@ namespace WelsonJS.Launcher
             // Serve from the blob server
             if (await ServeBlob(context, path)) return;
 
-            // Fallback to serve from a resource name
-            await ServeResource(context, GetResource(_resourceName), "text/html");
+            // Fallback to 404 (Not Found)
+            await ServeResource(context);
         }
 
         private async Task<bool> ServeBlob(HttpListenerContext context, string path, string prefix = null)
@@ -398,7 +397,7 @@ namespace WelsonJS.Launcher
             await ServeResource(context, Encoding.UTF8.GetBytes(data), mimeType, statusCode);
         }
 
-        private byte[] GetResource(string resourceName)
+        public static byte[] GetResource(string resourceName)
         {
             // Try to fetch embedded resource.
             byte[] data = GetEmbeddedResource(typeof(Program).Namespace + "." + resourceName);
@@ -408,7 +407,7 @@ namespace WelsonJS.Launcher
             return GetResourceFromManager(resourceName);
         }
 
-        private byte[] GetEmbeddedResource(string fullResourceName)
+        private static byte[] GetEmbeddedResource(string fullResourceName)
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
             using (Stream stream = assembly.GetManifestResourceStream(fullResourceName))
@@ -425,7 +424,7 @@ namespace WelsonJS.Launcher
             return null;
         }
 
-        private byte[] GetResourceFromManager(string resourceName)
+        private static byte[] GetResourceFromManager(string resourceName)
         {
             object resourceObject = Properties.Resources.ResourceManager.GetObject(resourceName);
             switch (resourceObject)
@@ -439,7 +438,7 @@ namespace WelsonJS.Launcher
             }
         }
 
-        private byte[] ConvertIconToBytes(System.Drawing.Icon icon)
+        private static byte[] ConvertIconToBytes(System.Drawing.Icon icon)
         {
             using (MemoryStream memoryStream = new MemoryStream())
             {
