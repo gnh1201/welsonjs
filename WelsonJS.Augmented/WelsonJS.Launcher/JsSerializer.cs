@@ -44,7 +44,7 @@ namespace WelsonJS.Launcher
             // Create slot and parse
             // Using Object.create(null) for a clean dictionary without prototype.
             var sb = new StringBuilder();
-            sb.Append("(function(){var S=globalThis.__WJ_STORE;");
+            sb.Append("(function(){var S=globalThis.__WJS__;");
             sb.Append("S[").Append(id.ToString(CultureInfo.InvariantCulture)).Append("]=JSON.parse(").Append(Q(json)).Append(");");
             sb.Append("return '1';})()");
             string r = _core.EvaluateToString(sb.ToString());
@@ -59,7 +59,7 @@ namespace WelsonJS.Launcher
         public void Unload(int id)
         {
             EnsureStore();
-            string script = "(function(){var S=globalThis.__WJ_STORE; delete S[" + id.ToString(CultureInfo.InvariantCulture) + "]; return '1';})()";
+            string script = "(function(){var S=globalThis.__WJS__; delete S[" + id.ToString(CultureInfo.InvariantCulture) + "]; return '1';})()";
             _core.EvaluateToString(script);
         }
 
@@ -70,7 +70,7 @@ namespace WelsonJS.Launcher
         {
             if (json == null) throw new ArgumentNullException("json");
             EnsureStore();
-            string script = "(function(){var S=globalThis.__WJ_STORE; S[" + id.ToString(CultureInfo.InvariantCulture) + "]=JSON.parse(" + Q(json) + "); return '1';})()";
+            string script = "(function(){var S=globalThis.__WJS__; S[" + id.ToString(CultureInfo.InvariantCulture) + "]=JSON.parse(" + Q(json) + "); return '1';})()";
             _core.EvaluateToString(script);
         }
 
@@ -81,7 +81,7 @@ namespace WelsonJS.Launcher
         {
             EnsureStore();
             space = Clamp(space, 0, 10);
-            string script = "(function(){var v=globalThis.__WJ_STORE[" + id.ToString(CultureInfo.InvariantCulture) + "]; return JSON.stringify(v,null," + space.ToString(CultureInfo.InvariantCulture) + ");})()";
+            string script = "(function(){var v=globalThis.__WJS__[" + id.ToString(CultureInfo.InvariantCulture) + "]; return JSON.stringify(v,null," + space.ToString(CultureInfo.InvariantCulture) + ");})()";
             return _core.EvaluateToString(script);
         }
 
@@ -96,13 +96,13 @@ namespace WelsonJS.Launcher
             string jsPath = BuildJsPath(path);
 
             var sb = new StringBuilder();
-            sb.Append("(function(){var v=globalThis.__WJ_STORE[")
+            sb.Append("(function(){var v=globalThis.__WJS__[")
               .Append(id.ToString(CultureInfo.InvariantCulture))
               .Append("];var p=").Append(jsPath).Append(";");
             sb.Append("for(var i=0;i<p.length;i++){var k=p[i];");
             sb.Append("if(Array.isArray(v) && typeof k==='number'){ v=v[k]; }");
             sb.Append("else { v=(v==null?null:v[k]); }}");
-            sb.Append("return JSON.stringify(v);})()");
+            sb.Append("return (typeof v==='object'?JSON.stringify(v):String(v));})()");
             return _core.EvaluateToString(sb.ToString());
         }
 
@@ -110,11 +110,11 @@ namespace WelsonJS.Launcher
         private void EnsureStore()
         {
             if (_storeReady) return;
-            // Create a single global dictionary: globalThis.__WJ_STORE
+            // Create a single global dictionary: globalThis.__WJS__
             // Object.create(null) prevents prototype pollution and accidental hits on built-ins.
             string script =
                 "(function(){var g=globalThis||this;" +
-                "if(!g.__WJ_STORE){Object.defineProperty(g,'__WJ_STORE',{value:Object.create(null),writable:false,enumerable:false,configurable:false});}" +
+                "if(!g.__WJS__){Object.defineProperty(g,'__WJS__',{value:Object.create(null),writable:false,enumerable:false,configurable:false});}" +
                 "return '1';})()";
             string r = _core.EvaluateToString(script);
             _storeReady = (r == "1");
