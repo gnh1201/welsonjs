@@ -11,9 +11,12 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace WelsonJS.Launcher
@@ -61,10 +64,11 @@ namespace WelsonJS.Launcher
                 return;
             }
 
-            // if use stdio JSON-RPC 2.0 mode
+            // if use the stdio-jsonrpc2 forwarder
             if (HasArg(args, "--stdio-jsonrpc2"))
             {
-                RunJsonRpc2StdioServer();
+                _logger.Info("Starting in the stdio-jsonrpc2 forwarder...");
+                ProcessStdioJsonRpc2().GetAwaiter().GetResult();
                 return;
             }
 
@@ -102,40 +106,121 @@ namespace WelsonJS.Launcher
             return false;
         }
 
-        private static void RunJsonRpc2StdioServer()
+        private async static Task ProcessStdioJsonRpc2()
         {
-            var server = new StdioServer(async (payload, ct) =>
+            string serverPrefix = GetAppConfig("ResourceServerPrefix");
+            string endpoint = $"{serverPrefix}jsonrpc2";
+            int timeout = int.TryParse(GetAppConfig("HttpClientTimeout"), out timeout) ? timeout : 300;
+
+            var http = new HttpClient
             {
-                var dispatcher = new JsonRpc2Dispatcher(_logger);
-                var body = Encoding.UTF8.GetString(payload);
+                Timeout = TimeSpan.FromSeconds(timeout)
+            };
 
-                using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(300)))
+            using (var stdin = Console.OpenStandardInput())
+            using (var stdout = Console.OpenStandardOutput())
+            {
+                var buffer = new byte[8192];
+
+                while (true)
                 {
-                    string result = await dispatcher.HandleAsync(
-                        body,
-                        async (method, ser, _ct) =>
+                    int read;
+                    try
+                    {
+                        read = await stdin.ReadAsync(buffer, 0, buffer.Length);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error("[stdio] stdin read failed", ex);
+                        break;
+                    }
+
+                    if (read <= 0)
+                    {
+                        _logger.Info("[stdio] EOF received, exiting loop");
+                        break;
+                    }
+
+                    byte[] payload = new byte[read];
+                    Buffer.BlockCopy(buffer, 0, payload, 0, read);
+
+                    _logger.Debug($"[stdio] recv {payload.Length} bytes");
+                    _logger.Debug($"[stdio] payload preview: {SafePreviewUtf8(payload, 512)}");
+
+                    try
+                    {
+                        using (var content = new ByteArrayContent(payload))
                         {
-                            switch (method)
+                            // Content-Type: application/json
+                            content.Headers.ContentType =
+                                new MediaTypeHeaderValue("application/json")
+                                {
+                                    CharSet = "utf-8"
+                                };
+
+                            _logger.Debug($"[http] POST {endpoint}");
+
+                            using (var response = await http.PostAsync(endpoint, content))
                             {
-                                case "tools/list":
-                                    return Encoding.UTF8.GetString(ResourceServer.GetResource("McpToolList.json"));
+                                _logger.Info(
+                                    $"[http] status={(int)response.StatusCode} {response.ReasonPhrase}");
 
-                                case "tools/call":
-                                    // TODO: implement tool call handling
-                                    return string.Empty;
+                                foreach (var h in response.Headers)
+                                    _logger.Debug($"[http] H {h.Key}: {string.Join(", ", h.Value)}");
 
-                                default:
-                                    return string.Empty;
+                                foreach (var h in response.Content.Headers)
+                                    _logger.Debug($"[http] HC {h.Key}: {string.Join(", ", h.Value)}");
+
+                                byte[] responseBytes =
+                                    await response.Content.ReadAsByteArrayAsync();
+
+                                _logger.Debug($"[http] body {responseBytes.Length} bytes");
+
+                                _logger.Debug(
+                                    $"[http] body preview: {SafePreviewUtf8(responseBytes, 2048)}");
+
+                                await stdout.WriteAsync(responseBytes, 0, responseBytes.Length);
+                                await stdout.FlushAsync();
                             }
-                        },
-                        cts.Token);
-
-                    // Fix: Convert string result to byte[] before returning
-                    return Encoding.UTF8.GetBytes(result);
+                        }
+                    }
+                    catch (TaskCanceledException ex)
+                    {
+                        _logger.Error("[http] request timed out or canceled", ex);
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        _logger.Error("[http] request failed", ex);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error("[http] unexpected error", ex);
+                    }
                 }
-            });
+            }
+        }
 
-            server.Run();
+        private static string SafePreviewUtf8(byte[] bytes, int maxBytes)
+        {
+            if (bytes == null || bytes.Length == 0)
+                return "(empty)";
+
+            try
+            {
+                int len = Math.Min(bytes.Length, maxBytes);
+                string s = Encoding.UTF8.GetString(bytes, 0, len);
+
+                s = s.Replace("\r", "\\r").Replace("\n", "\\n");
+
+                if (bytes.Length > maxBytes)
+                    s += $"...(truncated, total {bytes.Length} bytes)";
+
+                return s;
+            }
+            catch
+            {
+                return "(binary / non-utf8 response)";
+            }
         }
 
         private static void InitializeAssemblyLoader()

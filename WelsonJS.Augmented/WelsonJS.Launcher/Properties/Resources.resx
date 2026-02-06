@@ -188,7 +188,7 @@
     <value>https://catswords.blob.core.windows.net/welsonjs/blob.config.xml</value>
   </data>
   <data name="HttpClientTimeout" xml:space="preserve">
-    <value>90</value>
+    <value>300</value>
   </data>
   <data name="IpQueryApiKey" xml:space="preserve">
     <value />
