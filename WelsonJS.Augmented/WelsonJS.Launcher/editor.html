@@ -164,7 +164,7 @@
                     { id: 'btnWhois', icon: 'mif-earth', caption: 'Whois', onClick: onQueryWhoisClick },
                     { id: 'btnQueryDns', icon: 'mif-earth', caption: 'DNS', onClick: onQueryDnsClick },
                     { id: 'btnQueryIp', icon: 'mif-user-secret', caption: 'IP', onClick: onQueryIpClick },
-					{ id: 'btnMap', icon: 'mif-rocket', caption: 'Map', onClick: onMapClick }
+                    { id: 'btnMap', icon: 'mif-rocket', caption: 'Map', onClick: onMapClick }
                 ];
 
                 return _e(
@@ -294,8 +294,31 @@
                 return _e('div', { id: 'promptEditor', ref: containerRef });
             }
             
+            function useLocationMarker(mapViewRef) {
+                const markerRef = React.useRef(null);
+
+                const mark = React.useCallback((lat, lng, description) => {
+                    const map = mapViewRef.current;
+                    if (!map) return;
+
+                    const latlng = L.latLng(lat, lng);
+
+                    if (!markerRef.current) {
+                        markerRef.current = L.marker(latlng).addTo(map)
+                            .bindPopup(description || "(no description)")
+                            .openPopup();
+                    } else {
+                        markerRef.current.setLatLng(latlng);
+                    }
+                }, [mapViewRef]);
+
+                return { mark, markerRef };
+            }
+            
             function MapView({ mapViewRef, visible }) {
                 const containerRef = React.useRef(null);
+                
+                const { mark } = useLocationMarker(mapViewRef);
 
                 // init once
                 React.useEffect(() => {
@@ -345,7 +368,15 @@
 
                     // defer until after layout/display change
                     setTimeout(function () {
-                        try { map.invalidateSize(); } catch (e) {}
+                        try {
+                            map.invalidateSize();
+                            
+                            if (visible) {
+                                navigator.geolocation.getCurrentPosition(pos => {
+                                    mark(pos.coords.latitude, pos.coords.longitude, `My Location: (${pos.coords.latitude}, ${pos.coords.longitude})`);
+                                });
+                            }
+                        } catch (e) {}
                     }, 0);
                 }, [visible]);
 
