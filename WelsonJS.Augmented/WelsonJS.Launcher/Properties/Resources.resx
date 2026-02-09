@@ -160,11 +160,11 @@
   <data name="ChromiumDevToolsPrefix" xml:space="preserve">
     <value>http://localhost:9222/</value>
   </data>
-  <data name="AzureAiServiceApiKey" xml:space="preserve">
+  <data name="AzureCognitiveApiKey" xml:space="preserve">
     <value />
   </data>
-  <data name="AzureAiServicePrefix" xml:space="preserve">
-    <value>https://ai-catswords656881030318.services.ai.azure.com/</value>
+  <data name="AzureCognitivePrefix" xml:space="preserve">
+    <value>https://catswords-ai-resource.services.ai.azure.com/</value>
   </data>
   <data name="DnsServerAddress" xml:space="preserve">
     <value>1.1.1.1</value>
@@ -181,7 +181,7 @@
   <data name="BlobStoragePrefix" xml:space="preserve">
     <value>https://catswords.blob.core.windows.net/welsonjs/</value>
   </data>
-  <data name="AzureAiServiceApiVersion" xml:space="preserve">
+  <data name="AzureCognitiveApiVersion" xml:space="preserve">
     <value>2024-05-01-preview</value>
   </data>
   <data name="BlobConfigUrl" xml:space="preserve">

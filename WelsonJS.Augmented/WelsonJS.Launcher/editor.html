@@ -551,16 +551,16 @@
                         return;
                     }
 
-                    appendTextToEditor(`\n// ${promptMessage}... Generating text with Azure AI...`);
+                    appendTextToEditor(`\n// ${promptMessage}... Generating text with Azure Cognitive...`);
                     pushPromptMessage("user", promptMessage);
 
-                    const apiKey = settingsRef.current.AzureAiServiceApiKey;
+                    const apiKey = settingsRef.current.AzureCognitiveApiKey;
                     if (!apiKey || apiKey.trim() == '') {
-                        alert("Azure AI API key is not set.");
+                        alert("Azure Cognitive API key is not set.");
                         return;
                     }
 
-                    const url = `${settingsRef.current.AzureAiServicePrefix}models/chat/completions?api-version=${settingsRef.current.AzureAiServiceApiVersion}`;
+                    const url = `${settingsRef.current.AzureCognitivePrefix}models/chat/completions?api-version=${settingsRef.current.AzureCognitiveApiVersion}`;
 
                     const data = {
                         messages: promptMessagesRef.current,

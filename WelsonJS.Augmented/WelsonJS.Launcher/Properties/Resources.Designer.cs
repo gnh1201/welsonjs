@@ -81,27 +81,27 @@ namespace WelsonJS.Launcher.Properties {
         /// <summary>
         ///   과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
-        internal static string AzureAiServiceApiKey {
+        internal static string AzureCognitiveApiKey {
             get {
-                return ResourceManager.GetString("AzureAiServiceApiKey", resourceCulture);
+                return ResourceManager.GetString("AzureCognitiveApiKey", resourceCulture);
             }
         }
         
         /// <summary>
         ///   2024-05-01-preview과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
-        internal static string AzureAiServiceApiVersion {
+        internal static string AzureCognitiveApiVersion {
             get {
-                return ResourceManager.GetString("AzureAiServiceApiVersion", resourceCulture);
+                return ResourceManager.GetString("AzureCognitiveApiVersion", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   https://ai-catswords656881030318.services.ai.azure.com/과(와) 유사한 지역화된 문자열을 찾습니다.
+        ///   https://catswords-ai-resource.services.ai.azure.com/과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
-        internal static string AzureAiServicePrefix {
+        internal static string AzureCognitivePrefix {
             get {
-                return ResourceManager.GetString("AzureAiServicePrefix", resourceCulture);
+                return ResourceManager.GetString("AzureCognitivePrefix", resourceCulture);
             }
         }
         
