@@ -31,10 +31,7 @@ WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)*** + :h
 * <img src="https://catswords.blob.core.windows.net/welsonjs/images/serpapi_logo_32.png" height="32" alt=""/> [SerpApi: Search API](https://serpapi.com/?utm_source=welsonjs) - Scrape search engines results with simple API.
 * <img src="https://catswords.blob.core.windows.net/welsonjs/images/logo_oss.gif" height="32" alt=""/> [Open SW Portal](https://oss.kr/?utm_source=welsonjs), NIPA National IT Industry Promotion Agency<sup>(정보통신산업진흥원)</sup>
 * <img src="https://catswords.blob.core.windows.net/welsonjs/images/signpath_logo.png" height="32" alt=""/> Free code signing provided by [SignPath.io](https://signpath.io/?utm_source=welsonjs), certificate by [SignPath Foundation](https://signpath.org/)
-* <img src="https://catswords.blob.core.windows.net/welsonjs/images/f1security_logo.png" height="32" alt=""/> [F1Security<sup>(에프원시큐리티)</sup>](https://f1security.co.kr/?utm_source=welsonjs) provides [industry-leading](https://www.ksecurity.or.kr/kisis/subIndex/469.do) web security services.
-* <img src="https://catswords.blob.core.windows.net/welsonjs/images/microsoft_logo.png" height="32" alt=""/> [Microsoft ISV Success Program](https://www.microsoft.com/en-us/isv/isv-success?utm_source=welsonjs), Grow your business with powerful tools.
-* <img src="https://catswords.blob.core.windows.net/welsonjs/images/tenstorrent_logo.svg" height="32" alt=""/> [Tenstorrent](https://tenstorrent.com/?utm_source=welsonjs) Korea OSS Developer Program (Planned for 2026).
-* :memo: Documentation is supported by [ReadMe](https://readme.com/?utm_source=welsonjs)'s [the open-source plan](https://docs.readme.com/main/docs/plans-and-pricing?utm_source=welsonjs#the-open-source-plan-collaboration-and-innovation) (Planned for 2026).
+* Thanks for [F1Security<sup>(에프원시큐리티)</sup>](https://f1security.co.kr/?utm_source=welsonjs) [Microsoft<sup>(ISV Success Program)</sup>](https://www.microsoft.com/en-us/isv/isv-success?utm_source=welsonjs), [Tenstorrent<sup>(Korea OSS Developer Program)</sup>](https://tenstorrent.com/?utm_source=welsonjs), [ReadMe](https://readme.com/?utm_source=welsonjs), [AppSignal](https://www.appsignal.com/)
 
 ## System Requirements
 * **Operating Systems**: Windows XP SP3 or later (Currently, Windows 11 24H2)
