@@ -28,6 +28,10 @@
         #editor {
             flex: 3;
         }
+        
+        #mapView {
+            flex: 3;
+        }
 
         #promptEditor {
             flex: 1;
@@ -60,6 +64,7 @@
             }
         };
     </script>
+    <script src="http://localhost:3000/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha384-NElt3Op+9NBMCYaef5HxeJmU4Xeard/Lku8ek6hoPTvYkQPh3zLIrJP7KiRocsxO" crossorigin="anonymous"></script>
     <script src="http://localhost:3000/ajax/libs/lodash/4.17.21/lodash.min.js" integrity="sha384-H6KKS1H1WwuERMSm+54dYLzjg0fKqRK5ZRyASdbrI/lwrCc6bXEmtGYr5SwvP1pZ" crossorigin="anonymous"></script>
     <script src="http://localhost:3000/ajax/libs/jsoneditor/10.1.3/jsoneditor.min.js" integrity="sha384-NdVVc20Tze856ZAWEoJNCk0mL4zJrGztRwULc5Hz25HUXQQgYtmjFtgVAxR4p5dD" crossorigin="anonymous"></script>
     <script src="http://localhost:3000/ajax/libs/react/18.3.1/umd/react.production.min.js" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
@@ -103,7 +108,8 @@
             loadResource("http://localhost:3000/ajax/libs/metroui/dev/lib/metro.css", "text/css", "sha384-4XgOiXH2ZMaWt5s5B35yKi7EAOabhZvx7wO8Jr71q2vZ+uONdRza/6CsK2kpyocd"),
             loadResource("http://localhost:3000/ajax/libs/metroui/dev/lib/icons.css", "text/css", "sha384-FuLND994etg+RtnpPSPMyNBvL+fEz+xGhbN61WUWuDEeZ+wJzcQ8SGqAMuI5hWrt"),
             loadResource("http://localhost:3000/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.css", "text/css", "sha384-06yHXpYRlHEPaR4AS0fB/W+lMN09Zh5e1XMtfkNQdHV38OlhfkOEW5M+pCj3QskC"),
-            loadResource("http://localhost:3000/ajax/libs/jsoneditor/10.1.3/jsoneditor.min.css", "text/css", "sha384-cj1rYBc4/dVYAknZMTkVCDRL6Knzugf32igVqsuFW0iRWFHKH8Ci8+ekC8gNsFZ+")
+            loadResource("http://localhost:3000/ajax/libs/jsoneditor/10.1.3/jsoneditor.min.css", "text/css", "sha384-cj1rYBc4/dVYAknZMTkVCDRL6Knzugf32igVqsuFW0iRWFHKH8Ci8+ekC8gNsFZ+"),
+            loadResource("http://localhost:3000/ajax/libs/leaflet/1.9.4/leaflet.min.css", "text/css", "sha384-c6Rcwz4e4CITMbu/NBmnNS8yN2sC3cUElMEMfP3vqqKFp7GOYaaBBCqmaWBjmkjb")
         ]).then(() => {
             const _e = React.createElement;
 
@@ -128,9 +134,9 @@
             }
 
             function RibbonMenu({
-                onOpenFileClick, onSaveFileClick, onCopliotClick, onAzureAiClick,
+                onOpenFileClick, onSaveFileClick, onCopliotClick, onAzureCognitiveClick,
                 onSavePromptClick, onLoadPromptClick, onQueryWhoisClick, onQueryDnsClick,
-                onQueryIpClick
+                onQueryIpClick, onMapClick
             }) {
                 const fileButtons = [
                     {
@@ -147,9 +153,9 @@
                     }
                 ];
 
-                const aiButtons = [
+                const cognitiveToolsButtons = [
                     { id: 'btnCopilot', icon: 'mif-rocket', caption: 'Copilot', onClick: onCopliotClick },
-                    { id: 'btnAzureAi', icon: 'mif-rocket', caption: 'Azure AI', onClick: onAzureAiClick },
+                    { id: 'btnAzureCognitive', icon: 'mif-rocket', caption: 'Azure', onClick: onAzureCognitiveClick },
                     { id: 'btnSavePrompt', icon: 'mif-floppy-disks', caption: 'Save', onClick: onSavePromptClick },
                     { id: 'btnLoadPrompt', icon: 'mif-file-upload', caption: 'Load', onClick: onLoadPromptClick }
                 ];
@@ -157,7 +163,8 @@
                 const networkToolsButtons = [
                     { id: 'btnWhois', icon: 'mif-earth', caption: 'Whois', onClick: onQueryWhoisClick },
                     { id: 'btnQueryDns', icon: 'mif-earth', caption: 'DNS', onClick: onQueryDnsClick },
-                    { id: 'btnQueryIp', icon: 'mif-user-secret', caption: 'IP', onClick: onQueryIpClick }
+                    { id: 'btnQueryIp', icon: 'mif-user-secret', caption: 'IP', onClick: onQueryIpClick },
+					{ id: 'btnMap', icon: 'mif-rocket', caption: 'Map', onClick: onMapClick }
                 ];
 
                 return _e(
@@ -170,14 +177,14 @@
                     _e('div', { className: 'content-holder' },
                         _e('div', { className: 'section active', id: 'editor-tab' },
                             _e(Group, { title: 'File', buttons: fileButtons }),
-                            _e(Group, { title: 'Generative AI', buttons: aiButtons }),
-                            _e(Group, { title: 'Network tools', buttons: networkToolsButtons })
+                            _e(Group, { title: 'Cognitive Tools (AI)', buttons: cognitiveToolsButtons }),
+                            _e(Group, { title: 'Network Tools', buttons: networkToolsButtons })
                         )
                     )
                 );
             }
 
-            function Editor({ editorRef }) {
+            function Editor({ editorRef, visible }) {
                 const containerRef = React.useRef(null);
 
                 const getSuggestions = (word, range) => axios.get(`/completion/${encodeURIComponent(word)}`)
@@ -232,6 +239,11 @@
                         editorRef.current = instance;
                     });
                 }, []);
+                
+                React.useEffect(() => {
+                    // toggle the display style attribute
+                    containerRef.current.style.display = (visible ? "" : "none");
+                }, [visible]);
 
                 return _e('div', { id: 'editor', ref: containerRef });
             }
@@ -281,6 +293,64 @@
 
                 return _e('div', { id: 'promptEditor', ref: containerRef });
             }
+            
+            function MapView({ mapViewRef, visible }) {
+                const containerRef = React.useRef(null);
+
+                // init once
+                React.useEffect(() => {
+                    if (!containerRef.current)
+                        return;
+
+                    if (typeof L === "undefined" || !L || !L.map) {
+                        console.error("[MapView] Leaflet (L) is not loaded.");
+                        return;
+                    }
+
+                    if (mapViewRef && mapViewRef.current && mapViewRef.current._leaflet_id)
+                        return;
+
+                    const map = L.map(containerRef.current, {
+                        zoomControl: true,
+                        attributionControl: true
+                    }).setView([37.5665, 126.9780], 12);
+
+                    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+                        maxZoom: 19,
+                        attribution: '&copy; OpenStreetMap contributors'
+                    }).addTo(map);
+
+                    if (mapViewRef)
+                        mapViewRef.current = map;
+
+                    return function () {
+                        try {
+                            if (mapViewRef && mapViewRef.current === map)
+                                mapViewRef.current = null;
+
+                            map.remove();
+                        } catch (e) {}
+                    };
+                }, []);
+
+                // handle show/hide toggles
+                React.useEffect(() => {
+                    // when becoming visible, leaflet needs a resize recalculation
+                    const map = mapViewRef ? mapViewRef.current : null;
+                    if (!map || !map.invalidateSize)
+                        return;
+
+                    // toggle the display style attribute
+                    containerRef.current.style.display = (visible ? "block" : "none");
+
+                    // defer until after layout/display change
+                    setTimeout(function () {
+                        try { map.invalidateSize(); } catch (e) {}
+                    }, 0);
+                }, [visible]);
+
+                return _e('div', { id: 'mapView', ref: containerRef });
+            }
 
             function App() {
                 const editorRef = React.useRef(null);
@@ -288,6 +358,8 @@
                 const settingsRef = React.useRef({});
                 const fileNameRef = React.useRef('sayhello.js');
                 const promptMessagesRef = React.useRef([]);
+                const mapViewRef = React.useRef(null);
+                const [showMap, setShowMap] = React.useState(false);
 
                 const fetchSettings = () => axios.get(`/settings`)
                     .then(response => {
@@ -472,7 +544,7 @@
                     }
                 };
 
-                const sendMessageToAzureAi = () => {
+                const sendMessageToAzureCognitive = () => {
                     const promptMessage = prompt("Enter a prompt message:", '');
                     if (!promptMessage || promptMessage.trim() == '') {
                         alert("A prompt message is required.");
@@ -647,6 +719,10 @@
                         appendTextToEditor(`\n// Failed to query the IP: ${error.message}`);
                     });
                 };
+                
+                function toggleMap() {
+                    setShowMap(v => !v);
+                }
 
                 React.useEffect(() => {
                     window.addEventListener('resize', () => {
@@ -662,15 +738,17 @@
                         onOpenFileClick: openFile,
                         onSaveFileClick: saveFile,
                         onCopliotClick: sendMessageToCopilot,
-                        onAzureAiClick: sendMessageToAzureAi,
+                        onAzureCognitiveClick: sendMessageToAzureCognitive,
                         onSavePromptClick: savePromptMessages,
                         onLoadPromptClick: loadPromptMessages,
                         onQueryWhoisClick: queryWhois,
                         onQueryDnsClick: queryDns,
-                        onQueryIpClick: queryIp
+                        onQueryIpClick: queryIp,
+                        onMapClick: toggleMap
                     }),
                     _e('div', { id: 'container' },
-                        _e(Editor, { editorRef }),
+                        _e(Editor, { editorRef: editorRef, visible: !showMap }),
+                        _e(MapView, { mapViewRef: mapViewRef, visible: showMap }),
                         _e(PromptEditor, { promptEditorRef, promptMessagesRef })
                     ),
                     _e('div', { className: 'banner' }, _e('a', { href: 'https://github.com/gnh1201/welsonjs' }, '❤️ Contribute this project')),
