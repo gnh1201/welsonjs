@@ -367,17 +367,17 @@
                     containerRef.current.style.display = (visible ? "block" : "none");
 
                     // defer until after layout/display change
-                    setTimeout(function () {
-                        try {
-                            map.invalidateSize();
-                            
-                            if (visible) {
+                    if (visible) {
+                        setTimeout(function () {
+                            try {
+                                map.invalidateSize();
+                                
                                 navigator.geolocation.getCurrentPosition(pos => {
                                     mark(pos.coords.latitude, pos.coords.longitude, `My Location: (${pos.coords.latitude}, ${pos.coords.longitude})`);
                                 });
-                            }
-                        } catch (e) {}
-                    }, 0);
+                            } catch (e) {}
+                        }, 0);
+                    }
                 }, [visible]);
 
                 return _e('div', { id: 'mapView', ref: containerRef });
