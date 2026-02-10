@@ -50,7 +50,7 @@ namespace WelsonJS.Launcher
                 {
                     string version = ser.ExtractFrom(id, "jsonrpc");
                     if (!string.Equals(version, "2.0", StringComparison.Ordinal))
-                        throw new JsonRpc2Exception("Unsupported jsonrpc version: " + version);
+                        throw new JsonRpc2Exception("Unsupported JSON-RPC version: " + version);
 
                     string method = ser.ExtractFrom(id, "method");
                     if (string.IsNullOrEmpty(method))
