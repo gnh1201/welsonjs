@@ -407,7 +407,7 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
-        ///   141.101.82.1과(와) 유사한 지역화된 문자열을 찾습니다.
+        ///   49.8.14.101과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string WhoisClientAddress {
             get {
@@ -416,7 +416,7 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
-        ///   https://xn--c79as89aj0e29b77z.xn--3e0b707e/kor/whois/whois.jsp과(와) 유사한 지역화된 문자열을 찾습니다.
+        ///   https://whois.kr/kor/whois/whois.jsp과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string WhoisReferrerUrl {
             get {
@@ -425,7 +425,7 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
-        ///   https://xn--c79as89aj0e29b77z.xn--3e0b707e/kor/whois.jsc과(와) 유사한 지역화된 문자열을 찾습니다.
+        ///   https://whois.kr/kor/whois.jsc과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string WhoisServerUrl {
             get {
