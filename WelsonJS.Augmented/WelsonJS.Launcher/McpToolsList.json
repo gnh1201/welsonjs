@@ -2,26 +2,702 @@
   "id": 1,
   "jsonrpc": "2.0",
   "result": {
+    "runtime": {
+      "platform": "Windows WSH JsRT (Microsoft JavaScript Runtime)",
+      "language": "ES3 base + core-js ES5 polyfills",
+      "moduleSystem": "CommonJS-like require() available in WelsonJS"
+    },
+    "scriptContract": {
+      "requiredEntryPoint": "function main(args) { /* ... */ }; exports.main = main;",
+      "notes": [
+        "모든 실행 스크립트 결과물은 main 함수를 export해야 합니다.",
+        "ES3 문법을 기본으로 작성하고, 필요한 경우 ES5 polyfill 범위 내에서만 확장하세요."
+      ]
+    },
     "tools": [
       {
         "name": "run_jsrt_script",
-        "title": "Run JSRT Script",
-        "description": "Execute a JavaScript script on WelsonJS and WSH JSRT (JScript).\n\nOnly ES3-compatible syntax is allowed. ES5 or newer language syntax is not supported.\nA very limited set of ES5 runtime APIs may be available through host-provided compatibility shims, on a best-effort basis and without guarantees.\nDo not rely on strict mode, modern language features, or full polyfill behavior.\nAssume a minimal ES3 execution environment.",
+        "title": "Run WelsonJS JSRT Script",
+        "description": "Execute JavaScript on WelsonJS/WSH JsRT. Use ES3-compatible syntax with WelsonJS-provided ES5 polyfills. require() can load modules under lib/. The script must export main: function main(args) { ... }; exports.main = main;",
         "inputSchema": {
           "type": "object",
           "properties": {
             "script": {
               "type": "string",
-              "description": "JavaScript source code to execute. The script must be written using ES3-compatible syntax and must be suitable for execution in WSH JSRT / WelsonJS."
+              "description": "WelsonJS script source code. Must export main(args)."
+            },
+            "args": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "Arguments passed to main(args)."
             },
             "timeoutMs": {
               "type": "integer",
-              "description": "Maximum execution time in milliseconds. If the timeout is exceeded, the script execution may be forcibly terminated by the host.",
-              "minimum": 0
+              "minimum": 0,
+              "description": "Maximum execution time in milliseconds (up to 90 minutes / 5,400,000 ms).",
+              "maximum": 5400000
             }
           },
-          "required": [ "script" ]
+          "required": [
+            "script"
+          ]
         }
+      }
+    ],
+    "libraryModules": [
+      {
+        "module": "lib/adb.js",
+        "functions": [
+          "create",
+          "createEmulator"
+        ]
+      },
+      {
+        "module": "lib/anthropic.js",
+        "functions": [
+          "chat"
+        ]
+      },
+      {
+        "module": "lib/archive.js",
+        "functions": [
+          "create"
+        ]
+      },
+      {
+        "module": "lib/autohotkey.js",
+        "functions": [
+          "execScript"
+        ]
+      },
+      {
+        "module": "lib/autoit.js",
+        "functions": [
+          "create"
+        ]
+      },
+      {
+        "module": "lib/aviation.js",
+        "functions": [
+          "getData",
+          "getFlights",
+          "getRoutes",
+          "getAirports",
+          "getAirlines",
+          "getAircraftTypes",
+          "getCities",
+          "getCountries",
+          "getFlightSchedules",
+          "getFlightsFuture",
+          "getRoundTrip",
+          "getOneWay"
+        ]
+      },
+      {
+        "module": "lib/base64.js",
+        "functions": [
+          "encode",
+          "decode"
+        ]
+      },
+      {
+        "module": "lib/browser.js",
+        "functions": [
+          "getIEVersion",
+          "waitUntil",
+          "addScript",
+          "addStylesheet",
+          "setContent",
+          "start",
+          "reload",
+          "close"
+        ]
+      },
+      {
+        "module": "lib/catproxy.js",
+        "functions": [
+          "create",
+          "CatProxyClient"
+        ]
+      },
+      {
+        "module": "lib/chatgpt.js",
+        "functions": [
+          "chat"
+        ]
+      },
+      {
+        "module": "lib/chrome.js",
+        "functions": [
+          "create",
+          "start",
+          "startWithDebugging",
+          "startWithDebuggingUA",
+          "startDebug",
+          "startDebugInPrivate",
+          "publisherName"
+        ]
+      },
+      {
+        "module": "lib/cloudflare.js",
+        "functions": [
+          "binPath",
+          "installService"
+        ]
+      },
+      {
+        "module": "lib/config.js",
+        "functions": [
+          "getValue"
+        ]
+      },
+      {
+        "module": "lib/coupang.js",
+        "functions": [
+          "search"
+        ]
+      },
+      {
+        "module": "lib/credentials.js",
+        "functions": [
+          "readFromFile",
+          "push",
+          "get"
+        ]
+      },
+      {
+        "module": "lib/db.js",
+        "functions": [
+          "open",
+          "blob2Text",
+          "saveBlob",
+          "quoteString"
+        ]
+      },
+      {
+        "module": "lib/extramath.js",
+        "functions": [
+          "DTM",
+          "arrayCos",
+          "measureSimilarity",
+          "export_measureSimilarity",
+          "cartesianProduct",
+          "clusteredCellsDensity",
+          "estimateTileStartPosition"
+        ]
+      },
+      {
+        "module": "lib/fakeworker.js",
+        "functions": [
+          "create",
+          "repeat"
+        ]
+      },
+      {
+        "module": "lib/file.js",
+        "functions": [
+          "fileExists",
+          "folderExists",
+          "fileGet",
+          "readFile",
+          "writeFile",
+          "writeBinaryFile",
+          "moveFile",
+          "createFolder",
+          "deleteFolder",
+          "deleteFile",
+          "includeFile",
+          "getFiles",
+          "appendFile",
+          "rotateFile",
+          "loadEnvFromFile",
+          "loadEnvFromArgs",
+          "normalizePath",
+          "isAbsolutePath",
+          "getFilesFromFolder",
+          "CdoCharset"
+        ]
+      },
+      {
+        "module": "lib/filetypes.js",
+        "functions": [
+          "getExtensionsByOpenWith"
+        ]
+      },
+      {
+        "module": "lib/fsm.js",
+        "functions": [
+          "State",
+          "FSM"
+        ]
+      },
+      {
+        "module": "lib/grok.js",
+        "functions": [
+          "chat"
+        ]
+      },
+      {
+        "module": "lib/groq.js",
+        "functions": [
+          "chat"
+        ]
+      },
+      {
+        "module": "lib/gtk.js",
+        "functions": [
+          "Widget",
+          "Window",
+          "Table",
+          "Button",
+          "Entry",
+          "RadioBox",
+          "RadioGroup",
+          "TextBox",
+          "GladeXML",
+          "init",
+          "wait",
+          "exit"
+        ]
+      },
+      {
+        "module": "lib/har.js",
+        "functions": [
+          "HARObject"
+        ]
+      },
+      {
+        "module": "lib/hosts.js",
+        "functions": [
+          "getHosts"
+        ]
+      },
+      {
+        "module": "lib/http.js",
+        "functions": [
+          "create",
+          "get",
+          "post",
+          "patch",
+          "put",
+          "_delete",
+          "parseURL",
+          "DEFAULT_USER_AGENT",
+          "defaultUserAgent"
+        ]
+      },
+      {
+        "module": "lib/ip-reputation.js",
+        "functions": [
+          "check"
+        ]
+      },
+      {
+        "module": "lib/jsonrpc2.js",
+        "functions": [
+          "wrap",
+          "create",
+          "DEFAULT_JSONRPC2_URL"
+        ]
+      },
+      {
+        "module": "lib/jsunit.js",
+        "functions": [
+          "JsUnit"
+        ]
+      },
+      {
+        "module": "lib/kakaotalk.js",
+        "functions": [
+          "KakaoTalk"
+        ]
+      },
+      {
+        "module": "lib/language-inference-engine.js",
+        "functions": [
+          "setBiasMessage",
+          "LanguageInferenceEngine",
+          "create"
+        ]
+      },
+      {
+        "module": "lib/ldplayer.js",
+        "functions": [
+          "getList"
+        ]
+      },
+      {
+        "module": "lib/lz77.js",
+        "functions": [
+          "compress",
+          "decompress"
+        ]
+      },
+      {
+        "module": "lib/msmq.js",
+        "functions": [
+          "MSMQObject",
+          "open"
+        ]
+      },
+      {
+        "module": "lib/msoffice.js",
+        "functions": [
+          "Excel",
+          "PowerPoint",
+          "Word",
+          "Outlook"
+        ]
+      },
+      {
+        "module": "lib/nmap.js",
+        "functions": [
+          "PortScanner"
+        ]
+      },
+      {
+        "module": "lib/noxplayer.js",
+        "functions": [
+          "getList"
+        ]
+      },
+      {
+        "module": "lib/ovftool.js",
+        "functions": [
+          "setCredential",
+          "create"
+        ]
+      },
+      {
+        "module": "lib/pipe-ipc.js",
+        "functions": [
+          "create",
+          "connect",
+          "Converter",
+          "UUIDv4",
+          "CRC32",
+          "ForReading",
+          "ForWriting",
+          "ForAppending",
+          "CdoCharset",
+          "CdoUTF_8",
+          "CdoUS_ASCII",
+          "CdoEUC_KR",
+          "CdoEUC_JP",
+          "adTypeBinary",
+          "adTypeText",
+          "adSaveCreateNotExist",
+          "adSaveCreateOverWrite",
+          "adModeReadWrite"
+        ]
+      },
+      {
+        "module": "lib/powershell.js",
+        "functions": [
+          "execScript",
+          "execCommand",
+          "runAs"
+        ]
+      },
+      {
+        "module": "lib/punycode.js",
+        "functions": [
+          "encode",
+          "decode"
+        ]
+      },
+      {
+        "module": "lib/python3.js",
+        "functions": [
+          "PythonObject",
+          "create",
+          "execScript"
+        ]
+      },
+      {
+        "module": "lib/rand.js",
+        "functions": [
+          "randomize",
+          "getInt",
+          "getSeed",
+          "one",
+          "makeString",
+          "uuidv4",
+          "shuffle",
+          "rotate",
+          "sample",
+          "discardOne",
+          "discardCallback"
+        ]
+      },
+      {
+        "module": "lib/registry.js",
+        "functions": [
+          "getProvider",
+          "write",
+          "read",
+          "destroy",
+          "create",
+          "execFile",
+          "HKCR",
+          "HKCU",
+          "HKLM",
+          "STRING",
+          "BINARY",
+          "DWORD",
+          "QWORD"
+        ]
+      },
+      {
+        "module": "lib/router.js",
+        "functions": [
+          "Router"
+        ]
+      },
+      {
+        "module": "lib/sandboxie.js",
+        "functions": [
+          "start"
+        ]
+      },
+      {
+        "module": "lib/security.js",
+        "functions": [
+          "DISABLED",
+          "ENABLED",
+          "setDisableAntiSpyware",
+          "getDisableAntiSpyware",
+          "setDisableRegistryTools",
+          "setDisableTaskMgr",
+          "getAntiVirusProducts",
+          "OpenThreatSettings"
+        ]
+      },
+      {
+        "module": "lib/sendmail.js",
+        "functions": [
+          "sendmail"
+        ]
+      },
+      {
+        "module": "lib/serp.js",
+        "functions": [
+          "parseUrl"
+        ]
+      },
+      {
+        "module": "lib/shadowsocks.js",
+        "functions": [
+          "connect"
+        ]
+      },
+      {
+        "module": "lib/shell.js",
+        "functions": [
+          "create",
+          "build",
+          "exec",
+          "run",
+          "show",
+          "runAs",
+          "showAs",
+          "createProcess",
+          "createDesktopIcon",
+          "getPathOfMyDocuments",
+          "CdoCharset"
+        ]
+      },
+      {
+        "module": "lib/std.js",
+        "functions": [
+          "Event",
+          "EventTarget",
+          "Accessor",
+          "Storage",
+          "EventableObject",
+          "alert",
+          "confirm",
+          "prompt"
+        ]
+      },
+      {
+        "module": "lib/strings.js",
+        "functions": [
+          "numberFormat",
+          "splitLines",
+          "selectLines"
+        ]
+      },
+      {
+        "module": "lib/system.js",
+        "functions": [
+          "createProcess",
+          "getEnvString",
+          "getAppDataDir",
+          "get32BitFolder",
+          "isElevated",
+          "getOS",
+          "getDCName",
+          "getArch",
+          "getUUID",
+          "getCurrentWorkingDirectory",
+          "getDirName",
+          "getFileName",
+          "getCurrentScriptDirectory",
+          "getCurrentScriptName",
+          "getNetworkInterfaces",
+          "getProcessList",
+          "getPIDList",
+          "isAlivePID",
+          "getProcessListByName",
+          "killProcess",
+          "createShortcut",
+          "ping",
+          "getProcessVersion"
+        ]
+      },
+      {
+        "module": "lib/task-scheduler.js",
+        "functions": [
+          "connect",
+          "getRootFolder",
+          "createAndRegisterTask",
+          "test"
+        ]
+      },
+      {
+        "module": "lib/task.js",
+        "functions": [
+          "__taskQueue__",
+          "setTimeout",
+          "setInterval",
+          "Task",
+          "TaskQueue",
+          "createTaskQueue",
+          "createTask",
+          "putTask",
+          "nextTask",
+          "run",
+          "stop"
+        ]
+      },
+      {
+        "module": "lib/toolkit.js",
+        "functions": [
+          "create",
+          "getInterface",
+          "sendClick",
+          "sendKeys",
+          "sendFnKey",
+          "alert",
+          "confirm",
+          "prompt",
+          "NamedSharedMemory",
+          "openProcess",
+          "closeProcess",
+          "encryptString",
+          "decryptString",
+          "encryptStringHIGHT",
+          "decryptStringHIGHT"
+        ]
+      },
+      {
+        "module": "lib/totp.js",
+        "functions": [
+          "getPubKey",
+          "getOtp"
+        ]
+      },
+      {
+        "module": "lib/tun2socks.js",
+        "functions": [
+          "binPath",
+          "assign"
+        ]
+      },
+      {
+        "module": "lib/uri.js",
+        "functions": [
+          "parseQueryString"
+        ]
+      },
+      {
+        "module": "lib/vbscript.js",
+        "functions": [
+          "execScript",
+          "execCommand"
+        ]
+      },
+      {
+        "module": "lib/virtualinput.js",
+        "functions": [
+          "create",
+          "moveMouse"
+        ]
+      },
+      {
+        "module": "lib/wamr.js",
+        "functions": [
+          "create"
+        ]
+      },
+      {
+        "module": "lib/websocket.js",
+        "functions": [
+          "create"
+        ]
+      },
+      {
+        "module": "lib/winlibs.js",
+        "functions": [
+          "createManifest",
+          "loadLibrary",
+          "SHELL32",
+          "showControlPanel",
+          "showNetworkAdapters",
+          "showEULA"
+        ]
+      },
+      {
+        "module": "lib/winservice.js",
+        "functions": [
+          "queryService",
+          "createService",
+          "startService",
+          "stopService",
+          "deleteService"
+        ]
+      },
+      {
+        "module": "lib/wintap.js",
+        "functions": [
+          "infPath",
+          "binPath",
+          "before",
+          "install",
+          "update",
+          "query",
+          "remove"
+        ]
+      },
+      {
+        "module": "lib/wmi.js",
+        "functions": [
+          "create",
+          "execQuery",
+          "setClass"
+        ]
+      },
+      {
+        "module": "lib/xml.js",
+        "functions": [
+          "create",
+          "load",
+          "encode",
+          "decode"
+        ]
       }
     ]
   }
