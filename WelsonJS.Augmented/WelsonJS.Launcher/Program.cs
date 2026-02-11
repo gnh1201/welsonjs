@@ -11,8 +11,12 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Reflection;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace WelsonJS.Launcher
@@ -49,13 +53,22 @@ namespace WelsonJS.Launcher
             string targetFilePath = GetTargetFilePath(args);
             if (!string.IsNullOrEmpty(targetFilePath))
             {
-                try {
+                try
+                {
                     HandleTargetFilePath(targetFilePath);
                 }
                 catch (Exception e)
                 {
                     _logger.Error($"Initialization failed: {e}");
                 }
+                return;
+            }
+
+            // if use the stdio-jsonrpc2 forwarder
+            if (HasArg(args, "--stdio-jsonrpc2"))
+            {
+                _logger.Info("Starting in the stdio-jsonrpc2 forwarder...");
+                ProcessStdioJsonRpc2().GetAwaiter().GetResult();
                 return;
             }
 
@@ -79,6 +92,135 @@ namespace WelsonJS.Launcher
             }
             catch { /* ignore if not owned */ }
             _mutex.Dispose();
+        }
+
+        private static bool HasArg(string[] args, string key)
+        {
+            if (args == null)
+                return false;
+
+            for (int i = 0; i < args.Length; i++)
+                if (string.Equals(args[i], key, StringComparison.OrdinalIgnoreCase))
+                    return true;
+            
+            return false;
+        }
+
+        private async static Task ProcessStdioJsonRpc2()
+        {
+            string serverPrefix = GetAppConfig("ResourceServerPrefix");
+            string endpoint = $"{serverPrefix}jsonrpc2";
+            int timeout = int.TryParse(GetAppConfig("HttpClientTimeout"), out timeout) ? timeout : 300;
+
+            var http = new HttpClient
+            {
+                Timeout = TimeSpan.FromSeconds(timeout)
+            };
+
+            using (var stdin = Console.OpenStandardInput())
+            using (var stdout = Console.OpenStandardOutput())
+            {
+                var buffer = new byte[8192];
+
+                while (true)
+                {
+                    int read;
+                    try
+                    {
+                        read = await stdin.ReadAsync(buffer, 0, buffer.Length);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error("[stdio] stdin read failed", ex);
+                        break;
+                    }
+
+                    if (read <= 0)
+                    {
+                        _logger.Info("[stdio] EOF received, exiting loop");
+                        break;
+                    }
+
+                    byte[] payload = new byte[read];
+                    Buffer.BlockCopy(buffer, 0, payload, 0, read);
+
+                    _logger.Debug($"[stdio] recv {payload.Length} bytes");
+                    _logger.Debug($"[stdio] payload preview: {SafePreviewUtf8(payload, 512)}");
+
+                    try
+                    {
+                        using (var content = new ByteArrayContent(payload))
+                        {
+                            // Content-Type: application/json
+                            content.Headers.ContentType =
+                                new MediaTypeHeaderValue("application/json")
+                                {
+                                    CharSet = "utf-8"
+                                };
+
+                            _logger.Debug($"[http] POST {endpoint}");
+
+                            using (var response = await http.PostAsync(endpoint, content))
+                            {
+                                _logger.Info(
+                                    $"[http] status={(int)response.StatusCode} {response.ReasonPhrase}");
+
+                                foreach (var h in response.Headers)
+                                    _logger.Debug($"[http] H {h.Key}: {string.Join(", ", h.Value)}");
+
+                                foreach (var h in response.Content.Headers)
+                                    _logger.Debug($"[http] HC {h.Key}: {string.Join(", ", h.Value)}");
+
+                                byte[] responseBytes =
+                                    await response.Content.ReadAsByteArrayAsync();
+
+                                _logger.Debug($"[http] body {responseBytes.Length} bytes");
+
+                                _logger.Debug(
+                                    $"[http] body preview: {SafePreviewUtf8(responseBytes, 2048)}");
+
+                                await stdout.WriteAsync(responseBytes, 0, responseBytes.Length);
+                                await stdout.FlushAsync();
+                            }
+                        }
+                    }
+                    catch (TaskCanceledException ex)
+                    {
+                        _logger.Error("[http] request timed out or canceled", ex);
+                    }
+                    catch (HttpRequestException ex)
+                    {
+                        _logger.Error("[http] request failed", ex);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.Error("[http] unexpected error", ex);
+                    }
+                }
+            }
+        }
+
+        private static string SafePreviewUtf8(byte[] bytes, int maxBytes)
+        {
+            if (bytes == null || bytes.Length == 0)
+                return "(empty)";
+
+            try
+            {
+                int len = Math.Min(bytes.Length, maxBytes);
+                string s = Encoding.UTF8.GetString(bytes, 0, len);
+
+                s = s.Replace("\r", "\\r").Replace("\n", "\\n");
+
+                if (bytes.Length > maxBytes)
+                    s += $"...(truncated, total {bytes.Length} bytes)";
+
+                return s;
+            }
+            catch
+            {
+                return "(binary / non-utf8 response)";
+            }
         }
 
         private static void InitializeAssemblyLoader()
@@ -182,7 +324,8 @@ namespace WelsonJS.Launcher
 
         private static string GetTargetFilePath(string[] args)
         {
-            if (args == null || args.Length == 0) return null;
+            if (args == null || args.Length == 0)
+                return null;
 
             for (int i = 0; i < args.Length; i++)
             {
@@ -498,7 +641,7 @@ namespace WelsonJS.Launcher
 
         public static void InitializeResourceServer()
         {
-            lock(typeof(Program))
+            lock (typeof(Program))
             {
                 if (_resourceServer == null)
                 {
