@@ -170,11 +170,14 @@ I am always open. Collaboration, opportunities, and community activities are all
 * [Join Catswords OSS on Microsoft Teams (teams.live.com)](https://teams.live.com/l/community/FEACHncAhq8ldnojAI?utm_source=welsonjs)
 * [Join Catswords OSS #welsonjs on Discord (discord.gg)](https://discord.gg/XKG5CjtXEj?utm_source=welsonjs)
 
+## Offine copy
+If you require an offline copy of this project, please contact an appropriate project maintainer via Discord to arrange the request.
+
 ## Special channels
 * [A paid consultation channel (m.expert.naver.com)](https://m.expert.naver.com/mobile/expert/product/detail?storeId=100051156&productId=100144540&utm_source=welsonjs) is available for Korean<sup>(한국어)</sup> customers.
 * [A paid mentorship program (inflearn.com)](https://mentoring.inflearn.com/mentors/5353?utm_source=welsonjs) is available for Korean<sup>(한국어)</sup> students or beginners.
 
-## Open Source Software License
+## Open-source software license
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs?ref=badge_large&utm_source=welsonjs)
 
 ## Disclaimer
