@@ -170,12 +170,12 @@ I am always open. Collaboration, opportunities, and community activities are all
 * [Join Catswords OSS on Microsoft Teams (teams.live.com)](https://teams.live.com/l/community/FEACHncAhq8ldnojAI?utm_source=welsonjs)
 * [Join Catswords OSS #welsonjs on Discord (discord.gg)](https://discord.gg/XKG5CjtXEj?utm_source=welsonjs)
 
-## Offline Distribution
-You may [request offline distribution](https://forms.gle/4WCnJmnFNDzubUmk7?utm_source=welsonjs) if you are in a restricted environment, such as one without internet access or with specific security requirements.
-
 ## Special channels
 * [A paid consultation channel (m.expert.naver.com)](https://m.expert.naver.com/mobile/expert/product/detail?storeId=100051156&productId=100144540&utm_source=welsonjs) is available for Korean<sup>(한국어)</sup> customers.
 * [A paid mentorship program (inflearn.com)](https://mentoring.inflearn.com/mentors/5353?utm_source=welsonjs) is available for Korean<sup>(한국어)</sup> students or beginners.
 
-## License
+## Open Source Software License
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs?ref=badge_large&utm_source=welsonjs)
+
+## Disclaimer
+To the maximum extent permitted by applicable law, Namhyeon Go <sup>(ko: 고남현)</sup> and Catswords Research <sup>(ko: 캐츠워즈리서치)</sup> shall not be held liable for any direct, indirect, incidental, special, or consequential damages arising out of or in connection with the use of this software outside its intended purpose or scope.
