@@ -180,5 +180,9 @@ If you require an offline copy of this project, please contact an appropriate pr
 ## Open-source software license
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs?ref=badge_large&utm_source=welsonjs)
 
+## Subprojects
+* [catswords-jsrt-rs](https://github.com/gnh1201/catswords-jsrt-rs): Minimal ChakraCore (JsRT) bindings for Rust.
+* [jsrt-claw](https://github.com/gnh1201/catswords-jsrt-rs): OpenClaw compatible the skill definition for a bulit-in JSRT (JScript 5.x)
+
 ## Disclaimer
 To the maximum extent permitted by applicable law, Namhyeon Go <sup>(ko: 고남현)</sup> and Catswords Research <sup>(ko: 캐츠워즈리서치)</sup> shall not be held liable for any direct, indirect, incidental, special, or consequential damages arising out of or in connection with the use of this software outside its intended purpose or scope.
