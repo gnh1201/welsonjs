@@ -74,7 +74,7 @@ namespace WelsonJS.Launcher.ApiEndpoints
             {
                 await dispatcher.HandleAsync(
                     body,
-                    async (method, ser, ct) =>
+                    async (method, id, ser, ct) =>
                     {
                         switch (method)
                         {
@@ -83,7 +83,7 @@ namespace WelsonJS.Launcher.ApiEndpoints
                                 break;
 
                             case "tools/call":
-                                // TODO: implement tool calling
+                                await ResolveToolsCall(ser.ExtractFrom(id, "params", "name"));
                                 break;
                         }
 
@@ -91,6 +91,11 @@ namespace WelsonJS.Launcher.ApiEndpoints
                     },
                     cts.Token);
             }
+        }
+
+        private async Task ResolveToolsCall(string toolsName)
+        {
+            // TODO: ex) get_weather
         }
     }
 }

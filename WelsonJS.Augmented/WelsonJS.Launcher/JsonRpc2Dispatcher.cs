@@ -62,7 +62,7 @@ namespace WelsonJS.Launcher
                         Method = method
                     };
 
-                    return await dispatchMethodAsync(req.Method, ser, ct);
+                    return await dispatchMethodAsync(req.Method, id, ser, ct);
                 }
                 catch (JsonRpc2Exception)
                 {
