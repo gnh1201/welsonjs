@@ -74,7 +74,7 @@ namespace WelsonJS.Launcher.ApiEndpoints
             {
                 await dispatcher.HandleAsync(
                     body,
-                    async (method, id, ser, ct) =>
+                    async (method, ser, id, ct) =>
                     {
                         switch (method)
                         {

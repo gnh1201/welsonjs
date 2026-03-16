@@ -33,7 +33,7 @@ namespace WelsonJS.Launcher
 
         public async Task<string> HandleAsync(
             string requestBody,
-            Func<string, JsSerializer, CancellationToken, Task<string>> dispatchMethodAsync,
+            Func<string, JsSerializer, int, CancellationToken, Task<string>> dispatchMethodAsync,
             CancellationToken ct)
         {
             if (string.IsNullOrEmpty(requestBody))
@@ -62,7 +62,7 @@ namespace WelsonJS.Launcher
                         Method = method
                     };
 
-                    return await dispatchMethodAsync(req.Method, id, ser, ct);
+                    return await dispatchMethodAsync(req.Method, ser, id, ct);
                 }
                 catch (JsonRpc2Exception)
                 {
