@@ -83,7 +83,7 @@ namespace WelsonJS.Launcher.ApiEndpoints
                                 break;
 
                             case "tools/call":
-                                await ResolveToolsCall(ser.ExtractFrom(id, "params", "name"));
+                                await ResolveToolsCall(ser, id);
                                 break;
                         }
 
@@ -93,9 +93,24 @@ namespace WelsonJS.Launcher.ApiEndpoints
             }
         }
 
-        private async Task ResolveToolsCall(string toolsName)
+        private async Task ResolveToolsCall(JsSerializer ser, int id)
         {
-            // TODO: ex) get_weather
+            var toolsName = ser.ExtractFrom(id, "params", "method")?.Trim();
+
+            switch (toolsName)
+            {
+                case "run_jsrt_script":
+                    {
+                        var script = ser.ExtractFrom(id, "params", "arguments", "script")?.Trim();
+
+                        // todo
+                    }
+                    break;
+
+                default:
+                    _logger.Warn($"[JsonRpc2] Unknown tools method: {toolsName}");
+                    break;
+            }
         }
     }
 }

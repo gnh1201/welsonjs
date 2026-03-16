@@ -10,8 +10,8 @@
     "scriptContract": {
       "requiredEntryPoint": "function main(args) { /* ... */ }; exports.main = main;",
       "notes": [
-        "모든 실행 스크립트 결과물은 main 함수를 export해야 합니다.",
-        "ES3 문법을 기본으로 작성하고, 필요한 경우 ES5 polyfill 범위 내에서만 확장하세요."
+        "All executable script outputs must export a main function.",
+        "Write using ES3 syntax by default, and extend only within the ES5 polyfill scope if necessary."
       ]
     },
     "tools": [
