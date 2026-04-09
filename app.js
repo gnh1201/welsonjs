@@ -36,9 +36,18 @@ var console = {
         }
         return res;
     },
-    _echoDefault: function(message) {
+    _useStdin: (function() {
         if (typeof WScript !== "undefined") {
-            WScript.Echo("[*] " + message)
+            return WScript.Arguments.Named.Exists("stdin");
+        }
+        return false;
+    })(),
+    _echoDefault: function(message) {
+        if (this._useStdin)
+            return;
+        
+        if (typeof WScript !== "undefined") {
+            WScript.StdOut.WriteLine("[*] " + message);
         }
     },
     _echoCallback: null,
@@ -715,10 +724,7 @@ require._addScriptProvider = function(f) {
     }
 };
 
-/////////////////////////////////////////////////////////////////////////////////
 // Load script, and call app.main()
-/////////////////////////////////////////////////////////////////////////////////
-
 function initializeConsole() {
     if (typeof WScript === "undefined") {
         console.error("This is not a console application");
