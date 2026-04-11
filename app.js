@@ -247,7 +247,7 @@ function TraceError(severity, message, callee) {
         })([
             function (s) { fn.call(console, s); },  // 1) severity-specific console
             function (s) { console.log(s); },  // 2) generic console.log
-            function (s) { WScript.Echo(s); }  // 3) WSH fallback
+            function (s) { WScript.StdOut.WriteLine(s); }  // 3) WSH fallback
         ]);
     }
 
@@ -413,7 +413,7 @@ function require(pathname) {
     if (pos > -1) {
         var scheme = FN.substring(0, pos);
 
-        // load script from a remote server
+        // request a script from a remote server
         if (["http", "https"].indexOf(scheme) > -1) {
             require._addScriptProvider(function(url) {
                 try {
@@ -424,7 +424,7 @@ function require(pathname) {
             });
         }
         
-        // load script from LIE(Language Inference Engine) service
+        // request a script from LLM based AI services
         if (["ai"].indexOf(scheme) > -1) {
             require._addScriptProvider(function(url) {
                 try {
@@ -852,8 +852,8 @@ if (typeof JSON === "undefined") {
     __evalFile__("app/assets/js/json2.js");
 }
 
-// core-js (formerly, babel-polyfill)
-require("app/assets/js/core-js-3.38.0.minified");
+// core-js (polyfills)
+require("app/assets/js/core-js-3.49.0.wsh");
 
 // Squel.js SQL query string builder for Javascript
 var squel = require("app/assets/js/squel-basic-5.13.0-afa1cb5.wsh");
