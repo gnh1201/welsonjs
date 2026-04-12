@@ -477,7 +477,7 @@ function require(pathname) {
         })({
             existsSync: function(filename) {
                 return UseObject("Scripting.FileSystemObject", function(fso) {
-                    return fso.FileExists(filename);
+                    return fso.FileExists(require._getCurrentScriptDirectory() + "\\" + filename);
                 });
             }
         }, {
