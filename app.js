@@ -36,16 +36,16 @@ var console = {
         }
         return res;
     },
-    _muted: function() {
+    _muted: (function() {
         try {
             if (typeof WScript !== "undefined")
                 return WScript.Arguments.Named.Exists("quiet");
         } catch (e) { /* ignore */ }
         
         return false;
-    },
+    })(),
     _echoCallback: function(params, type) {
-        if (this._muted()) return;
+        if (this._muted) return;
         
         if (typeof WScript !== "undefined") {
             WScript.StdOut.WriteLine("[*] " + params.message);
