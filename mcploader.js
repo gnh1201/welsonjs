@@ -31,6 +31,11 @@ function main(args) {
                     };
                 }
                 
+                if (method === "notifications/initialized") {
+                    // DO NOT return anything
+                    return false;
+                }
+                
                 if (method == "tools/list") {
                     return {
                         "tools": [
