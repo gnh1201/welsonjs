@@ -14,6 +14,8 @@ function main(args) {
 
         e.target.send(
             JsonRpc2.extract(message, function (method, params, id) {
+                var isError = false;
+                
                 if (method == "initialize") {
                     return {
                         "protocolVersion": "2025-11-25",
@@ -27,7 +29,8 @@ function main(args) {
                         "serverInfo": {
                             "name": "WelsonJS MCP",
                             "version": "1.0.0"
-                        }
+                        },
+                        "isError": isError
                     };
                 }
                 
@@ -55,8 +58,23 @@ function main(args) {
                                     },
                                     "required": ["a", "b"]
                                 }
+                            },
+                            {
+                                "name": "evaluate_js_es3",
+                                "title": "Evaluate JavaScript ES3",
+                                "description": "Evaluate JavaScript with ES3 syntax (use ES3 syntax strictly)",
+                                "inputSchema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "script": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": ["script"]
+                                }
                             }
-                        ]
+                        ],
+                        "isError": isError
                     };
                 }
 
@@ -71,13 +89,32 @@ function main(args) {
                                     "text": "Result is " + (parseFloat(params.arguments.a) + parseFloat(params.arguments.b))
                                 }
                             ],
-                            "isError": false
+                            "isError": isError
                         };
+                    }
+                    
+                    if (function_calling_name == "evaluate_js_es3") {
+                        return {
+                            "content": [
+                                {
+                                    "type": "text",
+                                    "text": (function(script) {
+                                        try {
+                                            return String(eval(script));
+                                        } catch (e) {
+                                            return "Error";
+                                            isError = true;
+                                        }
+                                    })(params.arguments.script)
+                                }
+                            ]
+                        }
                     }
                 }
 
+                isError = true;
                 return {
-                    "isError": true
+                    "isError": isError
                 };
             })
         );
