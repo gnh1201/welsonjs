@@ -76,40 +76,9 @@ namespace WelsonJS.Launcher.ApiEndpoints
                     body,
                     async (method, ser, id, ct) =>
                     {
-                        switch (method)
-                        {
-                            case "tools/list":
-                                await Server.ServeResource(context, ResourceServer.GetResource("McpToolsList.json"), "application/json");
-                                break;
-
-                            case "tools/call":
-                                await ResolveToolsCall(ser, id);
-                                break;
-                        }
-
-                        return string.Empty;
+                        throw new NotImplementedException();
                     },
                     cts.Token);
-            }
-        }
-
-        private async Task ResolveToolsCall(JsSerializer ser, int id)
-        {
-            var toolsName = ser.ExtractFrom(id, "params", "method")?.Trim();
-
-            switch (toolsName)
-            {
-                case "run_jsrt_script":
-                    {
-                        var script = ser.ExtractFrom(id, "params", "arguments", "script")?.Trim();
-
-                        // todo
-                    }
-                    break;
-
-                default:
-                    _logger.Warn($"[JsonRpc2] Unknown tools method: {toolsName}");
-                    break;
             }
         }
     }
