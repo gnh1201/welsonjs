@@ -36,12 +36,21 @@ var console = {
         }
         return res;
     },
-    _echoDefault: function(message) {
+    _muted: function() {
+        try {
+            if (typeof WScript !== "undefined")
+                return WScript.Arguments.Named.Exists("quiet");
+        } catch (e) { /* ignore */ }
+        
+        return false;
+    },
+    _echoCallback: function(params, type) {
+        if (this._muted()) return;
+        
         if (typeof WScript !== "undefined") {
-            WScript.StdOut.WriteLine("[*] " + message);
+            WScript.StdOut.WriteLine("[*] " + params.message);
         }
     },
-    _echoCallback: null,
     _echo: function(args, type) {
         var messages = [];
         var params = {
@@ -80,19 +89,15 @@ var console = {
             }
         }
         
-        var message = messages.join(' ');
+        params.message = messages.join(' ');
         if (typeof type !== "undefined") {
-            message = type + ": " + message;
+            params.message = type + ": " + params.message;
         }
-        this._echoDefault(message);
-        this._messages.push(message);
-
-        if (params.scope.length > 0 && this._echoCallback != null) {
-            try {
-                this._echoCallback(params, type);
-            } catch (e) {
-                this._echoDefault("Exception:" + e.message);
-            }
+        this._echoCallback(params);
+        this._messages.push(params.message);
+        
+        if (params.scope.length > 0) {
+            this._echoCallback(params, type);
         }
     },
     assert: function(assertion) {
