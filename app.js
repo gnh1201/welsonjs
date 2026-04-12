@@ -36,16 +36,7 @@ var console = {
         }
         return res;
     },
-    _useStdin: (function() {
-        if (typeof WScript !== "undefined") {
-            return WScript.Arguments.Named.Exists("stdin");
-        }
-        return false;
-    })(),
     _echoDefault: function(message) {
-        if (this._useStdin)
-            return;
-        
         if (typeof WScript !== "undefined") {
             WScript.StdOut.WriteLine("[*] " + message);
         }
@@ -730,13 +721,14 @@ function initializeConsole() {
         console.error("This is not a console application");
         return;
     }
-
-    var argl = WScript.arguments.length;
-    if (argl > 0) {
-        var args = [];
-        for (var i = 0; i < argl; i++) {
-            args.push(WScript.arguments(i));
-        }
+    
+    var args = (function(acc, length) {
+        for (var i = 0; i < length; i++)
+            acc.push(WScript.arguments(i));
+        return acc;
+    })([], WScript.arguments.length);
+    
+    if (args.length > 0) {
         var name = args.shift();
         var app = require(name);
         if (app) {
@@ -785,14 +777,12 @@ function initializeWindow(name, args, w, h) {
 
 function dispatchServiceEvent(name, eventType, w_args, argl) {
     var app = require(name);
-    var args = [];
+    var args = (function(acc, length) {
+        for (var i = 0; i < argl; i++)
+            acc.push(w_args(i));
+        return acc;
+    })([], argl);
     
-    // convert the arguments to Array
-    for (var i = 0; i < argl; i++) {
-        args.push(w_args(i));
-    }
-
-    // load the service
     if (app) {
         var bind = function(eventType) {
             var event_callback_name = "on" + eventType;
