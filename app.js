@@ -48,6 +48,10 @@ var console = {
         if (this._muted) return;
         
         if (typeof WScript !== "undefined") {
+            if (this._muted) {
+                WScript.StdErr.WriteLine("[*] " + params.message);
+                return;
+            }
             WScript.StdOut.WriteLine("[*] " + params.message);
         }
     },
