@@ -36,12 +36,25 @@ var console = {
         }
         return res;
     },
-    _echoDefault: function(message) {
+    _muted: (function() {
+        try {
+            if (typeof WScript !== "undefined")
+                return WScript.Arguments.Named.Exists("quiet");
+        } catch (e) { /* ignore */ }
+        
+        return false;
+    })(),
+    _echoCallback: function(params, type) {
+        if (this._muted) return;
+        
         if (typeof WScript !== "undefined") {
-            WScript.Echo("[*] " + message)
+            if (this._muted) {
+                WScript.StdErr.WriteLine("[*] " + params.message);
+                return;
+            }
+            WScript.StdOut.WriteLine("[*] " + params.message);
         }
     },
-    _echoCallback: null,
     _echo: function(args, type) {
         var messages = [];
         var params = {
@@ -80,19 +93,15 @@ var console = {
             }
         }
         
-        var message = messages.join(' ');
+        params.message = messages.join(' ');
         if (typeof type !== "undefined") {
-            message = type + ": " + message;
+            params.message = type + ": " + params.message;
         }
-        this._echoDefault(message);
-        this._messages.push(message);
-
-        if (params.scope.length > 0 && this._echoCallback != null) {
-            try {
-                this._echoCallback(params, type);
-            } catch (e) {
-                this._echoDefault("Exception:" + e.message);
-            }
+        this._echoCallback(params);
+        this._messages.push(params.message);
+        
+        if (params.scope.length > 0) {
+            this._echoCallback(params, type);
         }
     },
     assert: function(assertion) {
@@ -238,7 +247,7 @@ function TraceError(severity, message, callee) {
         })([
             function (s) { fn.call(console, s); },  // 1) severity-specific console
             function (s) { console.log(s); },  // 2) generic console.log
-            function (s) { WScript.Echo(s); }  // 3) WSH fallback
+            function (s) { WScript.StdOut.WriteLine(s); }  // 3) WSH fallback
         ]);
     }
 
@@ -404,7 +413,7 @@ function require(pathname) {
     if (pos > -1) {
         var scheme = FN.substring(0, pos);
 
-        // load script from a remote server
+        // request a script from a remote server
         if (["http", "https"].indexOf(scheme) > -1) {
             require._addScriptProvider(function(url) {
                 try {
@@ -415,7 +424,7 @@ function require(pathname) {
             });
         }
         
-        // load script from LIE(Language Inference Engine) service
+        // request a script from LLM based AI services
         if (["ai"].indexOf(scheme) > -1) {
             require._addScriptProvider(function(url) {
                 try {
@@ -472,7 +481,7 @@ function require(pathname) {
         })({
             existsSync: function(filename) {
                 return UseObject("Scripting.FileSystemObject", function(fso) {
-                    return fso.FileExists(filename);
+                    return fso.FileExists(require._getCurrentScriptDirectory() + "\\" + filename);
                 });
             }
         }, {
@@ -715,22 +724,20 @@ require._addScriptProvider = function(f) {
     }
 };
 
-/////////////////////////////////////////////////////////////////////////////////
 // Load script, and call app.main()
-/////////////////////////////////////////////////////////////////////////////////
-
 function initializeConsole() {
     if (typeof WScript === "undefined") {
         console.error("This is not a console application");
         return;
     }
-
-    var argl = WScript.arguments.length;
-    if (argl > 0) {
-        var args = [];
-        for (var i = 0; i < argl; i++) {
-            args.push(WScript.arguments(i));
-        }
+    
+    var args = (function(acc, length) {
+        for (var i = 0; i < length; i++)
+            acc.push(WScript.arguments(i));
+        return acc;
+    })([], WScript.arguments.length);
+    
+    if (args.length > 0) {
         var name = args.shift();
         var app = require(name);
         if (app) {
@@ -779,14 +786,12 @@ function initializeWindow(name, args, w, h) {
 
 function dispatchServiceEvent(name, eventType, w_args, argl) {
     var app = require(name);
-    var args = [];
+    var args = (function(acc, length) {
+        for (var i = 0; i < argl; i++)
+            acc.push(w_args(i));
+        return acc;
+    })([], argl);
     
-    // convert the arguments to Array
-    for (var i = 0; i < argl; i++) {
-        args.push(w_args(i));
-    }
-
-    // load the service
     if (app) {
         var bind = function(eventType) {
             var event_callback_name = "on" + eventType;
@@ -846,8 +851,8 @@ if (typeof JSON === "undefined") {
     __evalFile__("app/assets/js/json2.js");
 }
 
-// core-js (formerly, babel-polyfill)
-require("app/assets/js/core-js-3.38.0.minified");
+// core-js (polyfills)
+require("app/assets/js/core-js-3.49.0.wsh");
 
 // Squel.js SQL query string builder for Javascript
 var squel = require("app/assets/js/squel-basic-5.13.0-afa1cb5.wsh");

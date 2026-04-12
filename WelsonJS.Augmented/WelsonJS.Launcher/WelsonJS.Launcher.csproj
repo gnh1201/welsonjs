@@ -91,9 +91,11 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApiEndpoints\JsonRpc2.cs" />
     <Compile Include="IApiEndpoint.cs" />
     <Compile Include="JsCore.cs" />
     <Compile Include="JsNative.cs" />
+    <Compile Include="JsonRpc2Dispatcher.cs" />
     <Compile Include="JsSerializer.cs" />
     <Compile Include="ApiEndpoints\ImageColorPicker.cs" />
     <Compile Include="ApiEndpoints\IpQuery.cs" />

@@ -1,5 +1,5 @@
 // bootstrap.js
-// Copyright 2019-2025, Namhyeon Go <gnh1201@catswords.re.kr> and the WelsonJS contributors.
+// Copyright 2019-2026, Namhyeon Go <gnh1201@catswords.re.kr> and the WelsonJS contributors.
 // SPDX-License-Identifier: GPL-3.0-or-later
 // https://github.com/gnh1201/welsonjs
 // 
@@ -18,11 +18,6 @@ function main(args) {
     // unlock file
     console.log("Starting unlock files...");
     PS.execCommand("dir | Unblock-File");
-
-    // Allow CROS to ADO
-    //console.log("Adjusting CROS policy to ADO...");
-    //REG.write(REG.HKCU, "SOFTWARE\\Policies\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\\Lockdown_Zones\\4", "1406", "00000000", REG.DWORD);
-    //REG.write(REG.HKLM, "SOFTWARE\\Policies\\Microsoft\\Windows\\CurrentVersion\\Internet Settings\\Lockdown_Zones\\4", "1406", "00000000", REG.DWORD);
 
     // Register HTA file association
     console.log("Registering HTA file association...");

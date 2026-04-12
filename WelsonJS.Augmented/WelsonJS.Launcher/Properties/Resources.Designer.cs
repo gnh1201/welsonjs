@@ -19,7 +19,7 @@ namespace WelsonJS.Launcher.Properties {
     // 클래스에서 자동으로 생성되었습니다.
     // 멤버를 추가하거나 제거하려면 .ResX 파일을 편집한 다음 /str 옵션을 사용하여 ResGen을
     // 다시 실행하거나 VS 프로젝트를 다시 빌드하십시오.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "18.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -81,27 +81,27 @@ namespace WelsonJS.Launcher.Properties {
         /// <summary>
         ///   과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
-        internal static string AzureAiServiceApiKey {
+        internal static string AzureCognitiveApiKey {
             get {
-                return ResourceManager.GetString("AzureAiServiceApiKey", resourceCulture);
+                return ResourceManager.GetString("AzureCognitiveApiKey", resourceCulture);
             }
         }
         
         /// <summary>
         ///   2024-05-01-preview과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
-        internal static string AzureAiServiceApiVersion {
+        internal static string AzureCognitiveApiVersion {
             get {
-                return ResourceManager.GetString("AzureAiServiceApiVersion", resourceCulture);
+                return ResourceManager.GetString("AzureCognitiveApiVersion", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   https://ai-catswords656881030318.services.ai.azure.com/과(와) 유사한 지역화된 문자열을 찾습니다.
+        ///   https://catswords-ai-resource.services.ai.azure.com/과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
-        internal static string AzureAiServicePrefix {
+        internal static string AzureCognitivePrefix {
             get {
-                return ResourceManager.GetString("AzureAiServicePrefix", resourceCulture);
+                return ResourceManager.GetString("AzureCognitivePrefix", resourceCulture);
             }
         }
         
@@ -197,7 +197,7 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
-        ///   90과(와) 유사한 지역화된 문자열을 찾습니다.
+        ///   300과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string HttpClientTimeout {
             get {
@@ -407,7 +407,7 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
-        ///   141.101.82.1과(와) 유사한 지역화된 문자열을 찾습니다.
+        ///   49.8.14.101과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string WhoisClientAddress {
             get {
@@ -416,7 +416,7 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
-        ///   https://xn--c79as89aj0e29b77z.xn--3e0b707e/kor/whois/whois.jsp과(와) 유사한 지역화된 문자열을 찾습니다.
+        ///   https://whois.kr/kor/whois/whois.jsp과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string WhoisReferrerUrl {
             get {
@@ -425,7 +425,7 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
-        ///   https://xn--c79as89aj0e29b77z.xn--3e0b707e/kor/whois.jsc과(와) 유사한 지역화된 문자열을 찾습니다.
+        ///   https://whois.kr/kor/whois.jsc과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string WhoisServerUrl {
             get {
