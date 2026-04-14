@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "local-tools": {
+      "command": "C:/Windows/SysWOW64/cscript",
+      "args": [
+        "/nologo",
+        "C:/Users/user/Documents/GitHub/welsonjs/app.js",
+        "mcploader",
+        "/quiet"
+      ]
+    }
+  },
+  "preferences": {
+    "coworkScheduledTasksEnabled": false,
+    "ccdScheduledTasksEnabled": false,
+    "coworkWebSearchEnabled": true,
+    "sidebarMode": "chat"
+  }
+}
