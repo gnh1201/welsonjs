@@ -1,12 +1,12 @@
-# WelsonJS One-Click Installer (install.ps1) 
+# WelsonJS One-Click Bootstrap (bootstrap.ps1)
 # Copyright 2019-2025, Namhyeon Go <gnh1201@catswords.re.kr> and the WelsonJS contributors.
 # SPDX-License-Identifier: GPL-3.0-or-later
 # https://github.com/gnh1201/welsonjs
 # 
 # Usage:
-#   irm https://welson.js.org/install.ps1 | iex
-#   irm https://welson.js.org/install.ps1 | iex -dev main
-#   irm https://welson.js.org/install.ps1 | iex -dev dev
+#   irm https://catswords.blob.core.windows.net/welsonjs/bootstrap.ps1 | iex
+#   irm https://catswords.blob.core.windows.net/welsonjs/bootstrap.ps1 | iex -dev main
+#   irm https://catswords.blob.core.windows.net/welsonjs/bootstrap.ps1 | iex -dev dev
 # 
 # Central default branch configuration for this install script.
 # Update this value if the repository's default branch changes.
