@@ -8,8 +8,13 @@
 #   irm https://welson.js.org/install.ps1 | iex -dev main
 #   irm https://welson.js.org/install.ps1 | iex -dev dev
 # 
+# Central default branch configuration for this install script.
+# Update this value if the repository's default branch changes.
+$DefaultBranch = "master"
+
 param(
-    [string]$dev = "master"   # Default branch
+    # Branch to install from; defaults to the repository's configured primary branch.
+    [string]$dev = $DefaultBranch
 )
 
 $ErrorActionPreference = "Stop"
