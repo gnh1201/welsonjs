@@ -126,6 +126,7 @@ The WelsonJS framework suggests the following application release methods:
 
 * **Compress to Zip, and use the launcher**: Compress the files and directories necessary for running the project into a Zip file, and distribute it along with the WelsonJS Launcher.
 * **Build a setup file**: Use [Inno Setup](https://jrsoftware.org/isinfo.php). The setup profile (the `setup.iss` file) is already included.
+* **Use PowerShell (bootstrap.ps1)**: `irm https://catswords.blob.core.windows.net/welsonjs/bootstrap.ps1 | iex`
 * **Copy all directories and files**: This is the simplest and most straightforward method.
 
 ## Screenshots
