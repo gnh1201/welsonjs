@@ -7,15 +7,11 @@
 #   irm https://catswords.blob.core.windows.net/welsonjs/bootstrap.ps1 | iex
 #   irm https://catswords.blob.core.windows.net/welsonjs/bootstrap.ps1 | iex -dev main
 #   irm https://catswords.blob.core.windows.net/welsonjs/bootstrap.ps1 | iex -dev dev
+#   irm https://catswords.blob.core.windows.net/welsonjs/bootstrap.ps1 | iex main
 # 
 # Central default branch configuration for this install script.
 # Update this value if the repository's default branch changes.
-$DefaultBranch = "master"
-
-param(
-    # Branch to install from; defaults to the repository's configured primary branch.
-    [string]$dev = $DefaultBranch
-)
+$defaultBranch = "master"
 
 $ErrorActionPreference = "Stop"
 
@@ -32,6 +28,27 @@ function Write-Err($msg) {
 }
 
 try {
+    # Step 0: Parse arguments (iex-compatible)
+    # Supports:
+    #   iex -dev main
+    #   iex main
+    #   iex
+    $branch = $defaultBranch
+
+    for ($i = 0; $i -lt $args.Count; $i++) {
+        $arg = $args[$i]
+
+        if ($arg -eq "-dev" -and ($i + 1) -lt $args.Count) {
+            $branch = $args[$i + 1]
+            break
+        }
+        elseif ($arg -notmatch "^-") {
+            $branch = $arg
+        }
+    }
+
+    Write-Step "Using branch: $branch"
+
     # Step 1: Create a temporary working directory using a UUID
     Write-Step "Creating temporary workspace..."
 
@@ -45,12 +62,7 @@ try {
     $repo = "gnh1201/welsonjs"
     $zipPath = Join-Path $tempDir "package.zip"
 
-    # Step 2: Determine branch (default: master)
-    $branch = $dev
-
-    Write-Step "Using branch: $branch"
-
-    # GitHub branch ZIP URL
+    # Step 2: Build download URL
     $downloadUrl = "https://github.com/$repo/archive/refs/heads/$branch.zip"
 
     Write-Ok "Download URL: $downloadUrl"
