@@ -8,9 +8,11 @@
 [![slideshare.net presentation](https://img.shields.io/badge/SlideShare-black?logo=slideshare)](https://www.slideshare.net/slideshow/welsonjs-javascript-framework-presentation-2024/276005486?utm_source=welsonjs)
 [![YouTube promotion video](https://img.shields.io/badge/YouTube-red?logo=youtube)](https://youtu.be/JavH7Dms8-U?utm_source=welsonjs)
 [![Discord chat](https://img.shields.io/discord/359930650330923008?logo=discord)](https://discord.gg/XKG5CjtXEj?utm_source=welsonjs)
+[![G2](https://img.shields.io/badge/G2-FF492C?logo=g2&logoColor=fff)](https://www.g2.com/products/welsonjs/reviews?utm_source=welsonjs)
 [![Trustpilot](https://img.shields.io/badge/Trustpilot-00B67A?logo=trustpilot&logoColor=fff)](https://www.trustpilot.com/review/catswords.com?utm_source=welsonjs)
 [![Open to work](https://img.shields.io/badge/%23-OPENTOWORK-green)](https://github.com/gnh1201/welsonjs/discussions/167?utm_source=welsonjs)
-[![DeepWiki](https://img.shields.io/badge/DeepWiki-gnh1201%2Fwelsonjs-blue.svg?logo=data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACwAAAAyCAYAAAAnWDnqAAAAAXNSR0IArs4c6QAAA05JREFUaEPtmUtyEzEQhtWTQyQLHNak2AB7ZnyXZMEjXMGeK/AIi+QuHrMnbChYY7MIh8g01fJoopFb0uhhEqqcbWTp06/uv1saEDv4O3n3dV60RfP947Mm9/SQc0ICFQgzfc4CYZoTPAswgSJCCUJUnAAoRHOAUOcATwbmVLWdGoH//PB8mnKqScAhsD0kYP3j/Yt5LPQe2KvcXmGvRHcDnpxfL2zOYJ1mFwrryWTz0advv1Ut4CJgf5uhDuDj5eUcAUoahrdY/56ebRWeraTjMt/00Sh3UDtjgHtQNHwcRGOC98BJEAEymycmYcWwOprTgcB6VZ5JK5TAJ+fXGLBm3FDAmn6oPPjR4rKCAoJCal2eAiQp2x0vxTPB3ALO2CRkwmDy5WohzBDwSEFKRwPbknEggCPB/imwrycgxX2NzoMCHhPkDwqYMr9tRcP5qNrMZHkVnOjRMWwLCcr8ohBVb1OMjxLwGCvjTikrsBOiA6fNyCrm8V1rP93iVPpwaE+gO0SsWmPiXB+jikdf6SizrT5qKasx5j8ABbHpFTx+vFXp9EnYQmLx02h1QTTrl6eDqxLnGjporxl3NL3agEvXdT0WmEost648sQOYAeJS9Q7bfUVoMGnjo4AZdUMQku50McDcMWcBPvr0SzbTAFDfvJqwLzgxwATnCgnp4wDl6Aa+Ax283gghmj+vj7feE2KBBRMW3FzOpLOADl0Isb5587h/U4gGvkt5v60Z1VLG8BhYjbzRwyQZemwAd6cCR5/XFWLYZRIMpX39AR0tjaGGiGzLVyhse5C9RKC6ai42ppWPKiBagOvaYk8lO7DajerabOZP46Lby5wKjw1HCRx7p9sVMOWGzb/vA1hwiWc6jm3MvQDTogQkiqIhJV0nBQBTU+3okKCFDy9WwferkHjtxib7t3xIUQtHxnIwtx4mpg26/HfwVNVDb4oI9RHmx5WGelRVlrtiw43zboCLaxv46AZeB3IlTkwouebTr1y2NjSpHz68WNFjHvupy3q8TFn3Hos2IAk4Ju5dCo8B3wP7VPr/FGaKiG+T+v+TQqIrOqMTL1VdWV1DdmcbO8KXBz6esmYWYKPwDL5b5FA1a0hwapHiom0r/cKaoqr+27/XcrS5UwSMbQAAAABJRU5ErkJggg==)](https://deepwiki.com/gnh1201/welsonjs?utm_source=welsonjs)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/gnh1201/welsonjs)
+[![MCP](https://img.shields.io/badge/-MCP-black?logo=modelcontextprotocol)](https://github.com/gnh1201/welsonjs/wiki/MCP-server)
 
 <img src="https://catswords.blob.core.windows.net/welsonjs/images/logo.svg" height="32" alt="WelsonJS logo with four diagonal stripes in red, green, blue, and yellow, overlaid with the letters JS."/> WelsonJS - Build a Windows app on the Windows built-in JavaScript engine.
 
@@ -20,8 +22,9 @@ Now, You can build a Windows desktop app with JavaScript, TypeScript, CoffeeScri
 
 WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)*** + :heart:[Contributions](https://github.com/sponsors/gnh1201?utm_source=welsonjs)
 
-* :kissing_cat: [Download Latest WelsonJS Launcher (catswords.blob.core.windows.net)](https://catswords.blob.core.windows.net/welsonjs/welsonjs_launcher_latest.zip)
-* :rocket: [Launch the WelsonJS environment on Microsoft Azure (azuremarketplace.microsoft.com)](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/catswords.catswords-welsonjs-feb2025-02?tab=Overview)
+* :rocket: [Launch the WelsonJS pre-configured VM from Microsoft Azure Marketplace](https://azuremarketplace.microsoft.com/en-us/marketplace/apps/catswords.catswords-welsonjs-feb2025-02?tab=Overview)
+* :kissing_cat: [Download the WelsonJS Launcher](https://catswords.blob.core.windows.net/welsonjs/welsonjs_launcher_latest.zip)
+* :shell: In PowerShell: `irm https://catswords.blob.core.windows.net/welsonjs/bootstrap.ps1 | iex`
 
 **Note**: The default license for this project is GPL 3.0. However, if the GPL 3.0 license is not compatible with Microsoft products, it is subject to the MS-RL license.
 
@@ -30,10 +33,7 @@ WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)*** + :h
 * <img src="https://catswords.blob.core.windows.net/welsonjs/images/serpapi_logo_32.png" height="32" alt=""/> [SerpApi: Search API](https://serpapi.com/?utm_source=welsonjs) - Scrape search engines results with simple API.
 * <img src="https://catswords.blob.core.windows.net/welsonjs/images/logo_oss.gif" height="32" alt=""/> [Open SW Portal](https://oss.kr/?utm_source=welsonjs), NIPA National IT Industry Promotion Agency<sup>(정보통신산업진흥원)</sup>
 * <img src="https://catswords.blob.core.windows.net/welsonjs/images/signpath_logo.png" height="32" alt=""/> Free code signing provided by [SignPath.io](https://signpath.io/?utm_source=welsonjs), certificate by [SignPath Foundation](https://signpath.org/)
-* <img src="https://catswords.blob.core.windows.net/welsonjs/images/f1security_logo.png" height="32" alt=""/> [F1Security<sup>(에프원시큐리티)</sup>](https://f1security.co.kr/?utm_source=welsonjs) provides [industry-leading](https://www.ksecurity.or.kr/kisis/subIndex/469.do) web security services.
-* <img src="https://catswords.blob.core.windows.net/welsonjs/images/microsoft_logo.png" height="32" alt=""/> [Microsoft ISV Success Program](https://www.microsoft.com/en-us/isv/isv-success?utm_source=welsonjs), Grow your business with powerful tools.
-* <img src="https://catswords.blob.core.windows.net/welsonjs/images/tenstorrent_logo.svg" height="32" alt=""/> [Tenstorrent](https://tenstorrent.com/?utm_source=welsonjs) Korea OSS Developer Program (Planned for 2026).
-* :memo: Documentation is supported by [ReadMe](https://readme.com/?utm_source=welsonjs)'s [the open-source plan](https://docs.readme.com/main/docs/plans-and-pricing?utm_source=welsonjs#the-open-source-plan-collaboration-and-innovation) (Planned for 2026).
+* Thanks for [F1Security<sup>(에프원시큐리티)</sup>](https://f1security.co.kr/?utm_source=welsonjs) [Microsoft<sup>(ISV Success Program)</sup>](https://www.microsoft.com/en-us/isv/isv-success?utm_source=welsonjs), [Tenstorrent<sup>(Korea OSS Developer Program)</sup>](https://tenstorrent.com/?utm_source=welsonjs), [ReadMe](https://readme.com/?utm_source=welsonjs), [AppSignal](https://www.appsignal.com/)
 
 ## System Requirements
 * **Operating Systems**: Windows XP SP3 or later (Currently, Windows 11 24H2)
@@ -54,7 +54,7 @@ WelsonJS is an advanced JavaScript framework designed to operate in extreme cond
 * **Automation and Scripting**: Ideal for executing scripts in constrained environments, enabling automated workflows and system-level scripting.
 * **Embedded Applications**: Suitable for devices and systems with strict resource constraints, such as industrial controllers and embedded platforms.
 * **Security-Focused Environments**: Useful in security-sensitive applications where dependencies on external network connections are limited.
-* **Office Automation**: Suitable for office automation tasks using Microsoft Office and various LLM-based AI (such as ChatGPT).
+* **Office Automation**: Suitable for office automation tasks using Microsoft Office (Excel, PowerPoint, Word, Outlook, and more...) and various LLM-based AI (such as ChatGPT).
 
 WelsonJS is tailored for developers who need a reliable, lightweight JavaScript framework in environments where traditional solutions are impractical. Whether working with legacy systems, embedded devices, or security-critical applications, WelsonJS ensures that JavaScript remains a viable and efficient option.
 
@@ -80,6 +80,7 @@ WelsonJS is tailored for developers who need a reliable, lightweight JavaScript 
 * OVFTool (VMware) integration: [OVFTool for Broadcom/VMware infrastructures](https://developer.broadcom.com/tools/open-virtualization-format-ovf-tool/latest?utm_source=welsonjs)
 * ***:fire: NEW!*** Windows built-in database engine, aka. [ESENT (ESE) database](https://learn.microsoft.com/en-us/windows/win32/extensible-storage-engine/database-overview?utm_source=welsonjs) interface library (WelsonJS.Esent)
 * ***:fire: NEW!*** WelsonJS JCTG(JavaScript-Click-To-Go): Run WelsonJS script files written in JavaScript directly from Windows File Explorer with a (double) click. Just like an `.exe` file.
+* ***:fire: NEW!*** WelsonJS [MCP(Model Context Protocol)](https://github.com/gnh1201/welsonjs/wiki/MCP-server)
 * Everything you can imagine.
 
 ## Quick start
@@ -126,6 +127,7 @@ The WelsonJS framework suggests the following application release methods:
 
 * **Compress to Zip, and use the launcher**: Compress the files and directories necessary for running the project into a Zip file, and distribute it along with the WelsonJS Launcher.
 * **Build a setup file**: Use [Inno Setup](https://jrsoftware.org/isinfo.php). The setup profile (the `setup.iss` file) is already included.
+* **Use PowerShell**: For example, `irm https://catswords.blob.core.windows.net/welsonjs/bootstrap.ps1 | iex`
 * **Copy all directories and files**: This is the simplest and most straightforward method.
 
 ## Screenshots
@@ -172,12 +174,19 @@ I am always open. Collaboration, opportunities, and community activities are all
 * [Join Catswords OSS on Microsoft Teams (teams.live.com)](https://teams.live.com/l/community/FEACHncAhq8ldnojAI?utm_source=welsonjs)
 * [Join Catswords OSS #welsonjs on Discord (discord.gg)](https://discord.gg/XKG5CjtXEj?utm_source=welsonjs)
 
-## Offline Distribution
-You may [request offline distribution](https://forms.gle/4WCnJmnFNDzubUmk7?utm_source=welsonjs) if you are in a restricted environment, such as one without internet access or with specific security requirements.
+## Offine copy
+If you require an offline copy of this project, please contact an appropriate project maintainer via Discord to arrange the request.
 
 ## Special channels
 * [A paid consultation channel (m.expert.naver.com)](https://m.expert.naver.com/mobile/expert/product/detail?storeId=100051156&productId=100144540&utm_source=welsonjs) is available for Korean<sup>(한국어)</sup> customers.
 * [A paid mentorship program (inflearn.com)](https://mentoring.inflearn.com/mentors/5353?utm_source=welsonjs) is available for Korean<sup>(한국어)</sup> students or beginners.
 
-## License
+## Open-source software license
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs?ref=badge_large&utm_source=welsonjs)
+
+## Subprojects
+* [catswords-jsrt-rs](https://github.com/gnh1201/catswords-jsrt-rs): Minimal ChakraCore (JsRT) bindings for Rust.
+* [jsrt-claw](https://github.com/gnh1201/jsrt-claw): OpenClaw compatible the skill definition for a bulit-in JSRT (JScript 5.x)
+
+## Disclaimer
+To the maximum extent permitted by applicable law, Namhyeon Go <sup>(ko: 고남현)</sup> and Catswords Research <sup>(ko: 캐츠워즈리서치)</sup> shall not be held liable for any direct, indirect, incidental, special, or consequential damages arising out of or in connection with the use of this software outside its intended purpose or scope.

@@ -1,0 +1,57 @@
+## Website-Name
+
+WelsonJS
+
+## Website-Purpose
+
+WelsonJS is an open-source runtime and tooling ecosystem built on the Windows built-in ECMAScript engine (WSH/HTA). It enables desktop, console, service, and automation applications to run reliably, even under constrained or adverse environments, with minimal external dependencies.
+
+## Contact
+
+* [https://github.com/gnh1201/welsonjs/issues](https://github.com/gnh1201/welsonjs/issues)
+* mailto:gnh1201@catswords.re.kr
+* [https://catswords.social/@catswords_oss](https://catswords.social/@catswords_oss)
+
+## Important-Links
+
+* [https://github.com/gnh1201/welsonjs](https://github.com/gnh1201/welsonjs)
+* [https://catswords.com/](https://catswords.com/)
+* [https://signpath.org/projects/welsonjs/](https://signpath.org/projects/welsonjs/)
+
+## Validation-Image
+
+/_/
+( =^.^= )
+(")(")
+
+## Feline-Registry
+
+The following feline records describe symbolic agents associated with the WelsonJS ecosystem.
+This section is inspired by the i83 cats.txt draft format, integrated within the IETF cats.txt structure.
+
+### Cat
+
+Name: WelCat
+Role: Runtime Guardian
+Breed: Digital Tabby
+Location: Seoul, KR
+PurrLevel: 9
+Description: Represents the resilience of the WelsonJS runtime, which ensures execution stability across legacy and modern Windows environments.
+
+### Cat
+
+Name: ScriptTail
+Role: JavaScript Debug Assistant
+Breed: British Shorthair (Virtual)
+Location: Code Editor
+PurrLevel: 8
+Description: Helps developers detect subtle logic issues within HTA/WSH scripts and WelsonJS Agent pipelines.
+
+### Cat
+
+Name: PhantomPaws
+Role: Assembly Retrieval Agent
+Breed: Midnight Black
+Location: CDN Edge
+PurrLevel: 10
+Description: Symbolic cat for Catswords.Phantomizer, responsible for quietly fetching managed and native DLLs from the CDN and preparing them for runtime activation.
