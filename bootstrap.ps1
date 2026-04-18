@@ -2,17 +2,18 @@
 # Copyright 2019-2025, Namhyeon Go <gnh1201@catswords.re.kr> and the WelsonJS contributors.
 # SPDX-License-Identifier: GPL-3.0-or-later
 # https://github.com/gnh1201/welsonjs
-# 
+#
 # Usage:
+#
+# Quick start (no arguments):
 #   irm https://catswords.blob.core.windows.net/welsonjs/bootstrap.ps1 | iex
-#   irm https://catswords.blob.core.windows.net/welsonjs/bootstrap.ps1 | iex -dev main
-#   irm https://catswords.blob.core.windows.net/welsonjs/bootstrap.ps1 | iex -dev dev
-#   irm https://catswords.blob.core.windows.net/welsonjs/bootstrap.ps1 | iex main
-# 
-# Central default branch configuration for this install script.
-# Update this value if the repository's default branch changes.
-$defaultBranch = "master"
+#
+# With arguments (recommended):
+#   irm https://catswords.blob.core.windows.net/welsonjs/bootstrap.ps1 -OutFile bootstrap.ps1
+#   .\bootstrap.ps1 -dev main
+#   .\bootstrap.ps1 -file test.js
 
+$defaultBranch = "master"
 $ErrorActionPreference = "Stop"
 
 function Write-Step($msg) {
@@ -29,27 +30,36 @@ function Write-Err($msg) {
 
 try {
     # Step 0: Parse arguments (iex-compatible)
-    # Supports:
-    #   iex -dev main
-    #   iex main
-    #   iex
     $branch = $defaultBranch
+    $fileArg = $null
 
     for ($i = 0; $i -lt $args.Count; $i++) {
         $arg = $args[$i]
 
         if ($arg -eq "-dev" -and ($i + 1) -lt $args.Count) {
             $branch = $args[$i + 1]
-            break
+            $i++
+        }
+        elseif ($arg -eq "-file" -and ($i + 1) -lt $args.Count) {
+            $fileArg = $args[$i + 1]
+            $i++
         }
         elseif ($arg -notmatch "^-") {
             $branch = $arg
         }
     }
 
-    Write-Step "Using branch: $branch"
+    # Auto-append .js if no extension
+    if ($fileArg -and -not ($fileArg -match "\.")) {
+        $fileArg = "$fileArg.js"
+    }
 
-    # Step 1: Create a temporary working directory using a UUID
+    Write-Step "Using branch: $branch"
+    if ($fileArg) {
+        Write-Step "File argument: $fileArg"
+    }
+
+    # Step 1: Create temporary workspace
     Write-Step "Creating temporary workspace..."
 
     $uuid = [guid]::NewGuid().ToString()
@@ -62,52 +72,61 @@ try {
     $repo = "gnh1201/welsonjs"
     $zipPath = Join-Path $tempDir "package.zip"
 
-    # Step 2: Build download URL
+    # Step 2: Download from branch
     $downloadUrl = "https://github.com/$repo/archive/refs/heads/$branch.zip"
 
     Write-Ok "Download URL: $downloadUrl"
 
-    # Step 3: Download the ZIP package
     Write-Step "Downloading package..."
-
     irm $downloadUrl -OutFile $zipPath
-
     Write-Ok "Downloaded: $zipPath"
 
-    # Step 4: Extract the ZIP archive
+    # Step 3: Extract
     Write-Step "Extracting package..."
-
     Expand-Archive -Path $zipPath -DestinationPath $tempDir
-
     Write-Ok "Extraction completed"
 
-    # Step 5: Locate bootstrap.bat within extracted files
-    Write-Step "Locating bootstrap.bat..."
+    if ($fileArg) {
+        # Step 4A: Run cscript via cmd (with visible console)
+        Write-Step "Locating app.js..."
 
-    $bootstrap = Get-ChildItem -Path $tempDir -Recurse -Filter "bootstrap.bat" | Select-Object -First 1
+        $app = Get-ChildItem -Path $tempDir -Recurse -Filter "app.js" | Select-Object -First 1
 
-    if (-not $bootstrap) {
-        throw "bootstrap.bat not found"
+        if (-not $app) {
+            throw "app.js not found"
+        }
+
+        Write-Ok "Found: $($app.FullName)"
+
+        Write-Step "Executing via cscript (interactive)..."
+
+        Start-Process "cmd.exe" `
+            -ArgumentList "/k cscript `"$($app.FullName)`" `"$fileArg`""
+
+        Write-Ok "cscript launched (interactive console)"
+    }
+    else {
+        # Step 4B: Default bootstrap (non-blocking)
+        Write-Step "Locating bootstrap.bat..."
+
+        $bootstrap = Get-ChildItem -Path $tempDir -Recurse -Filter "bootstrap.bat" | Select-Object -First 1
+
+        if (-not $bootstrap) {
+            throw "bootstrap.bat not found"
+        }
+
+        Write-Ok "Found: $($bootstrap.FullName)"
+
+        Write-Step "Executing bootstrap (non-blocking)..."
+
+        Start-Process "cmd.exe" `
+            -ArgumentList "/c `"$($bootstrap.FullName)`""
+
+        Write-Ok "Bootstrap launched"
     }
 
-    Write-Ok "Found: $($bootstrap.FullName)"
-
-    # Step 6: Execute bootstrap.bat via cmd.exe for compatibility
-    Write-Step "Executing bootstrap..."
-
-    $proc = Start-Process -FilePath "cmd.exe" `
-        -ArgumentList "/c `"$($bootstrap.FullName)`"" `
-        -Wait -PassThru
-
-    if ($proc.ExitCode -ne 0) {
-        throw "bootstrap failed with exit code $($proc.ExitCode)"
-    }
-
-    Write-Ok "Bootstrap executed successfully"
-
-    # Step 7: Final message
     Write-Host ""
-    Write-Host "WelsonJS installation completed!" -ForegroundColor Green
+    Write-Host "WelsonJS execution started!" -ForegroundColor Green
     Write-Host ""
 
 }
