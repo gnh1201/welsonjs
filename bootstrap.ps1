@@ -4,10 +4,14 @@
 # https://github.com/gnh1201/welsonjs
 #
 # Usage:
+#
+# Quick start (no arguments):
 #   irm https://catswords.blob.core.windows.net/welsonjs/bootstrap.ps1 | iex
-#   irm https://catswords.blob.core.windows.net/welsonjs/bootstrap.ps1 | iex -dev main
-#   irm https://catswords.blob.core.windows.net/welsonjs/bootstrap.ps1 | iex -file test
-#   irm https://catswords.blob.core.windows.net/welsonjs/bootstrap.ps1 | iex -dev dev -file test.js
+#
+# With arguments (recommended):
+#   irm https://catswords.blob.core.windows.net/welsonjs/bootstrap.ps1 -OutFile bootstrap.ps1
+#   .\bootstrap.ps1 -dev main
+#   .\bootstrap.ps1 -file test.js
 
 $defaultBranch = "master"
 $ErrorActionPreference = "Stop"
