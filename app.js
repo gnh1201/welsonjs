@@ -23,6 +23,33 @@ var exit = function(status) {
     throw new Error("Exit " + status + " caused");
 };
 
+var optional = function(f, defaultValue, finalizer, fallback, error) {
+    var result = defaultValue;
+    var error = null;
+
+    try {
+        if (typeof f !== "function") {
+            throw new Error("The first argument must be a function");
+        }
+        result = f(error);
+    } catch (e) {
+        error = e;
+        if (typeof fallback === "function") {
+            result = optional(fallback, defaultValue, finalizer, null, error); // call fallback with the error
+        }
+    } finally {
+        if (typeof finalizer === "function") {
+            try {
+                finalizer(result, error);
+            } catch (e) {
+                return result; // ignore the error in finalizer
+            }
+        }s
+    }
+
+    return result;
+};
+
 var console = {
     _timers: {},
     _counters: {},
@@ -37,12 +64,12 @@ var console = {
         return res;
     },
     _muted: (function() {
-        try {
-            if (typeof WScript !== "undefined")
-                return WScript.Arguments.Named.Exists("quiet");
-        } catch (e) { /* ignore */ }
-        
-        return false;
+        return optional(function() {
+            if (typeof WScript !== "undefined") {
+                throw new Error("This is a console application. Please use the command line argument, //quiet, to mute the output.");
+            }
+            return WScript.Arguments.Named.Exists("quiet");
+        }, false);
     })(),
     _echoCallback: function(params, type) {
         if (this._muted) return;
@@ -232,17 +259,17 @@ function TraceError(severity, message, callee) {
             return null;
 
         return (function (fns) {
-            var i;
-
             return function (s) {
-                for (i = 0; i < fns.length; i++) {
-                    try {
+                var i = 0,
+                    result = false
+                ;
+                while (!result && i < fns.length) {
+                    result = optional(function() {
                         fns[i](s);
-                        return;
-                    } catch (e) {
-                        // try next
-                    }
-                }
+                        return true;
+                    }, false);
+                    i++;
+                };
             };
         })([
             function (s) { fn.call(console, s); },  // 1) severity-specific console
@@ -321,25 +348,22 @@ if (typeof UseObject === "undefined") {
         if (typeof callback !== "function") {
             return null;
         }
-        
+
         if (typeof dispose !== "function") {
             dispose = function(obj) {
-                try {
-                    obj.Close();
-                } catch (e) { /* ignore */ }
+                obj.Close();
+                obj = null;
             };
         }
-        
-        var obj = CreateObject(progId);
-        try {
+
+        return optional(function() {
+            var obj = CreateObject(progId);
             return callback(obj);
-        } catch (e) {
-            return (typeof fallback === "function" ?
-                fallback(obj, e) : null);
-        } finally {
+        }, null, function() {
             dispose(obj);
-            obj = null;
-        }
+        }, function(error) {
+            fallback(obj, error);
+        });
     }
 }
 
