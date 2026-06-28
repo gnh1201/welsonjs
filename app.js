@@ -80,9 +80,6 @@ var console = {
     },
     _muted: (function() {
         return optional(function() {
-            if (typeof WScript !== "undefined") {
-                throw new Error("This is a console application. Please use the command line argument, //quiet, to mute the output.");
-            }
             return WScript.Arguments.Named.Exists("quiet");
         }, false);
     })(),
