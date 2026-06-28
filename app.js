@@ -398,11 +398,12 @@ function testEvaluator(evaluator) {
 
 /**
  * @param {string} filename The file name.
+ * @param {boolean} ignoreUnsafeEval Whether to ignore unsafe eval checks.
  */
-function evaluateFile(filename) {
+function evaluateFile(filename, ignoreUnsafeEval) {
     try {
         var evaluate = eval;
-        if (!testEvaluator(evaluate)) {
+        if (!testEvaluator(evaluate) && !ignoreUnsafeEval) {
             throw new Error("Unsafe eval is not allowed. Please set ALLOW_UNSAFE_EVAL to true.");
         }
         return evaluate(require._load(filename));
@@ -411,8 +412,12 @@ function evaluateFile(filename) {
     }
 }
 
+/**
+ * 
+ * @param {string} filename The file name.
+ */
 function __evalFile__(filename) {
-    return evaluateFile(filename);
+    return evaluateFile(filename, true);
 }
 
 /**
@@ -950,7 +955,7 @@ if (!Date.prototype.toISOString) {
 
 // JSON 2
 if (typeof JSON === "undefined") {
-    evaluateFile("app/assets/js/json2.js");
+    __evalFile__("app/assets/js/json2.js");
 }
 
 // core-js (polyfills)
