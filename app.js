@@ -10,6 +10,9 @@
 
 var ALLOW_UNSAFE_EVAL = false; // Set to true to allow the use of the built-in eval function (not recommended for security reasons)
 
+/**
+ * @param {number} status The exit status code.
+ */
 var exit = function(status) {
     console.error("Exit", status, "caused");
 
@@ -25,6 +28,13 @@ var exit = function(status) {
     throw new Error("Exit " + status + " caused");
 };
 
+/**
+ * @param {Function} f The function to execute.
+ * @param {any} defaultValue The default value to return if the function throws an error.
+ * @param {Function} finalizer The function to execute after the function is executed, regardless of whether it throws an error or not.
+ * @param {Function} fallback The function to execute if the function throws an error.
+ * @param {Error} error The error object to pass to the fallback function.
+ */
 var optional = function(f, defaultValue, finalizer, fallback, error) {
     var result = defaultValue;
     var error = null;
@@ -52,6 +62,9 @@ var optional = function(f, defaultValue, finalizer, fallback, error) {
     return result;
 };
 
+/**
+ * @type {Object} console The console object for logging messages.  
+ */
 var console = {
     _timers: {},
     _counters: {},
@@ -200,6 +213,12 @@ var console = {
     }
 };
 
+/**
+ * 
+ * @param {string} severity The severity level of the error (e.g., "ERROR", "WARN", "INFO", "DEBUG").
+ * @param {string} message The error message.
+ * @param {Function} callee The function that caused the error (optional). 
+ */
 function TraceError(severity, message, callee) {
     var MAX_DEPTH = 20;
 
@@ -370,15 +389,15 @@ if (typeof UseObject === "undefined") {
 }
 
 /**
- * @evaluator {Function} The evaluator function to test.
- * @returns {boolean} True if the evaluator is the built-in eval function, false otherwise.
+ * @param {Function} evaluator The evaluator function to test.
+ * @returns {boolean} `true` if the evaluator is the built-in `eval` function; otherwise, `false`.
  */
 function testEvaluator(evaluator) {
     return (ALLOW_UNSAFE_EVAL && evaluator === eval);
 }
 
 /**
- * @filename {string} The name of the file.
+ * @param {string} filename The file name.
  */
 function evaluateFile(filename) {
     try {
@@ -392,9 +411,13 @@ function evaluateFile(filename) {
     }
 }
 
+function __evalFile__(filename) {
+    return evaluateFile(filename);
+}
+
 /**
- * @f {Function} a function object
- * @name {string} a name of the exported function
+ * @param {Function} f A function object.
+ * @param {string} name The name of the exported function.
  */
 function __export__(f, name) {
     if (typeof f !== "function") {
@@ -441,7 +464,7 @@ function __export__(f, name) {
 }
 
 /**
- * @FN {string} The name of the file.
+ * @param {string} pathname The path of the module to require.
  */
 function require(pathname) {
     var cache = require._cache = require._cache || {};
@@ -783,7 +806,9 @@ require._addScriptProvider = function(f) {
     }
 };
 
-// Load script, and call app.main()
+/**
+ * @param {string} name The name of the application module to load.
+ */
 function initializeConsole() {
     if (typeof WScript === "undefined") {
         console.error("This is not a console application");
@@ -814,6 +839,13 @@ function initializeConsole() {
     }
 }
 
+/**
+ * 
+ * @param {string} name The name of the application module to load.
+ * @param {Array} args The arguments to pass to the application module.
+ * @param {number} w The width of the window.
+ * @param {number} h The height of the window.
+ */
 function initializeWindow(name, args, w, h) {
     if (typeof window === "undefined") {
         console.error("This is not a GUI application");
@@ -843,6 +875,13 @@ function initializeWindow(name, args, w, h) {
     }
 }
 
+/**
+ * 
+ * @param {string} name The name of the application module to load.
+ * @param {string} eventType The type of the event to dispatch.
+ * @param {Function} w_args A function that returns the arguments to pass to the event handler.
+ * @param {number} w_argl The number of arguments to pass to the event handler.
+ */
 function dispatchServiceEvent(name, eventType, w_args, w_argl) {
     var app = require(name);
     var args = (function(acc, length) {
@@ -939,7 +978,7 @@ var Enumerable = require("app/assets/js/linq-4.0.2.wsh")._default;
 // PEG.js: Parser generator for JavaScript
 var PEG = require("app/assets/js/peg-0.10.0");
 
-// Dive into entrypoint 
+// Dive into entrypoint
 function __main__() {
     console.log("");
     console.log(" __        __   _                     _ ____  ");
