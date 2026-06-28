@@ -14,6 +14,8 @@ function main(args) {
     } catch (e) {
         console.error("lib/http: Something wrong");
     }
+
+    console.error("Muted:", console._muted);
     
     sleep(100000);
 

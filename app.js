@@ -1,5 +1,5 @@
 // app.js
-// Copyright 2019-2025, Namhyeon Go <gnh1201@catswords.re.kr> and the WelsonJS contributors.
+// Copyright 2019-2026, Namhyeon Go <gnh1201@catswords.re.kr>, Catswords OSS, WelsonJS contributors.
 // SPDX-License-Identifier: GPL-3.0-or-later
 // https://github.com/gnh1201/welsonjs
 
@@ -8,6 +8,11 @@
 // 
 "use strict";
 
+var ALLOW_UNSAFE_EVAL = false; // Set to true to allow the use of the built-in eval function (not recommended for security reasons)
+
+/**
+ * @param {number} status The exit status code.
+ */
 var exit = function(status) {
     console.error("Exit", status, "caused");
 
@@ -23,6 +28,43 @@ var exit = function(status) {
     throw new Error("Exit " + status + " caused");
 };
 
+/**
+ * @param {Function} f The function to execute.
+ * @param {any} defaultValue The default value to return if the function throws an error.
+ * @param {Function} finalizer The function to execute after the function is executed, regardless of whether it throws an error or not.
+ * @param {Function} fallback The function to execute if the function throws an error.
+ * @param {Error} error The error object to pass to the fallback function.
+ */
+var optional = function(f, defaultValue, finalizer, fallback, error) {
+    var result = defaultValue;
+    var error = null;
+
+    try {
+        if (typeof f !== "function") {
+            throw new Error("The first argument must be a function");
+        }
+        result = f(error);
+    } catch (e) {
+        error = e;
+        if (typeof fallback === "function") {
+            result = optional(fallback, defaultValue, finalizer, null, error); // call fallback with the error
+        }
+    } finally {
+        if (typeof finalizer === "function") {
+            try {
+                finalizer(result, error);
+            } catch (e) {
+                return result; // ignore the error in finalizer
+            }
+        }
+    }
+
+    return result;
+};
+
+/**
+ * @type {Object} console The console object for logging messages.  
+ */
 var console = {
     _timers: {},
     _counters: {},
@@ -37,12 +79,9 @@ var console = {
         return res;
     },
     _muted: (function() {
-        try {
-            if (typeof WScript !== "undefined")
-                return WScript.Arguments.Named.Exists("quiet");
-        } catch (e) { /* ignore */ }
-        
-        return false;
+        return optional(function() {
+            return WScript.Arguments.Named.Exists("quiet");
+        }, false);
     })(),
     _echoCallback: function(params, type) {
         if (this._muted) return;
@@ -171,6 +210,12 @@ var console = {
     }
 };
 
+/**
+ * 
+ * @param {string} severity The severity level of the error (e.g., "ERROR", "WARN", "INFO", "DEBUG").
+ * @param {string} message The error message.
+ * @param {Function} callee The function that caused the error (optional). 
+ */
 function TraceError(severity, message, callee) {
     var MAX_DEPTH = 20;
 
@@ -232,17 +277,17 @@ function TraceError(severity, message, callee) {
             return null;
 
         return (function (fns) {
-            var i;
-
             return function (s) {
-                for (i = 0; i < fns.length; i++) {
-                    try {
+                var i = 0,
+                    result = false
+                ;
+                while (!result && i < fns.length) {
+                    result = optional(function() {
                         fns[i](s);
-                        return;
-                    } catch (e) {
-                        // try next
-                    }
-                }
+                        return true;
+                    }, false);
+                    i++;
+                };
             };
         })([
             function (s) { fn.call(console, s); },  // 1) severity-specific console
@@ -321,59 +366,85 @@ if (typeof UseObject === "undefined") {
         if (typeof callback !== "function") {
             return null;
         }
-        
+
         if (typeof dispose !== "function") {
             dispose = function(obj) {
-                try {
-                    obj.Close();
-                } catch (e) { /* ignore */ }
+                obj.Close();
+                obj = null;
             };
         }
-        
-        var obj = CreateObject(progId);
-        try {
+
+        return optional(function() {
+            var obj = CreateObject(progId);
             return callback(obj);
-        } catch (e) {
-            return (typeof fallback === "function" ?
-                fallback(obj, e) : null);
-        } finally {
+        }, null, function() {
             dispose(obj);
-            obj = null;
-        }
+        }, function(error) {
+            fallback(obj, error);
+        });
     }
 }
 
 /**
- * @FN {string} The name of the file.
+ * @param {Function} evaluator The evaluator function to test.
+ * @returns {boolean} `true` if the evaluator is the built-in `eval` function; otherwise, `false`.
  */
-function __evalFile__(FN) {
+function testEvaluator(evaluator) {
+    return (ALLOW_UNSAFE_EVAL && evaluator === eval);
+}
+
+/**
+ * @param {string} filename The file name.
+ * @param {boolean} ignoreUnsafeEval Whether to ignore unsafe eval checks.
+ */
+function evaluateFile(filename, ignoreUnsafeEval) {
     try {
-        return eval(require._load(FN));
+        var evaluate = eval;
+        if (!testEvaluator(evaluate) && !ignoreUnsafeEval) {
+            throw new Error("Unsafe eval is not allowed. Please set ALLOW_UNSAFE_EVAL to true.");
+        }
+        return evaluate(require._load(filename));
     } catch (e) {
         console.error(e.message);
     }
 }
 
 /**
- * @f {Function} a function object
- * @name {string} a name of the exported function
+ * 
+ * @param {string} filename The file name.
+ */
+function __evalFile__(filename) {
+    return evaluateFile(filename, true);
+}
+
+/**
+ * @param {Function} f A function object.
+ * @param {string} name The name of the exported function.
  */
 function __export__(f, name) {
-    if (typeof f !== "function") 
-        return f;
-    
-    name = (name == null) ? "" : String(name);
-    
-    if (!name)
-        name = "(exported)";
-    
+    if (typeof f !== "function") {
+        return f; // not a function, return as is
+    }
+
+    if (typeof name !== "string" || name == null) {
+        name = "(anonymous)";
+    }
+
+    var ignoreException = function(e) {
+        void(e);
+    }
+
     try {
         f.__name__ = name;
-    } catch (e) {}
+    } catch (e) {
+        ignoreException(e);
+    }
     
     try {
         f.name = name;
-    } catch (e) {}
+    } catch (e) {
+        ignoreException(e);
+    }
 
     var wrapped = function () {
         try {
@@ -388,7 +459,6 @@ function __export__(f, name) {
             }
         }
     };
-    
     wrapped.__name__ = name;
     wrapped.__target__ = f;
 
@@ -396,7 +466,7 @@ function __export__(f, name) {
 }
 
 /**
- * @FN {string} The name of the file.
+ * @param {string} pathname The path of the module to require.
  */
 function require(pathname) {
     var cache = require._cache = require._cache || {};
@@ -562,17 +632,31 @@ function require(pathname) {
             break;
     }
 
-    // compile
-    T = "(function(global){var module=new require.__Module__();return(function(exports,require,module,__filename,__dirname){"
-        + '"use strict";'
+    var compiled = new Function(
+        "global",
+        "exports",
+        "require",
+        "module",
+        "__filename",
+        "__dirname",
+        '"use strict";\n'
         + T
-        + "\n\nreturn module.exports})(module.exports,global.require,module,_filename,_dirname)})(require._global);\n\n////@ sourceURL="
-        + FN
-    ;
+        + "\n\nreturn module.exports;"
+        + "\n//# sourceURL=" + FN
+    );
 
     // execute
     try {
-        cache[FN] = eval(T);
+        var module = new require.__Module__();
+
+        cache[FN] = compiled(
+            require._global,
+            module.exports,
+            require,
+            module,
+            _filename,
+            _dirname
+        );
     } catch (e) {
         console.error("PARSE ERROR!", e.number + ",", e.description + ",", "FN=" + FN);
     }
@@ -724,7 +808,9 @@ require._addScriptProvider = function(f) {
     }
 };
 
-// Load script, and call app.main()
+/**
+ * @param {string} name The name of the application module to load.
+ */
 function initializeConsole() {
     if (typeof WScript === "undefined") {
         console.error("This is not a console application");
@@ -755,6 +841,13 @@ function initializeConsole() {
     }
 }
 
+/**
+ * 
+ * @param {string} name The name of the application module to load.
+ * @param {Array} args The arguments to pass to the application module.
+ * @param {number} w The width of the window.
+ * @param {number} h The height of the window.
+ */
 function initializeWindow(name, args, w, h) {
     if (typeof window === "undefined") {
         console.error("This is not a GUI application");
@@ -784,49 +877,60 @@ function initializeWindow(name, args, w, h) {
     }
 }
 
-function dispatchServiceEvent(name, eventType, w_args, argl) {
+/**
+ * 
+ * @param {string} name The name of the application module to load.
+ * @param {string} eventType The type of the event to dispatch.
+ * @param {Function} w_args A function that returns the arguments to pass to the event handler.
+ * @param {number} w_argl The number of arguments to pass to the event handler.
+ */
+function dispatchServiceEvent(name, eventType, w_args, w_argl) {
     var app = require(name);
     var args = (function(acc, length) {
-        for (var i = 0; i < argl; i++)
+        for (var i = 0; i < w_argl; i++)
             acc.push(w_args(i));
         return acc;
-    })([], argl);
-    
-    if (app) {
-        var bind = function(eventType) {
-            var event_callback_name = "on" + eventType;
+    })([], w_argl);
 
-            if (event_callback_name in app && typeof app[event_callback_name] === "function")
-                return app[event_callback_name];
-
-            return null;
-        };
-
-        return (function(action) {
-            if (eventType in action) {
-                try {
-                    return (function(f) {
-                        return (typeof f !== "function" ? null : f(args));
-                    })(action[eventType]);
-                } catch (e) {
-                    console.error("Exception:", e.message);
-                }
-            }
-        })({
-            start: bind("ServiceStart"),
-            stop: bind("ServiceStop"),
-            elapsedTime: bind("ServiceElapsedTime"),
-            screenNextTemplate: bind("ScreenNextTemplate"),
-            screenTemplateMatched: bind("ScreenTemplateMatched"),
-            fileCreated: bind("FileCreated"),
-            networkConnected: bind("NetworkConnected"),
-            registryModified: bind("RegistryModified"),
-            avScanResult: bind("AvScanResult")
-        });
-    } else {
+    if (!app) {
         console.error("Could not find", name + ".js");
         return;
     }
+    
+    var bind = function(eventType) {
+        var event_callback_name = "on" + eventType;
+
+        if (event_callback_name in app && typeof app[event_callback_name] === "function")
+            return app[event_callback_name];
+
+        return null;
+    };
+
+    return (function(action) {
+        if (eventType in action) {
+            try {
+                return (function(f) {
+                    return (typeof f !== "function" ? null : f(args));
+                })(action[eventType]);
+            } catch (e) {
+                console.error(
+                    "Failed to dispatch service event'" + eventType + "' (" + callbackName + ") in module",
+                    '"' + name + "':",
+                    e.message
+                );
+            }
+        }
+    })({
+        start: bind("ServiceStart"),
+        stop: bind("ServiceStop"),
+        elapsedTime: bind("ServiceElapsedTime"),
+        screenNextTemplate: bind("ScreenNextTemplate"),
+        screenTemplateMatched: bind("ScreenTemplateMatched"),
+        fileCreated: bind("FileCreated"),
+        networkConnected: bind("NetworkConnected"),
+        registryModified: bind("RegistryModified"),
+        avScanResult: bind("AvScanResult")
+    });
 }
 
 // Date.prototype.toISOString() polyfill for MSScriptControl.ScriptControl
@@ -876,7 +980,7 @@ var Enumerable = require("app/assets/js/linq-4.0.2.wsh")._default;
 // PEG.js: Parser generator for JavaScript
 var PEG = require("app/assets/js/peg-0.10.0");
 
-// Dive into entrypoint 
+// Dive into entrypoint
 function __main__() {
     console.log("");
     console.log(" __        __   _                     _ ____  ");
