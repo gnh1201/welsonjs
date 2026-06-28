@@ -8,6 +8,8 @@
 // 
 "use strict";
 
+var ALLOW_UNSAFE_EVAL = false; // Set to true to allow the use of the built-in eval function (not recommended for security reasons)
+
 var exit = function(status) {
     console.error("Exit", status, "caused");
 
@@ -44,7 +46,7 @@ var optional = function(f, defaultValue, finalizer, fallback, error) {
             } catch (e) {
                 return result; // ignore the error in finalizer
             }
-        }s
+        }
     }
 
     return result;
@@ -368,11 +370,23 @@ if (typeof UseObject === "undefined") {
 }
 
 /**
- * @FN {string} The name of the file.
+ * @evaluator {Function} The evaluator function to test.
+ * @returns {boolean} True if the evaluator is the built-in eval function, false otherwise.
  */
-function __evalFile__(FN) {
+function testEvaluator(evaluator) {
+    return (ALLOW_UNSAFE_EVAL && evaluator === eval);
+}
+
+/**
+ * @filename {string} The name of the file.
+ */
+function evaluateFile(filename) {
     try {
-        return eval(require._load(FN));
+        var evaluate = eval;
+        if (!testEvaluator(evaluate)) {
+            throw new Error("Unsafe eval is not allowed. Please set ALLOW_UNSAFE_EVAL to true.");
+        }
+        return evaluate(require._load(filename));
     } catch (e) {
         console.error(e.message);
     }
@@ -383,21 +397,29 @@ function __evalFile__(FN) {
  * @name {string} a name of the exported function
  */
 function __export__(f, name) {
-    if (typeof f !== "function") 
-        return f;
-    
-    name = (name == null) ? "" : String(name);
-    
-    if (!name)
-        name = "(exported)";
-    
+    if (typeof f !== "function") {
+        return f; // not a function, return as is
+    }
+
+    if (typeof name !== "string" || name == null) {
+        name = "(anonymous)";
+    }
+
+    var ignoreException = function(e) {
+        void(e);
+    }
+
     try {
         f.__name__ = name;
-    } catch (e) {}
+    } catch (e) {
+        ignoreException(e);
+    }
     
     try {
         f.name = name;
-    } catch (e) {}
+    } catch (e) {
+        ignoreException(e);
+    }
 
     var wrapped = function () {
         try {
@@ -412,7 +434,6 @@ function __export__(f, name) {
             }
         }
     };
-    
     wrapped.__name__ = name;
     wrapped.__target__ = f;
 
@@ -586,17 +607,31 @@ function require(pathname) {
             break;
     }
 
-    // compile
-    T = "(function(global){var module=new require.__Module__();return(function(exports,require,module,__filename,__dirname){"
-        + '"use strict";'
+    var compiled = new Function(
+        "global",
+        "exports",
+        "require",
+        "module",
+        "__filename",
+        "__dirname",
+        '"use strict";\n'
         + T
-        + "\n\nreturn module.exports})(module.exports,global.require,module,_filename,_dirname)})(require._global);\n\n////@ sourceURL="
-        + FN
-    ;
+        + "\n\nreturn module.exports;"
+        + "\n//# sourceURL=" + FN
+    );
 
     // execute
     try {
-        cache[FN] = eval(T);
+        var module = new require.__Module__();
+
+        cache[FN] = compiled(
+            require._global,
+            module.exports,
+            require,
+            module,
+            _filename,
+            _dirname
+        );
     } catch (e) {
         console.error("PARSE ERROR!", e.number + ",", e.description + ",", "FN=" + FN);
     }
@@ -808,49 +843,53 @@ function initializeWindow(name, args, w, h) {
     }
 }
 
-function dispatchServiceEvent(name, eventType, w_args, argl) {
+function dispatchServiceEvent(name, eventType, w_args, w_argl) {
     var app = require(name);
     var args = (function(acc, length) {
-        for (var i = 0; i < argl; i++)
+        for (var i = 0; i < w_argl; i++)
             acc.push(w_args(i));
         return acc;
-    })([], argl);
-    
-    if (app) {
-        var bind = function(eventType) {
-            var event_callback_name = "on" + eventType;
+    })([], w_argl);
 
-            if (event_callback_name in app && typeof app[event_callback_name] === "function")
-                return app[event_callback_name];
-
-            return null;
-        };
-
-        return (function(action) {
-            if (eventType in action) {
-                try {
-                    return (function(f) {
-                        return (typeof f !== "function" ? null : f(args));
-                    })(action[eventType]);
-                } catch (e) {
-                    console.error("Exception:", e.message);
-                }
-            }
-        })({
-            start: bind("ServiceStart"),
-            stop: bind("ServiceStop"),
-            elapsedTime: bind("ServiceElapsedTime"),
-            screenNextTemplate: bind("ScreenNextTemplate"),
-            screenTemplateMatched: bind("ScreenTemplateMatched"),
-            fileCreated: bind("FileCreated"),
-            networkConnected: bind("NetworkConnected"),
-            registryModified: bind("RegistryModified"),
-            avScanResult: bind("AvScanResult")
-        });
-    } else {
+    if (!app) {
         console.error("Could not find", name + ".js");
         return;
     }
+    
+    var bind = function(eventType) {
+        var event_callback_name = "on" + eventType;
+
+        if (event_callback_name in app && typeof app[event_callback_name] === "function")
+            return app[event_callback_name];
+
+        return null;
+    };
+
+    return (function(action) {
+        if (eventType in action) {
+            try {
+                return (function(f) {
+                    return (typeof f !== "function" ? null : f(args));
+                })(action[eventType]);
+            } catch (e) {
+                console.error(
+                    "Failed to dispatch service event'" + eventType + "' (" + callbackName + ") in module",
+                    '"' + name + "':",
+                    e.message
+                );
+            }
+        }
+    })({
+        start: bind("ServiceStart"),
+        stop: bind("ServiceStop"),
+        elapsedTime: bind("ServiceElapsedTime"),
+        screenNextTemplate: bind("ScreenNextTemplate"),
+        screenTemplateMatched: bind("ScreenTemplateMatched"),
+        fileCreated: bind("FileCreated"),
+        networkConnected: bind("NetworkConnected"),
+        registryModified: bind("RegistryModified"),
+        avScanResult: bind("AvScanResult")
+    });
 }
 
 // Date.prototype.toISOString() polyfill for MSScriptControl.ScriptControl
@@ -872,7 +911,7 @@ if (!Date.prototype.toISOString) {
 
 // JSON 2
 if (typeof JSON === "undefined") {
-    __evalFile__("app/assets/js/json2.js");
+    evaluateFile("app/assets/js/json2.js");
 }
 
 // core-js (polyfills)
