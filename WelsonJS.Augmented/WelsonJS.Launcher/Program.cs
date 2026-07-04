@@ -9,15 +9,14 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Catswords.Phantomizer;
 
 namespace WelsonJS.Launcher
 {
@@ -31,6 +30,9 @@ namespace WelsonJS.Launcher
 
         static Program()
         {
+            // Display a message box whenever Trace.TraceError() is called.
+            Trace.Listeners.Add(new MessageBoxTraceListener());
+
             // get the date time format
             _dateTimeFormat = GetAppConfig("DateTimeFormat");
 
@@ -225,51 +227,6 @@ namespace WelsonJS.Launcher
 
         private static void InitializeAssemblyLoader()
         {
-            byte[] gzBytes = Properties.Resources.Phantomizer;
-
-            byte[] dllBytes;
-            using (var input = new MemoryStream(gzBytes))
-            using (var gz = new GZipStream(input, CompressionMode.Decompress))
-            using (var output = new MemoryStream())
-            {
-                gz.CopyTo(output);
-                dllBytes = output.ToArray();
-            }
-
-            Assembly phantomAsm = Assembly.Load(dllBytes);
-            Type loaderType = phantomAsm.GetType("Catswords.Phantomizer.AssemblyLoader", true);
-
-            loaderType.GetProperty("BaseUrl")?.SetValue(null, GetAppConfig("AssemblyBaseUrl"));
-            loaderType.GetProperty("LoaderNamespace")?.SetValue(null, typeof(Program).Namespace);
-            loaderType.GetProperty("AppName")?.SetValue(null, "WelsonJS");
-            loaderType.GetProperty("IntegrityUrl")?.SetValue(null, GetAppConfig("AssemblyIntegrityUrl"));
-            // curl.exe integrity hash can be added here if needed
-            // e.g., 23b24c6a2dc39dbfd83522968d99096fc6076130a6de7a489bc0380cce89143d (curl-8.17.0-win-x86-full.2025-11-09, Muldersoft)
-            loaderType.GetMethod("AddIntegrityHash")?.Invoke(null, new object[] { GetAppConfig("IntegrityHashCurl") });
-            loaderType.GetMethod("Register")?.Invoke(null, null);
-
-            var loadNativeModulesMethod = loaderType.GetMethod(
-                "LoadNativeModules",
-                BindingFlags.Public | BindingFlags.Static,
-                binder: null,
-                types: new[] { typeof(string), typeof(Version), typeof(string[]) },
-                modifiers: null
-            );
-
-            if (loadNativeModulesMethod == null)
-            {
-                throw new InvalidOperationException("LoadNativeModules(string, Version, string[]) method not found.");
-            }
-
-            loadNativeModulesMethod.Invoke(null, new object[]
-            {
-                "ChakraCore",
-                new Version(1, 13, 0, 0),
-                new[] { "ChakraCore.dll" }
-            });
-
-            /*
-            // Alternative way using direct type reference
             AssemblyLoader.BaseUrl = GetAppConfig("AssemblyBaseUrl");   // Configure CDN base URL
             AssemblyLoader.IntegrityUrl = GetAppConfig("AssemblyIntegrityUrl");   // (Optional) Set the integrity URL
             AssemblyLoader.LoaderNamespace = typeof(Program).Namespace;
@@ -284,7 +241,6 @@ namespace WelsonJS.Launcher
                 new Version(1, 13, 0, 0),
                 new[] { "ChakraCore.dll" }
             );
-            */
         }
 
         public static void RecordFirstDeployTime(string directory, string instanceId)
