@@ -93,6 +93,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiEndpoints\JsonRpc2.cs" />
+    <Compile Include="AssemblyLoader.cs" />
     <Compile Include="IApiEndpoint.cs" />
     <Compile Include="JsCore.cs" />
     <Compile Include="JsNative.cs" />
@@ -125,6 +126,7 @@
     <Compile Include="MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="MessageBoxTraceListener.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GlobalSettingsForm.cs">
@@ -212,6 +214,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\icon_community_32.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="integrity.config.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

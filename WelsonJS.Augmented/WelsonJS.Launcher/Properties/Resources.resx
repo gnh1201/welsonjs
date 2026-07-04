@@ -229,11 +229,8 @@
   <data name="AssemblyBaseUrl" xml:space="preserve">
     <value>https://catswords.blob.core.windows.net/welsonjs/packages</value>
   </data>
-  <data name="Phantomizer" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\Catswords.Phantomizer.dll.gz;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
   <data name="AssemblyIntegrityUrl" xml:space="preserve">
-    <value>https://spare-yellow-cicada.myfilebase.com/ipfs/QmYL29Z7BRvE6dnL4HPKeNvJyNJrh2LnVhzo3k9bp3wBZf</value>
+    <value>https://catswords.blob.core.windows.net/welsonjs/integrity.config.xml</value>
   </data>
   <data name="IntegrityHashCurl" xml:space="preserve">
     <value>23b24c6a2dc39dbfd83522968d99096fc6076130a6de7a489bc0380cce89143d</value>

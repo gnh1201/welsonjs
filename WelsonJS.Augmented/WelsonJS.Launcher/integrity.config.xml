@@ -1,0 +1,128 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<AssemblyIntegrity
+    schemaVersion="1"
+    generatedAt="2025-12-10T00:00:00Z">
+
+	<Hashes>
+
+		<!-- ChakraCore.dll -->
+		<Hash
+            value="b43b1019451c5bdacb5ed993c94e1d3b"
+            algorithm="MD5"
+            assemblyName="ChakraCore"
+            assemblyType="native"
+            version="1.13.0.0"
+            platform="x86"
+            compression="none"
+            fileName="ChakraCore.dll" />
+
+		<Hash
+            value="5e274b47fc60c74159b4d1e21e70c0edf8e0936bdabc46b632525d09ca2fbae8"
+            algorithm="SHA256"
+            assemblyName="ChakraCore"
+            assemblyType="native"
+            version="1.13.0.0"
+            platform="x86"
+            compression="none"
+            fileName="ChakraCore.dll" />
+
+		<!-- ChakraCore.dll.gz -->
+		<Hash
+            value="49eb92bccfa3c876c40901ecb8875e4a"
+            algorithm="MD5"
+            assemblyName="ChakraCore"
+            assemblyType="native"
+            version="1.13.0.0"
+            platform="x86"
+            compression="gzip"
+            fileName="ChakraCore.dll.gz" />
+
+		<Hash
+            value="718fae9c9d0fd120ca34276b8e975863b4fc4da1c244185f89f3f02be7994e68"
+            algorithm="SHA256"
+            assemblyName="ChakraCore"
+            assemblyType="native"
+            version="1.13.0.0"
+            platform="x86"
+            compression="gzip"
+            fileName="ChakraCore.dll.gz" />
+
+		<!-- Esent.Interop.dll -->
+		<Hash
+            value="f72e9f10b2c6e2f839d448ff6c05255a"
+            algorithm="MD5"
+            assemblyName="Esent.Interop"
+            assemblyType="managed"
+            platform="x86"
+            compression="none"
+            fileName="Esent.Interop.dll" />
+
+		<Hash
+            value="eabd75e3188b8539095838625b792b0169be4145f8520399b1482ed802bfe675"
+            algorithm="SHA256"
+            assemblyName="Esent.Interop"
+            assemblyType="managed"
+            platform="x86"
+            compression="none"
+            fileName="Esent.Interop.dll" />
+
+		<!-- Esent.Interop.dll.gz -->
+		<Hash
+            value="673511d720a9c35651bd95c57950a073"
+            algorithm="MD5"
+            assemblyName="Esent.Interop"
+            assemblyType="managed"
+            platform="x86"
+            compression="gzip"
+            fileName="Esent.Interop.dll.gz" />
+
+		<Hash
+            value="a681c340e4190ea6fc9cdbb613ce62adc5055e96fd9b6bc95323df11c447ff4c"
+            algorithm="SHA256"
+            assemblyName="Esent.Interop"
+            assemblyType="managed"
+            platform="x86"
+            compression="gzip"
+            fileName="Esent.Interop.dll.gz" />
+
+		<!-- WelsonJS.Esent.dll -->
+		<Hash
+            value="8e87933afcbbfdad752c152b7518306c"
+            algorithm="MD5"
+            assemblyName="WelsonJS.Esent"
+            assemblyType="managed"
+            platform="x86"
+            compression="none"
+            fileName="WelsonJS.Esent.dll" />
+
+		<Hash
+            value="195911e7ca07f21faf511421a9a8a7309452d5a603fea94aeb915217bf6a640a"
+            algorithm="SHA256"
+            assemblyName="WelsonJS.Esent"
+            assemblyType="managed"
+            platform="x86"
+            compression="none"
+            fileName="WelsonJS.Esent.dll" />
+
+		<!-- WelsonJS.Esent.dll.gz -->
+		<Hash
+            value="f38cbff9ea88d61a81c207acaaf7ab08"
+            algorithm="MD5"
+            assemblyName="WelsonJS.Esent"
+            assemblyType="managed"
+            platform="x86"
+            compression="gzip"
+            fileName="WelsonJS.Esent.dll.gz" />
+
+		<Hash
+            value="1bc69470487f908a2b7e0829b9c29945af0e18a56579984a15323e1e6d1f9f27"
+            algorithm="SHA256"
+            assemblyName="WelsonJS.Esent"
+            assemblyType="managed"
+            platform="x86"
+            compression="gzip"
+            fileName="WelsonJS.Esent.dll.gz" />
+
+	</Hashes>
+
+</AssemblyIntegrity>
