@@ -37,7 +37,7 @@ var exit = function(status) {
  */
 var optional = function(f, defaultValue, finalizer, fallback, error) {
     var result = defaultValue;
-    var error = null;
+	var currentError = null;
 
     try {
         if (typeof f !== "function") {
@@ -45,14 +45,14 @@ var optional = function(f, defaultValue, finalizer, fallback, error) {
         }
         result = f(error);
     } catch (e) {
-        error = e;
+		currentError = e;
         if (typeof fallback === "function") {
-            result = optional(fallback, defaultValue, finalizer, null, error); // call fallback with the error
+            result = optional(fallback, defaultValue, finalizer, null, currentError); // call fallback with the error
         }
     } finally {
         if (typeof finalizer === "function") {
             try {
-                finalizer(result, error);
+                finalizer(result, currentError);
             } catch (e) {
                 return result; // ignore the error in finalizer
             }
