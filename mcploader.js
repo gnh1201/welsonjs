@@ -100,7 +100,11 @@ function main(args) {
                                     "type": "text",
                                     "text": (function(script) {
                                         try {
-                                            return String(eval(script));
+                                            var evaluate = eval;
+                                            if (!testEvaluator(evaluate)) {
+                                                throw new Error("Unsafe eval is not allowed. Please set ALLOW_UNSAFE_EVAL to true.");
+                                            }
+                                            return String(evaluate(script));
                                         } catch (e) {
                                             return "Error";
                                             isError = true;
