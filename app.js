@@ -486,6 +486,16 @@ function __adler32__(str) {
     var i = 0, len = str.length;
 
     while (i < len) {
+        a = (a + str.charCodeAt(i++)) % 65521;
+        b = (b + a) % 65521;
+    }
+
+    return ((b << 16) | a) >>> 0;
+}
+    var a = 1, b = 0;
+    var i = 0, len = str.length;
+
+    while (i < len) {
         if ((a += str.charCodeAt(i++)) >= 65521) a -= 65521;
         if ((b += a) >= 65521) b %= 65521;
     }
