@@ -8,7 +8,17 @@
 // 
 "use strict";
 
-var ALLOW_UNSAFE_EVAL = false; // Set to true to allow the use of the built-in eval function (not recommended for security reasons)
+var ALLOW_UNSAFE_EVAL = false; // Verify the evaluator with testEvaluator() before using eval().
+var STRICT_INTEGRITY = false;  // When enabled, only scripts matching a trusted integrity hash may execute.
+var INTEGRITY_HASHES = {/*
+	"7b5c4d89": true, "779be011": true, "c9dee731": true,
+	"f1f021aa": true, "31868529": true, "33a07569": true,
+	"bef1d428": true, "fc87516d": true, "45d5a78b": true,
+	"38768236": true, "c51e7fc4": true, "3543a3f4": true,
+	"8c47c4c5": true, "3b0772dd": true, "2eb51cc4": true,
+	"59d846e3": true, "ed349cb7": true, "68b231de": true,
+	"5e5157c1": true, "e1de4567": true, "98524d82": true
+*/};
 
 /**
  * @param {number} status The exit status code.
@@ -37,7 +47,7 @@ var exit = function(status) {
  */
 var optional = function(f, defaultValue, finalizer, fallback, error) {
     var result = defaultValue;
-	var currentError = null;
+    var currentError = null;
 
     try {
         if (typeof f !== "function") {
@@ -45,9 +55,9 @@ var optional = function(f, defaultValue, finalizer, fallback, error) {
         }
         result = f(error);
     } catch (e) {
-		currentError = e;
+        currentError = e;
         if (typeof fallback === "function") {
-            result = optional(fallback, defaultValue, finalizer, null, currentError); // call fallback with the error
+            result = optional(fallback, defaultValue, null, null, currentError); // call fallback with the error
         }
     } finally {
         if (typeof finalizer === "function") {
@@ -466,6 +476,24 @@ function __export__(f, name) {
 }
 
 /**
+ * Computes the Adler-32 checksum of a string.
+ *
+ * @param {string} str The input string.
+ * @returns {number} The unsigned 32-bit Adler-32 checksum.
+ */
+function __adler32__(str) {
+    var a = 1, b = 0;
+    var i = 0, len = str.length;
+
+    while (i < len) {
+        if ((a += str.charCodeAt(i++)) >= 65521) a -= 65521;
+        if ((b += a) >= 65521) b %= 65521;
+    }
+
+    return ((b << 16) | a) >>> 0;
+}
+
+/**
  * @param {string} pathname The path of the module to require.
  */
 function require(pathname) {
@@ -710,20 +738,29 @@ require._load = function(FN) {
 
     // load script file
     // use ADODB.Stream instead of Scripting.FileSystemObject, because of supporting UTF-8 (Unicode)
-    var objStream = CreateObject("ADODB.Stream");
-    var T = null;
-    try {
-        objStream.charSet = "utf-8";
-        objStream.open();
-        objStream.loadFromFile(_filename);
-        T = objStream.readText();
-        objStream.close();
-    } catch (e) {
-        console.error("LOAD ERROR!", e.number + ",", e.description + ",", "FN=" + FN);
-        return;
-    }
+    return UseObject("ADODB.Stream", function(stream) {
+        var text = null;
+        stream.charSet = "utf-8";
+        stream.open();
+        stream.loadFromFile(_filename);
+        text = stream.readText();
 
-    return T;
+        // integrity verification
+        if (STRICT_INTEGRITY) {
+            var computed_hash = __adler32__(text).toString(16);
+            var existed_hash = (computed_hash in INTEGRITY_HASHES);
+            var enabled_hash = existed_hash ? INTEGRITY_HASHES[computed_hash] : false;
+
+            if (!existed_hash && !enabled_hash) {
+                //console.log("Integrity verification failed: " + String(computed_hash));
+                throw new Error("Integrity verification failed: " + String(computed_hash));
+            }
+        }
+        
+        return text;
+    }, null, function(stream, error) {
+        console.error("LOAD ERROR!", error.number + ",", error.description + ",", "FN=" + FN);
+    });
 };
 require._msie9 = function(FN, params, callback) {
     if (typeof FN !== "string" || FN == null) FN = '';
