@@ -5,7 +5,7 @@
 [![DOI 10.5281/zenodo.11382384](https://zenodo.org/badge/DOI/10.5281/zenodo.11382384.svg)](https://doi.org/10.5281/zenodo.11382384?utm_source=welsonjs)
 ![ChatGPT available](https://img.shields.io/badge/ChatGPT-74aa9c?logo=openai&logoColor=white)
 ![Google Gemini available](https://img.shields.io/badge/Gemini-886FBF?logo=googlegemini&logoColor=fff)
-[![slideshare.net presentation](https://img.shields.io/badge/SlideShare-black?logo=slideshare)](https://www.slideshare.net/slideshow/welsonjs-javascript-framework-presentation-2024/276005486?utm_source=welsonjs)
+[![slideshare.net presentation](https://img.shields.io/badge/SlideShare-black?logo=slideshare)](https://www.slideshare.net/slideshow/welsonjs-building-full-windows-desktop-apps-using-built-in-javascript-engine/288594715?utm_source=welsonjs)
 [![YouTube promotion video](https://img.shields.io/badge/YouTube-red?logo=youtube)](https://youtu.be/JavH7Dms8-U?utm_source=welsonjs)
 [![Discord chat](https://img.shields.io/discord/359930650330923008?logo=discord)](https://discord.gg/XKG5CjtXEj?utm_source=welsonjs)
 [![G2](https://img.shields.io/badge/G2-FF492C?logo=g2&logoColor=fff)](https://www.g2.com/products/welsonjs/reviews?utm_source=welsonjs)
