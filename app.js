@@ -751,7 +751,7 @@ require._load = function(FN) {
             var existed_hash = (computed_hash in INTEGRITY_HASHES);
             var enabled_hash = existed_hash ? INTEGRITY_HASHES[computed_hash] : false;
 
-            if (!existed_hash && !enabled_hash) {
+            if (!enabled_hash) {
                 //console.log("Integrity verification failed: " + String(computed_hash));
                 throw new Error("Integrity verification failed: " + String(computed_hash));
             }
