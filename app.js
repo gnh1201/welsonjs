@@ -12,7 +12,7 @@ var ALLOW_UNSAFE_EVAL = false; // Verify the evaluator with testEvaluator() befo
 var STRICT_INTEGRITY = false;  // When enabled, only scripts matching a trusted integrity hash may execute.
 var INTEGRITY_HASHES = {/*
 	"7b5c4d89": true, "779be011": true, "c9dee731": true,
-	"f1f021aa": true, "31868529": true, "33a07569": true,
+	"f1f021aa": true, "31868529": true, "cbd7d9d6": true,
 	"bef1d428": true, "fc87516d": true, "45d5a78b": true,
 	"38768236": true, "c51e7fc4": true, "3543a3f4": true,
 	"8c47c4c5": true, "3b0772dd": true, "2eb51cc4": true,
@@ -389,9 +389,7 @@ if (typeof UseObject === "undefined") {
             return callback(obj);
         }, null, function() {
             dispose(obj);
-        }, function(error) {
-            fallback(obj, error);
-        });
+        }, fallback);
     }
 }
 
@@ -488,16 +486,6 @@ function __adler32__(str) {
     while (i < len) {
         a = (a + str.charCodeAt(i++)) % 65521;
         b = (b + a) % 65521;
-    }
-
-    return ((b << 16) | a) >>> 0;
-}
-    var a = 1, b = 0;
-    var i = 0, len = str.length;
-
-    while (i < len) {
-        if ((a += str.charCodeAt(i++)) >= 65521) a -= 65521;
-        if ((b += a) >= 65521) b %= 65521;
     }
 
     return ((b << 16) | a) >>> 0;
@@ -760,16 +748,16 @@ require._load = function(FN) {
             var computed_hash = __adler32__(text).toString(16);
             var existed_hash = (computed_hash in INTEGRITY_HASHES);
             var enabled_hash = existed_hash ? INTEGRITY_HASHES[computed_hash] : false;
-
             if (!enabled_hash) {
-                //console.log("Integrity verification failed: " + String(computed_hash));
-                throw new Error("Integrity verification failed: " + String(computed_hash));
+                throw new Error("Integrity verification failed (" + computed_hash + ")");
             }
         }
         
         return text;
-    }, null, function(stream, error) {
-        console.error("LOAD ERROR!", error.number + ",", error.description + ",", "FN=" + FN);
+    }, null, function(error) {
+        var message = error ? (error.description || error.message || String(error)) : "Unknown error";
+        var code = error && error.number ? error.number : 0;
+        console.error("LOAD ERROR!", code + ",", message + ",", "FN=" + FN);
     });
 };
 require._msie9 = function(FN, params, callback) {
