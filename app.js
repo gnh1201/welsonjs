@@ -12,9 +12,9 @@ var ALLOW_UNSAFE_EVAL = false; // Verify the evaluator with testEvaluator() befo
 var STRICT_INTEGRITY = false;  // When enabled, only scripts matching a trusted integrity hash may execute.
 var INTEGRITY_HASHES = {/*
 	"7b5c4d89": true, "779be011": true, "c9dee731": true,
-	"f1f021aa": true, "31868529": true, "cbd7d9d6": true,
+	"f1f021aa": true, "31868529": true, "33a07569": true,
 	"bef1d428": true, "fc87516d": true, "45d5a78b": true,
-	"38768236": true, "c51e7fc4": true, "3543a3f4": true,
+	"38768236": true, "c51e7fc4": true, "cbd7d9d6": true,
 	"8c47c4c5": true, "3b0772dd": true, "2eb51cc4": true,
 	"59d846e3": true, "ed349cb7": true, "68b231de": true,
 	"5e5157c1": true, "e1de4567": true, "98524d82": true
@@ -474,18 +474,33 @@ function __export__(f, name) {
 }
 
 /**
- * Computes the Adler-32 checksum of a string.
+ * Computes the Adler-32 (RFC 1950) checksum of a string.
  *
  * @param {string} str The input string.
  * @returns {number} The unsigned 32-bit Adler-32 checksum.
  */
 function __adler32__(str) {
-    var a = 1, b = 0;
-    var i = 0, len = str.length;
+    var BASE = 65521;
+    var NMAX = 5552;
 
-    while (i < len) {
-        a = (a + str.charCodeAt(i++)) % 65521;
-        b = (b + a) % 65521;
+    var a = 1;
+    var b = 0;
+
+    var i = 0;
+    var len = str.length;
+    var n;
+
+    while (len > 0) {
+        n = (len > NMAX) ? NMAX : len;
+        len -= n;
+
+        while (n--) {
+            a += str.charCodeAt(i++);
+            b += a;
+        }
+
+        a %= BASE;
+        b %= BASE;
     }
 
     return ((b << 16) | a) >>> 0;
@@ -730,7 +745,7 @@ require._getCurrentScriptDirectory = function() {
 require._load = function(FN) {
     // if empty
     if (FN == '') return '';
-
+	
     // get filename
     var _filename = require._getCurrentScriptDirectory() + "\\" + FN;
 
