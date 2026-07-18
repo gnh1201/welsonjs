@@ -59,7 +59,71 @@ WelsonJS is an advanced JavaScript framework designed to operate in extreme cond
 WelsonJS is tailored for developers who need a reliable, lightweight JavaScript framework in environments where traditional solutions are impractical. Whether working with legacy systems, embedded devices, or security-critical applications, WelsonJS ensures that JavaScript remains a viable and efficient option.
 
 ## Structure
-![The structure of the WelsonJS framework can be extended based on whether it operates in a console (command prompt) environment, a GUI (with HTML/CSS) environment, or a service environment, with the `app.js` file at its core.](https://ics.catswords.net/structure.png)
+
+### Console environment
+
+```mermaid
+flowchart LR
+
+User([Console User])
+
+CMD[Command Prompt]
+
+App[app.js]
+
+Require{"require()"}
+
+subgraph Modules
+    Module[name.js]
+end
+
+User --> CMD
+CMD -->|"cscript app.js name"| App
+
+App --> Require
+Require -->|"name"| Module
+
+Module -.->|"exports"| App
+```
+
+### GUI environment (using HTA)
+
+```mermaid
+flowchart LR
+
+User([Window User])
+
+HTA[app.hta]
+
+App[app.js]
+
+Require1{"require()"}
+
+Loader[Webloader.js]
+
+Require2{"require()"}
+
+subgraph Webpage
+    JS[index.js]
+    HTML[index.html]
+    CSS[style.css]
+end
+
+User --> HTA
+HTA --> App
+
+App --> Require1
+Require1 -->|"webloader"| Loader
+
+Loader --> Require2
+Require2 -->|"index"| JS
+
+Loader --> HTML
+Loader --> CSS
+
+JS -.->|"exports"| Loader
+Loader -.->|"Present webpage"| HTA
+```
 
 ## Specifications
 * Built-in transpilers: [TypeScript](https://www.typescriptlang.org/?utm_source=welsonjs), [Rescript](https://rescript-lang.org/?utm_source=welsonjs), [CoffeeScript 2](https://coffeescript.org/?utm_source=welsonjs), [LiveScript](https://livescript.net/?utm_source=welsonjs)
