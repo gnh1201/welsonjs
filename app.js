@@ -536,18 +536,20 @@ function __hash_dotnetfx_managed__(str, algorithm) {
     }
 
     var resolveProgId = function(alias) {
-        switch (alias.toLowerCase()) {
-            case "sha256":
-                return "System.Security.Cryptography.SHA256Managed";
-            case "sha384":
-                return "System.Security.Cryptography.SHA384Managed";
-            case "sha512":
-                return "System.Security.Cryptography.SHA512Managed";
-            case "utf-8":
-                return "System.Text.UTF8Encoding";
-            default:
-                throw new Error("Unknown ProgID alias: " + alias);
+        var map = {
+            "sha256": "System.Security.Cryptography.SHA256Managed",
+            "sha384": "System.Security.Cryptography.SHA384Managed",
+            "sha512": "System.Security.Cryptography.SHA512Managed",
+            "utf-8": "System.Text.UTF8Encoding"
+        };
+
+        alias = (alias || "").toLowerCase();
+
+        if (alias in map) {
+            return map[alias];
         }
+
+        throw new Error("Unknown ProgID alias: " + alias);
     };
     
     return UseObject("MSXML2.DOMDocument", function(xml) {
