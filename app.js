@@ -10,14 +10,15 @@
 
 var ALLOW_UNSAFE_EVAL = false; // Verify the evaluator with testEvaluator() before using eval().
 var STRICT_INTEGRITY = false;  // When enabled, only scripts matching a trusted integrity hash may execute.
+var INTEGRITY_ALGORITHM = "default";  // "default" uses Adler-32; SHA-256/384/512 use the built-in .NET implementation.
 var INTEGRITY_HASHES = {/*
-	"7b5c4d89": true, "779be011": true, "c9dee731": true,
-	"f1f021aa": true, "31868529": true, "33a07569": true,
-	"bef1d428": true, "fc87516d": true, "45d5a78b": true,
-	"38768236": true, "c51e7fc4": true, "cbd7d9d6": true,
-	"8c47c4c5": true, "3b0772dd": true, "2eb51cc4": true,
-	"59d846e3": true, "ed349cb7": true, "68b231de": true,
-	"5e5157c1": true, "e1de4567": true, "98524d82": true
+    "7b5c4d89": true, "779be011": true, "c9dee731": true,
+    "f1f021aa": true, "31868529": true, "33a07569": true,
+    "bef1d428": true, "fc87516d": true, "45d5a78b": true,
+    "38768236": true, "c51e7fc4": true, "cbd7d9d6": true,
+    "8c47c4c5": true, "3b0772dd": true, "2eb51cc4": true,
+    "59d846e3": true, "ed349cb7": true, "68b231de": true,
+    "5e5157c1": true, "e1de4567": true, "98524d82": true
 */};
 
 /**
@@ -474,12 +475,13 @@ function __export__(f, name) {
 }
 
 /**
- * Computes the Adler-32 (RFC 1950) checksum of a string.
+ * Computes the Adler-32 checksum (RFC 1950).
  *
- * @param {string} str The input string.
- * @returns {number} The unsigned 32-bit Adler-32 checksum.
+ * @param {string} str Input string.
+ * @returns {number} Unsigned 32-bit Adler-32 checksum.
+ * @private
  */
-function __adler32__(str) {
+function __hash_adler32__(str) {
     var BASE = 65521;
     var NMAX = 5552;
 
@@ -504,6 +506,63 @@ function __adler32__(str) {
     }
 
     return ((b << 16) | a) >>> 0;
+}
+
+/**
+ * Computes a cryptographic hash using the .NET Framework managed
+ * cryptography classes exposed through COM.
+ *
+ * Supported algorithms:
+ * - sha256
+ * - sha384
+ * - sha512
+ *
+ * @param {string} str Input string to hash.
+ * @param {string} algorithm Hash algorithm identifier ("sha256", "sha384", or "sha512").
+ * @returns {string} Lowercase hexadecimal hash string.
+ * @throws {Error} If the specified algorithm is not supported.
+ * @private
+ */
+function __hash_dotnetfx_managed__(str, algorithm) {
+    var allowed_algorithm = {
+        "sha256": true,
+        "sha384": true,
+        "sha512": true
+    };
+    var encoding = "utf-8";
+
+    if (!(algorithm in allowed_algorithm && allowed_algorithm[algorithm])) {
+        throw new Error("Unsupported hash algorithm: " + algorithm);
+    }
+
+    var resolveProgId = function(alias) {
+        switch (alias.toLowerCase()) {
+            case "sha256":
+                return "System.Security.Cryptography.SHA256Managed";
+            case "sha384":
+                return "System.Security.Cryptography.SHA384Managed";
+            case "sha512":
+                return "System.Security.Cryptography.SHA512Managed";
+            case "utf-8":
+                return "System.Text.UTF8Encoding";
+            default:
+                throw new Error("Unknown ProgID alias: " + alias);
+        }
+    };
+
+    var hasher = CreateObject(resolveProgId(algorithm));
+    var encoder = CreateObject(resolveProgId(encoding));
+
+    var bytes = encoder.GetBytes_4(str);
+    var digest = hasher.ComputeHash_2(bytes);
+
+    var xml = CreateObject("MSXML2.DOMDocument");
+    var node = xml.createElement("hash");
+
+    node.dataType = "bin.hex";
+    node.nodeTypedValue = digest;
+
+    return node.text.toLowerCase();
 }
 
 /**
@@ -745,7 +804,7 @@ require._getCurrentScriptDirectory = function() {
 require._load = function(FN) {
     // if empty
     if (FN == '') return '';
-	
+    
     // get filename
     var _filename = require._getCurrentScriptDirectory() + "\\" + FN;
 
@@ -760,7 +819,12 @@ require._load = function(FN) {
 
         // integrity verification
         if (STRICT_INTEGRITY) {
-            var computed_hash = __adler32__(text).toString(16);
+            var computed_hash = (function(algorithm) {
+                return algorithm == "default"
+                    ? __hash_adler32__(text).toString(16)
+                    : __hash_dotnetfx_managed__(text, algorithm)
+                ;
+            })(INTEGRITY_ALGORITHM));
             var existed_hash = (computed_hash in INTEGRITY_HASHES);
             var enabled_hash = existed_hash ? INTEGRITY_HASHES[computed_hash] : false;
             if (!enabled_hash) {
