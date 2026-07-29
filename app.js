@@ -549,20 +549,20 @@ function __hash_dotnetfx_managed__(str, algorithm) {
                 throw new Error("Unknown ProgID alias: " + alias);
         }
     };
+    
+    return UseObject("MSXML2.DOMDocument", function(xml) {
+        var hasher = CreateObject(resolveProgId(algorithm));
+        var encoder = CreateObject(resolveProgId(encoding));
 
-    var hasher = CreateObject(resolveProgId(algorithm));
-    var encoder = CreateObject(resolveProgId(encoding));
+        var bytes = encoder.GetBytes_4(str);
+        var digest = hasher.ComputeHash_2(bytes);
 
-    var bytes = encoder.GetBytes_4(str);
-    var digest = hasher.ComputeHash_2(bytes);
+        var node = xml.createElement("hash");
+        node.dataType = "bin.hex";
+        node.nodeTypedValue = digest;
 
-    var xml = CreateObject("MSXML2.DOMDocument");
-    var node = xml.createElement("hash");
-
-    node.dataType = "bin.hex";
-    node.nodeTypedValue = digest;
-
-    return node.text.toLowerCase();
+        return node.text.toLowerCase();
+    });
 }
 
 /**
