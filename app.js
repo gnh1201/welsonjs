@@ -824,7 +824,7 @@ require._load = function(FN) {
                     ? __hash_adler32__(text).toString(16)
                     : __hash_dotnetfx_managed__(text, algorithm)
                 ;
-            })(INTEGRITY_ALGORITHM));
+            })(INTEGRITY_ALGORITHM);
             var existed_hash = (computed_hash in INTEGRITY_HASHES);
             var enabled_hash = existed_hash ? INTEGRITY_HASHES[computed_hash] : false;
             if (!enabled_hash) {
