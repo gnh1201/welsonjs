@@ -11,7 +11,7 @@
 var ALLOW_UNSAFE_EVAL = false; // Verify the evaluator with testEvaluator() before using eval().
 var STRICT_INTEGRITY = false;  // When enabled, only scripts matching a trusted integrity hash may execute.
 var INTEGRITY_ALGORITHM = "default";  // "default" uses Adler-32; SHA-256/384/512 use the built-in .NET implementation.
-var INTEGRITY_HASHES = {/*
+var INTEGRITY_HASHES = {/* // Integrity hashes for the "helloworld" example
     "7b5c4d89": true, "779be011": true, "c9dee731": true,
     "f1f021aa": true, "31868529": true, "33a07569": true,
     "bef1d428": true, "fc87516d": true, "45d5a78b": true,
@@ -821,7 +821,7 @@ require._load = function(FN) {
         if (STRICT_INTEGRITY) {
             var computed_hash = (function(algorithm) {
                 return algorithm == "default"
-                    ? __hash_adler32__(text).toString(16)
+                    ? ("00000000" + __hash_adler32__(text).toString(16)).slice(-8)
                     : __hash_dotnetfx_managed__(text, algorithm)
                 ;
             })(String(INTEGRITY_ALGORITHM).toLowerCase());
