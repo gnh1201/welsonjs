@@ -596,9 +596,10 @@ function __hash_dotnetfx_managed__(str, algorithm) {
  */
 function __hash_capicom__(str, algorithm) {
     algorithm = String(algorithm || "").toLowerCase();
-    
+
     var allowed_algorithm = INTEGRITY_ALLOWED_ALGORITHMS;
     var encoding = "utf-8";
+    var is_encoding_utf8 = true;
 
     if (!(algorithm in allowed_algorithm && allowed_algorithm[algorithm])) {
         throw new Error("Unsupported hash algorithm: " + algorithm);
@@ -629,14 +630,16 @@ function __hash_capicom__(str, algorithm) {
         
         stream.Position = 0;
         stream.Type = 1;            // Binary
-        stream.Position = 3;        // Skip UTF-8 BOM
+        if (is_encoding_utf8) {
+            stream.Position = 3;    // Skip UTF-8 BOM
+        }
         
         var bytes = stream.Position < stream.Size ? stream.Read() : null;
         
         return UseObject("CAPICOM.Utilities", function(util) {
             return UseObject("CAPICOM.HashedData", function(hashed) {
                 hashed.Algorithm = resolveAlgorithm(algorithm);
-                hashed.Hash(bytes !== null ? util.BinaryToBinaryString(bytes) : "");
+                hashed.Hash(bytes !== null ? util.ByteArrayToBinaryString(bytes) : "");
                 return hashed.Value.toLowerCase();
             });
         });
