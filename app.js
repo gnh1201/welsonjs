@@ -626,15 +626,6 @@ function __hash_capicom__(str, algorithm) {
         stream.Position = 0;
         stream.Type = 1;            // Binary
         stream.Position = 3;        // Skip UTF-8 BOM
-        var bytes = stream.Position < stream.Size ? stream.Read() : null;
-        
-        return UseObject("CAPICOM.Utilities", function(util) {
-            return UseObject("CAPICOM.HashedData", function(hashed) {
-                hashed.Algorithm = resolveAlgorithm(algorithm);
-                hashed.Hash(bytes !== null ? util.BinaryToBinaryString(bytes) : "");
-                return hashed.Value.toLowerCase();
-            });
-        });
         
         return UseObject("CAPICOM.Utilities", function(util) {
             return UseObject("CAPICOM.HashedData", function(hashed) {
