@@ -530,6 +530,8 @@ function __hash_adler32__(str) {
  * @private
  */
 function __hash_dotnetfx_managed__(str, algorithm) {
+    algorithm = String(algorithm || "").toLowerCase();
+    
     var allowed_algorithm = INTEGRITY_ALLOWED_ALGORITHMS;
     var encoding = "utf-8";
 
@@ -593,6 +595,8 @@ function __hash_dotnetfx_managed__(str, algorithm) {
  * @throws {Error} If the specified algorithm is not supported.
  */
 function __hash_capicom__(str, algorithm) {
+    algorithm = String(algorithm || "").toLowerCase();
+    
     var allowed_algorithm = INTEGRITY_ALLOWED_ALGORITHMS;
     var encoding = "utf-8";
 
