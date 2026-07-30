@@ -555,21 +555,22 @@ function __hash_dotnetfx_managed__(str, algorithm) {
         throw new Error("Not supported algorithm: " + alias);
     };
     
-    return UseObject("MSXML2.DOMDocument", function(xml) {
-        var hasher = CreateObject(resolveProgId(algorithm));
-        var encoder = CreateObject(resolveProgId(encoding));
+    return UseObject(resolveProgId(algorithm), function(hasher) {
+        return UseObject(resolveProgId(encoding), function(encoder) {
+            return UseObject("MSXML2.DOMDocument", function(xml) {
+                var bytes = encoder.GetBytes_4(str);
+                var digest = hasher.ComputeHash_2(bytes);
 
-        var bytes = encoder.GetBytes_4(str);
-        var digest = hasher.ComputeHash_2(bytes);
+                var node = xml.createElement("hash");
+                node.dataType = "bin.hex";
+                node.nodeTypedValue = digest;
 
-        var node = xml.createElement("hash");
-        node.dataType = "bin.hex";
-        node.nodeTypedValue = digest;
-
-        return node.text.toLowerCase();
+                return node.text.toLowerCase();
+            });
+        });
     }, null, function(error) {
-		return __hash_capicom__(str, algorithm);
-	});
+        return __hash_capicom__(str, algorithm);
+    });
 }
 
 /**
@@ -626,13 +627,13 @@ function __hash_capicom__(str, algorithm) {
         stream.Type = 1;            // Binary
         stream.Position = 3;        // Skip UTF-8 BOM
         
-        var util = CreateObject("CAPICOM.Utilities");
-        var hashed = CreateObject("CAPICOM.HashedData");
-
-        hashed.Algorithm = resolveAlgorithm(algorithm);
-        hashed.Hash(util.BinaryToBinaryString(stream.Read()));
-        
-        return hashed.Value.toLowerCase();
+        return UseObject("CAPICOM.Utilities", function(util) {
+            return UseObject("CAPICOM.HashedData", function(hashed) {
+                hashed.Algorithm = resolveAlgorithm(algorithm);
+                hashed.Hash(util.BinaryToBinaryString(stream.Read()));
+                return hashed.Value.toLowerCase();
+            });
+        });
     });
 }
 
