@@ -11,6 +11,12 @@
 var ALLOW_UNSAFE_EVAL = false; // Verify the evaluator with testEvaluator() before using eval().
 var STRICT_INTEGRITY = false;  // When enabled, only scripts matching a trusted integrity hash may execute.
 var INTEGRITY_ALGORITHM = "default";  // "default" uses Adler-32; SHA-256/384/512 use the built-in .NET implementation.
+var INTEGRITY_ALLOWED_ALGORITHMS = {
+	"sha1": false, // Enable only for compatibility with Windows XP and earlier.
+	"sha256": true,
+	"sha384": true,
+	"sha512": true
+};
 var INTEGRITY_HASHES = {/* // Integrity hashes for the "helloworld" example
     "7b5c4d89": true, "779be011": true, "c9dee731": true,
     "f1f021aa": true, "31868529": true, "33a07569": true,
@@ -524,11 +530,9 @@ function __hash_adler32__(str) {
  * @private
  */
 function __hash_dotnetfx_managed__(str, algorithm) {
-    var allowed_algorithm = {
-        "sha256": true,
-        "sha384": true,
-        "sha512": true
-    };
+    algorithm = String(algorithm || "").toLowerCase();
+    
+    var allowed_algorithm = INTEGRITY_ALLOWED_ALGORITHMS;
     var encoding = "utf-8";
 
     if (!(algorithm in allowed_algorithm && allowed_algorithm[algorithm])) {
@@ -537,6 +541,7 @@ function __hash_dotnetfx_managed__(str, algorithm) {
 
     var resolveProgId = function(alias) {
         var map = {
+            "sha1": "System.Security.Cryptography.SHA1Managed",
             "sha256": "System.Security.Cryptography.SHA256Managed",
             "sha384": "System.Security.Cryptography.SHA384Managed",
             "sha512": "System.Security.Cryptography.SHA512Managed",
@@ -549,21 +554,95 @@ function __hash_dotnetfx_managed__(str, algorithm) {
             return map[alias];
         }
 
-        throw new Error("Unknown ProgID alias: " + alias);
+        throw new Error("Not supported algorithm: " + alias);
     };
     
-    return UseObject("MSXML2.DOMDocument", function(xml) {
-        var hasher = CreateObject(resolveProgId(algorithm));
-        var encoder = CreateObject(resolveProgId(encoding));
+    return UseObject(resolveProgId(algorithm), function(hasher) {
+        return UseObject(resolveProgId(encoding), function(encoder) {
+            return UseObject("MSXML2.DOMDocument", function(xml) {
+                var bytes = encoder.GetBytes_4(str);
+                var digest = hasher.ComputeHash_2(bytes);
 
-        var bytes = encoder.GetBytes_4(str);
-        var digest = hasher.ComputeHash_2(bytes);
+                var node = xml.createElement("hash");
+                node.dataType = "bin.hex";
+                node.nodeTypedValue = digest;
 
-        var node = xml.createElement("hash");
-        node.dataType = "bin.hex";
-        node.nodeTypedValue = digest;
+                return node.text.toLowerCase();
+            });
+        });
+    }, null, function(error) {
+        return __hash_capicom__(str, algorithm);
+    });
+}
 
-        return node.text.toLowerCase();
+/**
+ * Computes the hash of a string using CAPICOM.
+ *
+ * The input string is encoded as UTF-8 before hashing. Since ADODB.Stream
+ * prepends a UTF-8 BOM, the BOM is skipped to ensure the hash is computed
+ * over the raw UTF-8 byte sequence.
+ *
+ * Supported algorithms:
+ * - sha1
+ * - sha256
+ * - sha384
+ * - sha512
+ *
+ * @param {string} str The input string to hash.
+ * @param {string} algorithm The hash algorithm (e.g. "sha1", "sha256",
+ *   "sha384", or "sha512").
+ * @returns {string} The hexadecimal hash digest in lowercase.
+ * @throws {Error} If the specified algorithm is not supported.
+ */
+function __hash_capicom__(str, algorithm) {
+    algorithm = String(algorithm || "").toLowerCase();
+
+    var allowed_algorithm = INTEGRITY_ALLOWED_ALGORITHMS;
+    var encoding = "utf-8";
+    var is_encoding_utf8 = true;
+
+    if (!(algorithm in allowed_algorithm && allowed_algorithm[algorithm])) {
+        throw new Error("Unsupported hash algorithm: " + algorithm);
+    }
+    
+    var resolveAlgorithm = function(alias) {
+        var map = {
+            "sha1": 0,    // CAPICOM_HASH_ALGORITHM_SHA1
+            "sha256": 4,  // CAPICOM_HASH_ALGORITHM_SHA_256
+            "sha384": 5,  // CAPICOM_HASH_ALGORITHM_SHA_384
+            "sha512": 6   // CAPICOM_HASH_ALGORITHM_SHA_512
+        };
+        
+        alias = (alias || "").toLowerCase();
+
+        if (alias in map) {
+            return map[alias];
+        }
+        
+        throw new Error("Not supported algorithm: " + alias);
+    };
+    
+    return UseObject("ADODB.Stream", function(stream) {
+        stream.Type = 2;            // Text
+        stream.Charset = encoding;
+        stream.Open();
+        stream.WriteText(str);
+        
+        stream.Position = 0;
+        stream.Type = 1;            // Binary
+        if (is_encoding_utf8) {
+            stream.Position = 3;    // Skip UTF-8 BOM
+        }
+        
+        var bytes = stream.Position < stream.Size ? stream.Read() : null;
+        
+        return UseObject("CAPICOM.Utilities", function(util) {
+            return UseObject("CAPICOM.HashedData", function(hashed) {
+                hashed.Algorithm = resolveAlgorithm(algorithm);
+                hashed.Hash(bytes !== null ? util.ByteArrayToBinaryString(bytes) : "");
+                return hashed.Value.toLowerCase();
+            });
+        });
     });
 }
 
