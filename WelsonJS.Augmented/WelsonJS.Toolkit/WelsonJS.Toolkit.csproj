@@ -98,10 +98,12 @@
     <Compile Include="Window.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="assets\docs\README.md" />
     <None Include="welsonjs.snk" />
     <None Include="WelsonJS.Toolkit.nuspec" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="assets\img\logo.png" />
     <Content Include="favicon.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
