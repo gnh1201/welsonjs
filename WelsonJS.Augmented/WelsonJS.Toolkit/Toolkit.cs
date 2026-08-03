@@ -5,14 +5,12 @@
 // 
 using System;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Windows.Forms;
-using WelsonJS.Cryptography;
-using WelsonJS.Serialization;
 
-namespace WelsonJS
+namespace WelsonJS.Toolkit
 {
     [ComVisible(true)]
+    [ProgId("WelsonJS.Toolkit")]
     public class Toolkit
     {
         public static readonly string ApplicationName = "WelsonJS";
@@ -71,7 +69,7 @@ namespace WelsonJS
         [ComVisible(true)]
         public string Prompt(string message, string _default = "")
         {
-            string result = WelsonJS.Prompt.ShowDialog(message, ApplicationName);
+            string result = WelsonJS.Toolkit.Prompt.ShowDialog(message, ApplicationName);
             return (result == "" ? _default : result);
         }
 
@@ -171,88 +169,60 @@ namespace WelsonJS
         [ComVisible(true)]
         public string GetFilePathFromDialog()
         {
-            return ProcessUtils.OpenFileDialog();
+            return ProcessKit.OpenFileDialog();
         }
 
         [ComVisible(true)]
         public int OpenProcess(string filepath)
         {
-            return ProcessUtils.Open(filepath);
+            return ProcessKit.Open(filepath);
         }
 
         [ComVisible(true)]
         public bool CloseProcess(int processID)
         {
-            return ProcessUtils.Close(processID);
-        }
-
-        [ComVisible(true)]
-        public string CompressLZ77(string data)
-        {
-            return Compression.LZ77.Compress(data);
-        }
-
-        [ComVisible(true)]
-        public string DecompressLZ77(string compressedData)
-        {
-            return Compression.LZ77.Decompress(compressedData);
-        }
-
-        [ComVisible(true)]
-        public string EncryptString(string key, string data)
-        {
-            byte[] userKey = Encoding.ASCII.GetBytes(key);
-            byte[] dataIn = Encoding.UTF8.GetBytes(data);
-
-            HIGHT.ECB cipher = new HIGHT.ECB(userKey);
-            return Convert.ToBase64String(cipher.Encrypt(dataIn));
-        }
-
-        [ComVisible(true)]
-        public string DecryptString(string key, string encryptedData)
-        {
-            byte[] userKey = Encoding.ASCII.GetBytes(key);
-            byte[] dataIn = Convert.FromBase64String(encryptedData);
-
-            HIGHT.ECB cipher = new HIGHT.ECB(userKey);
-            return Encoding.UTF8.GetString(cipher.Decrypt(dataIn)).Trim('\0');
+            return ProcessKit.Close(processID);
         }
 
         [ComVisible(true)]
         public string GetImageSize(string srcfile)
         {
-            int[] result = BitmapUtils.GetSize(srcfile);
+            int[] result = BitmapKit.GetSize(srcfile);
 
-            var serializer = new KVSerializer();
-            serializer.Add("width", result[0].ToString());
-            serializer.Add("height", result[1].ToString());
+            var codec = new KeyValueCodec
+            {
+                { "width", result[0].ToString() },
+                { "height", result[1].ToString() }
+            };
 
-            return serializer.ToString();
+            return codec.ToString();
         }
 
         [ComVisible(true)]
         public string GetImagePixel(string srcfile)
         {
-            int[] result = BitmapUtils.GetSize(srcfile);
+            int[] result = BitmapKit.GetSize(srcfile);
 
-            var serializer = new KVSerializer();
-            serializer.Add("red", result[0].ToString());
-            serializer.Add("green", result[1].ToString());
-            serializer.Add("blue", result[2].ToString());
+            var codec = new KeyValueCodec
+            {
+                { "red", result[0].ToString() },
+                { "green", result[1].ToString() },
+                { "blue", result[2].ToString() }
+            };
 
-            return serializer.ToString();
+            return codec.ToString();
         }
 
         [ComVisible(true)]
         public string GetImageBase64(string srcfile)
         {
-            return BitmapUtils.GetBase64(srcfile);
+            return BitmapKit.GetBase64(srcfile);
         }
 
         [ComVisible(true)]
         public void CropImage(string srcfile, string dstfile, int x, int y, int a, int b)
         {
-            BitmapUtils.Crop(srcfile, dstfile, x, y, a, b);
+            BitmapKit.Crop(srcfile, dstfile, x, y, a, b);
         }
     }
 }

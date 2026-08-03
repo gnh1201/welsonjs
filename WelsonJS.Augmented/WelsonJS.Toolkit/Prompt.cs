@@ -5,7 +5,7 @@
 // 
 using System.Windows.Forms;
 
-namespace WelsonJS
+namespace WelsonJS.Toolkit
 {
     public static class Prompt
     {

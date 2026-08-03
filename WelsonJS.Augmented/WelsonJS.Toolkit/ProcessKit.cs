@@ -7,9 +7,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Windows.Forms;
 
-namespace WelsonJS
+namespace WelsonJS.Toolkit
 {
-    public class ProcessUtils
+    public class ProcessKit
     {
         public static List<Process> ProcessList = new List<Process>();
 
@@ -17,13 +17,13 @@ namespace WelsonJS
         {
             string filepath = string.Empty;
 
-            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            using (var dialog = new OpenFileDialog())
             {
-                openFileDialog.Filter = "All files (*.*)|*.*";
-                openFileDialog.RestoreDirectory = true;
-                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                dialog.Filter = "All files (*.*)|*.*";
+                dialog.RestoreDirectory = true;
+                if (dialog.ShowDialog() == DialogResult.OK)
                 {
-                    filepath = openFileDialog.FileName;
+                    filepath = dialog.FileName;
                 }
             }
 

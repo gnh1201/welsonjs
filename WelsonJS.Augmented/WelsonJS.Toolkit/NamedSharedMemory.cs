@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace WelsonJS
+namespace WelsonJS.Toolkit
 {
     public class NamedSharedMemory
     {

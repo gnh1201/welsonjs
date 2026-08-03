@@ -8,9 +8,9 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 
-namespace WelsonJS
+namespace WelsonJS.Toolkit
 {
-    public class BitmapUtils
+    public class BitmapHelper
     {
         private static Bitmap Load(string filename)
         {
