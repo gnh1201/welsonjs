@@ -10,7 +10,7 @@ using System.IO;
 
 namespace WelsonJS.Toolkit
 {
-    public class BitmapHelper
+    public class BitmapKit
     {
         private static Bitmap Load(string filename)
         {
