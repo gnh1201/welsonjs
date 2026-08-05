@@ -1,5 +1,5 @@
 ; @created_on 2020-06-26
-; @updated_on 2025-12-20
+; @updated_on 2026-08-05
 ; @author Namhyeon Go <gnh1201@catswords.re.kr> and Catswords OSS contributors.
 
 [Setup]
@@ -111,7 +111,7 @@ PostHogApiKey=phc_pmRHJ0aVEhtULRT4ilexwCjYpGtE9VYRhlA05fwiYt8
 
 [Code]
 const
-  UninstSiteURL = 'https://github.com/gnh1201/welsonjs';
+  UninstSiteURL = 'https://catswords.z12.web.core.windows.net/?utm_source=welsonjs_uninstall';
 
 function GetSelectedComponents(Value: string): string;
 begin
