@@ -111,7 +111,7 @@ PostHogApiKey=phc_pmRHJ0aVEhtULRT4ilexwCjYpGtE9VYRhlA05fwiYt8
 
 [Code]
 const
-  UninstSiteURL = 'https://github.com/gnh1201/welsonjs';
+  UninstSiteURL = 'https://catswords.z12.web.core.windows.net/?utm_source=welsonjs_uninstall';
 
 function GetSelectedComponents(Value: string): string;
 begin
