@@ -238,7 +238,7 @@ I am always open. Collaboration, opportunities, and community activities are all
 * [Join Catswords OSS on Microsoft Teams (teams.live.com)](https://teams.live.com/l/community/FEACHncAhq8ldnojAI?utm_source=welsonjs)
 * [Join Catswords OSS #welsonjs on Discord (discord.gg)](https://discord.gg/XKG5CjtXEj?utm_source=welsonjs)
 
-## Technical Support Contact
+## Support Contact
 For offline copy requests, consulting, mentoring, and other technical support inquiries, please reach out to us using [this link](https://catswords.z12.web.core.windows.net/?utm_source=welsonjs).
 
 ## Open-source software license
