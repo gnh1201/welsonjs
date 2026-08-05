@@ -47,4 +47,10 @@ echo [*] Registering WelsonJS.Toolkit component...
 
 :: Final step
 echo [*] Pre-configuration complete. Starting bootstrap script...
-%SystemRoot%\SysWOW64\cscript.exe app.js bootstrap
+if /I "%PROCESSOR_ARCHITECTURE%%PROCESSOR_ARCHITEW6432%"=="x86" (
+    rem 32-bit Windows
+    cscript.exe app.js bootstrap
+) else (
+    rem 64-bit Windows
+    %SystemRoot%\SysWOW64\cscript.exe app.js bootstrap
+)
