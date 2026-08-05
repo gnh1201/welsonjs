@@ -224,7 +224,7 @@ The WelsonJS framework suggests the following application release methods:
 * :sunglasses: Redsky Software - PoC(Proof of Concept) of the CommonJS on WSH environment
 * :sunglasses: Inspired by a small-sized JavaScript payload demonstrated by a cybersecurity related group.
 * :sunglasses: Inspired by the use of Named Shared Memory in a cross-runtime IPC implementation written by the unidentified developer.
-* :eyes: [Hacker News](https://news.ycombinator.com/item?id=41316782&utm_source=welsonjs), [Node Weekly (#​582 - June 17, 2025)](https://nodeweekly.com/issues/582?utm_source=welsonjs), [WebToolsWeekly](https://webtoolsweekly.com/archives/issue-585/?utm_source=welsonjs), [GeekNews in GeekNews Weekly (2024-09-30 ~ 2024-10-06)](https://news.hada.io/weekly/202441?utm_source=welsonjs), [Facebook Group "Javascript Programming"(javascript4u)](https://www.facebook.com/javascript4u/posts/build-a-windows-desktop-apps-with-javascript-html-and-cssmorioh-javascript-html-/1484014618472735/?utm_source=welsonjs), [morioh.com](https://morioh.com/a/23c427a82bf1/build-a-windows-desktop-apps-with-javascript-html-and-css?utm_source=welsonjs), CSDN, Fediverse, [daily.dev](https://app.daily.dev/posts/js-libraries-svg-tools-json-databases-8quregz3a?utm_source=welsonjs), [PitchHut](https://www.pitchhut.com/project/proj_Ya136OLSW5at?utm_source=welsonjs), [Disquiet](https://dis.qa/nv6T6?utm_source=welsonjs), [Zhouexin (周e信)](https://www.zhouexin.com/issues/321?utm_source=welsonjs), [Echo JS](https://www.echojs.com/news/43008?utm_source=welsonjs), [Telegram Channel @front_end_dev](https://t.me/front_end_dev/9376?ysclid=mgk4a9hqf0853890652&utm_source=welsonjs), [React Status](https://react.statuscode.com/issues/432)
+* :eyes: [Hacker News](https://news.ycombinator.com/item?id=41316782&utm_source=welsonjs), [Node Weekly (#​582 - June 17, 2025)](https://nodeweekly.com/issues/582?utm_source=welsonjs), [WebToolsWeekly](https://webtoolsweekly.com/archives/issue-585/?utm_source=welsonjs), [GeekNews in GeekNews Weekly (2024-09-30 ~ 2024-10-06)](https://news.hada.io/weekly/202441?utm_source=welsonjs), [Facebook Group "Javascript Programming"(javascript4u)](https://www.facebook.com/javascript4u/posts/build-a-windows-desktop-apps-with-javascript-html-and-cssmorioh-javascript-html-/1484014618472735/?utm_source=welsonjs), [morioh.com](https://morioh.com/a/23c427a82bf1/build-a-windows-desktop-apps-with-javascript-html-and-css?utm_source=welsonjs), CSDN, Fediverse, [daily.dev](https://app.daily.dev/posts/js-libraries-svg-tools-json-databases-8quregz3a?utm_source=welsonjs), [PitchHut](https://www.pitchhut.com/project/proj_Ya136OLSW5at?utm_source=welsonjs), [Disquiet](https://dis.qa/nv6T6?utm_source=welsonjs), [Zhouexin (周e信)](https://www.zhouexin.com/issues/321?utm_source=welsonjs), [Echo JS](https://www.echojs.com/news/43008?utm_source=welsonjs), [Telegram Channel @front_end_dev](https://t.me/front_end_dev/9376?ysclid=mgk4a9hqf0853890652&utm_source=welsonjs), [React Status](https://react.statuscode.com/issues/432?utm_source=welsonjs)
 
 ## Report abuse
 * [GitHub Security Advisories (gnh1201/welsonjs)](https://github.com/gnh1201/welsonjs/security?utm_source=welsonjs)
@@ -238,19 +238,15 @@ I am always open. Collaboration, opportunities, and community activities are all
 * [Join Catswords OSS on Microsoft Teams (teams.live.com)](https://teams.live.com/l/community/FEACHncAhq8ldnojAI?utm_source=welsonjs)
 * [Join Catswords OSS #welsonjs on Discord (discord.gg)](https://discord.gg/XKG5CjtXEj?utm_source=welsonjs)
 
-## Offine copy
-If you require an offline copy of this project, please contact an appropriate project maintainer via Discord to arrange the request.
-
-## Special channels
-* [A paid consultation channel (m.expert.naver.com)](https://m.expert.naver.com/mobile/expert/product/detail?storeId=100051156&productId=100144540&utm_source=welsonjs) is available for Korean<sup>(한국어)</sup> customers.
-* [A paid mentorship program (inflearn.com)](https://mentoring.inflearn.com/mentors/5353?utm_source=welsonjs) is available for Korean<sup>(한국어)</sup> students or beginners.
+## Technical Support Contact
+For offline copy requests, consulting, mentoring, and other technical support inquiries, please reach out to us using [this link](https://catswords.z12.web.core.windows.net/?utm_source=welsonjs).
 
 ## Open-source software license
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs?ref=badge_large&utm_source=welsonjs)
 
 ## Subprojects
-* [catswords-jsrt-rs](https://github.com/gnh1201/catswords-jsrt-rs): Minimal ChakraCore (JsRT) bindings for Rust.
-* [jsrt-claw](https://github.com/gnh1201/jsrt-claw): OpenClaw compatible the skill definition for a bulit-in JSRT (JScript 5.x)
+* [catswords-jsrt-rs](https://github.com/gnh1201/catswords-jsrt-rs?utm_source=welsonjs): Minimal ChakraCore (JsRT) bindings for Rust.
+* [jsrt-claw](https://github.com/gnh1201/jsrt-claw?utm_source=welsonjs): OpenClaw compatible the skill definition for a bulit-in JSRT (JScript 5.x)
 
 ## Disclaimer
 To the maximum extent permitted by applicable law, Namhyeon Go <sup>(ko: 고남현)</sup> and Catswords Research <sup>(ko: 캐츠워즈리서치)</sup> shall not be held liable for any direct, indirect, incidental, special, or consequential damages arising out of or in connection with the use of this software outside its intended purpose or scope.
