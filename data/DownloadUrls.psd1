@@ -1,6 +1,7 @@
 # DownloadUrls.psd1
 # External download urls for WelsonJS post-install script
 # Namhyeon Go <gnh1201@catswords.re.kr>
+# Last updated: 2026-08-06
 # https://github.com/gnh1201/welsonjs
 # 
 @{
@@ -8,9 +9,9 @@
     # Python embeddable
     # ===========================
     python = @{
-        x64   = "https://www.python.org/ftp/python/3.14.0/python-3.14.0-embed-amd64.zip"
-        arm64 = "https://www.python.org/ftp/python/3.14.0/python-3.14.0-embed-arm64.zip"
-        x86   = "https://www.python.org/ftp/python/3.13.9/python-3.13.9-embed-win32.zip"
+        x64   = "https://www.python.org/ftp/python/3.14.7/python-3.14.7-embed-amd64.zip"
+        arm64 = "https://www.python.org/ftp/python/3.14.7/python-3.14.7-embed-arm64.zip"
+        x86   = "https://www.python.org/ftp/python/3.14.7/python-3.14.7-embed-amd64.zip"
     }
 
     # ===========================
@@ -19,7 +20,7 @@
     curl = @{
         x64   = "https://curl.se/windows/latest.cgi?p=win64-mingw.zip"
         arm64 = "https://curl.se/windows/latest.cgi?p=win64a-mingw.zip"
-        x86   = "https://twds.dl.sourceforge.net/project/muldersoft/cURL/curl-8.17.0-win-x86-full.2025-11-09.zip?viasf=1"
+        x86   = "https://twds.dl.sourceforge.net/project/muldersoft/cURL/curl-8.17.0-win-x86-full.2026-05-02.zip?viasf=1"
     }
 
     # ===========================
@@ -35,9 +36,9 @@
     # WAMR (WebAssembly Micro Runtime)
     # ===========================
     wamr = @{
-        x64   = "https://github.com/bytecodealliance/wasm-micro-runtime/releases/download/WAMR-2.4.3/iwasm-2.4.3-x86_64-windows-2022.tar.gz"
-        arm64 = $null  # not supported
-        x86   = $null  # not supported
+        x64   = "https://github.com/wasm-micro-runtime/wasm-micro-runtime/releases/download/WAMR-2.4.5/wamrc-2.4.5-x86_64-windows-2022.tar.gz"
+        arm64 = $null  # no official ARM64 build
+        x86   = $null  # no official X86 build
     }
 
     # ===========================
@@ -95,15 +96,15 @@
     # Npcap + Nmap
     # ===========================
     npcap = @{
-        x64   = "https://npcap.com/dist/npcap-1.85.exe"
+        x64   = "https://npcap.com/dist/npcap-1.88.exe"
         arm64 = $null  # no official ARM64 build
-        x86   = "https://npcap.com/dist/npcap-1.85.exe"
+        x86   = "https://npcap.com/dist/npcap-1.88.exe"
     }
 
     nmap = @{
-        x64   = "https://nmap.org/dist/nmap-7.98-setup.exe"
+        x64   = "https://nmap.org/dist/nmap-7.99-setup.exe"
         arm64 = $null  # no official ARM64 build
-        x86   = "https://nmap.org/dist/nmap-7.98-setup.exe"
+        x86   = "https://nmap.org/dist/nmap-7.99-setup.exe"
     }
 
     # ===========================
@@ -128,19 +129,19 @@
     # tun2socks
     # ===========================
     tun2socks = @{
-        x64v3 = "https://github.com/xjasonlyu/tun2socks/releases/download/v2.6.0/tun2socks-windows-amd64-v3.zip"
-        x64   = "https://github.com/xjasonlyu/tun2socks/releases/download/v2.6.0/tun2socks-windows-amd64.zip"
-        arm64 = "https://github.com/xjasonlyu/tun2socks/releases/download/v2.6.0/tun2socks-windows-arm64.zip"
-        arm32 = "https://github.com/xjasonlyu/tun2socks/releases/download/v2.6.0/tun2socks-windows-arm32v7.zip"
-        x86   = "https://github.com/xjasonlyu/tun2socks/releases/download/v2.6.0/tun2socks-windows-386.zip"
+        x64v3 = "https://github.com/xjasonlyu/tun2socks/releases/download/v2.7.0/tun2socks-windows-amd64-v3.zip"
+        x64   = "https://github.com/xjasonlyu/tun2socks/releases/download/v2.7.0/tun2socks-windows-amd64.zip"
+        arm64 = "https://github.com/xjasonlyu/tun2socks/releases/download/v2.7.0/tun2socks-windows-arm64.zip"
+        arm32 = "https://github.com/xjasonlyu/tun2socks/releases/download/v2.7.0/tun2socks-windows-arm32v7.zip"
+        x86   = "https://github.com/xjasonlyu/tun2socks/releases/download/v2.7.0/tun2socks-windows-386.zip"
     }
     
     # ===========================
     # sendboxie
     # ===========================
     sendboxie = @{
-        x64   = "https://github.com/sandboxie-plus/Sandboxie/releases/download/v1.16.8/Sandboxie-Plus-x64-v1.16.8.exe"
-        arm64 = "https://github.com/sandboxie-plus/Sandboxie/releases/download/v1.16.8/Sandboxie-Plus-ARM64-v1.16.8.exe"
+        x64   = "https://github.com/sandboxie-plus/Sandboxie/releases/download/v1.18.1/Sandboxie-Plus-x64-v1.18.1.exe"
+        arm64 = "https://github.com/sandboxie-plus/Sandboxie/releases/download/v1.18.1/Sandboxie-Plus-ARM64-v1.18.1.exe"
         x86   = $null  # no official X86 build
     }
 
@@ -171,41 +172,41 @@
     # Shadowsocks
     # ===========================
     shadowsocks_libev = @{
-        any = "https://ics.catswords.net/shadowsocks-libev-win-build-20220118.zip"
+        any = "https://catswords.blob.core.windows.net/welsonjs/shadowsocks-libev-win-build-2022.01.18.zip"
     }
     
     # ===========================
     # WinLibs standalone build of GCC and MinGW-w64 for Windows
     # ===========================
     winlibs_mingw = @{
-        x64   = "https://github.com/brechtsanders/winlibs_mingw/releases/download/15.2.0posix-13.0.0-ucrt-r3/winlibs-i686-posix-dwarf-gcc-15.2.0-mingw-w64ucrt-13.0.0-r3.zip"
+        x64   = "https://github.com/brechtsanders/winlibs_mingw/releases/download/16.1.0posix-14.0.0-msvcrt-r4/winlibs-x86_64-posix-seh-gcc-16.1.0-mingw-w64msvcrt-14.0.0-r4.zip"
         arm64 = $null  # no official ARM64 build
-        x86   = "https://github.com/brechtsanders/winlibs_mingw/releases/download/15.2.0posix-13.0.0-ucrt-r3/winlibs-x86_64-posix-seh-gcc-15.2.0-mingw-w64ucrt-13.0.0-r3.zip"
+        x86   = "https://github.com/brechtsanders/winlibs_mingw/releases/download/16.1.0posix-14.0.0-msvcrt-r4/winlibs-i686-posix-dwarf-gcc-16.1.0-mingw-w64msvcrt-14.0.0-r4.zip"
     }
     
     # ===========================
     # The Go Language Programming
     # ===========================
     golang = @{
-        x64   = "https://go.dev/dl/go1.25.4.windows-amd64.zip"
-        arm64 = "https://go.dev/dl/go1.25.4.windows-arm64.zip"
-        x86   = "https://go.dev/dl/go1.25.4.windows-386.zip"
+        x64   = "https://go.dev/dl/go1.26.5.windows-amd64.zip"
+        arm64 = "https://go.dev/dl/go1.26.5.windows-arm64.zip"
+        x86   = "https://go.dev/dl/go1.26.5.windows-386.zip"
     }
     
     # ===========================
     # x86dbg
     # ===========================
     x86dbg = @{
-        any = "https://twds.dl.sourceforge.net/project/x64dbg/snapshots/snapshot_2025-08-19_19-40.zip?viasf=1"
+        any = "https://twds.dl.sourceforge.net/project/x64dbg/snapshots/snapshot_2026-05-27_12-11.zip?viasf=1"
     }
     
     # ===========================
     # 7-zip
     # ===========================
     w7zip = @{
-        x64   = "https://www.7-zip.org/a/7z2501-x64.exe"
-        arm64 = "https://www.7-zip.org/a/7z2501-arm64.exe"
-        x86   = "https://www.7-zip.org/a/7z2501.exe"
+        x64   = "https://github.com/ip7z/7zip/releases/download/26.02/7z2602-x64.exe"
+        arm64 = "https://github.com/ip7z/7zip/releases/download/26.02/7z2602-arm64.exe"
+        x86   = "https://github.com/ip7z/7zip/releases/download/26.02/7z2602.exe"
     }
     
     # ===========================
@@ -219,8 +220,8 @@
     # Microsoft OpenJDK build
     # ===========================
     microsoft_jdk = @{
-        x64 = "https://aka.ms/download-jdk/microsoft-jdk-25.0.1-windows-x64.zip"
+        x64 = "https://aka.ms/download-jdk/microsoft-jdk-25.0.4-windows-x64.exe"
         arm64 = $null  # no official ARM64 build
-        x86   = $null  # no official X86 build
+        x86   = "https://aka.ms/download-jdk/microsoft-jdk-25.0.4-windows-aarch64.exe"
     }
 }
