@@ -11,7 +11,7 @@
     python = @{
         x64   = "https://www.python.org/ftp/python/3.14.7/python-3.14.7-embed-amd64.zip"
         arm64 = "https://www.python.org/ftp/python/3.14.7/python-3.14.7-embed-arm64.zip"
-        x86   = "https://www.python.org/ftp/python/3.14.7/python-3.14.7-embed-amd64.zip"
+        x86   = "https://www.python.org/ftp/python/3.14.7/python-3.14.7-embed-win32.zip"
     }
 
     # ===========================
