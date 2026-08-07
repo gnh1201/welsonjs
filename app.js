@@ -1109,8 +1109,10 @@ function dispatchServiceEvent(name, eventType, w_args, w_argl) {
                 })(action[eventType]);
             } catch (e) {
                 console.error(
-                    "Failed to dispatch service event'" + eventType + "' (" + callbackName + ") in module",
-                    '"' + name + "':",
+                    "Failed to dispatch service event",
+                    eventType,
+                    "in module",
+                    name,
                     e.message
                 );
             }
