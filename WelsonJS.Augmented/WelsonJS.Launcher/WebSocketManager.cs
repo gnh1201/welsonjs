@@ -56,7 +56,7 @@ namespace WelsonJS.Launcher
             }
 
             var newSock = new ClientWebSocket();
-            var uri = new Uri($"ws://{host}:{port}/{path}");
+            var uri = new Uri($"wss://{host}:{port}/{path}");
 
             try
             {
