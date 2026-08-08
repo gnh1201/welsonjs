@@ -660,7 +660,7 @@ function require(pathname) {
     if (cache[FN]) return cache[FN];
 
     var T = null;
-    var sep = '://', pos = FN.indexOf(sep);
+    var sep = ':', pos = FN.indexOf(sep);
     if (pos > -1) {
         var scheme = FN.substring(0, pos);
 
@@ -676,6 +676,7 @@ function require(pathname) {
         }
         
         // request a script from LLM based AI services
+        // e.g. ai:Hello, world!
         if (["ai"].indexOf(scheme) > -1) {
             require._addScriptProvider(function(url) {
                 try {
