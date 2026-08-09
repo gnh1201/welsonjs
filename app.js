@@ -762,7 +762,7 @@ function require(pathname) {
     // transpile
     switch (suffix) {
         case '.coffee':  // CoffeeScript 2
-            text = require._msie9("app/assets/js/coffeescript-legacy-2.7.0.min", [T], function(p, w, d, l) {
+            text = require._msie9("app/assets/js/coffeescript-legacy-2.7.0.min", [text], function(p, w, d, l) {
                 return w.CoffeeScript.compile(p[0], {
                     "header": true,
                     "sourceMap": false,
@@ -772,7 +772,7 @@ function require(pathname) {
             break;
 
         case ".ls":  // LiveScript
-            text = require._msie9("app/assets/js/livescript-1.6.1.min", [T, "app/assets/ls/prelude.ls"], function(p, w, d, l) {
+            text = require._msie9("app/assets/js/livescript-1.6.1.min", [text, "app/assets/ls/prelude.ls"], function(p, w, d, l) {
                 return w.require("livescript").compile(require._load(p[1]) + "\n\n" + p[0], {
                     "header": true,
                     "bare": true
@@ -781,14 +781,14 @@ function require(pathname) {
             break;
 
         case ".ts":  // TypeScript
-            text = require._modernie("app/assets/js/typescript-4.9.4", [T], function(p, w, d, l) {
+            text = require._modernie("app/assets/js/typescript-4.9.4", [text], function(p, w, d, l) {
                 return w.ts.transpile(p[0]);
             });
             break;
 
         case ".re":  // Rescript (aka. BuckleScript, ReasonML)
         case ".res":
-            text = require._modernie("app/assets/js/rescript-compiler-10.1.2", [T], function(p, w, d, l) {
+            text = require._modernie("app/assets/js/rescript-compiler-10.1.2", [text], function(p, w, d, l) {
                 var compiler = w.rescript_compiler.make();
                 var result = compiler.rescript.compile(p[0]);
                 return result.js_code;
@@ -808,7 +808,7 @@ function require(pathname) {
                     }
 
                     if (tries >= limit) {
-                        throw new Error("Too many trieds. Exiting.");
+                        throw new Error("Too many password attempts. Exiting.");
                     }
 
                     return toolkit.DecryptString(s, text);
