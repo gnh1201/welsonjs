@@ -15,10 +15,10 @@ var ALLOW_UNSAFE_EVAL = false; // Verify the evaluator with testEvaluator() befo
 var STRICT_INTEGRITY = false;  // When enabled, only scripts matching a trusted integrity hash may execute.
 var INTEGRITY_ALGORITHM = "default";  // "default" uses Adler-32; SHA-256/384/512 use the built-in .NET implementation.
 var INTEGRITY_ALLOWED_ALGORITHMS = {
-	"sha1": false, // Enable only for compatibility with Windows XP and earlier.
-	"sha256": true,
-	"sha384": true,
-	"sha512": true
+    "sha1": false, // Enable only for compatibility with Windows XP and earlier.
+    "sha256": true,
+    "sha384": true,
+    "sha512": true
 };
 var INTEGRITY_HASHES = {/* // Integrity hashes for the "helloworld" example
     "7b5c4d89": true, "779be011": true, "c9dee731": true,
@@ -806,12 +806,12 @@ function require(pathname) {
                         if (tries > 0) {
                             throw new Error("Invalid key length");
                         }
-                        s = toolkit.Prompt("This file has been encrypted. Please enter the password:");
+                        s = toolkit.Prompt("Please enter the password:");
                         tries++;
-                    }
-
-                    if (tries >= limit) {
-                        throw new Error("Too many password attempts. Exiting.");
+                        
+                        if (tries >= limit) {
+                            throw new Error("Too many password attempts. Exiting.");
+                        }
                     }
 
                     return toolkit.DecryptString(s, text);
