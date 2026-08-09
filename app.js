@@ -2,7 +2,8 @@
 // Copyright 2019-2026, Namhyeon Go <gnh1201@catswords.re.kr>, Catswords OSS, WelsonJS contributors.
 // SPDX-License-Identifier: GPL-3.0-or-later
 // https://github.com/gnh1201/welsonjs
-
+// #OPENTOWORK
+// 
 // Bootstrap code for running a javascript app in windows.  Run as:
 // cscript.js app.js <appname> <app arguments> ...
 // 
@@ -12,10 +13,10 @@ var ALLOW_UNSAFE_EVAL = false; // Verify the evaluator with testEvaluator() befo
 var STRICT_INTEGRITY = false;  // When enabled, only scripts matching a trusted integrity hash may execute.
 var INTEGRITY_ALGORITHM = "default";  // "default" uses Adler-32; SHA-256/384/512 use the built-in .NET implementation.
 var INTEGRITY_ALLOWED_ALGORITHMS = {
-	"sha1": false, // Enable only for compatibility with Windows XP and earlier.
-	"sha256": true,
-	"sha384": true,
-	"sha512": true
+    "sha1": false, // Enable only for compatibility with Windows XP and earlier.
+    "sha256": true,
+    "sha384": true,
+    "sha512": true
 };
 var INTEGRITY_HASHES = {/* // Integrity hashes for the "helloworld" example
     "7b5c4d89": true, "779be011": true, "c9dee731": true,
@@ -659,8 +660,8 @@ function require(pathname) {
     if ('.js$.jse$.coffee$.ls$.ts$.re$.res$.enc$'.indexOf(suffix + '$') < 0) FN += ".js";
     if (cache[FN]) return cache[FN];
 
-    var T = null;
-    var sep = '://', pos = FN.indexOf(sep);
+    var text = null;
+    var sep = ':', pos = FN.indexOf(sep);
     if (pos > -1) {
         var scheme = FN.substring(0, pos);
 
@@ -676,6 +677,7 @@ function require(pathname) {
         }
         
         // request a script from LLM based AI services
+        // e.g. ai:Hello, world!
         if (["ai"].indexOf(scheme) > -1) {
             require._addScriptProvider(function(url) {
                 try {
@@ -695,13 +697,14 @@ function require(pathname) {
         // if exists the custom script providers
         if (require._scriptProviders.length > 0) {
             var i = 0;
-            while (T == null && i < require._scriptProviders.length) {
+            while (text == null && i < require._scriptProviders.length) {
                 try {
-                    T = require._scriptProviders[i](FN) || null;
+                    text = require._scriptProviders[i](FN) || null;
                     break;
                 } catch (e) {
-                    T = null;
+                    text = null;
                 }
+
                 i++;
             }
         }
@@ -747,8 +750,9 @@ function require(pathname) {
         var _dirname = (function(dirname) { 
             var currentScriptDirectory = require._getCurrentScriptDirectory();
             return dirname.length > 0 ? currentScriptDirectory + "\\" + dirname : currentScriptDirectory;
-        })(require._getDirName(_filename));
-        T = require._load(_filename);
+        })(require._getDirectoryName(_filename));
+
+        text = require._load(_filename);
 
         // check the suffix again
         suffix = (function(pos, s) {
@@ -759,7 +763,7 @@ function require(pathname) {
     // transpile
     switch (suffix) {
         case '.coffee':  // CoffeeScript 2
-            T = require._msie9("app/assets/js/coffeescript-legacy-2.7.0.min", [T], function(p, w, d, l) {
+            text = require._msie9("app/assets/js/coffeescript-legacy-2.7.0.min", [text], function(p, w, d, l) {
                 return w.CoffeeScript.compile(p[0], {
                     "header": true,
                     "sourceMap": false,
@@ -769,7 +773,7 @@ function require(pathname) {
             break;
 
         case ".ls":  // LiveScript
-            T = require._msie9("app/assets/js/livescript-1.6.1.min", [T, "app/assets/ls/prelude.ls"], function(p, w, d, l) {
+            text = require._msie9("app/assets/js/livescript-1.6.1.min", [text, "app/assets/ls/prelude.ls"], function(p, w, d, l) {
                 return w.require("livescript").compile(require._load(p[1]) + "\n\n" + p[0], {
                     "header": true,
                     "bare": true
@@ -778,38 +782,42 @@ function require(pathname) {
             break;
 
         case ".ts":  // TypeScript
-            T = require._modernie("app/assets/js/typescript-4.9.4", [T], function(p, w, d, l) {
+            text = require._modernie("app/assets/js/typescript-4.9.4", [text], function(p, w, d, l) {
                 return w.ts.transpile(p[0]);
             });
             break;
 
         case ".re":  // Rescript (aka. BuckleScript, ReasonML)
         case ".res":
-            T = require._modernie("app/assets/js/rescript-compiler-10.1.2", [T], function(p, w, d, l) {
+            text = require._modernie("app/assets/js/rescript-compiler-10.1.2", [text], function(p, w, d, l) {
                 var compiler = w.rescript_compiler.make();
                 var result = compiler.rescript.compile(p[0]);
                 return result.js_code;
             });
             break;
 
-        case ".enc":   // encrypted script (require WelsonJS.Toolkit)
-            T = (function(data, o) {
+        case ".enc":   // encrypted script (require WelsonJS.Toolkit native module)
+            text = UseObject("WelsonJS.Toolkit", function(toolkit) {
                 try {
-                    var s = '', i = 0, k = 6;
-                    while (i < k && (s.length == 0 || s.length > 16)) {
-                        if (i > 0) {
-                            console.error("Invalid key length");
+                    var s = '', tries = 0, limit = 6;
+                    while (tries < limit && (s.length <= 0 || s.length > 16)) {
+                        if (tries > 0) {
+                            throw new Error("Invalid key length");
                         }
-                        s = o.Prompt("This file has been encrypted. Please enter the password:");
-                        i++;
+                        s = toolkit.Prompt("Please enter the password:");
+                        tries++;
+                        
+                        if (tries >= limit) {
+                            throw new Error("Too many password attempts. Exiting.");
+                        }
                     }
-                    if (i == k) return '';
-                    return o.DecryptString(s, data);
+
+                    return toolkit.DecryptString(s, text);
                 } catch (e) {
-                    console.error("Failed to load the encrypted data:", e.message);
+                    console.error("Failed to load:", e.message);
                     return '';
                 }
-            })(T, CreateObject("WelsonJS.Toolkit"));
+            });
             break;
     }
 
@@ -821,7 +829,7 @@ function require(pathname) {
         "__filename",
         "__dirname",
         '"use strict";\n'
-        + T
+        + text
         + "\n\nreturn module.exports;"
         + "\n//# sourceURL=" + FN
     );
@@ -859,7 +867,7 @@ require.__Module__ = function() {
     this.exports = {};
 };
 require._global = this;
-require._getDirName = function(path) {
+require._getDirectoryName = function(path) {
     var pos = Math.max.apply(null, [path.lastIndexOf("\\"), path.lastIndexOf("/")]);
     return (pos > -1 ? path.substring(0, pos) : "");
 };
@@ -867,12 +875,12 @@ require._getCurrentScriptDirectory = function() {
     try {
         if (typeof WScript !== "undefined") {
             if ("ScriptFullName" in WScript) {
-                return require._getDirName(WScript.ScriptFullName);
+                return require._getDirectoryName(WScript.ScriptFullName);
             } else {
                 throw new Error("No detected an absolute path.");
             }
         } else if (typeof document !== "undefined") {
-            return require._getDirName(document.location.pathname);
+            return require._getDirectoryName(document.location.pathname);
         } else {
             throw new Error("No detected an absolute path.");
         }
@@ -893,6 +901,7 @@ require._load = function(FN) {
     // use ADODB.Stream instead of Scripting.FileSystemObject, because of supporting UTF-8 (Unicode)
     return UseObject("ADODB.Stream", function(stream) {
         var text = null;
+        
         stream.charSet = "utf-8";
         stream.open();
         stream.loadFromFile(_filename);
@@ -924,15 +933,14 @@ require._msie9 = function(FN, params, callback) {
     if (typeof FN !== "string" || FN == null) FN = '';
     else if (FN.substring(FN.length - 3) !== '.js') FN += ".js";
 
-    var exports = null;
-    try {
-        var T = require._load("app/assets/js/core-js-3.26.1.minified.js")
+    return UseObject("htmlfile", function(htmlfile) {
+        var text = require._load("app/assets/js/core-js-3.26.1.minified.js")
             + "\n\n" + require._load("app/assets/js/html5shiv-printshiv-3.7.3.min.js")
             + "\n\n" + require._load("app/assets/js/modernizr-2.8.3.min.js")
             + "\n\n" + require._load(FN);
-        var htmlfile = CreateObject("htmlfile");
         htmlfile.write('<meta http-equiv="X-UA-Compatible" content="IE=9">');
-        htmlfile.write('<script type="text/javascript">//<!--<![CDATA[\n' + T + '\n//]]>--></script>');
+        htmlfile.write('<script type="text/javascript">//<!--<![CDATA[\n' + text + '\n//]]>--></script>');
+
         if (typeof callback === "function") {
             var loadScript = function(FN) {
                 if (FN.indexOf('://') > -1) {
@@ -942,39 +950,38 @@ require._msie9 = function(FN, params, callback) {
                 }
             };
             //console.log(htmlfile.parentWindow.navigator.userAgent);
-            exports = callback(params, htmlfile.parentWindow, htmlfile.parentWindow.document, loadScript);
+            return callback(params, htmlfile.parentWindow, htmlfile.parentWindow.document, loadScript);
         }
-        htmlfile.close();
-    } catch (e) {
-        console.error("LOAD ERROR!", e.number + ",", e.description + ",", "FN=" + FN);
-    }
-
-    return exports;
+    }, null, function(error) {
+        var message = error ? (error.description || error.message || String(error)) : "Unknown error";
+        var code = error && error.number ? error.number : 0;
+        console.error("LOAD ERROR!", code + ",", message + ",", "FN=" + FN);
+    });
 };
+
 require._modernie = function(FN, params, callback) {
     if (typeof FN !== "string" || FN == null) FN = '';
     else if (FN.substring(FN.length - 3) !== '.js') FN += ".js";
 
-    var exports = null;
-    try {
-        var ua = '', T = '', htmlfile = CreateObject("htmlfile");
+    return UseObject("htmlfile", function(htmlfile) {
+        var ua = '', text = '';
 
         htmlfile.write('<meta http-equiv="X-UA-Compatible" content="IE=edge">');
-        htmlfile.write('<script type="text/javascript">//<!--<![CDATA[\n\nfunction __getUserAgent(){return window.navigator.userAgent}\n\n//]]>--></script>');
-        ua = htmlfile.parentWindow.__getUserAgent();
+        htmlfile.write('<script type="text/javascript">//<!--<![CDATA[\n\nfunction __getUserAgent__(){return window.navigator.userAgent}\n\n//]]>--></script>');
+        ua = htmlfile.parentWindow.__getUserAgent__();
 
         if (ua.indexOf('Trident/ ')) {
-            T = require._load("app/assets/js/core-js-3.26.1.minified.js")
+            text = require._load("app/assets/js/core-js-3.26.1.minified.js")
                 + "\n\n" + require._load("app/assets/js/modernizr-2.8.3.min.js")
                 + "\n\n" + require._load("app/assets/js/babel-standalone-7.20.6.min.js")
                 + "\n\n" + require._load(FN);
         } else {
-            T = require._load("app/assets/js/core-js-3.26.1.minified.js")
+            text = require._load("app/assets/js/core-js-3.26.1.minified.js")
                 + "\n\n" + require._load("app/assets/js/html5shiv-printshiv-3.7.3.min.js")
                 + "\n\n" + require._load("app/assets/js/modernizr-2.8.3.min.js")
                 + "\n\n" + require._load(FN);
         }
-        htmlfile.write('<script type="text/javascript">//<!--<![CDATA[\n' + T + '\n//]]>--></script>');
+        htmlfile.write('<script type="text/javascript">//<!--<![CDATA[\n' + text + '\n//]]>--></script>');
 
         if (typeof callback === "function") {
             var loadScript = function(src) {
@@ -985,14 +992,13 @@ require._modernie = function(FN, params, callback) {
                 }
             };
             //console.log(htmlfile.parentWindow.navigator.userAgent);
-            exports = callback(params, htmlfile.parentWindow, htmlfile.parentWindow.document, loadScript);
+            return callback(params, htmlfile.parentWindow, htmlfile.parentWindow.document, loadScript);
         }
-        htmlfile.close();
-    } catch (e) {
-        console.error("LOAD ERROR!", e.number + ",", e.description + ",", "FN=" + FN);
-    }
-
-    return exports;
+    }, null, function(error) {
+        var message = error ? (error.description || error.message || String(error)) : "Unknown error";
+        var code = error && error.number ? error.number : 0;
+        console.error("LOAD ERROR!", code + ",", message + ",", "FN=" + FN);
+    });
 };
 require._scriptProviders = [];
 require._addScriptProvider = function(f) {
@@ -1130,7 +1136,7 @@ function dispatchServiceEvent(name, eventType, w_args, w_argl) {
     });
 }
 
-// Date.prototype.toISOString() polyfill for MSScriptControl.ScriptControl
+// Date.prototype.toISOString() polyfills for MSScriptControl.ScriptControl
 if (!Date.prototype.toISOString) {
     Date.prototype.toISOString = function() {
         var pad = function(number) {
@@ -1191,6 +1197,7 @@ function __main__() {
     console.log(" This software is distributed as open source under the GPL 3.0 or MS-RL licenses.");
     console.log(" Please support this project: https://github.com/sponsors/gnh1201");
     console.log(" Source code available: https://github.com/gnh1201/welsonjs");
+	console.log(" #OPENTOWORK");
     console.log("");
 
     if (typeof window === "undefined") {
