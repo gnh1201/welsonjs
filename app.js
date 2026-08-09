@@ -2,9 +2,7 @@
 // Copyright 2019-2026, Namhyeon Go <gnh1201@catswords.re.kr>, Catswords OSS, WelsonJS contributors.
 // SPDX-License-Identifier: GPL-3.0-or-later
 // https://github.com/gnh1201/welsonjs
-// 
 // #OPENTOWORK
-// https://www.linkedin.com/in/gnh1201
 // 
 // Bootstrap code for running a javascript app in windows.  Run as:
 // cscript.js app.js <appname> <app arguments> ...
@@ -1199,6 +1197,7 @@ function __main__() {
     console.log(" This software is distributed as open source under the GPL 3.0 or MS-RL licenses.");
     console.log(" Please support this project: https://github.com/sponsors/gnh1201");
     console.log(" Source code available: https://github.com/gnh1201/welsonjs");
+	console.log(" #OPENTOWORK");
     console.log("");
 
     if (typeof window === "undefined") {
