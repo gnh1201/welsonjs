@@ -2,7 +2,10 @@
 // Copyright 2019-2026, Namhyeon Go <gnh1201@catswords.re.kr>, Catswords OSS, WelsonJS contributors.
 // SPDX-License-Identifier: GPL-3.0-or-later
 // https://github.com/gnh1201/welsonjs
-
+// 
+// #OPENTOWORK
+// https://www.linkedin.com/in/gnh1201
+// 
 // Bootstrap code for running a javascript app in windows.  Run as:
 // cscript.js app.js <appname> <app arguments> ...
 // 
