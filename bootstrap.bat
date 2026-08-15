@@ -42,17 +42,21 @@ if exist "%LOCAL_MANAGEDOBJECT_DLL%" (
     set MANAGEDOBJECT_DLL=%DOWNLOADED_MANAGEDOBJECT_DLL%
 )
 
-:: Register the WelsonJS.ManagedObject component
-echo [*] Registering WelsonJS.ManagedObject component...
-%REGASM_PATH% /codebase %MANAGEDOBJECT_DLL%
-%REGASM_PATH64% /codebase %MANAGEDOBJECT_DLL%
-
 :: Final step
-echo [*] Pre-configuration complete. Starting bootstrap script...
 if /I "%PROCESSOR_ARCHITECTURE%%PROCESSOR_ARCHITEW6432%"=="x86" (
     rem 32-bit Windows
+
+    echo [*] Registering WelsonJS.ManagedObject component...
+    %REGASM_PATH% /codebase %MANAGEDOBJECT_DLL%
+    
+    echo [*] Pre-configuration complete. Starting bootstrap script...
     cscript.exe app.js bootstrap
 ) else (
     rem 64-bit Windows
+
+    echo [*] Registering WelsonJS.ManagedObject component...
+    %REGASM_PATH64% /codebase %MANAGEDOBJECT_DLL%
+
+    echo [*] Pre-configuration complete. Starting bootstrap script...
     %SystemRoot%\SysWOW64\cscript.exe app.js bootstrap
 )
