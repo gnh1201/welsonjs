@@ -810,15 +810,15 @@ function require(pathname) {
             });
             break;
 
-        case ".enc":   // encrypted script (require WelsonJS.Toolkit native module)
-            text = UseObject("WelsonJS.Toolkit", function(toolkit) {
+        case ".enc":   // encrypted script (require WelsonJS.ManagedObject native module)
+            text = UseObject("WelsonJS.Dialog", function(dialog) {
                 try {
                     var s = '', tries = 0, limit = 6;
                     while (tries < limit && (s.length <= 0 || s.length > 16)) {
                         if (tries > 0) {
                             throw new Error("Invalid key length");
                         }
-                        s = toolkit.Prompt("Please enter the password:");
+                        s = dialog.Confirm("Please enter the password:", "Encrypted script");
                         tries++;
                         
                         if (tries >= limit) {
@@ -826,7 +826,9 @@ function require(pathname) {
                         }
                     }
 
-                    return toolkit.DecryptString(s, text);
+                    return UseObject("WelsonJS.LegacyCipher", function(cipher) {
+                        return cipher.DecryptString(s, text);
+                    });
                 } catch (e) {
                     console.error("Failed to load:", e.message);
                     return '';

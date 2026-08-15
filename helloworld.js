@@ -1,6 +1,5 @@
 var SYS = require("lib/system");
 var HTTP = require("lib/http");
-//var Toolkit = require("lib/toolkit");
 
 function main(args) {
     console.log("Hello world");
@@ -26,8 +25,6 @@ function main(args) {
     console.log("Hash:", hash);
     
     sleep(100000);
-
-    //Toolkit.create();
 }
 
 exports.main = main;

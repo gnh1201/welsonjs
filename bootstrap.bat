@@ -5,12 +5,12 @@ REM Source code available: https://github.com/gnh1201/welsonjs
 pushd %~dp0
 
 :: Define variables
-set TOOLKIT_URL=https://catswords.blob.core.windows.net/welsonjs/welsonjs_toolkit_latest.cab
-set TOOLKIT_PATH=%APPDATA%\welsonjs\welsonjs_toolkit_latest.cab
-set TOOLKIT_EXTRACT_PATH=%APPDATA%\welsonjs
+set MANAGEDOBJECT_URL=https://catswords.blob.core.windows.net/welsonjs/welsonjs_managedobject_latest.cab
+set MANAGEDOBJECT_PATH=%APPDATA%\welsonjs\welsonjs_managedobject_latest.cab
+set MANAGEDOBJECT_EXTRACT_PATH=%APPDATA%\welsonjs
 set REGASM_PATH=%WINDIR%\Microsoft.NET\Framework\v2.0.50727\RegAsm.exe
-set LOCAL_TOOLKIT_DLL=bin\x86\WelsonJS.Toolkit.dll
-set DOWNLOADED_TOOLKIT_DLL=%APPDATA%\welsonjs\WelsonJS.Toolkit.dll
+set LOCAL_MANAGEDOBJECT_DLL=bin\x86\WelsonJS.ManagedObject.dll
+set DOWNLOADED_MANAGEDOBJECT_DLL=%APPDATA%\welsonjs\WelsonJS.ManagedObject.dll
 
 :: Ensure directory exists
 if not exist "%APPDATA%\welsonjs" mkdir "%APPDATA%\welsonjs"
@@ -22,28 +22,28 @@ echo [*] Configuring HTA file association...
 reg import app\assets\reg\Default_HTA.reg
 
 :: Determine which toolkit to use
-if exist "%LOCAL_TOOLKIT_DLL%" (
-    echo [*] Local toolkit found. Using "%LOCAL_TOOLKIT_DLL%" for registration.
-    set TOOLKIT_DLL=%LOCAL_TOOLKIT_DLL%
-) else if exist "%DOWNLOADED_TOOLKIT_DLL%" (
-    echo [*] Downloaded toolkit found. Using "%DOWNLOADED_TOOLKIT_DLL%" for registration.
-    set TOOLKIT_DLL=%DOWNLOADED_TOOLKIT_DLL%
+if exist "%LOCAL_MANAGEDOBJECT_DLL%" (
+    echo [*] Local managed object found. Using "%LOCAL_MANAGEDOBJECT_DLL%" for registration.
+    set MANAGEDOBJECT_DLL=%LOCAL_MANAGEDOBJECT_DLL%
+) else if exist "%DOWNLOADED_MANAGEDOBJECT_DLL%" (
+    echo [*] Downloaded managed object found. Using "%DOWNLOADED_MANAGEDOBJECT_DLL%" for registration.
+    set MANAGEDOBJECT_DLL=%DOWNLOADED_MANAGEDOBJECT_DLL%
 ) else (
-    echo [*] Toolkit not found locally. Downloading from external source...
-    :: Download the latest WelsonJS.Toolkit component
-    bitsadmin /transfer toolkit_download /download /priority normal %TOOLKIT_URL% %TOOLKIT_PATH%
+    echo [*] Managed object not found locally. Downloading from external source...
+    :: Download the latest WelsonJS.ManagedObject component
+    bitsadmin /transfer managedobject_download /download /priority normal %MANAGEDOBJECT_URL% %MANAGEDOBJECT_PATH%
     
     :: Extract the downloaded CAB file
-    echo [*] Extracting WelsonJS.Toolkit component...
-    expand %TOOLKIT_PATH% -F:* %TOOLKIT_EXTRACT_PATH%
+    echo [*] Extracting WelsonJS.ManagedObject component...
+    expand %MANAGEDOBJECT_PATH% -F:* %MANAGEDOBJECT_EXTRACT_PATH%
     
     :: Set the downloaded DLL as the target
-    set TOOLKIT_DLL=%DOWNLOADED_TOOLKIT_DLL%
+    set MANAGEDOBJECT_DLL=%DOWNLOADED_MANAGEDOBJECT_DLL%
 )
 
-:: Register the WelsonJS.Toolkit component
-echo [*] Registering WelsonJS.Toolkit component...
-%REGASM_PATH% /codebase %TOOLKIT_DLL%
+:: Register the WelsonJS.ManagedObject component
+echo [*] Registering WelsonJS.ManagedObject component...
+%REGASM_PATH% /codebase %MANAGEDOBJECT_DLL%
 
 :: Final step
 echo [*] Pre-configuration complete. Starting bootstrap script...

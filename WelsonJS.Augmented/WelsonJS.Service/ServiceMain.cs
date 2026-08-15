@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.Collections;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using WelsonJS.ManagedObject;
 
 namespace WelsonJS.Service
 {
@@ -32,7 +33,7 @@ namespace WelsonJS.Service
         private bool disabledFileMonitor = false;
         private ScreenMatch screenMatcher;
         private FileEventMonitor fileEventMonitor;
-        private IniFile settingsFileHandler;
+        private ProfileStringFile settingsFileHandler;
         private UserVariables userVariablesHandler;
 
         [DllImport("user32.dll")]
@@ -103,7 +104,7 @@ namespace WelsonJS.Service
             {
                 try
                 {
-                    settingsFileHandler = new IniFile(settingsFilePath);
+                    settingsFileHandler = new ProfileStringFile(settingsFilePath);
                 }
                 catch (Exception ex)
                 {

@@ -1,16 +1,16 @@
-﻿// BitmapUtils.cs
-// SPDX-License-Identifier: GPL-3.0-or-later
-// SPDX - FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
-// https://github.com/gnh1201/welsonjs
-// 
-using System;
+﻿using System;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Runtime.InteropServices;
 
-namespace WelsonJS
+namespace WelsonJS.ManagedObject
 {
-    public class BitmapUtils
+    [ComVisible(true)]
+    [Guid("4ea39f55-df2a-41af-8beb-0bd22dea5e65")]
+    [ProgId("WelsonJS.BitmapControl")]
+    [ClassInterface(ClassInterfaceType.AutoDual)]
+    public class BitmapControl
     {
         private static Bitmap Load(string filename)
         {

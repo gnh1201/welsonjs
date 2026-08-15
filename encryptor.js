@@ -6,7 +6,6 @@
 // HIGHT(ISO/IEC 18033-3) encryption and decryption tool for WelsonJS framework
 // 
 var FILE = require("lib/file");
-var Toolkit = require("lib/toolkit");
 
 function main(args) {
     if (args.length < 1) {
@@ -23,11 +22,15 @@ function main(args) {
 
     var userKey = '';
     while (userKey.length == 0 || userKey.length > 16) {
-        userKey = Toolkit.prompt("Please enter the password for encryption:");
+        userKey = UseObject("WelsonJS.Dialog", function(dialog) {
+            return dialog.Prompt("Please enter the password for encryption:", "");
+        });
     }
 
     var data = FILE.readFile(filename, FILE.CdoCharset.CdoUTF_8);
-    var encryptedData = Toolkit.encryptString(userKey, data);
+    var encryptedData = UseObject("WelsonJS.LegacyCipher", function(cipher) {
+        return cipher.EncryptString(userKey, data);
+    });
 
     var dstfile = filename + ".enc";
     FILE.writeFile(dstfile, encryptedData, FILE.CdoCharset.CdoUTF_8);
