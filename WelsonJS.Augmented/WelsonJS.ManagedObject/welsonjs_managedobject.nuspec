@@ -1,0 +1,74 @@
+<metadata>
+  <id>WelsonJS.ManagedObject</id>
+  <version>0.2.7.58</version>
+  <authors>Catswords Research</authors>
+  <owners>Catswords Research</owners>
+
+  <title>WelsonJS ManagedObject</title>
+  <projectUrl>https://github.com/gnh1201/welsonjs</projectUrl>
+
+  <summary>
+    Managed Windows COM modules for the WelsonJS scripting environment
+  </summary>
+
+  <description>
+    WelsonJS.ManagedObject provides managed COM modules for the WelsonJS
+    scripting environment. These modules extend WelsonJS with Windows-specific
+    capabilities such as COM object activation, dialogs, inter-process
+    communication, input simulation, window handling, and bitmap information
+    extraction.
+
+    Included COM modules:
+
+    - WelsonJS.ManagedObject
+    A helper module for loading and interacting with COM objects from
+    WelsonJS. Supports ProgID-based COM object activation and ByRef argument
+    handling.
+
+    - WelsonJS.Dialog
+    Provides Windows dialog functionality, including Alert, Confirm, and
+    FileDialog operations.
+
+    - WelsonJS.NamedSharedMemory
+    Provides inter-process communication (IPC) using named shared memory.
+
+    - WelsonJS.ProcessControl
+    Provides virtualized mouse and keyboard input and window handle
+    manipulation.
+
+    - WelsonJS.BitmapControl
+    Provides bitmap and image information utilities, including image size
+    and pixel information extraction.
+
+    Migration:
+    
+    Users of WelsonJS.Toolkit, including users of WelsonJS version 0.2.7.57
+    and earlier, should migrate to WelsonJS.ManagedObject.
+
+    WelsonJS.Toolkit has been superseded by WelsonJS.ManagedObject. The
+    functionality previously provided by WelsonJS.Toolkit has been migrated
+    to managed COM modules included in this package. New applications should
+    use WelsonJS.ManagedObject instead of WelsonJS.Toolkit.
+
+    These modules are designed to be used from the WelsonJS scripting
+    environment and may depend on Windows-specific COM and system APIs.
+
+    Developer:
+    
+    Namhyeon Go (Opensource Software Maintainer, Catswords Research)
+
+    Contact:
+    
+    gnh1201@catswords.re.kr
+
+    #OPENTOWORK
+  </description>
+
+  <icon>favicon.png</icon>
+  <repository type="git" url="https://github.com/gnh1201/welsonjs.git" />
+  
+  <tags>
+    WelsonJS Windows COM ActiveX Automation WSH JavaScript IPC Dialog
+    ProcessControl Bitmap NamedSharedMemory OpenToWork
+  </tags>
+</metadata>
