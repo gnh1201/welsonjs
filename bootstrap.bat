@@ -21,7 +21,7 @@ echo [*] Initializing WelsonJS pre-configuration...
 echo [*] Configuring HTA file association...
 reg import app\assets\reg\Default_HTA.reg
 
-:: Determine which toolkit to use
+:: Determine which managed object to use
 if exist "%LOCAL_MANAGEDOBJECT_DLL%" (
     echo [*] Local managed object found. Using "%LOCAL_MANAGEDOBJECT_DLL%" for registration.
     set MANAGEDOBJECT_DLL=%LOCAL_MANAGEDOBJECT_DLL%
