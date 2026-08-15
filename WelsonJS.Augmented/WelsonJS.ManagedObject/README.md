@@ -19,28 +19,9 @@ The package extends WelsonJS with Windows-specific capabilities such as:
 * Window handle manipulation
 * Bitmap and image information extraction
 
-The modules are designed to be accessed from WelsonJS scripts through Windows COM/ActiveX automation.
+The managed object functionality is automatically initialized by the WelsonJS `app.js` runtime and is available globally. Users do not need to explicitly create a `WelsonJS.ManagedObject` instance.
 
 ## Included Modules
-
-### `WelsonJS.ManagedObject`
-
-A helper module for loading and interacting with COM objects from WelsonJS.
-
-Features include:
-
-* ProgID-based COM object activation
-* COM object creation
-* ByRef argument handling
-* Support for Windows COM/ActiveX automation
-
-Example:
-
-```javascript
-var managedObject = new ActiveXObject("WelsonJS.ManagedObject");
-
-var fso = managedObject.CreateObject("Scripting.FileSystemObject");
-```
 
 ### `WelsonJS.Dialog`
 
@@ -55,14 +36,22 @@ Supported operations include:
 Example:
 
 ```javascript
-var dialog = new ActiveXObject("WelsonJS.Dialog");
-
-dialog.Alert("Hello, WelsonJS!");
+UseObject("WelsonJS.Dialog", function(dialog) {
+    dialog.Alert("boom");
+});
 ```
 
 ### `WelsonJS.NamedSharedMemory`
 
 Provides inter-process communication using Windows named shared memory.
+
+Example:
+
+```javascript
+UseObject("WelsonJS.NamedSharedMemory", function(sharedMemory) {
+    // Use named shared memory here.
+});
+```
 
 This module can be used when multiple processes need to exchange data through a shared memory region.
 
@@ -74,7 +63,13 @@ Provides Windows process and input-control functionality, including:
 * Virtualized keyboard input
 * Window handle manipulation
 
-This module can be used to automate or control Windows application windows from WelsonJS.
+Example:
+
+```javascript
+UseObject("WelsonJS.ProcessControl", function(processControl) {
+    // Control Windows input and windows here.
+});
+```
 
 ### `WelsonJS.BitmapControl`
 
@@ -86,6 +81,87 @@ Supported functionality includes:
 * Pixel information extraction
 * Bitmap-related utilities
 
+Example:
+
+```javascript
+UseObject("WelsonJS.BitmapControl", function(bitmapControl) {
+    // Inspect bitmap and image information here.
+});
+```
+
+## Usage
+
+`WelsonJS.ManagedObject` is automatically initialized by the WelsonJS `app.js` runtime.
+
+Therefore, applications **do not need to create or load `WelsonJS.ManagedObject` directly**.
+
+Instead, use the global `UseObject` and `CreateObject` functions provided by WelsonJS.
+
+### UseObject
+
+Use `UseObject` to load a WelsonJS module and receive the module instance through a callback.
+
+```javascript
+UseObject("WelsonJS.Dialog", function(dialog) {
+    dialog.Alert("Hello, WelsonJS!");
+});
+```
+
+The callback receives the requested module as its argument.
+
+### CreateObject
+
+Use `CreateObject` to create a supported Windows COM object from its ProgID.
+
+```javascript
+var object = CreateObject("Some.Component");
+```
+
+For example:
+
+```javascript
+var object = CreateObject("Some.Component");
+
+if (object) {
+    // Use the COM object here.
+}
+```
+
+`CreateObject` supports ProgID-based COM activation and ByRef argument handling through the managed COM implementation.
+
+### Choosing Between `UseObject` and `CreateObject`
+
+Use `UseObject` when loading one of the WelsonJS modules provided by this package:
+
+```javascript
+UseObject("WelsonJS.Dialog", function(dialog) {
+    dialog.Alert("Hello!");
+});
+```
+
+Use `CreateObject` when creating a COM object by its ProgID:
+
+```javascript
+var object = CreateObject("Some.Component");
+```
+
+The managed COM bridge is already available globally through the WelsonJS runtime, so there is no need to instantiate `WelsonJS.ManagedObject` explicitly.
+
+## Scope
+
+WelsonJS.ManagedObject provides managed implementations for Windows COM modules used by WelsonJS.
+
+The following modules are included:
+
+| Module                       | Description                         |
+| ---------------------------- | ----------------------------------- |
+| `WelsonJS.Dialog`            | Windows dialog operations           |
+| `WelsonJS.NamedSharedMemory` | Named shared memory IPC             |
+| `WelsonJS.ProcessControl`    | Mouse, keyboard, and window control |
+| `WelsonJS.BitmapControl`     | Bitmap and image information        |
+
+WSH-provided `Scripting.*` objects are **not included** in `WelsonJS.ManagedObject` and remain outside the scope of this package.
+
 ## Migration from `WelsonJS.Toolkit`
 
 Users of **WelsonJS.Toolkit**, including users of WelsonJS **0.2.7.57 and earlier**, should migrate to **WelsonJS.ManagedObject**.
@@ -96,11 +172,11 @@ The functionality previously provided by `WelsonJS.Toolkit` has been migrated to
 
 ### Migration summary
 
-| Legacy                           | Replacement                     |
-| -------------------------------- | ------------------------------- |
-| `WelsonJS.Toolkit`               | `WelsonJS.ManagedObject`        |
-| Native/legacy COM modules        | Managed COM modules             |
-| Legacy Toolkit-based integration | ManagedObject-based integration |
+| Legacy                           | Replacement                  |
+| -------------------------------- | ---------------------------- |
+| `WelsonJS.Toolkit`               | `WelsonJS.ManagedObject`     |
+| Native/legacy COM modules        | Managed COM modules          |
+| Legacy Toolkit-based integration | `UseObject` / `CreateObject` |
 
 The migration is intended to provide a cleaner managed implementation while maintaining compatibility with the Windows COM-based architecture used by WelsonJS.
 
@@ -112,27 +188,11 @@ The migration is intended to provide a cleaner managed implementation while main
 
 Because these modules interact with Windows-specific COM and system APIs, they are intended for Windows environments.
 
-## Usage
-
-After installing the package, the COM modules can be created from WelsonJS using `ActiveXObject`.
-
-For example:
-
-```javascript
-var managedObject = new ActiveXObject("WelsonJS.ManagedObject");
-var dialog = new ActiveXObject("WelsonJS.Dialog");
-var sharedMemory = new ActiveXObject("WelsonJS.NamedSharedMemory");
-var processControl = new ActiveXObject("WelsonJS.ProcessControl");
-var bitmapControl = new ActiveXObject("WelsonJS.BitmapControl");
-```
-
-The exact API exposed by each module may vary depending on the installed version.
-
 ## Compatibility
 
 WelsonJS.ManagedObject is designed specifically for the **WelsonJS scripting environment** and its Windows ECMAScript/WSH-based execution model.
 
-Applications migrating from `WelsonJS.Toolkit` should verify their existing COM registration and module usage after migration.
+Applications migrating from `WelsonJS.Toolkit` should verify their existing module usage and COM registration after migration.
 
 ## Developer
 
