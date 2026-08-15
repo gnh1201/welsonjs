@@ -16,6 +16,9 @@ function main(args) {
     }
 
     console.error("Muted:", console._muted);
+
+    var htmlfile = CreateObject("htmlfile");
+    console.log(htmlfile.parentWindow.navigator.userAgent);
     
     sleep(100000);
 

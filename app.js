@@ -350,9 +350,19 @@ if (typeof CreateObject === "undefined") {
     var CreateObject = function(progId, serverName, callback) {
         var progIds = (progId instanceof Array ? progId : [progId]);
 
+        // use the WelsonJS.ManagedObject if available, otherwise fallback to CreateObject.make()
+        var managed;
+        try {
+            managed = CreateObject.make("WelsonJS.ManagedObject", null);
+        } catch (e) {
+            managed = null;
+        }
+
+        // try to create the object using the provided progIds
         for (var i = 0; i < progIds.length; i++) {
             try {
-                var obj = CreateObject.make(progIds[i], serverName);
+                var obj = managed != null ? managed.CreateObject(progIds[i], serverName)
+                    : CreateObject.make(progIds[i], serverName);
                 if (typeof callback === "function") {
                     callback(obj, progIds[i]);
                 }
@@ -369,12 +379,12 @@ if (typeof CreateObject === "undefined") {
             } else {
                 console.warn("(Chakra) The standalone engine does not supported. Please use the built-in engine.");
                 console.warn("(Chakra) hint:", "cscript //NoLogo //E:{1b7cd997-e5ff-4932-a7a6-2a9e636da385} app.js <filename> <...arguments>");
-                throw new Error("Could not find a loader");
+                throw new Error("Could not find a COM loader");
             }
         } else if (typeof ActiveXObject !== "undefined") {
-            return new ActiveXObject(p);
+            return new ActiveXObject(p, s);
         } else {
-            throw new Error("Could not find a loader");
+            throw new Error("Could not find a COM loader");
         }
     };
 }
