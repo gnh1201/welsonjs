@@ -17,7 +17,7 @@
         <authenticode-sign />
       </for-each>
     </pe-file-set>
-    <nupkg-file path="WelsonJS.ManagedObject.*.nupkg">
+    <nupkg-file path="artifacts/WelsonJS.ManagedObject.*.nupkg">
       <directory path="lib">
         <pe-file-set>
           <include path="net20/WelsonJS.ManagedObject.dll" />
