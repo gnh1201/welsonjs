@@ -69,7 +69,8 @@
   <ItemGroup>
     <Compile Include="BitmapControl.cs" />
     <Compile Include="Dialog.cs" />
-    <Compile Include="LegacyCipher.cs" />
+    <Compile Include="Legacy\Cipher.cs" />
+    <Compile Include="Legacy\Toolkit.cs" />
     <Compile Include="ManagedObject.cs" />
     <Compile Include="NamedSharedMemory.cs" />
     <Compile Include="ProcessControl.cs" />

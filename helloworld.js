@@ -23,6 +23,12 @@ function main(args) {
     // test SHA256 hash
     var hash = __hash_dotnetfx_managed__("Hello world", "sha256");
     console.log("Hash:", hash);
+
+    // test confirm dialog
+    var result = UseObject("WelsonJS.Dialog", function(dialog) {
+        return dialog.Confirm("Do you want to continue?", "Confirmation");
+    });
+    console.log("Confirm result:", result);
     
     sleep(100000);
 }

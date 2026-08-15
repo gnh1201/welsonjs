@@ -12,13 +12,13 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace WelsonJS.ManagedObject
+namespace WelsonJS.ManagedObject.Legacy
 {
     [ComVisible(true)]
     [Guid("d9d5ec5e-4db3-43ce-a249-0edd596f6a58")]
-    [ProgId("WelsonJS.LegacyCipher")]
+    [ProgId("WelsonJS.Legacy.Cipher")]
     [ClassInterface(ClassInterfaceType.AutoDual)]
-    public class LegacyCipher
+    public class Cipher
     {
         private static readonly byte[] hightDelta = {
             0x5A,0x6D,0x36,0x1B,0x0D,0x06,0x03,0x41,
@@ -109,7 +109,7 @@ namespace WelsonJS.ManagedObject
             0x76,0x2E,0xC6,0x9E,0x17,0x4F,0xA7,0xFF
         };
 
-        private class ECB
+        public class ECB
         {
             //whitening Key [8] + sub Key[128]
             private byte[] scheduleKey = new byte[136];

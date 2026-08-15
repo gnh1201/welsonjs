@@ -9,6 +9,7 @@ set MANAGEDOBJECT_URL=https://catswords.blob.core.windows.net/welsonjs/welsonjs_
 set MANAGEDOBJECT_PATH=%APPDATA%\welsonjs\welsonjs_managedobject_latest.cab
 set MANAGEDOBJECT_EXTRACT_PATH=%APPDATA%\welsonjs
 set REGASM_PATH=%WINDIR%\Microsoft.NET\Framework\v2.0.50727\RegAsm.exe
+set REGASM_PATH64=%WINDIR%\Microsoft.NET\Framework64\v2.0.50727\RegAsm.exe
 set LOCAL_MANAGEDOBJECT_DLL=bin\x86\WelsonJS.ManagedObject.dll
 set DOWNLOADED_MANAGEDOBJECT_DLL=%APPDATA%\welsonjs\WelsonJS.ManagedObject.dll
 
@@ -41,16 +42,21 @@ if exist "%LOCAL_MANAGEDOBJECT_DLL%" (
     set MANAGEDOBJECT_DLL=%DOWNLOADED_MANAGEDOBJECT_DLL%
 )
 
-:: Register the WelsonJS.ManagedObject component
-echo [*] Registering WelsonJS.ManagedObject component...
-%REGASM_PATH% /codebase %MANAGEDOBJECT_DLL%
-
 :: Final step
-echo [*] Pre-configuration complete. Starting bootstrap script...
 if /I "%PROCESSOR_ARCHITECTURE%%PROCESSOR_ARCHITEW6432%"=="x86" (
     rem 32-bit Windows
+
+    echo [*] Registering WelsonJS.ManagedObject component...
+    %REGASM_PATH% /codebase %MANAGEDOBJECT_DLL%
+    
+    echo [*] Pre-configuration complete. Starting bootstrap script...
     cscript.exe app.js bootstrap
 ) else (
     rem 64-bit Windows
+
+    echo [*] Registering WelsonJS.ManagedObject component...
+    %REGASM_PATH64% /codebase %MANAGEDOBJECT_DLL%
+
+    echo [*] Pre-configuration complete. Starting bootstrap script...
     %SystemRoot%\SysWOW64\cscript.exe app.js bootstrap
 )

@@ -141,6 +141,20 @@ namespace WelsonJS.ManagedObject
             return false;
         }
 
+        public bool SendEnterKey(string title)
+        {
+            IntPtr hWnd = GetWindowByTitleContains(title);
+
+            if (hWnd != IntPtr.Zero)
+            {
+                PostMessage(hWnd, (int)MessageType.WM_KEYDOWN, (char)VirtualKey.VK_RETURN, IntPtr.Zero);
+                PostMessage(hWnd, (int)MessageType.WM_KEYUP, (char)VirtualKey.VK_RETURN, IntPtr.Zero);
+                return true;
+            }
+
+            return false;
+        }
+
         public int Open(string filepath)
         {
             int processId = -1;
