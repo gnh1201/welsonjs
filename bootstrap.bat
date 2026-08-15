@@ -55,6 +55,7 @@ if /I "%PROCESSOR_ARCHITECTURE%%PROCESSOR_ARCHITEW6432%"=="x86" (
     rem 64-bit Windows
 
     echo [*] Registering WelsonJS.ManagedObject component...
+    %REGASM_PATH% /codebase %MANAGEDOBJECT_DLL%
     %REGASM_PATH64% /codebase %MANAGEDOBJECT_DLL%
 
     echo [*] Pre-configuration complete. Starting bootstrap script...
