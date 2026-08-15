@@ -86,4 +86,7 @@
     <None Include="welsonjs_managedobject.snk" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>makecab /F managedobject.ddf</PostBuildEvent>
+  </PropertyGroup>
 </Project>
