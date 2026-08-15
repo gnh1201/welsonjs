@@ -826,7 +826,7 @@ function require(pathname) {
                         }
                     }
 
-                    return UseObject("WelsonJS.LegacyCipher", function(cipher) {
+                    return UseObject("WelsonJS.Legacy.Cipher", function(cipher) {
                         return cipher.DecryptString(s, text);
                     });
                 } catch (e) {

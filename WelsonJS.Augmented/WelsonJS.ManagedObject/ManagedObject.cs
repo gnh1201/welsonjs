@@ -17,31 +17,25 @@ namespace WelsonJS.ManagedObject
 
         public object CreateObject(string progId, string serverName)
         {
-            if (string.Equals(
-                progId,
-                "htmlfile",
-                StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(progId, "htmlfile", StringComparison.OrdinalIgnoreCase))
             {
                 return CreateHtmlDocument(serverName);
             }
 
-            Type type = Type.GetTypeFromProgID(
-                progId,
-                serverName,
-                true);
+            if (string.Equals(progId, "welsonjs.toolkit", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new COMException("WelsonJS.Toolkit is no longer available. Please migrate to WelsonJS.ManagedObject.");
+            }
+
+            Type type = Type.GetTypeFromProgID(progId, serverName, true);
 
             return Activator.CreateInstance(type);
         }
 
         private object CreateHtmlDocument(string serverName)
         {
-            Guid clsid = new Guid(
-                "3050F55F-98B5-11CF-BB82-00AA00BDCE0B");
-
-            Type type = Type.GetTypeFromCLSID(
-                clsid,
-                serverName,
-                true);
+            Guid clsid = new Guid("3050F55F-98B5-11CF-BB82-00AA00BDCE0B");
+            Type type = Type.GetTypeFromCLSID(clsid, serverName, true);
 
             return Activator.CreateInstance(type);
         }

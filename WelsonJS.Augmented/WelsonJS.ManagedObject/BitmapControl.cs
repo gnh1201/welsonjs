@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace WelsonJS.ManagedObject
 {
@@ -12,12 +14,35 @@ namespace WelsonJS.ManagedObject
     [ClassInterface(ClassInterfaceType.AutoDual)]
     public class BitmapControl
     {
+        private class Serializer
+        {
+            private static Dictionary<string, string> dict = new Dictionary<string, string>();
+
+            public void Add(string key, string value)
+            {
+                dict[key] = value;
+            }
+
+            public override string ToString()
+            {
+                StringBuilder sb = new StringBuilder();
+
+                foreach (var x in dict)
+                {
+                    sb.Append($"{x.Key}={x.Value}; ");
+                }
+                if (sb.Length > 0) sb.Length -= 2;
+
+                return sb.ToString();
+            }
+        }
+
         private static Bitmap Load(string filename)
         {
             return new Bitmap(filename);
         }
 
-        public static void Crop(string srcfile, string dstfile, int x, int y, int a, int b)
+        private static void Crop(string srcfile, string dstfile, int x, int y, int a, int b)
         {
             Bitmap originalBitmap = Load(srcfile);
 
@@ -27,7 +52,7 @@ namespace WelsonJS.ManagedObject
             croppedBitmap.Save(dstfile);
         }
 
-        public static int[] GetSize(string srcfile)
+        private static int[] GetSize(string srcfile)
         {
             Bitmap bitmap = Load(srcfile);
 
@@ -39,7 +64,7 @@ namespace WelsonJS.ManagedObject
             return new int[] { width, height };
         }
 
-        public static int[] GetPixel(string srcfile, int x, int y)
+        private static int[] GetPixel(string srcfile, int x, int y)
         {
             Bitmap bitmap = Load(srcfile);
 
@@ -53,7 +78,7 @@ namespace WelsonJS.ManagedObject
             return new int[] { red, green, blue };
         }
 
-        public static string GetBase64(string srcfile)
+        private static string GetBase64(string srcfile)
         {
             Bitmap bitmap = Load(srcfile);
             MemoryStream memoryStream = new MemoryStream();
@@ -92,6 +117,40 @@ namespace WelsonJS.ManagedObject
             memoryStream.Dispose();
 
             return base64String;
+        }
+
+        public string GetImageSize(string srcfile)
+        {
+            int[] result = GetSize(srcfile);
+
+            var serializer = new Serializer();
+            serializer.Add("width", result[0].ToString());
+            serializer.Add("height", result[1].ToString());
+
+            return serializer.ToString();
+        }
+
+        public string GetImagePixel(string srcfile, int x, int y)
+        {
+            int[] result = GetPixel(srcfile, x, y);
+
+            var serializer = new Serializer();
+            serializer.Add("red", result[0].ToString());
+            serializer.Add("green", result[1].ToString());
+            serializer.Add("blue", result[2].ToString());
+
+            return serializer.ToString();
+        }
+
+        public string GetImageBase64(string srcfile)
+        {
+            return GetBase64(srcfile);
+        }
+
+        [ComVisible(true)]
+        public void CropImage(string srcfile, string dstfile, int x, int y, int a, int b)
+        {
+            Crop(srcfile, dstfile, x, y, a, b);
         }
     }
 }
