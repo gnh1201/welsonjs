@@ -8,7 +8,7 @@ namespace WelsonJS.ManagedObject.Legacy
     [Guid("cc60a0c6-8e6b-4923-a54c-48d3674b8b15")]
     [ProgId("WelsonJS.Legacy.Toolkit")]
     [ClassInterface(ClassInterfaceType.AutoDual)]
-    public class LegacyToolkit
+    public class Toolkit
     {
         private static ProcessControl pc = new ProcessControl();
         private static Dialog dialog = new Dialog();

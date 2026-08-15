@@ -24,7 +24,7 @@ namespace WelsonJS.ManagedObject
 
             if (string.Equals(progId, "welsonjs.toolkit", StringComparison.OrdinalIgnoreCase))
             {
-                throw new COMException("WelsonJS.Toolkit is no longer available. Please migrate to WelsonJS.ManagedObject.");
+                progId = "WelsonJS.Legacy.Toolkit";
             }
 
             Type type = Type.GetTypeFromProgID(progId, serverName, true);
