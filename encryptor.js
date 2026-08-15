@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // https://github.com/gnh1201/welsonjs
 // 
-// HIGHT(ISO/IEC 18033-3) encryption and decryption tool for WelsonJS framework
+// Script encryption and decryption tool for WelsonJS framework
 // 
 var FILE = require("lib/file");
 
@@ -28,7 +28,7 @@ function main(args) {
     }
 
     var data = FILE.readFile(filename, FILE.CdoCharset.CdoUTF_8);
-    var encryptedData = UseObject("WelsonJS.LegacyCipher", function(cipher) {
+    var encryptedData = UseObject("WelsonJS.Legacy.Cipher", function(cipher) {
         return cipher.EncryptString(userKey, data);
     });
 
