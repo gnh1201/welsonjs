@@ -22,7 +22,7 @@ build_script:
 
 after_build:
    - cmd: mkdir artifacts
-   - cmd: xcopy /s /y WelsonJS.Augmented\WelsonJS.ManagedObject\bin\x86\%CONFIGURATION%\* artifacts\
+   - cmd: xcopy /s /y WelsonJS.Augmented\WelsonJS.ManagedObject\bin\%CONFIGURATION%\* artifacts\
    - cmd: xcopy /s /y WelsonJS.Augmented\WelsonJS.Service\bin\x86\%CONFIGURATION%\* artifacts\
    - cmd: xcopy /s /y WelsonJS.Augmented\WelsonJS.Launcher\bin\x86\%CONFIGURATION%\* artifacts\
    - cmd: xcopy /s /y WelsonJS.Augmented\Catswords.Phantomizer\bin\%CONFIGURATION%\netstandard2.0\* artifacts\
