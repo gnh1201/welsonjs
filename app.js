@@ -350,19 +350,15 @@ if (typeof CreateObject === "undefined") {
     var CreateObject = function(progId, serverName, callback) {
         var progIds = (progId instanceof Array ? progId : [progId]);
 
-        // use the WelsonJS.ManagedObject if available, otherwise fallback to CreateObject.make()
-        var managed;
-        try {
-            managed = CreateObject.make("WelsonJS.ManagedObject", null);
-        } catch (e) {
-            managed = null;
-        }
-
         // try to create the object using the provided progIds
         for (var i = 0; i < progIds.length; i++) {
+            var progIdPaths = progIds[i].split(".");
+
             try {
-                var obj = managed != null ? managed.CreateObject(progIds[i], serverName)
-                    : CreateObject.make(progIds[i], serverName);
+                var obj = (CreateObject.managed != null && CreateObject.unmanaged.indexOf(progIdPaths[0].toLowerCase()) < 0)
+                    ? CreateObject.managed.CreateObject(progIds[i], serverName)
+                    : CreateObject.make(progIds[i], serverName)
+                ;
                 if (typeof callback === "function") {
                     callback(obj, progIds[i]);
                 }
@@ -382,11 +378,19 @@ if (typeof CreateObject === "undefined") {
                 throw new Error("Could not find a COM loader");
             }
         } else if (typeof ActiveXObject !== "undefined") {
-            return new ActiveXObject(p, s);
+            return new ActiveXObject(p);
         } else {
             throw new Error("Could not find a COM loader");
         }
     };
+    CreateObject.managed = (function() {
+        try {
+            return CreateObject.make("WelsonJS.ManagedObject", null);
+        } catch (e) {
+            return null;
+        }
+    })();
+    CreateObject.unmanaged = ["scripting", "adodb", "wscript"];
 }
 
 if (typeof UseObject === "undefined") {

@@ -17,20 +17,6 @@ namespace WelsonJS.ManagedObject
 
         public object CreateObject(string progId, string serverName)
         {
-            try
-            {
-                Type type = Type.GetTypeFromProgID(
-                    progId,
-                    serverName,
-                    true);
-
-                return Activator.CreateInstance(type);
-            }
-            catch (COMException)
-            {
-                // Try fallback below.
-            }
-
             if (string.Equals(
                 progId,
                 "htmlfile",
@@ -39,8 +25,12 @@ namespace WelsonJS.ManagedObject
                 return CreateHtmlDocument(serverName);
             }
 
-            throw new COMException(
-                "Class not registered: " + progId);
+            Type type = Type.GetTypeFromProgID(
+                progId,
+                serverName,
+                true);
+
+            return Activator.CreateInstance(type);
         }
 
         private object CreateHtmlDocument(string serverName)

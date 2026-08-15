@@ -17,8 +17,13 @@ function main(args) {
 
     console.error("Muted:", console._muted);
 
+    // test htmlfile
     var htmlfile = CreateObject("htmlfile");
     console.log(htmlfile.parentWindow.navigator.userAgent);
+
+    // test SHA256 hash
+    var hash = __hash_dotnetfx_managed__("Hello world", "sha256");
+    console.log("Hash:", hash);
     
     sleep(100000);
 
