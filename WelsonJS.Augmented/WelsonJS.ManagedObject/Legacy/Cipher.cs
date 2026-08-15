@@ -3,7 +3,7 @@
 // encryption algorithm was adopted. However, the implementation has since been
 // confirmed to be incorrect.
 //
-// This class (LegacyCipher) is intended solely for compatibility with
+// This class (WelsonJS.Legacy.Cipher) is intended solely for compatibility with
 // previous versions of WelsonJS ([0.2.7.57](https://github.com/gnh1201/welsonjs/releases/tag/0.2.7.57)
 // and earlier). DO NOT use it in any new projects.
 //

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<artifact-configuration xmlns="http://signpath.io/artifact-configuration/v1">
+  <!-- Define that the uploaded artifact is a ZIP file -->
+  <zip-file>
+    <pe-file-set>
+      <!-- Inside this uploaded ZIP file sign three PE files with Authenticode
+           (PE = Portable Executable, e.g., .exe or .dll file) -->
+      <include path="artifacts/WelsonJS.ManagedObject.dll" />
+      <include path="artifacts/WelsonJS.Service.exe" />
+      <include path="artifacts/WelsonJS.Launcher.exe" />
+      <include path="artifacts/WelsonJS.Esent.dll" />
+      <include path="artifacts/Esent.Interop.dll" />
+      <include path="artifacts/ChakraCore.dll" />
+      <include path="artifacts/welsonjs_setup.exe" />
+      <include path="artifacts/Catswords.Phantomizer.dll" />
+      <for-each>
+        <authenticode-sign />
+      </for-each>
+    </pe-file-set>
+    <nupkg-file path="WelsonJS.ManagedObject.*.nupkg">
+      <directory path="lib">
+        <pe-file-set>
+          <include path="net20/WelsonJS.ManagedObject.dll" />
+          <for-each>
+            <authenticode-sign />
+          </for-each>
+        </pe-file-set>
+      </directory>
+      <nuget-sign />
+    </nupkg-file>
+  </zip-file>
+</artifact-configuration>
