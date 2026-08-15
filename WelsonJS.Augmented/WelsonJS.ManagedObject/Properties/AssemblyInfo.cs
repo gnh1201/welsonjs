@@ -6,12 +6,12 @@ using System.Runtime.InteropServices;
 // 제어됩니다. 어셈블리와 관련된 정보를 수정하려면
 // 이러한 특성 값을 변경하세요.
 [assembly: AssemblyTitle("WelsonJS.ManagedObject")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("A managed object provider for WelsonJS based applications")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Catswords Research")]
 [assembly: AssemblyProduct("WelsonJS.ManagedObject")]
-[assembly: AssemblyCopyright("Copyright ©  2026")]
-[assembly: AssemblyTrademark("")]
+[assembly: AssemblyCopyright("2026 Namhyeon Go, Catswords OSS and WelsonJS contributors")]
+[assembly: AssemblyTrademark("WelsonJS")]
 [assembly: AssemblyCulture("")]
 
 // ComVisible을 false로 설정하면 이 어셈블리의 형식이 COM 구성 요소에 
@@ -29,5 +29,5 @@ using System.Runtime.InteropServices;
 //      빌드 번호
 //      수정 버전
 //
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("0.2.7.58")]
+[assembly: AssemblyFileVersion("0.2.7.58")]
