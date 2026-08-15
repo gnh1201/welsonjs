@@ -5,7 +5,7 @@
 WelsonJS consists of two major execution layers:
 
 1. **JavaScript execution environment** based on Windows Script Host (WSH) with `core-js` polyfills
-2. **Native/Managed module environment** provided through the `WelsonJS.Toolkit` suite
+2. **Native/Managed module environment** provided through the `WelsonJS.ManagedObject` suite
 
 This document defines the agents that operate inside WelsonJS, including their responsibilities, interaction boundaries, and design principles.
 
@@ -32,7 +32,7 @@ WelsonJS defines two main categories of agents:
 | Category                         | Description                                                                                                                |
 | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
 | **JavaScript Runtime Agent**     | Executes user scripts in a WSH + polyfill environment. Provides compatibility up to ES5 using `core-js` and related shims. |
-| **Native/Managed Module Agents** | Extensions written in C# or VB.NET under the `WelsonJS.Toolkit` solution that provide system-level capabilities.           |
+| **Native/Managed Module Agents** | Extensions written in C# or VB.NET under the `WelsonJS.ManagedObject` solution that provide system-level capabilities.           |
 
 ---
 
@@ -61,9 +61,9 @@ Although the engine itself is **ES3-level**, WelsonJS uses **core-js polyfills**
 
 ---
 
-## **4. Native/Managed Module Agents (Toolkit Agents)**
+## **4. Native/Managed Module Agents (ManagedObject Agents)**
 
-The **WelsonJS.Toolkit** solution provides several functional agents designed as modular .NET libraries.
+The **WelsonJS.ManagedObject** solution provides several functional agents designed as modular .NET libraries.
 Each project acts as a distinct agent with its own role and responsibility.
 
 ---
@@ -127,7 +127,7 @@ Serve as the entry point of a WelsonJS application.
 **Responsibilities:**
 
 * Initialize environment
-* Load Phantomizer & toolkit modules
+* Load Phantomizer & ManagedObject modules
 * Load and execute the main JavaScript script
 * Handle configuration (AppName, BaseUrl, service mode, etc.)
 * Provide safe-mode and fallback execution
@@ -152,7 +152,7 @@ Allow WelsonJS applications to run as Windows services.
 
 ---
 
-### **4.6 WelsonJS.Toolkit — General Utility Agent**
+### **4.6 WelsonJS.ManagedObject — General Utility Agent**
 
 **Purpose:**
 A shared utility library providing cross-cutting functionality.
@@ -165,7 +165,7 @@ Typical responsibilities include:
 * Shared types and error-handling helpers
 * Logging abstractions
 
-It acts as the common foundation for other Toolkit modules.
+It acts as the common foundation for other ManagedObject modules.
 
 ---
 
@@ -173,7 +173,7 @@ It acts as the common foundation for other Toolkit modules.
 
 ### **5.1 Interop / Binding Agent**
 
-Acts as a transport layer between JS Runtime Agent and Toolkit Agents.
+Acts as a transport layer between JS Runtime Agent and ManagedObject Agents.
 
 Responsibilities:
 
@@ -183,7 +183,7 @@ Responsibilities:
 * Normalize exceptions into JS-friendly error objects
 * Enforce version negotiation and capability detection
 
-Often implemented inside each Toolkit module but may be abstracted.
+Often implemented inside each ManagedObject module but may be abstracted.
 
 ---
 
@@ -218,14 +218,14 @@ Responsibilities:
 ```text
 [WelsonJS.Launcher] 
        ↓ Initialization + Configuration
-[JavaScript Runtime Agent] ←→ [Toolkit Agents]
+[JavaScript Runtime Agent] ←→ [ManagedObject Agents]
        ↑                           ↑
    (Interop Layer)          (Security/Policy)
 ```
 
 * **Launcher** bootstraps the system.
 * **JS Runtime Agent** handles all user logic.
-* **Toolkit Agents** provide extended OS-level capabilities.
+* **ManagedObject Agents** provide extended OS-level capabilities.
 * **Interop Layer** ensures safe crossing between JS and .NET worlds.
 * **Security Agent** governs what is allowed.
 
@@ -246,7 +246,7 @@ Responsibilities:
 
 AGENTS.md provides a shared understanding across contributors so that:
 
-* New toolkit modules follow consistent architecture.
+* New ManagedObject modules follow consistent architecture.
 * JS runtime bindings remain predictable and safe.
 * Extension developers can easily understand boundaries and responsibilities.
 * The ecosystem grows without introducing breaking or conflicting functionality.
@@ -255,7 +255,7 @@ AGENTS.md provides a shared understanding across contributors so that:
 
 ## **9. Test Structure (Test Plan)**
 
-WelsonJS uses **JSON-based test profiles** plus a script runner (`testloader.js`) to verify both the JavaScript Runtime Agent and the Toolkit Agents.
+WelsonJS uses **JSON-based test profiles** plus a script runner (`testloader.js`) to verify both the JavaScript Runtime Agent and the ManagedObject Agents.
 
 A representative profile is `test-oss-korea-2023.json`, used in the 2023 South Korea OSS Contest to validate the WelsonJS environment.
 
@@ -293,7 +293,7 @@ The existing test profile covers multiple layers of the system.
    * `es5_polyfills` – checks whether polyfills above ES5 level run successfully on the built-in engine.
    * These tests verify `core-js`, JSON handling, and basic language/runtime correctness.
 
-2. **Windows Systems & Toolkit Integration**
+2. **Windows Systems & ManagedObject Integration**
 
    * Registry: `registry_find_provider`, `registry_write`, `registry_read`
    * WMI: `wmi_create_object`, `wmi_execute_query`, `wmi_result_query`
@@ -301,7 +301,7 @@ The existing test profile covers multiple layers of the system.
    * PowerShell: `powershell_set_command`, `powershell_set_file`, `powershell_set_uri`, `powershell_execute`, `powershell_run_as`
    * System information: `system_resolve_env`, `system_check_as`, `system_get_os_version`, `system_get_architecture`, `system_get_uuid`, `system_get_working_directory`, `system_get_script_directory`, `system_get_network_interfaces`, `system_get_process_list`, `system_get_process_list_by_name`, `system_register_uri`, `system_pipe_ipc`
 
-   These exercise the **Interop/Binding Agent** and various **Toolkit Agents** that expose Windows APIs.
+   These exercise the **Interop/Binding Agent** and various **ManagedObject Agents** that expose Windows APIs.
 
 3. **Human Interface / Virtual Input (VHID)**
 
@@ -313,7 +313,7 @@ The existing test profile covers multiple layers of the system.
 
    * `network_http_get`, `network_http_post`, `network_http_extended`, `network_attach_debugger`, `network_detect_charset`, `network_detect_http_ssl`, `network_send_icmp`
 
-   These tests exercise HTTP/ICMP functionality and optional debugger integration (e.g., Fiddler) via Toolkit Agents.
+   These tests exercise HTTP/ICMP functionality and optional debugger integration (e.g., Fiddler) via ManagedObject Agents.
 
 5. **Advanced String / NLP / Utility**
 

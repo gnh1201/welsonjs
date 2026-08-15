@@ -333,7 +333,6 @@ var test_implements = {
     },
 
     "vhid_send_key_functions": function() {
-        var Toolkit = require("lib/toolkit");
         var Chrome = require("lib/chrome");
         var wbInstance = Chrome.startDebugInPrivate("https://example.org", null, "welsonjs_test", 9222, true);
 
@@ -342,27 +341,29 @@ var test_implements = {
         sleep(5000);
 
         wbInstance.focus();
-        Toolkit.sendFnKey(wbInstance.pageId.substring(0, 6), 1);  // F1 키 누름
+        UseObject("WelsonJS.ProcessControl", function(pc) {
+            pc.sendFnKey(wbInstance.pageId.substring(0, 6), 1);  // press F1 key
+        });
     },
 
     "vhid_alert": function() {
-        var Toolkit = require("lib/toolkit");
-
-        Toolkit.alert("잘 보이면 테스트에 성공한 것입니다.");
+        UseObject("WelsonJS.Dialog", function(dialog) {
+            dialog.Alert("잘 보이면 테스트에 성공한 것입니다.");
+        });
     },
  
     "vhid_confirm": function() {
-        var Toolkit = require("lib/toolkit");
-        
-        var answer = Toolkit.confirm("예 또는 아니오를 눌러주세요");
-        console.log(String(answer));
+        UseObject("WelsonJS.Dialog", function(dialog) {
+            var answer = dialog.Confirm("둘 중에 하나만 골라. Yes or No", "OK");
+            console.log(String(answer));
+        });
     },
 
     "vhid_prompt": function() {
-        var Toolkit = require("lib/toolkit");
-
-        var answer = Toolkit.prompt("Enter your input:");
-        console.log(String(answer));
+        UseObject("WelsonJS.Dialog", function(dialog) {
+            var answer = dialog.Prompt("Enter your input:", "");
+            console.log(String(answer));
+        });
     },
 
     "network_http_get": function() {
@@ -772,9 +773,8 @@ var test_implements = {
     },
     
     // profile: data/test-misc.json
-    "toolkit_msedge_test": function() {
+    "mouseclick_msedge_test": function() {
         var Chrome = require("lib/chrome");
-        var Toolkit = require("lib/toolkit");
         
         var wbInstance = Chrome.create().setVendor("msedge").open("https://google.com");
         sleep(5000);
@@ -782,7 +782,9 @@ var test_implements = {
 
         wbInstance.focus();
         wbInstance.traceMouseClick();
-        Toolkit.sendClick("Google", 30, 30, 1);
+        UseObject("WelsonJS.ProcessControl", function(pc) {
+            pc.sendMouseClick("Google", 30, 30);
+        });
     },
     
     // profile: data/test-misc.json
@@ -866,8 +868,9 @@ var test_implements = {
     },
     
     "sharedmemory": function() {
-        var Toolkit = require("lib/toolkit");
-        var mem = new Toolkit.NamedSharedMemory("welsonjs_test");
+        var nsm = require("lib/namedsharedmemory");
+
+        var mem = new nsm.NamedSharedMemory("welsonjs_test");
 
         console.log("Writing a text the to shared memory...");
         mem.writeText("nice meet you");
@@ -886,8 +889,9 @@ var test_implements = {
     },
     
     "sharedmemory_write": function() {
-        var Toolkit = require("lib/toolkit");
-        var mem = new Toolkit.NamedSharedMemory("welsonjs_test");
+        var nsm = require("lib/namedsharedmemory");
+
+        var mem = new nsm.NamedSharedMemory("welsonjs_test");
 
         console.log("Writing a text to the shared memory...");
         mem.writeText("nice meet you");
@@ -896,8 +900,9 @@ var test_implements = {
     },
 
     "sharedmemory_read": function() {
-        var Toolkit = require("lib/toolkit");
-        var mem = new Toolkit.NamedSharedMemory("welsonjs_test");
+        var nsm = require("lib/namedsharedmemory");
+
+        var mem = new nsm.NamedSharedMemory("welsonjs_test");
 
         console.log("Reading a text from the shared memory...");
         console.log(mem.readText() + ", too");
@@ -913,9 +918,12 @@ var test_implements = {
     },
 
     "sharedmemory_listener": function() {
-        var Toolkit = require("lib/toolkit");
+        var nsm = require("lib/namedsharedmemory");
+
         var targets = (function() {
-            var s = Toolkit.prompt("Input the shared memory names (Comma seperated)");
+            var s = UseObject("WelsonJS.Dialog", function(dialog) {
+                return dialog.Prompt("Enter the shared memory names to listen (comma separated):", "welsonjs_test");
+            });
             return s.split(',');
         })();
 
@@ -924,11 +932,10 @@ var test_implements = {
         } else {
             // Open the shared memory
             var memories = targets.map(function(x) {
-                return [x, new Toolkit.NamedSharedMemory(x)];
+                return [x, new nsm.NamedSharedMemory(x)];
             });
 
             // Open the second process will be communicate
-            Toolkit.openProcess();
 
             // Listen the shared memory
             console.log("Listening the shared memory:", targets.join(', '));

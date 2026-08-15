@@ -1,15 +1,24 @@
-﻿// HIGHT.cs
-// SPDX-License-Identifier: GPL-3.0-or-later
-// SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
-// https://github.com/gnh1201/welsonjs
-// 
-// HIGHT(ISO/IEC 18033-3) cryptography algorithm implementation
-// 
+﻿// NOTE:
+// During the early development of the WelsonJS project, the HIGHT lightweight
+// encryption algorithm was adopted. However, the implementation has since been
+// confirmed to be incorrect.
+//
+// This class (LegacyCipher) is intended solely for compatibility with
+// previous versions of WelsonJS ([0.2.7.57](https://github.com/gnh1201/welsonjs/releases/tag/0.2.7.57)
+// and earlier). DO NOT use it in any new projects.
+//
+// For improved encryption, use the WelsonJS.Cryptography module instead.
 using System;
+using System.Runtime.InteropServices;
+using System.Text;
 
-namespace WelsonJS.Cryptography
+namespace WelsonJS.ManagedObject
 {
-    public class HIGHT
+    [ComVisible(true)]
+    [Guid("d9d5ec5e-4db3-43ce-a249-0edd596f6a58")]
+    [ProgId("WelsonJS.LegacyCipher")]
+    [ClassInterface(ClassInterfaceType.AutoDual)]
+    public class LegacyCipher
     {
         private static readonly byte[] hightDelta = {
             0x5A,0x6D,0x36,0x1B,0x0D,0x06,0x03,0x41,
@@ -100,10 +109,11 @@ namespace WelsonJS.Cryptography
             0x76,0x2E,0xC6,0x9E,0x17,0x4F,0xA7,0xFF
         };
 
-        public class ECB
+        private class ECB
         {
             //whitening Key [8] + sub Key[128]
-            byte[] scheduleKey = new byte[136];
+            private byte[] scheduleKey = new byte[136];
+
             public ECB(byte[] userKey)
             {
                 if (userKey.Length < 16)
@@ -124,7 +134,7 @@ namespace WelsonJS.Cryptography
                 KeySched(userKey);
             }
 
-            void KeySched(byte[] userKey)
+            public void KeySched(byte[] userKey)
             {
                 for (int i = 0; i < 4; i++)
                 {
@@ -145,7 +155,7 @@ namespace WelsonJS.Cryptography
                 }
             }
 
-            void DecryptBlock(byte[] dataIn, byte[] dataOut)
+            public void DecryptBlock(byte[] dataIn, byte[] dataOut)
             {
                 byte[] xx = new byte[8];
 
@@ -212,7 +222,7 @@ namespace WelsonJS.Cryptography
                 dataOut[6] = (byte)((xx[6] ^ scheduleKey[3]) & 0xFF);
             }
 
-            void EncryptBlock(byte[] dataIn, byte[] dataOut)
+            public void EncryptBlock(byte[] dataIn, byte[] dataOut)
             {
                 byte[] xx = new byte[8];
                 xx[1] = dataIn[1];
@@ -358,22 +368,23 @@ namespace WelsonJS.Cryptography
                 Console.WriteLine(string.Format("0x{0:x2}", dataOut2));
             }
         }
+
+        public string EncryptString(string key, string data)
+        {
+            byte[] userKey = Encoding.ASCII.GetBytes(key);
+            byte[] dataIn = Encoding.UTF8.GetBytes(data);
+
+            ECB cipher = new ECB(userKey);
+            return Convert.ToBase64String(cipher.Encrypt(dataIn));
+        }
+
+        public string DecryptString(string key, string encryptedData)
+        {
+            byte[] userKey = Encoding.ASCII.GetBytes(key);
+            byte[] dataIn = Convert.FromBase64String(encryptedData);
+
+            ECB cipher = new ECB(userKey);
+            return Encoding.UTF8.GetString(cipher.Decrypt(dataIn)).Trim('\0');
+        }
     }
 }
-
-/* References:
- * [1] KISA(Korea Internet & Security Agency) - HIGHT
- *     https://seed.kisa.or.kr/kisa/algorithm/EgovHightInfo.do
- * [2] GitHub - crypto hight ecb examples for csharp (chandong83/csharp_crypto_hight_ecb_examples)
- *     https://github.com/chandong83/csharp_crypto_hight_ecb_examples
- * [3] Naver Blog - C#(CSharp) - HIGHT ECB 암/복호화 알고리즘 소스 코드 (@chandong83)
- *     https://blog.naver.com/chandong83/222198351602
- * [4] ISO - ISO/IEC 18033-3:2010 Information technology — Security techniques — Encryption algorithms - Part 3: Block ciphers
- *     https://www.iso.org/standard/54531.html
- * [5] KISA(Korea Internet & Security Agency) - HIGHT Algorithm Specification(2009. 07.)
- *     https://ics.catswords.net/HIGHT-algorithm-specification-english.pdf
- * [6] HIGHT 블록암호 알고리즘 사양 및 세부 명세서(2009. 07.)
- *     https://ics.catswords.net/HIGHT-algorithm-specification-korean.pdf
- * [7] HIGHT 블록암호 알고리즘에 대한 소스코드 활용 메뉴얼(2009. 07.)
- *     https://ics.catswords.net/HIGHT-sourcecode-explanation.pdf
- */

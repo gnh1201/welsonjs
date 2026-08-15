@@ -8,17 +8,22 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace WelsonJS
+namespace WelsonJS.ManagedObject
 {
+    [ComVisible(true)]
+    [Guid("197fd5a2-f4cb-4da5-8c05-003af563614a")]
+    [ProgId("WelsonJS.NamedSharedMemory")]
+    [ClassInterface(ClassInterfaceType.AutoDual)]
     public class NamedSharedMemory
     {
         private IntPtr hFile;
         private IntPtr hFileMappingObject;
         private string lpName;
-        private static Dictionary<string, NamedSharedMemory> memoryMap = new Dictionary<string, NamedSharedMemory>();
+
+        private static Dictionary<string, NamedSharedMemory> map = new Dictionary<string, NamedSharedMemory>();
 
         [Flags]
-        public enum FileProtection : uint
+        private enum FileProtection : uint
         {
             PAGE_NOACCESS = 1u,
             PAGE_READONLY = 2u,
@@ -39,7 +44,7 @@ namespace WelsonJS
         }
 
         [Flags]
-        public enum FileMapAccess
+        private enum FileMapAccess
         {
             FILE_MAP_COPY = 1,
             FILE_MAP_WRITE = 2,
@@ -47,7 +52,7 @@ namespace WelsonJS
             FILE_MAP_ALL_ACCESS = 0xF001F
         }
 
-        public class FileMappingNative
+        private class FileMappingNative
         {
             public const int INVALID_HANDLE_VALUE = -1;
 
@@ -72,18 +77,18 @@ namespace WelsonJS
             public static extern uint GetLastError();
         }
 
-        public NamedSharedMemory(string lpName)
+        private NamedSharedMemory(string lpName)
         {
             this.lpName = lpName;
             Open();
         }
 
-        public bool Open()
+        private bool Open()
         {
-            if (memoryMap.ContainsKey(lpName))
+            if (map.ContainsKey(lpName))
             {
-                hFile = memoryMap[lpName].hFile;
-                hFileMappingObject = memoryMap[lpName].hFileMappingObject;
+                hFile = map[lpName].hFile;
+                hFileMappingObject = map[lpName].hFileMappingObject;
                 return true;
             }
 
@@ -91,7 +96,7 @@ namespace WelsonJS
             {
                 hFile = FileMappingNative.CreateFileMapping((IntPtr)(-1), IntPtr.Zero, FileProtection.PAGE_READWRITE, 0u, 1024u, lpName);
                 hFileMappingObject = FileMappingNative.MapViewOfFile(hFile, FileMapAccess.FILE_MAP_ALL_ACCESS, 0u, 0u, 1024u);
-                memoryMap.Add(lpName, this);
+                map.Add(lpName, this);
             }
             catch
             {
@@ -101,12 +106,12 @@ namespace WelsonJS
             return IsInitialized();
         }
 
-        public bool IsInitialized()
+        private bool IsInitialized()
         {
             return hFile != IntPtr.Zero;
         }
 
-        public string ReadText()
+        private string ReadText()
         {
             try 
             {
@@ -122,7 +127,7 @@ namespace WelsonJS
             }
         }
 
-        public bool WriteText(string text, int size = 1024)
+        private bool WriteText(string text, int size = 1024)
         {
             try
             {
@@ -142,8 +147,7 @@ namespace WelsonJS
 
             return true;
         }
-
-        public bool Clear(int size = 1024)
+        private bool Clear(int size = 1024)
         {
             try
             {
@@ -157,7 +161,7 @@ namespace WelsonJS
             return true;
         }
 
-        public bool Close()
+        private bool Close()
         {
             try
             {
@@ -177,6 +181,51 @@ namespace WelsonJS
             }
 
             return true;
+        }
+
+        // Access to a shared memory #96
+        public bool WriteTextToSharedMemory(string lpName, string text)
+        {
+            var mem = new NamedSharedMemory(lpName);
+            if (mem.IsInitialized())
+            {
+                return mem.WriteText(text);
+            }
+
+            return false;
+        }
+
+        public string ReadTextFromSharedMemory(string lpName)
+        {
+            var mem = new NamedSharedMemory(lpName);
+            if (mem.IsInitialized())
+            {
+                return mem.ReadText();
+            }
+
+            return "";
+        }
+
+        public bool ClearSharedMemory(string lpName)
+        {
+            NamedSharedMemory mem = new NamedSharedMemory(lpName);
+            if (mem.IsInitialized())
+            {
+                return mem.Clear();
+            }
+
+            return false;
+        }
+
+        public bool CloseSharedMemory(string lpName)
+        {
+            NamedSharedMemory mem = new NamedSharedMemory(lpName);
+            if (mem.IsInitialized())
+            {
+                return mem.Close();
+            }
+
+            return false;
         }
     }
 }

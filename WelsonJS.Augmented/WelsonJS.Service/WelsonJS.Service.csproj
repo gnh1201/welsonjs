@@ -261,12 +261,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\WelsonJS.Toolkit\WelsonJS.Toolkit.csproj">
-      <Project>{d6007282-b4f7-4694-ac67-bb838d91b77a}</Project>
-      <Name>WelsonJS.Toolkit</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.8">
       <Visible>False</Visible>
       <ProductName>Microsoft .NET Framework 4.8%28x86 및 x64%29</ProductName>
@@ -283,6 +277,12 @@
   </ItemGroup>
   <ItemGroup>
     <Protobuf Include="Protos\heartbeat.proto" GrpcServices="Client" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\WelsonJS.ManagedObject\WelsonJS.ManagedObject.csproj">
+      <Project>{6FF73748-8532-4CC6-B856-F8DC4C290CBD}</Project>
+      <Name>WelsonJS.ManagedObject</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

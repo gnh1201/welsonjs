@@ -42,7 +42,7 @@
             "tags": ["GTK", "GTK"]
         },
         {
-            "id": "toolkit_msedge_test",
+            "id": "mouseclick_msedge_test",
             "description": "This example includes Microsoft Edge controls and mouse clicks.",
             "tags": ["Web Browser", "Web Browser Control"]
         },

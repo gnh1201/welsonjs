@@ -1,14 +1,14 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{D6007282-B4F7-4694-AC67-BB838D91B77A}</ProjectGuid>
+    <ProjectGuid>{6FF73748-8532-4CC6-B856-F8DC4C290CBD}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>WelsonJS</RootNamespace>
-    <AssemblyName>WelsonJS.Toolkit</AssemblyName>
+    <RootNamespace>WelsonJS.ManagedObject</RootNamespace>
+    <AssemblyName>WelsonJS.ManagedObject</AssemblyName>
     <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
@@ -22,8 +22,6 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-    <RegisterForComInterop>false</RegisterForComInterop>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -32,32 +30,15 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <RegisterForComInterop>false</RegisterForComInterop>
-    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>favicon.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <PropertyGroup>
-    <AssemblyOriginatorKeyFile>welsonjs.snk</AssemblyOriginatorKeyFile>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\x64\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>bin\x64\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
-    <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
-    <ErrorReport>prompt</ErrorReport>
+    <AssemblyOriginatorKeyFile>welsonjs_managedobject.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -77,40 +58,35 @@
     <LangVersion>7.3</LangVersion>
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
-  <PropertyGroup>
-    <ApplicationIcon>favicon.ico</ApplicationIcon>
-    <PackageIcon>icon.png</PackageIcon>
-  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Drawing.Design" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BitmapUtils.cs" />
-    <Compile Include="Compression\LZ77.cs" />
-    <Compile Include="Cryptography\AnsiX923Padding.cs" />
-    <Compile Include="Cryptography\ARIA.cs" />
-    <Compile Include="Cryptography\HIGHT.cs" />
-    <Compile Include="Cryptography\LEA.cs" />
-    <Compile Include="Cryptography\PKCS5Padding.cs" />
-    <Compile Include="Cryptography\SEED.cs" />
+    <Compile Include="BitmapControl.cs" />
+    <Compile Include="Dialog.cs" />
+    <Compile Include="LegacyCipher.cs" />
+    <Compile Include="ManagedObject.cs" />
     <Compile Include="NamedSharedMemory.cs" />
-    <Compile Include="ProcessUtils.cs" />
-    <Compile Include="Prompt.cs" />
-    <Compile Include="Serialization\KVSerializer.cs" />
-    <Compile Include="IniFile.cs" />
-    <Compile Include="Toolkit.cs" />
+    <Compile Include="ProcessControl.cs" />
+    <Compile Include="ProfileStringFile.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Window.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="welsonjs.snk" />
-    <None Include="WelsonJS.Toolkit.nuspec" />
-    <None Include="assets/img/logo.png" Pack="true" PackagePath="" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="favicon.ico" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="managedobject.ddf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="welsonjs_managedobject.snk" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>makecab /F managedobject.ddf</PostBuildEvent>
+  </PropertyGroup>
 </Project>

@@ -350,9 +350,15 @@ if (typeof CreateObject === "undefined") {
     var CreateObject = function(progId, serverName, callback) {
         var progIds = (progId instanceof Array ? progId : [progId]);
 
+        // try to create the object using the provided progIds
         for (var i = 0; i < progIds.length; i++) {
+            var progIdPaths = progIds[i].split(".");
+
             try {
-                var obj = CreateObject.make(progIds[i], serverName);
+                var obj = (CreateObject.managed != null && CreateObject.unmanaged.indexOf(progIdPaths[0].toLowerCase()) < 0)
+                    ? CreateObject.managed.CreateObject(progIds[i], serverName)
+                    : CreateObject.make(progIds[i], serverName)
+                ;
                 if (typeof callback === "function") {
                     callback(obj, progIds[i]);
                 }
@@ -369,14 +375,22 @@ if (typeof CreateObject === "undefined") {
             } else {
                 console.warn("(Chakra) The standalone engine does not supported. Please use the built-in engine.");
                 console.warn("(Chakra) hint:", "cscript //NoLogo //E:{1b7cd997-e5ff-4932-a7a6-2a9e636da385} app.js <filename> <...arguments>");
-                throw new Error("Could not find a loader");
+                throw new Error("Could not find a COM loader");
             }
         } else if (typeof ActiveXObject !== "undefined") {
             return new ActiveXObject(p);
         } else {
-            throw new Error("Could not find a loader");
+            throw new Error("Could not find a COM loader");
         }
     };
+    CreateObject.managed = (function() {
+        try {
+            return CreateObject.make("WelsonJS.ManagedObject", null);
+        } catch (e) {
+            return null;
+        }
+    })();
+    CreateObject.unmanaged = ["scripting", "adodb", "wscript"];
 }
 
 if (typeof UseObject === "undefined") {
@@ -796,15 +810,15 @@ function require(pathname) {
             });
             break;
 
-        case ".enc":   // encrypted script (require WelsonJS.Toolkit native module)
-            text = UseObject("WelsonJS.Toolkit", function(toolkit) {
+        case ".enc":   // encrypted script (require WelsonJS.ManagedObject native module)
+            text = UseObject("WelsonJS.Dialog", function(dialog) {
                 try {
                     var s = '', tries = 0, limit = 6;
                     while (tries < limit && (s.length <= 0 || s.length > 16)) {
                         if (tries > 0) {
                             throw new Error("Invalid key length");
                         }
-                        s = toolkit.Prompt("Please enter the password:");
+                        s = dialog.Confirm("Please enter the password:", "Encrypted script");
                         tries++;
                         
                         if (tries >= limit) {
@@ -812,7 +826,9 @@ function require(pathname) {
                         }
                     }
 
-                    return toolkit.DecryptString(s, text);
+                    return UseObject("WelsonJS.LegacyCipher", function(cipher) {
+                        return cipher.DecryptString(s, text);
+                    });
                 } catch (e) {
                     console.error("Failed to load:", e.message);
                     return '';

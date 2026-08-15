@@ -1,16 +1,15 @@
-﻿// iniFile.cs
-// SPDX-License-Identifier: GPL-3.0-or-later
-// SPDX - FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
-// https://github.com/gnh1201/welsonjs
-// 
-using System;
+﻿using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace WelsonJS
+namespace WelsonJS.ManagedObject
 {
-    public class IniFile
+    [ComVisible(true)]
+    [Guid("78cdb1d9-5e10-45ec-b9bb-196815354017")]
+    [ProgId("WelsonJS.ProfileString")]
+    [ClassInterface(ClassInterfaceType.AutoDual)]
+    public class ProfileStringFile
     {
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode)]
         static extern long WritePrivateProfileString(string section, string key, string value, string FilePath);
@@ -25,7 +24,7 @@ namespace WelsonJS
 
         private readonly FileAccess fileAccess;
 
-        public IniFile(string path = null, FileAccess access = FileAccess.ReadWrite)
+        public ProfileStringFile(string path = null, FileAccess access = FileAccess.ReadWrite)
         {
             fileAccess = access;
             FileInfo = new FileInfo(path ?? defaultSection);
@@ -74,8 +73,3 @@ namespace WelsonJS
         }
     }
 }
-
-/* References:
- * [1] GitHub - A simple class on C# for read/write ini files, niklyadov/tiny-ini-file-class
- *     https://github.com/niklyadov/tiny-ini-file-class
- */

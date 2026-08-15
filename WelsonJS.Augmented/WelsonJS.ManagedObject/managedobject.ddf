@@ -1,0 +1,9 @@
+.OPTION EXPLICIT
+.Set CabinetNameTemplate=welsonjs_managedobject_latest.cab
+.Set DiskDirectoryTemplate=.
+.Set CompressionType=LZX
+.Set Cabinet=on
+.Set Compress=on
+
+WelsonJS.ManagedObject.dll
+WelsonJS.ManagedObject.pdb
