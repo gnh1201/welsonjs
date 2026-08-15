@@ -37,12 +37,12 @@ namespace WelsonJS.ManagedObject
             }
         }
 
-        private static Bitmap Load(string filename)
+        private Bitmap Load(string filename)
         {
             return new Bitmap(filename);
         }
 
-        private static void Crop(string srcfile, string dstfile, int x, int y, int a, int b)
+        private void Crop(string srcfile, string dstfile, int x, int y, int a, int b)
         {
             Bitmap originalBitmap = Load(srcfile);
 
@@ -52,7 +52,7 @@ namespace WelsonJS.ManagedObject
             croppedBitmap.Save(dstfile);
         }
 
-        private static int[] GetSize(string srcfile)
+        private int[] GetSize(string srcfile)
         {
             Bitmap bitmap = Load(srcfile);
 
@@ -64,7 +64,7 @@ namespace WelsonJS.ManagedObject
             return new int[] { width, height };
         }
 
-        private static int[] GetPixel(string srcfile, int x, int y)
+        private int[] GetPixel(string srcfile, int x, int y)
         {
             Bitmap bitmap = Load(srcfile);
 
@@ -78,7 +78,7 @@ namespace WelsonJS.ManagedObject
             return new int[] { red, green, blue };
         }
 
-        private static string GetBase64(string srcfile)
+        private string GetBase64(string srcfile)
         {
             Bitmap bitmap = Load(srcfile);
             MemoryStream memoryStream = new MemoryStream();

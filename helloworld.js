@@ -26,7 +26,7 @@ function main(args) {
 
     // test confirm dialog
     var result = UseObject("WelsonJS.Dialog", function(dialog) {
-        return dialog.Alert("Do you want to continue?");
+        return dialog.Confirm("Do you want to continue?", "Confirmation");
     });
     console.log("Confirm result:", result);
     
