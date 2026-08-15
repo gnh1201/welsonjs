@@ -80,6 +80,9 @@
     <Content Include="favicon.ico" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="managedobject.ddf">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="welsonjs_managedobject.snk" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
