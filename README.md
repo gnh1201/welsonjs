@@ -30,9 +30,9 @@ WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)*** + :h
 ## Collaborations
 * :octocat: [GitHub Sponsors](https://github.com/sponsors/gnh1201?utm_source=welsonjs), :euro: [Liberapay](https://liberapay.com/catswords?utm_source=welsonjs), :coffee: [Buy me a coffee](https://buymeacoffee.com/catswords?utm_source=welsonjs)
 * <img src="https://catswords.blob.core.windows.net/welsonjs/images/serpapi_logo_32.png" height="32" alt="SerpApi"/> [SerpApi: Search API](https://serpapi.com/?utm_source=welsonjs) - Scrape search engines results with simple API.
-* <img src="https://catswords.blob.core.windows.net/welsonjs/images/logo_oss.gif" height="32" alt="OpenUp"/> [Opensource Portal](https://oss.kr/?utm_source=welsonjs), NIPA National IT Industry Promotion Agency<sup>(정보통신산업진흥원)</sup>
+* <img src="https://catswords.blob.core.windows.net/welsonjs/images/logo_oss.gif" height="32" alt="OPENUP"/> [Opensource Portal](https://oss.kr/?utm_source=welsonjs), NIPA National IT Industry Promotion Agency<sup>(정보통신산업진흥원)</sup>
 * <img src="https://catswords.blob.core.windows.net/welsonjs/images/signpath_logo.png" height="32" alt="Signpath"/> Free code signing provided by [SignPath.io](https://signpath.io/?utm_source=welsonjs), certificate by [SignPath Foundation](https://signpath.org/)
-* <img src="https://catswords.blob.core.windows.net/welsonjs/images/cloudbro_logo.png" height="32" alt="Cloudbro"/> ["Ship to Production" Season 3](https://stp.cloudbro.ai/?utm_source=welsonjs) - Selected project
+* <img src="https://catswords.blob.core.windows.net/welsonjs/images/cloudbro_logo.png" height="32" alt="CloudBro"/> ["Ship to Production" Season 3](https://stp.cloudbro.ai/?utm_source=welsonjs) - Selected project
 * Thanks for [F1Security<sup>(에프원시큐리티)</sup>](https://f1security.co.kr/?utm_source=welsonjs) [Microsoft<sup>(ISV Success Program)</sup>](https://www.microsoft.com/en-us/isv/isv-success?utm_source=welsonjs), [Tenstorrent<sup>(Korea OSS Developer Program)</sup>](https://tenstorrent.com/?utm_source=welsonjs), [ReadMe](https://readme.com/?utm_source=welsonjs), [AppSignal](https://www.appsignal.com/)
 
 ## System Requirements

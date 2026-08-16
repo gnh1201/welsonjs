@@ -68,10 +68,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BitmapControl.cs" />
+    <Compile Include="ByRefArgument.cs" />
     <Compile Include="Dialog.cs" />
     <Compile Include="Legacy\Cipher.cs" />
     <Compile Include="Legacy\Toolkit.cs" />
     <Compile Include="ManagedObject.cs" />
+    <Compile Include="ManagedObjectWrapper.cs" />
     <Compile Include="NamedSharedMemory.cs" />
     <Compile Include="ProcessControl.cs" />
     <Compile Include="ProfileStringFile.cs" />
@@ -79,11 +81,15 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="favicon.ico" />
+    <Content Include="favicon.png" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="LICENSE" />
     <None Include="managedobject.ddf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="README.md" />
+    <None Include="welsonjs_managedobject.nuspec" />
     <None Include="welsonjs_managedobject.snk" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
