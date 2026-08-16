@@ -160,7 +160,7 @@ The following modules are included:
 | `WelsonJS.ProcessControl`    | Mouse, keyboard, and window control |
 | `WelsonJS.BitmapControl`     | Bitmap and image information        |
 
-WSH-provided `Scripting.*` objects are **not included** in `WelsonJS.ManagedObject` and remain outside the scope of this package.
+WSH-provided `Scripting.*`, `ADODB.*`, and `WScript.*` objects are **not included** in `WelsonJS.ManagedObject` and remain outside the scope of this package.
 
 ### Migration from `WelsonJS.Toolkit`
 
