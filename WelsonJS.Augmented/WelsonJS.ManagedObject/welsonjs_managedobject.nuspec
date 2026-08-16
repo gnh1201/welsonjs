@@ -72,6 +72,7 @@
     <icon>favicon.png</icon>
     <repository type="git" url="https://github.com/gnh1201/welsonjs.git" />
     <license type="expression">GPL-3.0-only</license>
+    <readme>README.md</readme>
 
     <tags>
       WelsonJS Windows COM ActiveX Automation WSH JavaScript IPC Dialog
