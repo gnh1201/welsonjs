@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>WelsonJS.ManagedObject</id>
-    <version>0.2.7.59</version>
+    <version>0.2.7.60</version>
     <authors>Catswords Research</authors>
 
     <title>WelsonJS ManagedObject</title>
