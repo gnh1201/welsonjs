@@ -316,7 +316,7 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
-        ///   23b24c6a2dc39dbfd83522968d99096fc6076130a6de7a489bc0380cce89143d과(와) 유사한 지역화된 문자열을 찾습니다.
+        ///   5ac5ffa5458c1b10164957f82c1d6d1b8d134598e4c2bcc65083a2b189e18d3d과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string IntegrityHashCurl {
             get {
