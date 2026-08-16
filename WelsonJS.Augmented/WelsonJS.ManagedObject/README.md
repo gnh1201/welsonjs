@@ -159,9 +159,9 @@ The following modules are included:
 | `WelsonJS.ProcessControl`    | Mouse, keyboard, and window control |
 | `WelsonJS.BitmapControl`     | Bitmap and image information        |
 
-WSH-provided `Scripting.*` objects are **not included** in `WelsonJS.ManagedObject` and remain outside the scope of this package.
+WSH-provided `Scripting.*`, `ADODB.*`, and `WScript.*` objects are **not included** in `WelsonJS.ManagedObject` and remain outside the scope of this package.
 
-## Migration from `WelsonJS.Toolkit`
+### Migration from `WelsonJS.Toolkit`
 
 Users of **WelsonJS.Toolkit**, including users of WelsonJS **0.2.7.57 and earlier**, should migrate to **WelsonJS.ManagedObject**.
 
@@ -198,7 +198,7 @@ Applications migrating from `WelsonJS.Toolkit` should verify their existing modu
 ## Developer
 
 **Namhyeon Go**
-Opensource Software Maintainer
+Open-source Software Maintainer
 **Catswords Research**
 
 Contact: [gnh1201@catswords.re.kr](mailto:gnh1201@catswords.re.kr)
