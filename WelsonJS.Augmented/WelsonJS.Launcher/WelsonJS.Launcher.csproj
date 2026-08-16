@@ -74,10 +74,6 @@
     <ErrorReport>prompt</ErrorReport>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="log4net, Version=3.3.0.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a">
-      <HintPath>..\packages\log4net.3.3.0\lib\net462\log4net.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Data" />
@@ -119,7 +115,6 @@
     <Compile Include="InstancesForm.Designer.cs">
       <DependentUpon>InstancesForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="LoggingBootstrap.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -136,7 +131,9 @@
       <DependentUpon>GlobalSettingsForm.cs</DependentUpon>
     </Compile>
     <Compile Include="ResourceServer.cs" />
+    <Compile Include="TraceLogger.cs" />
     <Compile Include="WebSocketManager.cs" />
+    <Compile Include="LogFileTraceListener.cs" />
     <EmbeddedResource Include="EnvForm.resx">
       <DependentUpon>EnvForm.cs</DependentUpon>
     </EmbeddedResource>

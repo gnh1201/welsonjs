@@ -3,7 +3,6 @@
 // SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
 // https://github.com/gnh1201/welsonjs
 // 
-using log4net;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -20,12 +19,12 @@ namespace WelsonJS.Launcher.ApiEndpoints
     {
         private readonly ResourceServer Server;
         private readonly HttpClient _httpClient;
-        private readonly ILog _logger;
+        private readonly TraceLogger _logger;
         private const string Prefix = "tfa/";
         private const string Base32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
         private static readonly int[] ValidKeyCharLengths = new[] { 16, 32 };
 
-        public TwoFactorAuth(ResourceServer server, HttpClient httpClient, ILog logger)
+        public TwoFactorAuth(ResourceServer server, HttpClient httpClient, TraceLogger logger)
         {
             Server = server;
 

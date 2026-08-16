@@ -3,7 +3,6 @@
 // SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
 // https://github.com/gnh1201/welsonjs
 // 
-using log4net;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,14 +18,14 @@ namespace WelsonJS.Launcher.ApiEndpoints
     {
         private readonly ResourceServer Server;
         private readonly HttpClient _httpClient;
-        private readonly ILog _logger;
+        private readonly TraceLogger _logger;
         private const string Prefix = "dns-query/";
         private string DnsServer;
         private const int DnsPort = 53;
         private const int Timeout = 5000;
         private static readonly Random _random = new Random();
 
-        public DnsQuery(ResourceServer server, HttpClient httpClient, ILog logger)
+        public DnsQuery(ResourceServer server, HttpClient httpClient, TraceLogger logger)
         {
             Server = server;
 

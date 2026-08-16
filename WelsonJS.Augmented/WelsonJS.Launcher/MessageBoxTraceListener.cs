@@ -12,12 +12,24 @@ namespace WelsonJS.Launcher
     {
         public override void Write(string message)
         {
-            // nothing to do
+            /*
+            MessageBox.Show(
+                message,
+                "Information",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+            */
         }
 
         public override void WriteLine(string message)
         {
-            // nothing to do
+            /*
+            MessageBox.Show(
+                message,
+                "Information",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Information);
+            */
         }
 
         public override void TraceEvent(

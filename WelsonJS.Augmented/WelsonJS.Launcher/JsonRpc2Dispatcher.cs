@@ -3,7 +3,6 @@
 // SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
 // https://github.com/gnh1201/welsonjs
 //
-using log4net;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,9 +23,9 @@ namespace WelsonJS.Launcher
 
     public sealed class JsonRpc2Dispatcher
     {
-        private readonly ILog _logger;
+        private readonly TraceLogger _logger;
 
-        public JsonRpc2Dispatcher(ILog logger)
+        public JsonRpc2Dispatcher(TraceLogger logger)
         {
             _logger = logger;
         }

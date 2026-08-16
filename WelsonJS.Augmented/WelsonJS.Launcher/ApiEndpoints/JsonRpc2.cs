@@ -1,5 +1,4 @@
-﻿using log4net;
-using System;
+﻿using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -11,10 +10,10 @@ namespace WelsonJS.Launcher.ApiEndpoints
     {
         private readonly ResourceServer Server;
         private readonly HttpClient _httpClient;
-        private readonly ILog _logger;
+        private readonly TraceLogger _logger;
         private const string Prefix = "jsonrpc2";
 
-        public JsonRpc2(ResourceServer server, HttpClient httpClient, ILog logger)
+        public JsonRpc2(ResourceServer server, HttpClient httpClient, TraceLogger logger)
         {
             Server = server;
 

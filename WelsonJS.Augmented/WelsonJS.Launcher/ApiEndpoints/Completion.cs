@@ -14,7 +14,6 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Net.Http;
 using System.Collections.Concurrent;
-using log4net;
 
 namespace WelsonJS.Launcher.ApiEndpoints
 {
@@ -22,11 +21,11 @@ namespace WelsonJS.Launcher.ApiEndpoints
     {
         private readonly ResourceServer Server;
         private readonly HttpClient _httpClient;
-        private readonly ILog _logger;
+        private readonly TraceLogger _logger;
         private const string Prefix = "completion/";
         private readonly ConcurrentBag<string> DiscoveredExecutables = new ConcurrentBag<string>();
 
-        public Completion(ResourceServer server, HttpClient httpClient, ILog logger)
+        public Completion(ResourceServer server, HttpClient httpClient, TraceLogger logger)
         {
             Server = server;
 
