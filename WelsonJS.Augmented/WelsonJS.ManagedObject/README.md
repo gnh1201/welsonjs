@@ -2,9 +2,9 @@
 
 Managed Windows COM modules for the [WelsonJS](https://github.com/gnh1201/welsonjs) scripting environment.
 
-**Version:** 0.2.7.58
-**License:** GPL-3.0-only
-**Author:** Catswords Research
+* **Version:** 0.2.7.58
+* **License:** GPL-3.0-only
+* **Author:** Catswords Research
 
 ## Overview
 
