@@ -2,9 +2,8 @@
 
 Managed Windows COM modules for the [WelsonJS](https://github.com/gnh1201/welsonjs) scripting environment.
 
-* **Version:** 0.2.7.58
-* **License:** GPL-3.0-only
-* **Author:** Catswords Research
+**License:** GPL-3.0-only
+**Author:** Catswords Research
 
 ## Overview
 
@@ -170,12 +169,7 @@ Users of **WelsonJS.Toolkit**, including users of WelsonJS **0.2.7.57 and earlie
 
 The functionality previously provided by `WelsonJS.Toolkit` has been migrated to managed COM modules included in this package. New applications should use `WelsonJS.ManagedObject` instead of `WelsonJS.Toolkit`.
 
-If migration is difficult or compatibility with existing applications is required, the legacy modules can still be accessed using the following Program IDs:
-
-* `WelsonJS.Legacy.Cipher`
-* `WelsonJS.Legacy.Toolkit`
-
-These Program IDs are provided for **legacy compatibility** and should only be used when migration to `WelsonJS.ManagedObject` is not practical.
+If migration is difficult due to compatibility requirements, you can use the `WelsonJS.Legacy.Cipher` and `WelsonJS.Legacy.Toolkit` ProgIDs, which provide compatibility with the existing APIs.
 
 ### Migration summary
 
@@ -204,7 +198,7 @@ Applications migrating from `WelsonJS.Toolkit` should verify their existing modu
 ## Developer
 
 **Namhyeon Go**
-Opensource Software Maintainer
+Open-source Software Maintainer
 **Catswords Research**
 
 Contact: [gnh1201@catswords.re.kr](mailto:gnh1201@catswords.re.kr)
@@ -215,7 +209,6 @@ Contact: [gnh1201@catswords.re.kr](mailto:gnh1201@catswords.re.kr)
 
 * GitHub: https://github.com/gnh1201/welsonjs
 * Package: `WelsonJS.ManagedObject`
-* Version: `0.2.7.58`
 
 ## License
 

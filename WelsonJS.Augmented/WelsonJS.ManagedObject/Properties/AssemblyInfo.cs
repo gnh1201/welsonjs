@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription("A managed object provider for WelsonJS based applications")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Catswords Research")]
-[assembly: AssemblyProduct("WelsonJS.ManagedObject")]
+[assembly: AssemblyProduct("WelsonJS")]
 [assembly: AssemblyCopyright("2026 Namhyeon Go, Catswords OSS and WelsonJS contributors")]
 [assembly: AssemblyTrademark("WelsonJS")]
 [assembly: AssemblyCulture("")]
@@ -29,5 +29,5 @@ using System.Runtime.InteropServices;
 //      빌드 번호
 //      수정 버전
 //
-[assembly: AssemblyVersion("0.2.7.58")]
-[assembly: AssemblyFileVersion("0.2.7.58")]
+[assembly: AssemblyVersion("0.2.7.60")]
+[assembly: AssemblyFileVersion("0.2.7.60")]
