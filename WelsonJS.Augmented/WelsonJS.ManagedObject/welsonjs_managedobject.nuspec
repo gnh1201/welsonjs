@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>WelsonJS.ManagedObject</id>
-    <version>0.2.7.58</version>
+    <version>0.2.7.59</version>
     <authors>Catswords Research</authors>
 
     <title>WelsonJS ManagedObject</title>
@@ -76,8 +76,8 @@
   </metadata>
 
   <files>
-    <file src="README.md" target="" />
-    <file src="LICENSE" target="" />
-    <file src="favicon.png" target="" />
+    <file src="README.md" />
+    <file src="LICENSE" />
+    <file src="favicon.png" />
   </files>
 </package>
