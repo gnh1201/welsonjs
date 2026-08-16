@@ -3,7 +3,6 @@
 // SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
 // https://github.com/gnh1201/welsonjs
 // 
-using log4net;
 using System;
 using System.Net;
 using System.Net.Http;
@@ -16,10 +15,10 @@ namespace WelsonJS.Launcher.ApiEndpoints
     {
         private readonly ResourceServer Server;
         private readonly HttpClient _httpClient;
-        private readonly ILog _logger;
+        private readonly TraceLogger _logger;
         private const string Prefix = "whois/";
 
-        public Whois(ResourceServer server, HttpClient httpClient, ILog logger)
+        public Whois(ResourceServer server, HttpClient httpClient, TraceLogger logger)
         {
             Server = server;
 

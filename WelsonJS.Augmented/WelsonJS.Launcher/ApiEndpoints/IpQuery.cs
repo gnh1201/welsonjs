@@ -17,7 +17,6 @@
 //   <response provider="abuseipdb"  status="200"><text>{"...json..."}</text></response>
 // </result>
 //
-using log4net;
 using System;
 using System.Net;
 using System.Net.Http;
@@ -31,10 +30,10 @@ namespace WelsonJS.Launcher.ApiEndpoints
     {
         private readonly ResourceServer Server;
         private readonly HttpClient _httpClient;
-        private readonly ILog _logger;
+        private readonly TraceLogger _logger;
         private const string Prefix = "ip-query/";
 
-        public IpQuery(ResourceServer server, HttpClient httpClient, ILog logger)
+        public IpQuery(ResourceServer server, HttpClient httpClient, TraceLogger logger)
         {
             Server = server;
 

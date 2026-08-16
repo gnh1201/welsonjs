@@ -3,7 +3,6 @@
 // SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
 // https://github.com/gnh1201/welsonjs
 // 
-using log4net;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -18,16 +17,16 @@ namespace WelsonJS.Launcher
     {
         private const string _entryFileName = "bootstrap.bat";
         private readonly string _dateTimeFormat;
-        private readonly ILog _logger;
+        private readonly TraceLogger _logger;
 
         private string _workingDirectory;
         private string _instanceId;
         private string _scriptName;
 
-        public MainForm(ILog logger = null)
+        public MainForm(TraceLogger logger = null)
         {
             // Set the logger
-            _logger = logger ?? LogManager.GetLogger(typeof(Program));
+            _logger = logger ?? new TraceLogger(typeof(Program));
 
             // Set the datetime format
             _dateTimeFormat = Program.GetAppConfig("DateTimeFormat");
