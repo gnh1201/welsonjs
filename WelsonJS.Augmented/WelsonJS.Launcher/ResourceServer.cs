@@ -49,7 +49,7 @@ namespace WelsonJS.Launcher
         public ResourceServer(string prefix, string resourceName, TraceLogger logger = null)
         {
             // Set the logger
-            _logger = logger ?? new TraceLogger(typeof(Program));
+            _logger = logger ?? new TraceLogger(typeof(ResourceServer));
 
             // Initialize
             _prefix = prefix;
