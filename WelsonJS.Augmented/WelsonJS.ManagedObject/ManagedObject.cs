@@ -1,5 +1,10 @@
-﻿using System;
-using System.Reflection;
+﻿// ManagedObject.cs
+// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX - FileCopyrightText: 2026 Namhyeon Go, Catswords OSS and WelsonJS Contributors
+// https://github.com/gnh1201/welsonjs
+// 
+using System;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace WelsonJS.ManagedObject
@@ -10,9 +15,29 @@ namespace WelsonJS.ManagedObject
     [ClassInterface(ClassInterfaceType.AutoDual)]
     public class ManagedObject
     {
+        private readonly List<object> _createdObjects =
+            new List<object>();
+
+        private bool IsManagedObject(object obj)
+        {
+            if (obj == null)
+                return false;
+
+            for (int i = 0; i < _createdObjects.Count; i++)
+            {
+                if (Object.ReferenceEquals(_createdObjects[i], obj))
+                    return true;
+            }
+
+            return false;
+        }
+
         public object CreateObject(string progId)
         {
-            return CreateObject(progId, null);
+            var obj = CreateObject(progId, null);
+            _createdObjects.Add(obj);
+
+            return obj;
         }
 
         public object CreateObject(string progId, string serverName)
@@ -40,53 +65,28 @@ namespace WelsonJS.ManagedObject
             return Activator.CreateInstance(type);
         }
 
-        public object[] Invoke(
-            object target,
-            string method,
-            object[] args,
-            bool[] byRef)
+        public object Wrap(object obj)
         {
-            if (target == null)
-                throw new ArgumentNullException(nameof(target));
-
-            if (string.IsNullOrEmpty(method))
-                throw new ArgumentNullException(nameof(method));
-
-            if (args == null)
-                args = new object[0];
-
-            if (byRef == null)
-                byRef = new bool[args.Length];
-
-            if (byRef.Length != args.Length)
+            if (!IsManagedObject(obj))
                 throw new ArgumentException(
-                    "byRef length must match args length.");
+                    "The object was not created by ManagedObject.",
+                    nameof(obj)
+                );
 
-            var modifier = new ParameterModifier(args.Length);
+            return new ManagedObjectWrapper(obj);
+        }
 
-            for (int i = 0; i < args.Length; i++)
-                modifier[i] = byRef[i];
+        public object ByRef()
+        {
+            return new ByRefArgument();
+        }
 
-            object result = target.GetType().InvokeMember(
-                method,
-                BindingFlags.InvokeMethod |
-                BindingFlags.Public |
-                BindingFlags.Instance,
-                null,
-                target,
-                args,
-                new[] { modifier },
-                null,
-                null);
-
-            var output = new object[args.Length + 1];
-
-            output[0] = result;
-
-            for (int i = 0; i < args.Length; i++)
-                output[i + 1] = args[i];
-
-            return output;
+        public object ByRef(object value)
+        {
+            return new ByRefArgument
+            {
+                Value = value
+            };
         }
     }
 }
