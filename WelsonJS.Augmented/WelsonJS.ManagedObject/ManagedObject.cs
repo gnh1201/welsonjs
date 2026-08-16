@@ -1,6 +1,6 @@
 ﻿// ManagedObject.cs
 // SPDX-License-Identifier: GPL-3.0-or-later
-// SPDX - FileCopyrightText: 2026 Namhyeon Go, Catswords OSS and WelsonJS Contributors
+// SPDX-FileCopyrightText: 2026 Namhyeon Go, Catswords OSS and WelsonJS Contributors
 // https://github.com/gnh1201/welsonjs
 // 
 using System;
