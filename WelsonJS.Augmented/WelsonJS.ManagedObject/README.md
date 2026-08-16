@@ -162,13 +162,20 @@ The following modules are included:
 
 WSH-provided `Scripting.*` objects are **not included** in `WelsonJS.ManagedObject` and remain outside the scope of this package.
 
-## Migration from `WelsonJS.Toolkit`
+### Migration from `WelsonJS.Toolkit`
 
 Users of **WelsonJS.Toolkit**, including users of WelsonJS **0.2.7.57 and earlier**, should migrate to **WelsonJS.ManagedObject**.
 
 `WelsonJS.Toolkit` has been superseded by `WelsonJS.ManagedObject`.
 
 The functionality previously provided by `WelsonJS.Toolkit` has been migrated to managed COM modules included in this package. New applications should use `WelsonJS.ManagedObject` instead of `WelsonJS.Toolkit`.
+
+If migration is difficult or compatibility with existing applications is required, the legacy modules can still be accessed using the following Program IDs:
+
+* `WelsonJS.Legacy.Cipher`
+* `WelsonJS.Legacy.Toolkit`
+
+These Program IDs are provided for **legacy compatibility** and should only be used when migration to `WelsonJS.ManagedObject` is not practical.
 
 ### Migration summary
 
