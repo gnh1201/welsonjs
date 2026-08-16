@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>WelsonJS.ManagedObject</id>
-    <version>0.2.7.59-rc1</version>
+    <version>0.2.7.59</version>
     <authors>Catswords Research</authors>
 
     <title>WelsonJS ManagedObject</title>
@@ -41,6 +41,10 @@
       Provides bitmap and image information utilities, including image size
       and pixel information extraction.
 
+      - WelsonJS.Legacy.Cipher (for compatibility only)
+      
+      - WelsonJS.Legacy.Toolkit (for compatibility only)
+
       Migration:
       
       Users of WelsonJS.Toolkit, including users of WelsonJS version 0.2.7.57
@@ -56,7 +60,7 @@
 
       Developer:
       
-      Namhyeon Go (Opensource Software Maintainer, Catswords Research)
+      Namhyeon Go (WelsonJS Maintainer)
 
       Contact:
       
