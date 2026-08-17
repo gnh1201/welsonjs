@@ -80,6 +80,10 @@ Source: "bin\x86\curl.exe"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recur
 Source: "bin\x86\curl-ca-bundle.crt"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
 Source: "bin\x86\WelsonJS.Launcher.exe"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
 Source: "bin\x86\WelsonJS.Launcher.exe.config"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
+Source: "bin\x86\WelsonJS.Esent.dll"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
+Source: "bin\x86\WelsonJS.ManagedObject.dll"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
+Source: "bin\x86\Catswords.Phantomizer.dll"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
+Source: "bin\x86\ChakraCore.dll"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
 Source: "data\*"; Excludes: "*-apikey.txt"; DestDir: "{app}/data"; Flags: ignoreversion recursesubdirs;
 ; Source: "node_modules\*"; DestDir: "{app}/node_modules"; Flags: ignoreversion recursesubdirs;
 ; Source: "bower_components\*"; DestDir: "{app}/node_modules"; Flags: ignoreversion recursesubdirs;
