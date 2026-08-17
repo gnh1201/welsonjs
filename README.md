@@ -1,39 +1,40 @@
 # welsonjs
 
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs?ref=badge_shield&utm_source=welsonjs)
-[![AppVeyor Status](https://ci.appveyor.com/api/projects/status/github/gnh1201/welsonjs?svg=true)](https://ci.appveyor.com/project/gnh1201/welsonjs?utm_source=welsonjs)
-[![DOI 10.5281/zenodo.11382384](https://zenodo.org/badge/DOI/10.5281/zenodo.11382384.svg)](https://doi.org/10.5281/zenodo.11382384?utm_source=welsonjs)
-![ChatGPT available](https://img.shields.io/badge/ChatGPT-74aa9c?logo=openai&logoColor=white)
-![Google Gemini available](https://img.shields.io/badge/Gemini-886FBF?logo=googlegemini&logoColor=fff)
-[![slideshare.net presentation](https://img.shields.io/badge/SlideShare-black?logo=slideshare)](https://www.slideshare.net/slideshow/welsonjs-building-full-windows-desktop-apps-using-built-in-javascript-engine/288594715?utm_source=welsonjs)
-[![YouTube promotion video](https://img.shields.io/badge/YouTube-red?logo=youtube)](https://youtu.be/JavH7Dms8-U?utm_source=welsonjs)
-[![Discord chat](https://img.shields.io/discord/359930650330923008?logo=discord)](https://discord.gg/XKG5CjtXEj?utm_source=welsonjs)
-[![G2](https://img.shields.io/badge/G2-FF492C?logo=g2&logoColor=fff)](https://www.g2.com/products/welsonjs/reviews?utm_source=welsonjs)
-[![Trustpilot](https://img.shields.io/badge/Trustpilot-00B67A?logo=trustpilot&logoColor=fff)](https://www.trustpilot.com/review/catswords.com?utm_source=welsonjs)
-[![Open to work](https://img.shields.io/badge/%23-OPENTOWORK-green)](https://github.com/gnh1201/welsonjs/discussions/167?utm_source=welsonjs)
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/gnh1201/welsonjs)
-[![MCP](https://img.shields.io/badge/-MCP-black?logo=modelcontextprotocol)](https://github.com/gnh1201/welsonjs/wiki/MCP-server)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs.svg?type=shield&utm_source=welsonjs)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs?ref=badge_shield&utm_source=welsonjs)
+[![AppVeyor Status](https://ci.appveyor.com/api/projects/status/github/gnh1201/welsonjs?svg=true&utm_source=welsonjs)](https://ci.appveyor.com/project/gnh1201/welsonjs?utm_source=welsonjs)
+[![DOI 10.5281/zenodo.11382384](https://zenodo.org/badge/DOI/10.5281/zenodo.11382384.svg?utm_source=welsonjs)](https://doi.org/10.5281/zenodo.11382384?utm_source=welsonjs)
+![ChatGPT available](https://img.shields.io/badge/ChatGPT-74aa9c?logo=openai&logoColor=white&utm_source=welsonjs)
+![Google Gemini available](https://img.shields.io/badge/Gemini-886FBF?logo=googlegemini&logoColor=fff&utm_source=welsonjs)
+[![slideshare.net presentation](https://img.shields.io/badge/SlideShare-black?logo=slideshare&utm_source=welsonjs)](https://www.slideshare.net/slideshow/welsonjs-building-full-windows-desktop-apps-using-built-in-javascript-engine/288594715?utm_source=welsonjs)
+[![YouTube promotion video](https://img.shields.io/badge/YouTube-red?logo=youtube&utm_source=welsonjs)](https://youtu.be/JavH7Dms8-U?utm_source=welsonjs)
+[![Discord chat](https://img.shields.io/discord/359930650330923008?logo=discord&utm_source=welsonjs)](https://discord.gg/XKG5CjtXEj?utm_source=welsonjs)
+[![G2](https://img.shields.io/badge/G2-FF492C?logo=g2&logoColor=fff&utm_source=welsonjs)](https://www.g2.com/products/welsonjs/reviews?utm_source=welsonjs)
+[![Trustpilot](https://img.shields.io/badge/Trustpilot-00B67A?logo=trustpilot&logoColor=fff&utm_source=welsonjs)](https://www.trustpilot.com/review/catswords.com?utm_source=welsonjs)
+[![Open to work](https://img.shields.io/badge/%23-OPENTOWORK-green?utm_source=welsonjs)](https://github.com/gnh1201/welsonjs/discussions/167?utm_source=welsonjs)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg?utm_source=welsonjs)](https://deepwiki.com/gnh1201/welsonjs?utm_source=welsonjs)
+[![MCP](https://img.shields.io/badge/-MCP-black?logo=modelcontextprotocol&utm_source=welsonjs)](https://github.com/gnh1201/welsonjs/wiki/MCP-server?utm_source=welsonjs)
 
-<img src="https://catswords.blob.core.windows.net/welsonjs/images/logo.svg" height="32" alt="WelsonJS logo with four diagonal stripes in red, green, blue, and yellow, overlaid with the letters JS."/> WelsonJS - Build a Windows app on the Windows built-in JavaScript engine.
+<img src="https://catswords.blob.core.windows.net/welsonjs/images/logo.svg?utm_source=welsonjs" height="32" alt="WelsonJS logo with four diagonal stripes in red, green, blue, and yellow, overlaid with the letters JS."/> WelsonJS - Build a Windows app on the Windows built-in JavaScript engine.
 
-![A Cover Image: Windows in 1999](https://catswords.blob.core.windows.net/welsonjs/images/cover.png)
+![A Cover Image: Windows in 1999](https://catswords.blob.core.windows.net/welsonjs/images/cover.png?utm_source=welsonjs)
 
 Now, You can build a Windows desktop app with JavaScript, TypeScript, CoffeeScript, ReScript, and HTML/CSS on Windows built-in ECMAScript engine.
 
 WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)*** + :heart:[Contributions](https://github.com/sponsors/gnh1201?utm_source=welsonjs)
 
-* :kissing_cat: [Download the WelsonJS Launcher](https://catswords.blob.core.windows.net/welsonjs/welsonjs_launcher_latest.zip)
+* :rocket: Deploy on Microsoft Azure Marketplace (Available again soon)
+* :kissing_cat: [Download the WelsonJS Launcher](https://catswords.blob.core.windows.net/welsonjs/welsonjs_launcher_latest.zip?utm_source=welsonjs)
 * :shell: In PowerShell: `irm https://catswords.blob.core.windows.net/welsonjs/bootstrap.ps1 | iex`
 
 **Note**: The default license for this project is GPL 3.0. However, if the GPL 3.0 license is not compatible with Microsoft products, it is subject to the MS-RL license.
 
 ## Collaborations
 * :octocat: [GitHub Sponsors](https://github.com/sponsors/gnh1201?utm_source=welsonjs), :euro: [Liberapay](https://liberapay.com/catswords?utm_source=welsonjs), :coffee: [Buy me a coffee](https://buymeacoffee.com/catswords?utm_source=welsonjs)
-* <img src="https://catswords.blob.core.windows.net/welsonjs/images/serpapi_logo_32.png" height="32" alt="SerpApi"/> [SerpApi: Search API](https://serpapi.com/?utm_source=welsonjs) - Scrape search engines results with simple API.
-* <img src="https://catswords.blob.core.windows.net/welsonjs/images/logo_oss.gif" height="32" alt="OPENUP"/> [Opensource Portal](https://oss.kr/?utm_source=welsonjs), NIPA National IT Industry Promotion Agency<sup>(정보통신산업진흥원)</sup>
-* <img src="https://catswords.blob.core.windows.net/welsonjs/images/signpath_logo.png" height="32" alt="Signpath"/> Free code signing provided by [SignPath.io](https://signpath.io/?utm_source=welsonjs), certificate by [SignPath Foundation](https://signpath.org/)
-* <img src="https://catswords.blob.core.windows.net/welsonjs/images/cloudbro_logo.png" height="32" alt="CloudBro"/> ["Ship to Production" Season 3](https://stp.cloudbro.ai/?utm_source=welsonjs) - Selected project
-* Thanks for [F1Security<sup>(에프원시큐리티)</sup>](https://f1security.co.kr/?utm_source=welsonjs) [Microsoft<sup>(ISV Success Program)</sup>](https://www.microsoft.com/en-us/isv/isv-success?utm_source=welsonjs), [Tenstorrent<sup>(Korea OSS Developer Program)</sup>](https://tenstorrent.com/?utm_source=welsonjs), [ReadMe](https://readme.com/?utm_source=welsonjs), [AppSignal](https://www.appsignal.com/)
+* <img src="https://catswords.blob.core.windows.net/welsonjs/images/serpapi_logo_32.png?utm_source=welsonjs" height="32" alt="SerpApi"/> [SerpApi: Search API](https://serpapi.com/?utm_source=welsonjs) - Scrape search engine results with a simple API.
+* <img src="https://catswords.blob.core.windows.net/welsonjs/images/logo_oss.gif?utm_source=welsonjs" height="32" alt="OPENUP"/> [Opensource Portal](https://oss.kr/?utm_source=welsonjs), NIPA National IT Industry Promotion Agency
+* <img src="https://catswords.blob.core.windows.net/welsonjs/images/signpath_logo.png?utm_source=welsonjs" height="32" alt="Signpath"/> Free code signing provided by [SignPath.io](https://signpath.io/?utm_source=welsonjs), certificate by [SignPath Foundation](https://signpath.org/)
+* <img src="https://catswords.blob.core.windows.net/welsonjs/images/cloudbro_logo.png?utm_source=welsonjs" height="32" alt="CloudBro"/> ["Ship to Production" Season 3](https://stp.cloudbro.ai/?utm_source=welsonjs) - Selected project
+* Thanks for [F1Security](https://f1security.co.kr/?utm_source=welsonjs) [Microsoft<sup>(ISV Success Program)</sup>](https://www.microsoft.com/en-us/isv/isv-success?utm_source=welsonjs), [Tenstorrent<sup>(Korea OSS Developer Program)</sup>](https://tenstorrent.com/?utm_source=welsonjs), [ReadMe](https://readme.com/?utm_source=welsonjs), [AppSignal](https://www.appsignal.com/?utm_source=welsonjs)
 
 ## System Requirements
 * **Operating Systems**: Windows XP SP3 or later (Currently, Windows 11 24H2)
@@ -190,31 +191,31 @@ ended say()
 The WelsonJS framework suggests the following application release methods:
 
 * **Compress to Zip, and use the launcher**: Compress the files and directories necessary for running the project into a Zip file, and distribute it along with the WelsonJS Launcher.
-* **Build a setup file**: Use [Inno Setup](https://jrsoftware.org/isinfo.php). The setup profile (the `setup.iss` file) is already included.
+* **Build a setup file**: Use [Inno Setup](https://jrsoftware.org/isinfo.php?utm_source=welsonjs). The setup profile (the `setup.iss` file) is already included.
 * **Use PowerShell**: For example, `irm https://catswords.blob.core.windows.net/welsonjs/bootstrap.ps1 | iex`
 * **Copy all directories and files**: This is the simplest and most straightforward method.
 
 ## Screenshots
-![(Screenshot 1) GUI environment](https://catswords.blob.core.windows.net/welsonjs/images/screenshot.png)
+![(Screenshot 1) GUI environment](https://catswords.blob.core.windows.net/welsonjs/images/screenshot.png?utm_source=welsonjs)
 
-![(Screenshot 2) Command-line environment](https://catswords.blob.core.windows.net/welsonjs/images/screenshot2.png)
+![(Screenshot 2) Command-line environment](https://catswords.blob.core.windows.net/welsonjs/images/screenshot2.png?utm_source=welsonjs)
 
-![(Screenshot 3) WelsonJS with Microsoft Excel](https://catswords.blob.core.windows.net/welsonjs/images/screenshot3.png)
+![(Screenshot 3) WelsonJS with Microsoft Excel](https://catswords.blob.core.windows.net/welsonjs/images/screenshot3.png?utm_source=welsonjs)
 
-![(Screenshot 4) Write a Windows Service with JavaScript](https://catswords.blob.core.windows.net/welsonjs/images/screenshot4.png)
+![(Screenshot 4) Write a Windows Service with JavaScript](https://catswords.blob.core.windows.net/welsonjs/images/screenshot4.png?utm_source=welsonjs)
 
-![(Screenshot 5) Template Matching on the computer screen](https://catswords.blob.core.windows.net/welsonjs/images/screenshot5.png)
+![(Screenshot 5) Template Matching on the computer screen](https://catswords.blob.core.windows.net/welsonjs/images/screenshot5.png?utm_source=welsonjs)
 
-![(Screenshot 6) The Launcher for WelsonJS Application Packages](https://catswords.blob.core.windows.net/welsonjs/images/screenshot6.png)
+![(Screenshot 6) The Launcher for WelsonJS Application Packages](https://catswords.blob.core.windows.net/welsonjs/images/screenshot6.png?utm_source=welsonjs)
 
-![(Screenshot 7) Microsoft Monaco Editor on WelsonJS Launcher](https://catswords.blob.core.windows.net/welsonjs/images/screenshot7.png)
+![(Screenshot 7) Microsoft Monaco Editor on WelsonJS Launcher](https://catswords.blob.core.windows.net/welsonjs/images/screenshot7.png?utm_source=welsonjs)
 
-![(Screenshot 8) You can run a .js file just like an executable by simply double-clicking it.](https://catswords.blob.core.windows.net/welsonjs/images/screenshot8.png)
+![(Screenshot 8) You can run a .js file just like an executable by simply double-clicking it.](https://catswords.blob.core.windows.net/welsonjs/images/screenshot8.png?utm_source=welsonjs)
 
 ## Thanks to
 * :heart: Artwork (Logo image): [@druidesse](https://github.com/druidesse?utm_source=welsonjs)
 * :heart: Artwork (Cover image): [@_bag0@x.com](https://x.com/_bag0?utm_source=welsonjs)
-* :heart: Special Contributors: [@hcho3](https://github.com/hcho3), :octocat: [GitHub Sponsors](https://github.com/sponsors/gnh1201?utm_source=welsonjs)
+* :heart: Special Contributors: [@hcho3](https://github.com/hcho3?utm_source=welsonjs), :octocat: [GitHub Sponsors](https://github.com/sponsors/gnh1201?utm_source=welsonjs)
 * :sunglasses: Heavy-industry specialized CSP(Cloud Service Provider) in Republic of Korea - Use case development
 * :sunglasses: Live-commerce specialized online advertisement companies in Republic of Korea - Use case development
 * :sunglasses: Information security companies in Republic of Korea - Use case development
@@ -242,11 +243,11 @@ I am always open. Collaboration, opportunities, and community activities are all
 For offline copy requests, consulting, mentoring, and technical support inquiries, please check [this link](https://catswords.z12.web.core.windows.net/?utm_source=welsonjs).
 
 ## Open-source software license
-[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs?ref=badge_large&utm_source=welsonjs)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs.svg?type=large&utm_source=welsonjs)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs?ref=badge_large&utm_source=welsonjs)
 
 ## Subprojects
 * [catswords-jsrt-rs](https://github.com/gnh1201/catswords-jsrt-rs?utm_source=welsonjs): Minimal ChakraCore (JsRT) bindings for Rust.
 * [jsrt-claw](https://github.com/gnh1201/jsrt-claw?utm_source=welsonjs): OpenClaw-compatible skill definition for a built-in JSRT (JScript 5.x).
 
 ## Disclaimer
-To the maximum extent permitted by applicable law, Namhyeon Go <sup>(ko: 고남현)</sup> and Catswords Research <sup>(ko: 캐츠워즈리서치)</sup> shall not be held liable for any direct, indirect, incidental, special, or consequential damages arising out of or in connection with the use of this software outside its intended purpose or scope.
+To the maximum extent permitted by applicable law, Namhyeon Go and Catswords Research shall not be held liable for any direct, indirect, incidental, special, or consequential damages arising out of or in connection with the use of this software outside its intended purpose or scope.
