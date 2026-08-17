@@ -16,7 +16,7 @@
 
 <img src="https://catswords.blob.core.windows.net/welsonjs/images/logo.svg?utm_source=welsonjs" height="32" alt="WelsonJS logo with four diagonal stripes in red, green, blue, and yellow, overlaid with the letters JS."/> WelsonJS - Build a Windows app on the Windows built-in JavaScript engine.
 
-![A Cover Image: Windows in 1999](https://catswords.blob.core.windows.net/welsonjs/images/cover.png?utm_source=welsonjs)
+![Cover Art: Windows in 1999, Art by @_bag0@x.com](https://catswords.blob.core.windows.net/welsonjs/images/cover.png?utm_source=welsonjs)
 
 Now, You can build a Windows desktop app with JavaScript, TypeScript, CoffeeScript, ReScript, and HTML/CSS on Windows built-in ECMAScript engine.
 
@@ -34,7 +34,7 @@ WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)*** + :h
 * <img src="https://catswords.blob.core.windows.net/welsonjs/images/logo_oss.gif?utm_source=welsonjs" height="32" alt="OPENUP"/> [Opensource Portal](https://oss.kr/?utm_source=welsonjs), NIPA National IT Industry Promotion Agency
 * <img src="https://catswords.blob.core.windows.net/welsonjs/images/signpath_logo.png?utm_source=welsonjs" height="32" alt="Signpath"/> Free code signing provided by [SignPath.io](https://signpath.io/?utm_source=welsonjs), certificate by [SignPath Foundation](https://signpath.org/)
 * <img src="https://catswords.blob.core.windows.net/welsonjs/images/cloudbro_logo.png?utm_source=welsonjs" height="32" alt="CloudBro"/> ["Ship to Production" Season 3](https://stp.cloudbro.ai/?utm_source=welsonjs) - Selected project
-* Thanks for [F1Security](https://f1security.co.kr/?utm_source=welsonjs) [Microsoft<sup>(ISV Success Program)</sup>](https://www.microsoft.com/en-us/isv/isv-success?utm_source=welsonjs), [Tenstorrent<sup>(Korea OSS Developer Program)</sup>](https://tenstorrent.com/?utm_source=welsonjs), [ReadMe](https://readme.com/?utm_source=welsonjs), [AppSignal](https://www.appsignal.com/?utm_source=welsonjs)
+* Thanks for [F1Security](https://f1security.co.kr/?utm_source=welsonjs), [Microsoft<sup>(ISV Success Program)</sup>](https://www.microsoft.com/en-us/isv/isv-success?utm_source=welsonjs), [Tenstorrent<sup>(Korea OSS Developer Program)</sup>](https://tenstorrent.com/?utm_source=welsonjs), [ReadMe](https://readme.com/?utm_source=welsonjs), [AppSignal](https://www.appsignal.com/?utm_source=welsonjs)
 
 ## System Requirements
 * **Operating Systems**: Windows XP SP3 or later (Currently, Windows 11 24H2)
