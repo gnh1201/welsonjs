@@ -40,7 +40,7 @@ namespace WelsonJS.Launcher
             // Free AppSingal plan for open-source projects: https://www.appsignal.com/open-source?utm_source=welsonjs
             string appSignalApiPrefix = GetAppConfig("AppSignalApiPrefix");
             string appSignalApiKey = GetAppConfig("AppSignalApiKey");
-            if (string.IsNullOrEmpty(appSignalApiKey))
+            if (!string.IsNullOrEmpty(appSignalApiKey))
             {
                 Trace.Listeners.Add(new AppSignalTraceListener(
                     appSignalApiKey, null, "WelsonJS.Launcher", appSignalApiPrefix));
