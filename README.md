@@ -22,6 +22,7 @@ Now, You can build a Windows desktop app with JavaScript, TypeScript, CoffeeScri
 
 WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)*** + :heart:[Contributions](https://github.com/sponsors/gnh1201?utm_source=welsonjs)
 
+* :rocket: Deploy on Microsoft Azure Marketplace (Available again soon)
 * :kissing_cat: [Download the WelsonJS Launcher](https://catswords.blob.core.windows.net/welsonjs/welsonjs_launcher_latest.zip)
 * :shell: In PowerShell: `irm https://catswords.blob.core.windows.net/welsonjs/bootstrap.ps1 | iex`
 
@@ -30,10 +31,10 @@ WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)*** + :h
 ## Collaborations
 * :octocat: [GitHub Sponsors](https://github.com/sponsors/gnh1201?utm_source=welsonjs), :euro: [Liberapay](https://liberapay.com/catswords?utm_source=welsonjs), :coffee: [Buy me a coffee](https://buymeacoffee.com/catswords?utm_source=welsonjs)
 * <img src="https://catswords.blob.core.windows.net/welsonjs/images/serpapi_logo_32.png" height="32" alt="SerpApi"/> [SerpApi: Search API](https://serpapi.com/?utm_source=welsonjs) - Scrape search engines results with simple API.
-* <img src="https://catswords.blob.core.windows.net/welsonjs/images/logo_oss.gif" height="32" alt="OPENUP"/> [Opensource Portal](https://oss.kr/?utm_source=welsonjs), NIPA National IT Industry Promotion Agency<sup>(정보통신산업진흥원)</sup>
+* <img src="https://catswords.blob.core.windows.net/welsonjs/images/logo_oss.gif" height="32" alt="OPENUP"/> [Opensource Portal](https://oss.kr/?utm_source=welsonjs), NIPA National IT Industry Promotion Agency
 * <img src="https://catswords.blob.core.windows.net/welsonjs/images/signpath_logo.png" height="32" alt="Signpath"/> Free code signing provided by [SignPath.io](https://signpath.io/?utm_source=welsonjs), certificate by [SignPath Foundation](https://signpath.org/)
 * <img src="https://catswords.blob.core.windows.net/welsonjs/images/cloudbro_logo.png" height="32" alt="CloudBro"/> ["Ship to Production" Season 3](https://stp.cloudbro.ai/?utm_source=welsonjs) - Selected project
-* Thanks for [F1Security<sup>(에프원시큐리티)</sup>](https://f1security.co.kr/?utm_source=welsonjs) [Microsoft<sup>(ISV Success Program)</sup>](https://www.microsoft.com/en-us/isv/isv-success?utm_source=welsonjs), [Tenstorrent<sup>(Korea OSS Developer Program)</sup>](https://tenstorrent.com/?utm_source=welsonjs), [ReadMe](https://readme.com/?utm_source=welsonjs), [AppSignal](https://www.appsignal.com/)
+* Thanks for [F1Security](https://f1security.co.kr/?utm_source=welsonjs) [Microsoft<sup>(ISV Success Program)</sup>](https://www.microsoft.com/en-us/isv/isv-success?utm_source=welsonjs), [Tenstorrent<sup>(Korea OSS Developer Program)</sup>](https://tenstorrent.com/?utm_source=welsonjs), [ReadMe](https://readme.com/?utm_source=welsonjs), [AppSignal](https://www.appsignal.com/?utm_source=welsonjs)
 
 ## System Requirements
 * **Operating Systems**: Windows XP SP3 or later (Currently, Windows 11 24H2)
@@ -249,4 +250,4 @@ For offline copy requests, consulting, mentoring, and technical support inquirie
 * [jsrt-claw](https://github.com/gnh1201/jsrt-claw?utm_source=welsonjs): OpenClaw-compatible skill definition for a built-in JSRT (JScript 5.x).
 
 ## Disclaimer
-To the maximum extent permitted by applicable law, Namhyeon Go <sup>(ko: 고남현)</sup> and Catswords Research <sup>(ko: 캐츠워즈리서치)</sup> shall not be held liable for any direct, indirect, incidental, special, or consequential damages arising out of or in connection with the use of this software outside its intended purpose or scope.
+To the maximum extent permitted by applicable law, Namhyeon Go and Catswords Research shall not be held liable for any direct, indirect, incidental, special, or consequential damages arising out of or in connection with the use of this software outside its intended purpose or scope.
