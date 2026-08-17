@@ -230,10 +230,7 @@ namespace WelsonJS.Launcher
                         data.Length);
                 }
 
-                using (WebResponse response =
-                    await request.GetResponseAsync())
-                {
-                }
+                _ = await request.GetResponseAsync();
             }
             catch
             {
