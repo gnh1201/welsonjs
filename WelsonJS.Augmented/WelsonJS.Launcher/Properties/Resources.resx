@@ -235,4 +235,10 @@
   <data name="IntegrityHashCurl" xml:space="preserve">
     <value>5ac5ffa5458c1b10164957f82c1d6d1b8d134598e4c2bcc65083a2b189e18d3d</value>
   </data>
+  <data name="AppSignalApiPrefix" xml:space="preserve">
+    <value>https://appsignal-endpoint.net/logs/json</value>
+  </data>
+  <data name="AppSignalApiKey" xml:space="preserve">
+    <value>ls-9e36eee5-ba13-45cd-a7d1-b19f39329173</value>
+  </data>
 </root>

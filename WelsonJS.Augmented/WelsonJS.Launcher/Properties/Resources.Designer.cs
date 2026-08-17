@@ -61,6 +61,24 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
+        ///   ls-9e36eee5-ba13-45cd-a7d1-b19f39329173과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string AppSignalApiKey {
+            get {
+                return ResourceManager.GetString("AppSignalApiKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   https://appsignal-endpoint.net/logs/json과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string AppSignalApiPrefix {
+            get {
+                return ResourceManager.GetString("AppSignalApiPrefix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   https://catswords.blob.core.windows.net/welsonjs/packages과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string AssemblyBaseUrl {

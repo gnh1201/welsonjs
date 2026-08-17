@@ -89,6 +89,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiEndpoints\JsonRpc2.cs" />
+    <Compile Include="AppSignalTraceListener.cs" />
     <Compile Include="AssemblyLoader.cs" />
     <Compile Include="IApiEndpoint.cs" />
     <Compile Include="JsCore.cs" />

@@ -36,6 +36,16 @@ namespace WelsonJS.Launcher
             // Display a message box whenever Trace.TraceError() is called.
             Trace.Listeners.Add(new MessageBoxTraceListener());
 
+            // AppSignal (Error Tracking & Performance Monitoring) integration
+            // Free AppSingal plan for open-source projects: https://www.appsignal.com/open-source?utm_source=welsonjs
+            string appSignalApiPrefix = GetAppConfig("AppSignalApiPrefix");
+            string appSignalApiKey = GetAppConfig("AppSignalApiKey");
+            if (string.IsNullOrEmpty(appSignalApiKey))
+            {
+                Trace.Listeners.Add(new AppSignalTraceListener(
+                    appSignalApiKey, null, "WelsonJS.Launcher", appSignalApiPrefix));
+            }
+
             // get the date time format
             _dateTimeFormat = GetAppConfig("DateTimeFormat");
 
