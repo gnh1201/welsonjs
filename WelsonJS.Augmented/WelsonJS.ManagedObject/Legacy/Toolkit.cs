@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Text;
-using WelsonJS.ManagedObject.External;
 
 namespace WelsonJS.ManagedObject.Legacy
 {
