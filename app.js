@@ -350,12 +350,17 @@ if (typeof CreateObject === "undefined") {
     var CreateObject = function(progId, serverName, callback) {
         var progIds = (progId instanceof Array ? progId : [progId]);
 
-        // try to create the object using the provided progIds
+        // Try to create the object using the provided ProgIDs.
         for (var i = 0; i < progIds.length; i++) {
-            var progIdPaths = progIds[i].split(".");
-
             try {
-                var obj = (CreateObject.managed != null && CreateObject.unmanaged.indexOf(progIdPaths[0].toLowerCase()) < 0)
+                var normalizedProgId = String(progIds[i]).toLowerCase();
+                if (normalizedProgId === "welsonjs.toolkit") {
+                    console.warn("WelsonJS.Toolkit has been deprecated since version 0.2.7.60. Please migrate to WelsonJS.ManagedObject.");
+                    console.warn("https://www.nuget.org/packages/WelsonJS.ManagedObject");
+                }
+
+                var progIdPaths = normalizedProgId.split(".");
+                var obj = (CreateObject.managed != null && CreateObject.unmanaged.indexOf(progIdPaths[0]) < 0)
                     ? CreateObject.managed.CreateObject(progIds[i], serverName)
                     : CreateObject.make(progIds[i], serverName)
                 ;
@@ -373,7 +378,7 @@ if (typeof CreateObject === "undefined") {
             if ("CreateObject" in WScript) {
                 return WScript.CreateObject(p, s);
             } else {
-                console.warn("(Chakra) The standalone engine does not supported. Please use the built-in engine.");
+                console.warn("(Chakra) The standalone engine is not supported. Please use the built-in engine.");
                 console.warn("(Chakra) hint:", "cscript //NoLogo //E:{1b7cd997-e5ff-4932-a7a6-2a9e636da385} app.js <filename> <...arguments>");
                 throw new Error("Could not find a COM loader");
             }
