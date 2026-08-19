@@ -354,10 +354,7 @@ if (typeof CreateObject === "undefined") {
         for (var i = 0; i < progIds.length; i++) {
             try {
                 var normalizedProgId = String(progIds[i]).toLowerCase();
-                if (normalizedProgId === "welsonjs.toolkit") {
-                    console.warn("WelsonJS.Toolkit has been deprecated since version 0.2.7.60. Please migrate to WelsonJS.ManagedObject.");
-                    console.warn("https://www.nuget.org/packages/WelsonJS.ManagedObject");
-                }
+                CreateObject.deprecatedWarning(normalizedProgId);
 
                 var progIdPaths = normalizedProgId.split(".");
                 var obj = (CreateObject.managed != null && CreateObject.unmanaged.indexOf(progIdPaths[0]) < 0)
@@ -396,6 +393,12 @@ if (typeof CreateObject === "undefined") {
         }
     })();
     CreateObject.unmanaged = ["scripting", "adodb", "wscript"];
+    CreateObject.deprecatedWarning = function(normalizedProgId) {
+        if (normalizedProgId === "welsonjs.toolkit") {
+            console.warn("WelsonJS.Toolkit has been deprecated since version 0.2.7.60. Please migrate to WelsonJS.ManagedObject.");
+            console.warn("https://www.nuget.org/packages/WelsonJS.ManagedObject");
+        }
+    };
 }
 
 if (typeof UseObject === "undefined") {
