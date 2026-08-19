@@ -6,11 +6,13 @@
  * Copyright (c) 2000 Martin Hinner <mhi@penguin.cz>
  * Algorithm & data structures by M. Winterhoff <100326.2776@compuserve.com>
  * C# port Copyright (c) 2011 Francis Gagné <fragag@hotmail.com>
- * GitHub: @MainMemory - http://mm.reimuhakurei.net/
- * Sonic Retro Team: https://github.com/sonicretro
+ * GitHub: @MainMemory - http://mm.reimuhakurei.net/, https://github.com/MainMemory
+ * Sonic Retro Team: https://sonicretro.org/, https://github.com/sonicretro
  *
- * This source code is currently used as part of the WelsonJS open-source project.
- * 2026 Namhyeon Go <gnh1201@catswords.re.kr> 
+ * This source code is currently used and maintained as part of the
+ * WelsonJS open-source project.
+ *
+ * Copyright (c) 2026 Namhyeon Go <gnh1201@catswords.re.kr>
  * https://github.com/gnh1201/welsonjs
  *
  * The SZDDComp source code was originally distributed under the
