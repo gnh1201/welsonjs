@@ -70,10 +70,12 @@
     <Compile Include="BitmapControl.cs" />
     <Compile Include="ByRefArgument.cs" />
     <Compile Include="Dialog.cs" />
+    <Compile Include="External\SZDDComp.cs" />
     <Compile Include="Legacy\Cipher.cs" />
     <Compile Include="Legacy\Toolkit.cs" />
     <Compile Include="ManagedObject.cs" />
     <Compile Include="ManagedObjectWrapper.cs" />
+    <Compile Include="MsCompress.cs" />
     <Compile Include="NamedSharedMemory.cs" />
     <Compile Include="ProcessControl.cs" />
     <Compile Include="ProfileStringFile.cs" />
