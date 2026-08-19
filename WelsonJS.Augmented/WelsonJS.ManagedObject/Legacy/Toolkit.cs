@@ -13,6 +13,7 @@ namespace WelsonJS.ManagedObject.Legacy
         private static ProcessControl pc = new ProcessControl();
         private static Dialog dialog = new Dialog();
         private static BitmapControl bc = new BitmapControl();
+        private static MsCompress mc = new MsCompress();
 
         public bool SendClick(string title, int x, int y)
         {
@@ -52,6 +53,47 @@ namespace WelsonJS.ManagedObject.Legacy
         public bool SendFnKey(string title, int num)
         {
             return pc.SendFnKey(title, num);
+        }
+
+        public bool WriteTextToSharedMemory(string lpName, string text)
+        {
+            return new NamedSharedMemory(lpName).WriteTextToSharedMemory(lpName, text);
+        }
+
+        [ComVisible(true)]
+        public string ReadTextFromSharedMemory(string lpName)
+        {
+            return new NamedSharedMemory(lpName).ReadTextFromSharedMemory(lpName);
+        }
+
+        public bool ClearSharedMemory(string lpName)
+        {
+            return new NamedSharedMemory(lpName).ClearSharedMemory(lpName);
+        }
+
+        public bool CloseSharedMemory(string lpName)
+        {
+            return new NamedSharedMemory(lpName).CloseSharedMemory(lpName);
+        }
+
+        public int OpenProcess(string filepath)
+        {
+            return pc.Open(filepath);
+        }
+
+        public bool CloseProcess(int processId)
+        {
+            return pc.Close(processId);
+        }
+
+        public string CompressLZ77(string data)
+        {
+            return mc.Compress(data);
+        }
+
+        public string DecompressLZ77(string compressedData)
+        {
+            return mc.Decompress(compressedData);
         }
 
         public string EncryptString(string key, string data)
