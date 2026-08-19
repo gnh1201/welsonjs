@@ -54,6 +54,37 @@ namespace WelsonJS.ManagedObject.Legacy
             return pc.SendFnKey(title, num);
         }
 
+        public bool WriteTextToSharedMemory(string lpName, string text)
+        {
+            return new NamedSharedMemory(lpName).WriteTextToSharedMemory(lpName, text);
+        }
+
+        [ComVisible(true)]
+        public string ReadTextFromSharedMemory(string lpName)
+        {
+            return new NamedSharedMemory(lpName).ReadTextFromSharedMemory(lpName);
+        }
+
+        public bool ClearSharedMemory(string lpName)
+        {
+            return new NamedSharedMemory(lpName).ClearSharedMemory(lpName);
+        }
+
+        public bool CloseSharedMemory(string lpName)
+        {
+            return new NamedSharedMemory(lpName).CloseSharedMemory(lpName);
+        }
+
+        public int OpenProcess(string filepath)
+        {
+            return pc.Open(filepath);
+        }
+        public bool CloseProcess(int processId)
+        {
+            return pc.Close(processId);
+        }
+
+
         public string EncryptString(string key, string data)
         {
             byte[] userKey = Encoding.ASCII.GetBytes(key);

@@ -77,7 +77,7 @@ namespace WelsonJS.ManagedObject
             public static extern uint GetLastError();
         }
 
-        private NamedSharedMemory(string lpName)
+        public NamedSharedMemory(string lpName)
         {
             this.lpName = lpName;
             Open();
