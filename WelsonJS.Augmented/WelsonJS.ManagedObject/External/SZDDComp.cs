@@ -1,4 +1,6 @@
 ﻿/*
+ * SZDDComp: Microsoft "compress.exe/expand.exe" compatible compressor
+ *
  * The original copyright information for SZDDComp could not be fully recovered.
  * Therefore, all individuals and organizations identified as possible contributors
  * to the source code have been acknowledged below.
