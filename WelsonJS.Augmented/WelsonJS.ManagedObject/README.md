@@ -17,6 +17,7 @@ The package extends WelsonJS with Windows-specific capabilities such as:
 * Mouse and keyboard input simulation
 * Window handle manipulation
 * Bitmap and image information extraction
+* Microsoft Compress (MSCOMP/SZDD) compression and decompression
 
 The managed object functionality is automatically initialized by the WelsonJS `app.js` runtime and is available globally. Users do not need to explicitly create a `WelsonJS.ManagedObject` instance.
 
@@ -85,6 +86,20 @@ Example:
 ```javascript
 UseObject("WelsonJS.BitmapControl", function(bitmapControl) {
     // Inspect bitmap and image information here.
+});
+```
+
+### `WelsonJS.MsCompress`
+
+Provides Microsoft Compress (MSCOMP/SZDD) compression and decompression functionality for WelsonJS applications.
+
+This module can be used to work with legacy Microsoft compressed files and SZDD-compressed data.
+
+Example:
+
+```javascript
+UseObject("WelsonJS.MsCompress", function(msCompress) {
+    // Compress or decompress data here.
 });
 ```
 
@@ -158,6 +173,7 @@ The following modules are included:
 | `WelsonJS.NamedSharedMemory` | Named shared memory IPC             |
 | `WelsonJS.ProcessControl`    | Mouse, keyboard, and window control |
 | `WelsonJS.BitmapControl`     | Bitmap and image information        |
+| `WelsonJS.MsCompress`         | Microsoft Compress / SZDD support   |
 
 WSH-provided `Scripting.*`, `ADODB.*`, and `WScript.*` objects are **not included** in `WelsonJS.ManagedObject` and remain outside the scope of this package.
 

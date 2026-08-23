@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
   <metadata>
     <id>WelsonJS.ManagedObject</id>
-    <version>0.2.7.60</version>
+    <version>0.2.7.61</version>
     <authors>Catswords Research</authors>
 
     <title>WelsonJS ManagedObject</title>
@@ -16,8 +16,9 @@
       WelsonJS.ManagedObject provides managed COM modules for the WelsonJS
       scripting environment. These modules extend WelsonJS with Windows-specific
       capabilities such as COM object activation, dialogs, inter-process
-      communication, input simulation, window handling, and bitmap information
-      extraction.
+      communication, input simulation, window handling, bitmap information
+      extraction, and Microsoft Compress (MSCOMP/SZDD) compression and
+      decompression.
 
       Included COM modules:
 
@@ -41,12 +42,16 @@
       Provides bitmap and image information utilities, including image size
       and pixel information extraction.
 
+      - WelsonJS.MsCompress
+      Provides Microsoft Compress (MSCOMP/SZDD) compression and decompression
+      functionality for working with legacy Microsoft compressed files.
+
       - WelsonJS.Legacy.Cipher (for compatibility only)
-      
+
       - WelsonJS.Legacy.Toolkit (for compatibility only)
 
       Migration:
-      
+
       Users of WelsonJS.Toolkit, including users of WelsonJS version 0.2.7.57
       and earlier, should migrate to WelsonJS.ManagedObject.
 
@@ -59,11 +64,11 @@
       environment and may depend on Windows-specific COM and system APIs.
 
       Developer:
-      
+
       Namhyeon Go (WelsonJS Maintainer)
 
       Contact:
-      
+
       gnh1201@catswords.re.kr
 
       #OPENTOWORK

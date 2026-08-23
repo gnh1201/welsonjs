@@ -110,7 +110,7 @@ Filename: {app}\uninstallService.bat; Components: artifacts; Flags: waituntilter
 
 [CustomMessages]
 AppName=WelsonJS
-AppVersion=0.2.7.57
+AppVersion=0.2.7.61
 PostHogApiKey=phc_pmRHJ0aVEhtULRT4ilexwCjYpGtE9VYRhlA05fwiYt8
 
 [Code]
