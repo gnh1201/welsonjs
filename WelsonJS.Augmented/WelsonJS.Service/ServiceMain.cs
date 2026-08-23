@@ -49,6 +49,10 @@ namespace WelsonJS.Service
             args = _args;
             logger = _logger;
 
+            // get the program files directory
+            var programFiles = Environment.GetFolderPath(
+                Environment.SpecialFolder.ProgramFiles);
+
             // mapping arguments to each variables
             var arguments = ParseArguments(this.args);
             foreach (KeyValuePair<string, string> entry in arguments)
@@ -56,7 +60,12 @@ namespace WelsonJS.Service
                 switch (entry.Key)
                 {
                     case "working-directory":
-                        workingDirectory = entry.Value;
+                        // Temporary mitigation for GHSA-9jmm-5v6v-gpq2.
+                        // Services must use the trusted installation directory instead of a fallback path.
+                        // Additional path and integrity validation will be added in a future release.
+                        workingDirectory = Environment.UserInteractive
+                            ? entry.Value
+                            : Path.Combine(programFiles, applicationName);
                         break;
 
                     case "script-name":
@@ -87,7 +96,19 @@ namespace WelsonJS.Service
             // set working directory
             if (string.IsNullOrEmpty(workingDirectory))
             {
-                workingDirectory = Path.Combine(Path.GetTempPath(), applicationName);
+                if (Environment.UserInteractive)
+                {
+                    // Temporary mitigation for GHSA-9jmm-5v6v-gpq2.
+                    // Allow the temporary directory only for interactive execution.
+                    workingDirectory = Path.Combine(Path.GetTempPath(), applicationName);
+                }
+                else
+                {
+                    // Temporary mitigation for GHSA-9jmm-5v6v-gpq2.
+                    // Services must never fall back to a user-writable temporary directory.
+                    workingDirectory = Path.Combine(programFiles, applicationName);
+                }
+
                 logger.LogInformation("Working directory not provided. Using default value: " + workingDirectory);
 
                 if (!Directory.Exists(workingDirectory))
