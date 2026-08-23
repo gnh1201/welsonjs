@@ -15,6 +15,8 @@ namespace WelsonJS.Service
     {
         private static ILogger logger;
 
+        private static List<string> trustedWorkingDirectory 
+
         /// <summary>
         /// 해당 애플리케이션의 주 진입점입니다.
         /// </summary>
@@ -32,7 +34,7 @@ namespace WelsonJS.Service
                 Console.WriteLine("WelsonJS Service Application (User Interactive Mode)");
                 Console.WriteLine("https://github.com/gnh1201/welsonjs");
                 Console.WriteLine();
-                Console.WriteLine("Service is running...");
+                Console.WriteLine("User Interactive Service is running...");
 
                 ServiceMain svc = new ServiceMain(args, logger);
                 svc.TestStartupAndStop();

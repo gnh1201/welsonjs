@@ -56,7 +56,13 @@ namespace WelsonJS.Service
                 switch (entry.Key)
                 {
                     case "working-directory":
-                        workingDirectory = entry.Value;
+                        // Temporary mitigation for GHSA-9jmm-5v6v-gpq2.
+                        // Services must use the trusted installation directory instead of a fallback path.
+                        // Additional path and integrity validation will be implemented in a future release.
+                        string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+                        workingDirectory = Environment.UserInteractive
+                            ? entry.Value
+                            : Path.Combine(programFiles, "WelsonJS");
                         break;
 
                     case "script-name":
