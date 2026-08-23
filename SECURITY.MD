@@ -43,7 +43,7 @@ This program is also known by the following names. These names are used solely f
 
 * DOI [10.5281/zenodo.11382384](https://zenodo.org/doi/10.5281/zenodo.11382384)(2024) (CERN/OpenAIRE Zenodo)
 * ["284757291"](https://catswords.blob.core.windows.net/welsonjs/images/1494315-Certificate+SoR-284757291.pdf)(2024) (Registered with the [UK Copyright Service](https://copyrightservice.co.uk/))
-* ["A0562"](https://www.oss.kr/dev_competition_activities/show/544723e6-850a-4956-9194-79640420c19a)(2023) (2023 Open-source Development Contest, NIPA National IT Industry Promotion Agency<sup>(정보통신산업진흥원)</sup>, Republic of Korea)
+* ["A0562"](https://catswords.blob.core.windows.net/welsonjs/images/welsonjs_openup_hub_62655.pdf)(2023) (2023 Open-source Development Contest, NIPA National IT Industry Promotion Agency<sup>(정보통신산업진흥원)</sup>, Republic of Korea)
 * ["2025-02-08-1952"](https://catswords.blob.core.windows.net/welsonjs/images/20250410092300005.pdf)(2025) (Technical Data Bailment System (Technology Escrow), "Korea Foundation for Cooperation of Large & Small Business, Rural Affairs"<sup>(대·중소기업·농어업협력재단)</sup>, Republic of Korea)
 * "C-2021-000237"(2021) (Copyright Registration Online System, Korea Copyright Commission<sup>(한국저작권위원회)</sup>, Republic of Korea)
 * "Codename Macadamia"(2020) (Heavy industry specialized CSP in the Republic of Korea)
