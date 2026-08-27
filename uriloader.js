@@ -74,7 +74,7 @@ function main(args) {
                 ]);
                 break;
 
-            dafault:
+            default:
                 console.log("Unknown application");
         }
 
