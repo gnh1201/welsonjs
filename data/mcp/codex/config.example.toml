@@ -9,7 +9,7 @@ sandbox = "elevated"
 
 [mcp_servers.welsonjs-mcp]
 command = "cscript.exe"
-args = ["app.js", "mcploader", "/quiet"]
+args = ["/nologo", "app.js", "mcploader", "/quiet"]
 cwd = "C:\\Users\\John\\Documents\\GitHub\\welsonjs"
 
 [tui.model_availability_nux]
