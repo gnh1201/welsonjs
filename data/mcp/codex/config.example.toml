@@ -1,4 +1,4 @@
-[projects.'c:\users\사용자']
+[projects.'c:\users\john']
 trust_level = "trusted"
 
 [projects.'c:\windows\system32']
@@ -7,10 +7,10 @@ trust_level = "trusted"
 [windows]
 sandbox = "elevated"
 
-[mcp_servers.welsonjs]
+[mcp_servers.welsonjs-mcp]
 command = "cscript.exe"
 args = ["app.js", "mcploader", "/quiet"]
-cwd = "C:\\Users\\사용자\\Documents\\GitHub\\welsonjs"
+cwd = "C:\\Users\\John\\Documents\\GitHub\\welsonjs"
 
 [tui.model_availability_nux]
 "gpt-5.6-sol" = 4
