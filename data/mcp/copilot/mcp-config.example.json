@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "welsonjs-mcp": {
+      "type": "local",
+      "command": "cscript.exe",
+      "args": ["/nologo", "C:/Users/John/Documents/GitHub/welsonjs/app.js", "mcploader", "/quiet"],
+      "env": {},
+      "tools": ["*"]
+    }
+  }
+}

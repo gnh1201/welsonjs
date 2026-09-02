@@ -62,7 +62,7 @@ function main(args) {
                             {
                                 "name": "evaluate_js_es3",
                                 "title": "Evaluate JavaScript ES3",
-                                "description": "Evaluate JavaScript with ES3 syntax (use ES3 syntax strictly)",
+                                "description": "Evaluate JavaScript with ES3 syntax strictly. If you need a shell, use `require(\"lib/shell\")` first.",
                                 "inputSchema": {
                                     "type": "object",
                                     "properties": {
@@ -100,18 +100,19 @@ function main(args) {
                                     "type": "text",
                                     "text": (function(script) {
                                         try {
-                                            var evaluate = eval;
-                                            if (!testEvaluator(evaluate)) {
-                                                throw new Error("Unsafe eval is not allowed. Please set ALLOW_UNSAFE_EVAL to true.");
+                                            if (!ALLOW_UNSAFE_EVAL) {
+                                                throw new Error("Unsafe eval is not allowed. Please set ALLOW_UNSAFE_EVAL to true if you want to allow it.");
                                             }
-                                            return String(evaluate(script));
+                                            var evaluate = new Function(script);
+                                            return String(evaluate());
                                         } catch (e) {
-                                            return "Error";
                                             isError = true;
+                                            return "Error: " + e.message;
                                         }
                                     })(params.arguments.script)
                                 }
-                            ]
+                            ],
+                            "isError": isError
                         }
                     }
                 }
