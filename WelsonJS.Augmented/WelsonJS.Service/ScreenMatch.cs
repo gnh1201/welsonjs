@@ -106,7 +106,7 @@ public class ScreenMatch
     }
 
     private ServiceMain parent;
-    private TraceLogger logger;
+    private ILogger logger;
     private List<Bitmap> templateImages;
     private string templateDirectoryPath;
     private string outputDirectoryPath;
@@ -175,7 +175,7 @@ public class ScreenMatch
         }
     }
 
-    public ScreenMatch(ServiceBase _parent, string workingDirectory, TraceLogger _logger)
+    public ScreenMatch(ServiceBase _parent, string workingDirectory, ILogger _logger)
     {
         parent = (ServiceMain)_parent;
         logger = _logger;

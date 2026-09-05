@@ -23,9 +23,9 @@ namespace WelsonJS.Launcher
 
     public sealed class JsonRpc2Dispatcher
     {
-        private readonly TraceLogger _logger;
+        private readonly ILogger _logger;
 
-        public JsonRpc2Dispatcher(TraceLogger logger)
+        public JsonRpc2Dispatcher(ILogger logger)
         {
             _logger = logger;
         }

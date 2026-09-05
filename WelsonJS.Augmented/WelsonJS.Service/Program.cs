@@ -13,7 +13,7 @@ namespace WelsonJS.Service
 {
     internal static class Program
     {
-        private static TraceLogger _logger;
+        private static ILogger _logger;
 
         /// <summary>
         /// 해당 애플리케이션의 주 진입점입니다.

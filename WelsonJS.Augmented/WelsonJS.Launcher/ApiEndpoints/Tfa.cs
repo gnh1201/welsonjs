@@ -15,16 +15,16 @@ using System.Threading.Tasks;
 
 namespace WelsonJS.Launcher.ApiEndpoints
 {
-    public class TwoFactorAuth : IApiEndpoint
+    public class Tfa : IApiEndpoint
     {
         private readonly ResourceServer Server;
         private readonly HttpClient _httpClient;
-        private readonly TraceLogger _logger;
+        private readonly ILogger _logger;
         private const string Prefix = "tfa/";
         private const string Base32Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
         private static readonly int[] ValidKeyCharLengths = new[] { 16, 32 };
 
-        public TwoFactorAuth(ResourceServer server, HttpClient httpClient, TraceLogger logger)
+        public Tfa(ResourceServer server, HttpClient httpClient, ILogger logger)
         {
             Server = server;
 

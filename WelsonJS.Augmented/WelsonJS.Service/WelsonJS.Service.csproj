@@ -102,6 +102,7 @@
   <ItemGroup>
     <Compile Include="AppSignalTraceListener.cs" />
     <Compile Include="FileEventMonitor.cs" />
+    <Compile Include="ILogger.cs" />
     <Compile Include="LogFileTraceListener.cs" />
     <Compile Include="MessageBoxTraceListener.cs" />
     <Compile Include="Model\FileMatchResult.cs" />

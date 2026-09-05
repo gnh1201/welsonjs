@@ -6,7 +6,6 @@
 using System;
 using System.Diagnostics.Eventing.Reader;
 using System.ServiceProcess;
-using System.Threading.Tasks;
 
 namespace WelsonJS.Service
 {
@@ -14,7 +13,7 @@ namespace WelsonJS.Service
     {
         private EventLogWatcher eventLogWatcher;
         private ServiceMain parent;
-        private TraceLogger logger;
+        private ILogger logger;
         private enum EventType: int
         {
             FileCreate = 11,
@@ -67,7 +66,7 @@ namespace WelsonJS.Service
             User
         }
 
-        public FileEventMonitor(ServiceBase _parent, string workingDirectory, TraceLogger _logger)
+        public FileEventMonitor(ServiceBase _parent, string workingDirectory, ILogger _logger)
         {
             parent = (ServiceMain)_parent;
             logger = _logger;

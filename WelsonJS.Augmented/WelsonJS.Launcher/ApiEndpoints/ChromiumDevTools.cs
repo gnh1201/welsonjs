@@ -16,11 +16,11 @@ namespace WelsonJS.Launcher.ApiEndpoints
     {
         private readonly ResourceServer Server;
         private readonly HttpClient _httpClient;
-        private readonly TraceLogger _logger;
+        private readonly ILogger _logger;
         private readonly WebSocketManager _wsManager = new WebSocketManager();
         private const string Prefix = "devtools/";
 
-        public ChromiumDevTools(ResourceServer server, HttpClient httpClient, TraceLogger logger)
+        public ChromiumDevTools(ResourceServer server, HttpClient httpClient, ILogger logger)
         {
             Server = server;
 

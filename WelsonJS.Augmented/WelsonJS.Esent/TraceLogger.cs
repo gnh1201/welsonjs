@@ -3,17 +3,63 @@
 // SPDX-FileCopyrightText: 2025 Namhyeon Go <gnh1201@catswords.re.kr>, Catswords OSS and WelsonJS Contributors
 // https://github.com/gnh1201/welsonjs
 // 
-// We use the ICompatibleLogger interface to maintain a BCL-first style.
-// This allows for later replacement with logging libraries such as ILogger or Log4Net.
-// 
+using System;
 using System.Diagnostics;
 
 namespace WelsonJS.Esent
 {
-    public class TraceLogger : ICompatibleLogger
+    public sealed class TraceLogger : ILogger
     {
-        public void Info(string message) => Trace.TraceInformation(message);
-        public void Warn(string message) => Trace.TraceWarning(message);
-        public void Error(string message) => Trace.TraceError(message);
+        private readonly string _name;
+
+        public TraceLogger(Type type)
+        {
+            _name = type == null ? "Unknown" : type.Name;
+        }
+
+        public void Debug(string message)
+        {
+            Write("DEBUG", message);
+        }
+
+        public void Info(string message)
+        {
+            Write("INFO", message);
+        }
+
+        public void Warn(string message)
+        {
+            Write("WARN", message);
+        }
+
+        public void Error(string message)
+        {
+            Write("ERROR", message);
+        }
+
+        public void Error(string message, Exception exception)
+        {
+            Write("ERROR", message + Environment.NewLine + exception);
+        }
+
+        public void Fatal(string message)
+        {
+            Write("FATAL", message);
+        }
+
+        public void Fatal(string message, Exception exception)
+        {
+            Write("FATAL", message + Environment.NewLine + exception);
+        }
+
+        private void Write(string level, string message)
+        {
+            Trace.WriteLine(string.Format(
+                "{0:yyyy-MM-dd HH:mm:ss.fff} [{1}] {2}: {3}",
+                DateTime.Now,
+                level,
+                _name,
+                message));
+        }
     }
 }

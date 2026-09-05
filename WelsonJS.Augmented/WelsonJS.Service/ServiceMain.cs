@@ -19,7 +19,7 @@ namespace WelsonJS.Service
     {
         private readonly string applicationName = "WelsonJS";
         private static List<Timer> timers;
-        private TraceLogger logger;
+        private ILogger logger;
         private string workingDirectory;
         private string scriptName;
         private string scriptFilePath;
@@ -38,7 +38,7 @@ namespace WelsonJS.Service
 
         private static int SM_REMOTESESSION = 0x1000;
 
-        public ServiceMain(string[] _args, TraceLogger _logger)
+        public ServiceMain(string[] _args, ILogger _logger)
         {
             InitializeComponent();
 
