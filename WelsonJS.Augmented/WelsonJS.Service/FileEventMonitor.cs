@@ -3,9 +3,6 @@
 // SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
 // https://github.com/gnh1201/welsonjs
 // 
-using ClamAV.Net.Client;
-using ClamAV.Net.Client.Results;
-using Microsoft.Extensions.Logging;
 using System;
 using System.Diagnostics.Eventing.Reader;
 using System.ServiceProcess;
@@ -17,7 +14,7 @@ namespace WelsonJS.Service
     {
         private EventLogWatcher eventLogWatcher;
         private ServiceMain parent;
-        private ILogger logger;
+        private TraceLogger logger;
         private enum EventType: int
         {
             FileCreate = 11,
@@ -69,24 +66,11 @@ namespace WelsonJS.Service
             Details,
             User
         }
-        private string clamAvConenctionString;
-        private IClamAvClient clamAvClient;
 
-        public FileEventMonitor(ServiceBase _parent, string workingDirectory, ILogger _logger)
+        public FileEventMonitor(ServiceBase _parent, string workingDirectory, TraceLogger _logger)
         {
             parent = (ServiceMain)_parent;
             logger = _logger;
-
-            try
-            {
-                clamAvConenctionString = parent.ReadSettingsValue("CLAMAV_HOST");
-            }
-            catch (Exception ex)
-            {
-                clamAvConenctionString = "tcp://127.0.0.1:3310";
-                logger.LogInformation($"Failed to read the address because of {ex.Message}. Set default: {clamAvConenctionString}");
-            }
-            ConnectToClamAv().Start();
         }
 
         public void Start()
@@ -107,7 +91,7 @@ namespace WelsonJS.Service
             }
             catch (Exception ex)
             {
-                logger.LogInformation($"Could not reach to the Sysmon service: {ex.Message}");
+                logger.Info($"Could not reach to the Sysmon service: {ex.Message}");
             }
         }
 
@@ -144,22 +128,13 @@ namespace WelsonJS.Service
                                 string image = e.EventRecord.Properties[(int)FileCreateEvent.Image]?.Value?.ToString();
                                 string fileName = e.EventRecord.Properties[(int)FileCreateEvent.TargetFilename]?.Value?.ToString();
 
-                                logger.LogInformation($"> Detected the file creation: {fileName}");
-                                logger.LogInformation(parent.DispatchServiceEvent("fileCreated", new string[] {
+                                logger.Info($"> Detected the file creation: {fileName}");
+                                logger.Info(parent.DispatchServiceEvent("fileCreated", new string[] {
                                     ruleName,
                                     processId,
                                     image,
                                     fileName
                                 }));
-
-                                if (clamAvClient != null)
-                                {
-                                    logger.LogInformation($"> Starting the ClamAV scan: {fileName}");
-                                    Task.Run(async () =>
-                                    {
-                                        await ScanWithClamAv(fileName);
-                                    });
-                                }
 
                                 break;
                             }
@@ -174,8 +149,8 @@ namespace WelsonJS.Service
                                 string desinationPort = e.EventRecord.Properties[(int)NetworkConnectionEvent.DestinationPort]?.Value?.ToString();
                                 string dstinationAddress = $"{protocol}://{destinationIp}:{desinationPort}";
 
-                                logger.LogInformation($"> Detected the network connection: {dstinationAddress}");
-                                logger.LogInformation(parent.DispatchServiceEvent("networkConnected", new string[] {
+                                logger.Info($"> Detected the network connection: {dstinationAddress}");
+                                logger.Info(parent.DispatchServiceEvent("networkConnected", new string[] {
                                     ruleName,
                                     processId,
                                     image,
@@ -195,8 +170,8 @@ namespace WelsonJS.Service
                                 string eventType = e.EventRecord.Properties[(int)RegistryEvent.EventType]?.Value?.ToString();
                                 string targetObject = e.EventRecord.Properties[(int)RegistryEvent.TargetObject]?.Value?.ToString();
 
-                                logger.LogInformation($"> Detected the registry modification: {targetObject}");
-                                logger.LogInformation(parent.DispatchServiceEvent("registryModified", new string[] {
+                                logger.Info($"> Detected the registry modification: {targetObject}");
+                                logger.Info(parent.DispatchServiceEvent("registryModified", new string[] {
                                     ruleName,
                                     processId,
                                     image,
@@ -213,45 +188,13 @@ namespace WelsonJS.Service
                 }
                 catch (Exception ex)
                 {
-                    logger.LogInformation($"Failed to process the event bacause of {ex.Message}.");
+                    logger.Info($"Failed to process the event bacause of {ex.Message}.");
                 }
             }
             else
             {
-                logger.LogInformation("The event instance was null.");
+                logger.Info("The event instance was null.");
             }
-        }
-
-        private async Task ConnectToClamAv()
-        {
-            try {
-                // Create a client
-                clamAvClient = ClamAvClient.Create(new Uri(clamAvConenctionString));
-
-                // Send PING command to ClamAV
-                await clamAvClient.PingAsync().ConfigureAwait(false);
-
-                // Get ClamAV engine and virus database version
-                VersionResult result = await clamAvClient.GetVersionAsync().ConfigureAwait(false);
-
-                logger.LogInformation($"ClamAV version {result.ProgramVersion}, Virus database version {result.VirusDbVersion}");
-            }
-            catch (Exception ex)
-            {
-                logger.LogInformation($"Failed to read the address because of {ex.Message}. {clamAvConenctionString}");
-                clamAvClient = null;
-            }
-        }
-
-        private async Task ScanWithClamAv(string remotePath)
-        {
-            ScanResult res = await clamAvClient.ScanRemotePathAsync(remotePath).ConfigureAwait(false);
-
-            logger.LogInformation($"> Scan result: Infected={res.Infected}, VirusName={res.VirusName}");
-            logger.LogInformation(parent.DispatchServiceEvent("avScanResult", new string[] {
-                res.Infected.ToString(),
-                res.VirusName
-            }));
         }
     }
 }

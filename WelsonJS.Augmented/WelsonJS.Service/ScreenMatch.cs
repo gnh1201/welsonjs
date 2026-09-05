@@ -1,6 +1,6 @@
 ﻿// ScreenMatching.cs
 // SPDX-License-Identifier: MS-RL
-// SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
+// SPDX-FileCopyrightText: 2026 Catswords OSS and WelsonJS Contributors
 // https://github.com/gnh1201/welsonjs
 // 
 using System;
@@ -8,16 +8,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.IO.Hashing;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.ServiceProcess;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
-using System.Linq;
 using Tesseract;
 using WelsonJS.Service;
-using Microsoft.Extensions.Logging;
 
 public class ScreenMatch
 {
@@ -108,7 +106,7 @@ public class ScreenMatch
     }
 
     private ServiceMain parent;
-    private ILogger logger;
+    private TraceLogger logger;
     private List<Bitmap> templateImages;
     private string templateDirectoryPath;
     private string outputDirectoryPath;
@@ -134,7 +132,7 @@ public class ScreenMatch
     private void SetBusy(bool busy)
     {
         this.busy = busy;
-        logger.LogInformation($"State changed: busy={busy}");
+        logger.Info($"State changed: busy={busy}");
     }
 
     private decimal GetScreenScalingFactor(Screen screen)
@@ -146,8 +144,8 @@ public class ScreenMatch
         decimal scalingFactor = Math.Round(Decimal.Divide(dm.dmPelsWidth, screen.Bounds.Width), 2);
         if (scalingFactor > 1)
         {
-            logger.LogInformation($"Screen with scaling detected: {scalingFactor}x");
-            logger.LogWarning("Please check the screen DPI.");
+            logger.Info($"Screen with scaling detected: {scalingFactor}x");
+            logger.Warn("Please check the screen DPI.");
         }
 
         return scalingFactor;
@@ -177,7 +175,7 @@ public class ScreenMatch
         }
     }
 
-    public ScreenMatch(ServiceBase _parent, string workingDirectory, ILogger _logger)
+    public ScreenMatch(ServiceBase _parent, string workingDirectory, TraceLogger _logger)
     {
         parent = (ServiceMain)_parent;
         logger = _logger;
@@ -219,7 +217,7 @@ public class ScreenMatch
         {
             screen_time_mode = null;
             screen_time_params = null;
-            logger.LogInformation($"Failed to read from configration file: {ex.Message}");
+            logger.Info($"Failed to read from configration file: {ex.Message}");
         }
 
         if (!String.IsNullOrEmpty(screen_time_params))
@@ -259,14 +257,14 @@ public class ScreenMatch
                         case "backward":
                             {
                                 isSearchFromEnd = true;
-                                logger.LogInformation("Use the backward search when screen time");
+                                logger.Info("Use the backward search when screen time");
                                 break;
                             }
 
                         case "save":
                             {
                                 isSaveToFile = true;
-                                logger.LogInformation("Will be save an image file when capture the screens");
+                                logger.Info("Will be save an image file when capture the screens");
                                 break;
                             }
 
@@ -379,7 +377,7 @@ public class ScreenMatch
         catch (Exception ex)
         {
             files = new string[]{};
-            logger.LogInformation($"Failed to read the directory structure: {ex.Message}");
+            logger.Info($"Failed to read the directory structure: {ex.Message}");
         }
 
         foreach (var file in files)
@@ -391,12 +389,12 @@ public class ScreenMatch
             if (!String.IsNullOrEmpty(altpath))
             {
                 realpath = altpath;
-                logger.LogInformation($"Use the alternative image: {realpath}");
+                logger.Info($"Use the alternative image: {realpath}");
             }
             else
             {
                 realpath = file;
-                logger.LogInformation($"Use the default image: {realpath}");
+                logger.Info($"Use the default image: {realpath}");
             }
 
             Bitmap bitmap = new Bitmap(realpath)
@@ -473,11 +471,11 @@ public class ScreenMatch
                 Height = templateImage.Height
             };
 
-            logger.LogInformation($"Trying match the template {templateName} on the screen {i}...");
+            logger.Info($"Trying match the template {templateName} on the screen {i}...");
 
             if (!String.IsNullOrEmpty(nextTemplateInfo.FileName) && templateName != nextTemplateInfo.FileName)
             {
-                logger.LogInformation($"Ignored the template {templateName}");
+                logger.Info($"Ignored the template {templateName}");
                 break;
             }
 
@@ -498,7 +496,7 @@ public class ScreenMatch
             {
                 string out_filepath = Path.Combine(outputDirectoryPath, out_filename);
                 ((Bitmap)out_mainImage.Clone()).Save(out_filepath);
-                logger.LogInformation($"Screenshot saved: {out_filepath}");
+                logger.Info($"Screenshot saved: {out_filepath}");
             }
 
             // List to store the positions of matched templates in the main image
@@ -507,7 +505,7 @@ public class ScreenMatch
             // If the index value is negative, retrieve and use an outdated image from the queue
             if (nextTemplateInfo.Index < 0)
             {
-                logger.LogInformation($"Finding a previous screen of {nextTemplateInfo.FileName}...");
+                logger.Info($"Finding a previous screen of {nextTemplateInfo.FileName}...");
 
                 Bitmap outdatedImage = null;
                 try
@@ -519,14 +517,14 @@ public class ScreenMatch
                             ((SampleInfo)image.Tag).FileName == nextTemplateInfo.FileName)
                         {
                             outdatedImage = image;
-                            logger.LogInformation($"Found the previous screen of {nextTemplateInfo.FileName}");
+                            logger.Info($"Found the previous screen of {nextTemplateInfo.FileName}");
                             break;
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    logger.LogInformation($"Error finding a previous screen: {ex.Message}");
+                    logger.Info($"Error finding a previous screen: {ex.Message}");
                 }
 
                 // Find the matching positions of the outdated image in the main image
@@ -534,16 +532,16 @@ public class ScreenMatch
                     matchPositions = FindTemplate(out_mainImage, outdatedImage);
                     if (matchPositions.Count > 0)
                     {
-                        logger.LogInformation("Match found with the outdated image");
+                        logger.Info("Match found with the outdated image");
                     }
                     else
                     {
-                        logger.LogInformation("No match found with the outdated image");
+                        logger.Info("No match found with the outdated image");
                     }
                 }
                 else
                 {
-                    logger.LogInformation("No match found an outdated image");
+                    logger.Info("No match found an outdated image");
                     matchPositions = new List<Point>();
                 }
             }
@@ -572,18 +570,18 @@ public class ScreenMatch
                 }
                 catch (Exception ex)
                 {
-                    logger.LogInformation($"Ignore the match. {ex.Message}");
+                    logger.Info($"Ignore the match. {ex.Message}");
                 }
             }
         }
 
         if (results.Count > 0)
         {
-            logger.LogInformation("Match found");
+            logger.Info("Match found");
         }
         else
         {
-            logger.LogInformation($"No match found");
+            logger.Info($"No match found");
         }
 
         templateCurrentIndex = ++templateCurrentIndex % templateImages.Count;
@@ -641,24 +639,24 @@ public class ScreenMatch
             else
             {
                 outdatedSamples.Enqueue(croppedNodupBitmap);
-                logger.LogInformation($"Added to the image queue. {templateName}");
+                logger.Info($"Added to the image queue. {templateName}");
             }
         }
 
         // if use Clipboard
         if (sampleClipboard.Contains(templateName))
         {
-            logger.LogInformation($"Trying to use the clipboard... {templateName}");
+            logger.Info($"Trying to use the clipboard... {templateName}");
             Thread th = new Thread(new ThreadStart(() =>
             {
                 try
                 {
                     Clipboard.SetImage((Bitmap)croppedBitmap.Clone());
-                    logger.LogInformation($"Copied the image to Clipboard");
+                    logger.Info($"Copied the image to Clipboard");
                 }
                 catch (Exception ex)
                 {
-                    logger.LogInformation($"Failed to copy to the clipboard: {ex.Message}");
+                    logger.Info($"Failed to copy to the clipboard: {ex.Message}");
                 }
             }));
             th.SetApartmentState(ApartmentState.STA);
@@ -676,14 +674,14 @@ public class ScreenMatch
                     {
                         text = page.GetText();
 
-                        logger.LogInformation($"Mean confidence: {page.GetMeanConfidence()}");
-                        logger.LogInformation($"Text (GetText): {text}");
+                        logger.Info($"Mean confidence: {page.GetMeanConfidence()}");
+                        logger.Info($"Text (GetText): {text}");
                     }
                 }
             }
             catch (Exception ex)
             {
-                logger.LogInformation($"Failed to OCR: {ex.Message}");
+                logger.Info($"Failed to OCR: {ex.Message}");
             }
         }
 
@@ -756,13 +754,13 @@ public class ScreenMatch
                             }
                             catch (Exception ex)
                             {
-                                logger.LogInformation($"Ignore the match. {ex.Message}");
+                                logger.Info($"Ignore the match. {ex.Message}");
                             }
                         });
                     }
                 }
                 catch (Exception ex) {
-                    logger.LogInformation($"Error {ex.Message}");
+                    logger.Info($"Error {ex.Message}");
                 }
             }
             return true;
@@ -920,7 +918,7 @@ public class ScreenMatch
             bitmap.Save(ms, System.Drawing.Imaging.ImageFormat.Png);
 
             byte[] bitmapBytes = ms.ToArray();
-            Crc32 crc32 = new Crc32();
+            System.IO.Hashing.Crc32 crc32 = new System.IO.Hashing.Crc32();
             crc32.Append(bitmapBytes);
 
             return BitConverter.ToUInt32(crc32.GetCurrentHash(), 0);

@@ -3,17 +3,17 @@
 // SPDX-FileCopyrightText: 2025 Catswords OSS and WelsonJS Contributors
 // https://github.com/gnh1201/welsonjs
 // 
-using Microsoft.Extensions.Logging;
 using System;
+using System.Configuration;
+using System.Diagnostics;
 using System.IO;
 using System.ServiceProcess;
-using WelsonJS.Service.Logging;
 
 namespace WelsonJS.Service
 {
     internal static class Program
     {
-        private static ILogger logger;
+        private static TraceLogger _logger;
 
         /// <summary>
         /// 해당 애플리케이션의 주 진입점입니다.
@@ -21,10 +21,25 @@ namespace WelsonJS.Service
         /// 
         static void Main(string[] args)
         {
-            // create the logger
-            ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
-            factory.AddDirectory(Path.GetTempPath());
-            logger = factory.CreateLogger("welsonjs");
+            // Initialize file-based logging before external assembly resolution begins.
+            string logDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "logs");
+            Trace.Listeners.Add(new LogFileTraceListener(logDirectory));
+
+            // Display a message box whenever Trace.TraceError() is called.
+            Trace.Listeners.Add(new MessageBoxTraceListener());
+
+            // AppSignal (Error Tracking & Performance Monitoring) integration
+            // Free AppSingal plan for open-source projects: https://www.appsignal.com/open-source?utm_source=welsonjs
+            string appSignalApiPrefix = GetAppConfig("AppSignalApiPrefix");
+            string appSignalApiKey = GetAppConfig("AppSignalApiKey");
+            if (!string.IsNullOrEmpty(appSignalApiKey))
+            {
+                Trace.Listeners.Add(new AppSignalTraceListener(
+                    appSignalApiKey, null, "WelsonJS.Launcher", appSignalApiPrefix));
+            }
+
+            // set up logger
+            _logger = new TraceLogger(typeof(Program));
 
             // create the service
             if (Environment.UserInteractive)
@@ -34,15 +49,14 @@ namespace WelsonJS.Service
                 Console.WriteLine();
                 Console.WriteLine("Service is running...");
 
-                ServiceMain svc = new ServiceMain(args, logger);
+                ServiceMain svc = new ServiceMain(args, _logger);
                 svc.TestStartupAndStop();
             }
             else
             {
-                ServiceBase[] ServicesToRun;
-                ServicesToRun = new ServiceBase[]
+                ServiceBase[] ServicesToRun = new ServiceBase[]
                 {
-                    new ServiceMain(args, logger)
+                    new ServiceMain(args, _logger)
                 };
                 ServiceBase.Run(ServicesToRun);
             }
@@ -63,6 +77,23 @@ namespace WelsonJS.Service
             }
 
             return path;
+        }
+
+        public static string GetAppConfig(string key)
+        {
+            string value = ConfigurationManager.AppSettings[key];
+            if (!string.IsNullOrEmpty(value))
+            {
+                return value;
+            }
+
+            value = Properties.Resources.ResourceManager.GetString(key);
+            if (!string.IsNullOrEmpty(value))
+            {
+                return value;
+            }
+
+            return null;
         }
     }
 }
