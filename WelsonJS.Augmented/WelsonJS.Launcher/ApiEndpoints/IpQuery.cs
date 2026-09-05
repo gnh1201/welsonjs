@@ -30,10 +30,10 @@ namespace WelsonJS.Launcher.ApiEndpoints
     {
         private readonly ResourceServer Server;
         private readonly HttpClient _httpClient;
-        private readonly TraceLogger _logger;
+        private readonly ILogger _logger;
         private const string Prefix = "ip-query/";
 
-        public IpQuery(ResourceServer server, HttpClient httpClient, TraceLogger logger)
+        public IpQuery(ResourceServer server, HttpClient httpClient, ILogger logger)
         {
             Server = server;
 

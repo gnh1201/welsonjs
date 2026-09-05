@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace WelsonJS.Launcher
 {
-    public sealed class TraceLogger
+    public sealed class TraceLogger : ILogger
     {
         private readonly string _name;
 

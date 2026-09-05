@@ -24,13 +24,12 @@ namespace WelsonJS.Launcher
     {
         private readonly HttpListener _listener;
         private CancellationTokenSource _cts;
-        private Task _serverTask;
         private bool _isRunning;
         private string _prefix;
         private string _resourceName;
         private readonly List<IApiEndpoint> _apis = new List<IApiEndpoint>();
         private BlobConfig _blobConfig;
-        private readonly TraceLogger _logger;
+        private readonly ILogger _logger;
 
         private static readonly HttpClient _httpClient = new HttpClient();
         private static readonly string _defaultMimeType = "application/octet-stream";
@@ -46,7 +45,7 @@ namespace WelsonJS.Launcher
             TryParseAllowedOrigins();
         }
 
-        public ResourceServer(string prefix, string resourceName, TraceLogger logger = null)
+        public ResourceServer(string prefix, string resourceName, ILogger logger = null)
         {
             // Set the logger
             _logger = logger ?? new TraceLogger(typeof(ResourceServer));
@@ -69,7 +68,7 @@ namespace WelsonJS.Launcher
             _apis.Add(new ApiEndpoints.ChromiumDevTools(this, _httpClient, _logger));
             _apis.Add(new ApiEndpoints.DnsQuery(this, _httpClient, _logger));
             _apis.Add(new ApiEndpoints.IpQuery(this, _httpClient, _logger));
-            _apis.Add(new ApiEndpoints.TwoFactorAuth(this, _httpClient, _logger));
+            _apis.Add(new ApiEndpoints.Tfa(this, _httpClient, _logger));
             _apis.Add(new ApiEndpoints.Whois(this, _httpClient, _logger));
             _apis.Add(new ApiEndpoints.ImageColorPicker(this, _httpClient, _logger));
             _apis.Add(new ApiEndpoints.JsonRpc2(this, _httpClient, _logger));
@@ -98,7 +97,7 @@ namespace WelsonJS.Launcher
             }
 
             // Run a task with cancellation token
-            _serverTask = Task.Run(() => ListenLoop(_cts.Token));
+            Task.Run(() => ListenLoop(_cts.Token));
         }
 
         public void Stop()
@@ -472,7 +471,7 @@ namespace WelsonJS.Launcher
             }
         }
 
-        private static void TryParseAllowedOrigins(TraceLogger logger = null)
+        private static void TryParseAllowedOrigins(ILogger logger = null)
         {
             var raw = Program.GetAppConfig("ResourceServerAllowOrigins");
 

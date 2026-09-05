@@ -127,7 +127,7 @@ namespace Catswords.TlsReport
         {
             try
             {
-                var _ = SecurityProtocolType.Tls12;
+                _ = SecurityProtocolType.Tls12;
                 return Pass("Runtime Enum: SecurityProtocolType.Tls12", "Available.");
             }
             catch
@@ -140,7 +140,7 @@ namespace Catswords.TlsReport
         {
             try
             {
-                var _ = SslProtocols.Tls12;
+                _ = SslProtocols.Tls12;
                 return Pass("Runtime Enum: SslProtocols.Tls12", "Available.");
             }
             catch

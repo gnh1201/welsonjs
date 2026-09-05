@@ -3,15 +3,18 @@
 // SPDX-FileCopyrightText: 2025 Namhyeon Go <gnh1201@catswords.re.kr>, Catswords OSS and WelsonJS Contributors
 // https://github.com/gnh1201/welsonjs
 // 
-// We use the ICompatibleLogger interface to maintain a BCL-first style.
-// This allows for later replacement with logging libraries such as ILogger or Log4Net.
-// 
+using System;
+
 namespace WelsonJS.Esent
 {
-    public interface ICompatibleLogger
+    public interface ILogger
     {
+        void Debug(string message);
         void Info(string message);
         void Warn(string message);
         void Error(string message);
+        void Error(string message, Exception exception);
+        void Fatal(string message);
+        void Fatal(string message, Exception exception);
     }
 }

@@ -1,12 +1,7 @@
-﻿// TraceLogger.cs (WelsonJS.Esent)
-// SPDX-License-Identifier: MIT
-// SPDX-FileCopyrightText: 2025 Namhyeon Go <gnh1201@catswords.re.kr>, Catswords OSS and WelsonJS Contributors
-// https://github.com/gnh1201/welsonjs
-// 
-using System;
+﻿using System;
 using System.Diagnostics;
 
-namespace WelsonJS.Esent
+namespace WelsonJS.Service
 {
     public sealed class TraceLogger : ILogger
     {
