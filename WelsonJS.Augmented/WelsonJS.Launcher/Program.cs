@@ -43,7 +43,7 @@ namespace WelsonJS.Launcher
             if (!string.IsNullOrEmpty(appSignalApiKey))
             {
                 Trace.Listeners.Add(new AppSignalTraceListener(
-                    appSignalApiKey, null, "WelsonJS.Launcher", appSignalApiPrefix));
+                    appSignalApiKey, null, typeof(Program).Namespace ?? "WelsonJS.Launcher", appSignalApiPrefix));
             }
 
             // get the date time format
