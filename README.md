@@ -13,6 +13,7 @@
 [![Open to work](https://img.shields.io/badge/%23-OPENTOWORK-green?utm_source=welsonjs)](https://github.com/gnh1201/welsonjs/discussions/167?utm_source=welsonjs)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg?utm_source=welsonjs)](https://deepwiki.com/gnh1201/welsonjs?utm_source=welsonjs)
 [![MCP](https://img.shields.io/badge/-MCP-black?logo=modelcontextprotocol&utm_source=welsonjs)](https://github.com/gnh1201/welsonjs/wiki/MCP-server?utm_source=welsonjs)
+[![Powered by OrcaRouter](https://img.shields.io/badge/Powered_by-OrcaRouter-2563eb)](https://www.orcarouter.ai/ref/ref_52d30a71b6fb8416d0fc)
 
 <img src="https://catswords.blob.core.windows.net/welsonjs/images/logo.svg?utm_source=welsonjs" height="32" alt="WelsonJS logo with four diagonal stripes in red, green, blue, and yellow, overlaid with the letters JS."/> WelsonJS - Build a Windows app on the Windows built-in JavaScript engine.
 
