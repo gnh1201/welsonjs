@@ -244,11 +244,18 @@ I am always open. Collaboration, opportunities, and community activities are all
 For offline copy requests, consulting, mentoring, and technical support inquiries, please check [this link](https://catswords.z12.web.core.windows.net/?utm_source=welsonjs).
 
 ## Open-source software license
+For detailed information on the open-source license status of this project, please refer to [FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs.svg?type=large&utm_source=welsonjs).
+
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs.svg?type=large&utm_source=welsonjs)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs?ref=badge_large&utm_source=welsonjs)
 
 ## Subprojects
 * [catswords-jsrt-rs](https://github.com/gnh1201/catswords-jsrt-rs?utm_source=welsonjs): Minimal ChakraCore (JsRT) bindings for Rust.
 * [jsrt-claw](https://github.com/gnh1201/jsrt-claw?utm_source=welsonjs): OpenClaw-compatible skill definition for a built-in JSRT (JScript 5.x).
+
+## WelsonJS on Product Hunt
+WelsonJS was featured on Product Hunt on September 9th, 2026, at 12:01 AM PDT.
+
+[![WelsonJS on Product Hunt](https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1245343&theme=light&t=1788932620105)](https://www.producthunt.com/products/welsonjs?embed=true&amp;utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-welsonjs)
 
 ## Disclaimer
 To the maximum extent permitted by applicable law, Namhyeon Go and Catswords Research shall not be held liable for any direct, indirect, incidental, special, or consequential damages arising out of or in connection with the use of this software outside its intended purpose or scope.
