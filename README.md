@@ -9,6 +9,7 @@
 [![YouTube promotion video](https://img.shields.io/badge/YouTube-red?logo=youtube&utm_source=welsonjs)](https://youtu.be/JavH7Dms8-U?utm_source=welsonjs)
 [![Discord chat](https://img.shields.io/discord/359930650330923008?logo=discord&utm_source=welsonjs)](https://discord.gg/XKG5CjtXEj?utm_source=welsonjs)
 [![G2](https://img.shields.io/badge/G2-FF492C?logo=g2&logoColor=fff&utm_source=welsonjs)](https://www.g2.com/products/welsonjs/reviews?utm_source=welsonjs)
+[![Product Hunt](https://img.shields.io/badge/Product%20Hunt-gray?logo=producthunt&utm_source=welsonjs)](https://www.producthunt.com/products/welsonjs?embed=true&amp;utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-welsonjs)
 [![Trustpilot](https://img.shields.io/badge/Trustpilot-00B67A?logo=trustpilot&logoColor=fff&utm_source=welsonjs)](https://www.trustpilot.com/review/catswords.com?utm_source=welsonjs)
 [![Open to work](https://img.shields.io/badge/%23-OPENTOWORK-green?utm_source=welsonjs)](https://github.com/gnh1201/welsonjs/discussions/167?utm_source=welsonjs)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg?utm_source=welsonjs)](https://deepwiki.com/gnh1201/welsonjs?utm_source=welsonjs)
