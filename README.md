@@ -9,6 +9,7 @@
 [![YouTube promotion video](https://img.shields.io/badge/YouTube-red?logo=youtube&utm_source=welsonjs)](https://youtu.be/JavH7Dms8-U?utm_source=welsonjs)
 [![Discord chat](https://img.shields.io/discord/359930650330923008?logo=discord&utm_source=welsonjs)](https://discord.gg/XKG5CjtXEj?utm_source=welsonjs)
 [![G2](https://img.shields.io/badge/G2-FF492C?logo=g2&logoColor=fff&utm_source=welsonjs)](https://www.g2.com/products/welsonjs/reviews?utm_source=welsonjs)
+[![Product Hunt](https://img.shields.io/badge/Product%20Hunt-gray?logo=producthunt&utm_source=welsonjs)](https://www.producthunt.com/products/welsonjs?embed=true&amp;utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-welsonjs)
 [![Trustpilot](https://img.shields.io/badge/Trustpilot-00B67A?logo=trustpilot&logoColor=fff&utm_source=welsonjs)](https://www.trustpilot.com/review/catswords.com?utm_source=welsonjs)
 [![Open to work](https://img.shields.io/badge/%23-OPENTOWORK-green?utm_source=welsonjs)](https://github.com/gnh1201/welsonjs/discussions/167?utm_source=welsonjs)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg?utm_source=welsonjs)](https://deepwiki.com/gnh1201/welsonjs?utm_source=welsonjs)
@@ -244,11 +245,18 @@ I am always open. Collaboration, opportunities, and community activities are all
 For offline copy requests, consulting, mentoring, and technical support inquiries, please check [this link](https://catswords.z12.web.core.windows.net/?utm_source=welsonjs).
 
 ## Open-source software license
+For detailed information on the open-source license status of this project, please refer to [FOSSA Status](https://app.fossa.com/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs?ref=badge_large&utm_source=welsonjs).
+
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs.svg?type=large&utm_source=welsonjs)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs?ref=badge_large&utm_source=welsonjs)
 
 ## Subprojects
 * [catswords-jsrt-rs](https://github.com/gnh1201/catswords-jsrt-rs?utm_source=welsonjs): Minimal ChakraCore (JsRT) bindings for Rust.
 * [jsrt-claw](https://github.com/gnh1201/jsrt-claw?utm_source=welsonjs): OpenClaw-compatible skill definition for a built-in JSRT (JScript 5.x).
+
+## WelsonJS on Product Hunt
+WelsonJS was featured on Product Hunt on September 9th, 2026, at 12:01 AM PDT.
+
+[![WelsonJS on Product Hunt](https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1245343&theme=light&t=1788932620105)](https://www.producthunt.com/products/welsonjs?embed=true&amp;utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-welsonjs)
 
 ## Disclaimer
 To the maximum extent permitted by applicable law, Namhyeon Go and Catswords Research shall not be held liable for any direct, indirect, incidental, special, or consequential damages arising out of or in connection with the use of this software outside its intended purpose or scope.
