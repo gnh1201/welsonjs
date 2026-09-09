@@ -16,7 +16,7 @@
 [![MCP](https://img.shields.io/badge/-MCP-black?logo=modelcontextprotocol&utm_source=welsonjs)](https://github.com/gnh1201/welsonjs/wiki/MCP-server?utm_source=welsonjs)
 [![Powered by OrcaRouter](https://img.shields.io/badge/Powered_by-OrcaRouter-2563eb)](https://www.orcarouter.ai/ref/ref_52d30a71b6fb8416d0fc)
 
-<img src="https://catswords.blob.core.windows.net/welsonjs/images/logo.svg?utm_source=welsonjs" height="32" alt="WelsonJS logo with four diagonal stripes in red, green, blue, and yellow, overlaid with the letters JS."/> WelsonJS - Build a Windows app on the Windows built-in JavaScript engine.
+<img src="https://catswords.blob.core.windows.net/welsonjs/images/logo.svg?utm_source=welsonjs" height="32" alt="WelsonJS logo with four diagonal stripes in red, green, blue, and yellow, overlaid with the letters JS."/> WelsonJS - Build apps with the Windows built-in JavaScript engine.
 
 ![Cover Art: Windows in 1999, Art by @_bag0@x.com](https://catswords.blob.core.windows.net/welsonjs/images/cover.png?utm_source=welsonjs)
 
