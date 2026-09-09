@@ -13,5 +13,6 @@
     "scrapeops": "file:data/scrapeops_apikey.txt",
     "serpapi": "file:data/serpapi_apikey.txt",
     "aviationstack": "file:data/aviationstack_apikey.txt",
-    "abuseipdb": "file:data/abuseipdb_apikey.txt"
+    "abuseipdb": "file:data/abuseipdb_apikey.txt",
+    "orcarouter": "file:data/orcarouter_apikey.txt"
 }
