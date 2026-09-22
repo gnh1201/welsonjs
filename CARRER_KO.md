@@ -1,5 +1,7 @@
 # WelsonJS에 함께 기여해 주세요
 
+[English version available](CARRER.md)
+
 ## Windows에서 JavaScript를 더 오래, 더 넓게
 
 **WelsonJS는 Windows 기반의 산업용 JavaScript 실행 환경을 확장하고 현대화하는 오픈소스 프로젝트입니다.**
