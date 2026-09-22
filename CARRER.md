@@ -1,5 +1,7 @@
 # Join WelsonJS
 
+[Korean version available](CARRER_KO.md)
+
 ## Making JavaScript Run Longer, and Go Further on Windows
 
 **WelsonJS is an open-source project focused on extending and modernizing an industrial JavaScript runtime environment for Windows.**
