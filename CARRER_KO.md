@@ -119,3 +119,7 @@ WelsonJS에 참여하기 위해 큰 기능을 처음부터 구현할 필요는 �
 **Windows와 JavaScript를 함께 다루는 것이 재미있다면, 또는 JavaScript Runtime의 가능성을 더 넓혀보고 싶다면, 그것만으로도 좋은 출발점입니다.**
 
 WelsonJS를 함께 발전시켜 주세요.
+
+## 연락
+
+* oss@catswords.re.kr
