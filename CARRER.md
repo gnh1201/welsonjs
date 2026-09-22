@@ -37,6 +37,7 @@ Experience or interest in any of the following can be useful in different areas 
 * Legacy system maintenance and modernization
 * Large-scale data processing and performance optimization
 * System design and development for traffic spikes or isolated and closed-network environments
+* System design and development for industrial control using mobile networks such as LTE and tethering
 * Development for Linux, Android, iOS, and other platforms
 * Code review and open-source collaboration through GitHub
 
