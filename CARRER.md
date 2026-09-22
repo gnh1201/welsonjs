@@ -121,3 +121,6 @@ WelsonJS **does not currently offer formal employment or hiring arrangements**.
 However, we may be able to provide **bug bounties or other forms of developer support** for meaningful contributions to the project.
 
 If you would like to discuss a particular contribution or support arrangement, feel free to reach out at any time. **The scope and form of support can be discussed and negotiated depending on the contribution and the circumstances of the project.**
+
+## Contact
+* oss@catswords.re.kr
