@@ -39,6 +39,7 @@ Experience or interest in any of the following can be useful in different areas 
 * System design and development for traffic spikes or isolated and closed-network environments
 * System design and development for industrial control using mobile networks such as LTE and tethering
 * Development for Linux, Android, iOS, and other platforms
+* Understanding or development experience with online video streaming technologies
 * Applying emerging AI technologies, including LLMs, to industrial systems
 * Code review and open-source collaboration through GitHub
 
