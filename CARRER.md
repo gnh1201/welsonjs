@@ -1,6 +1,6 @@
 # Join WelsonJS
 
-[Korean version available](CARRER_KO.md)
+[Korean (한국어) version available](CARRER_KO.md)
 
 ## Making JavaScript Run Longer, and Go Further on Windows
 
