@@ -71,7 +71,7 @@ JsonRpc2.register("tools/list", function (params, id) {
                     + "Provides flexible system-level capabilities through WelsonJS. "
                     + "ES3 or ES5-compatible syntax is recommended for maximum compatibility. "
                     + "Set allowUnsafeEval to true to allow execution of the provided script. "
-                    + "Always respect the specified execution timeout. "
+                    + "The specified execution timeout is optional and may be considered when appropriate. "
                     + "Whenever possible, perform operations visibly through the user interface rather than in the background. "
                     + "Unless explicitly instructed otherwise, do not save results or intermediate data to files. "
                     + "Each script execution is independent, so state from previous executions may not be shared. "
@@ -95,9 +95,9 @@ JsonRpc2.register("tools/list", function (params, id) {
                         "timeout": {
                             "type": "integer",
                             "description": "Maximum execution time in milliseconds.",
-                            "default": 180000,
-                            "minimum": 1000,
-                            "maximum": 180000
+                            "default": 900000,
+                            "minimum": 180000,
+                            "maximum": 900000
                         }
                     },
                     "required": ["script"]
@@ -122,9 +122,9 @@ JsonRpc2.register("tools/list", function (params, id) {
                         "timeout": {
                             "type": "integer",
                             "description": "Maximum execution time in milliseconds.",
-                            "default": 180000,
-                            "minimum": 1000,
-                            "maximum": 180000
+                            "default": 900000,
+                            "minimum": 180000,
+                            "maximum": 900000
                         }
                     },
                     "required": ["script"]
