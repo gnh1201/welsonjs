@@ -64,23 +64,30 @@ JsonRpc2.register("tools/list", function (params, id) {
                     "required": ["a", "b"]
                 }
             },
-            {
-                "name": "evaluate_js",
-                "title": "Evaluate JavaScript",
-                "description": "Evaluate JavaScript for Windows system control and automation. "
-                    + "Provides flexible system-level capabilities through WelsonJS. "
-                    + "ES3 or ES5-compatible syntax is recommended for maximum compatibility. "
-                    + "If you need a shell, use `require(\"lib/shell\")` first.",
-                "inputSchema": {
-                    "type": "object",
-                    "properties": {
-                        "script": {
-                            "type": "string"
-                        }
-                    },
-                    "required": ["script"]
-                }
-            },
+			{
+				"name": "evaluate_js",
+				"title": "Evaluate JavaScript",
+				"description": "Evaluate JavaScript for Windows system control and automation. "
+					+ "Provides flexible system-level capabilities through WelsonJS. "
+					+ "ES3 or ES5-compatible syntax is recommended for maximum compatibility. "
+					+ "Set allowUnsafeEval to true when execution of the provided script is required. "
+					+ "For shell access, use require(\"lib/shell\") first.",
+				"inputSchema": {
+					"type": "object",
+					"properties": {
+						"script": {
+							"type": "string",
+							"description": "JavaScript code to execute."
+						},
+						"allowUnsafeEval": {
+							"type": "boolean",
+							"description": "Set to true to allow execution of the provided JavaScript code. Required unless ALLOW_UNSAFE_EVAL is enabled.",
+							"default": false
+						}
+					},
+					"required": ["script"]
+				}
+			},
             {
                 "name": "evaluate_js_es3",
                 "title": "Evaluate JavaScript ES3",
@@ -89,7 +96,13 @@ JsonRpc2.register("tools/list", function (params, id) {
                     "type": "object",
                     "properties": {
                         "script": {
-                            "type": "string"
+                            "type": "string",
+                            "description": "JavaScript code"
+                        },
+                        "allowUnsafeEval": {
+                            "type": "boolean",
+                            "description": "Set to true to allow execution of the provided JavaScript code. Required unless ALLOW_UNSAFE_EVAL is enabled.",
+                            "default": false
                         }
                     },
                     "required": ["script"]
@@ -102,9 +115,7 @@ JsonRpc2.register("tools/list", function (params, id) {
 
 // tools/call
 JsonRpc2.register("tools/call", function (params, id) {
-    var isError = false;
     var function_calling_name = params.name;
-
     if (function_calling_name == "add_both_numbers") {
         return {
             "content": [
@@ -118,13 +129,19 @@ JsonRpc2.register("tools/call", function (params, id) {
     }
     
     if (function_calling_name == "evaluate_js" || function_calling_name == "evaluate_js_es3") {
+        var isError = false;
+        var allowUnsafeEval = params.arguments
+            && ("allowUnsafeEval" in params.arguments)
+            ? params.arguments.allowUnsafeEval
+            : false;
+
         return {
             "content": [
                 {
                     "type": "text",
                     "text": (function(script) {
                         try {
-                            if (!ALLOW_UNSAFE_EVAL) {
+                            if (!ALLOW_UNSAFE_EVAL && !allowUnsafeEval) {
                                 throw new Error("Unsafe eval is not allowed. Please set ALLOW_UNSAFE_EVAL to true if you want to allow it.");
                             }
                             var evaluate = new Function(script);
