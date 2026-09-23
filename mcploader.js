@@ -32,7 +32,7 @@ JsonRpc2.register("initialize", function (params, id) {
         },
         "serverInfo": {
             "name": "WelsonJS MCP",
-            "version": "1.0.0"
+            "version": "1.1.0"
         },
         "isError": false
     };
@@ -65,9 +65,26 @@ JsonRpc2.register("tools/list", function (params, id) {
                 }
             },
             {
+                "name": "evaluate_js",
+                "title": "Evaluate JavaScript",
+                "description": "Evaluate JavaScript for Windows system control and automation. "
+                    + "Provides flexible system-level capabilities through WelsonJS. "
+                    + "ES3 or ES5-compatible syntax is recommended for maximum compatibility. "
+                    + "If you need a shell, use `require(\"lib/shell\")` first.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "script": {
+                            "type": "string"
+                        }
+                    },
+                    "required": ["script"]
+                }
+            },
+            {
                 "name": "evaluate_js_es3",
                 "title": "Evaluate JavaScript ES3",
-                "description": "Evaluate JavaScript with ES3 syntax strictly. If you need a shell, use `require(\"lib/shell\")` first.",
+                "description": "Deprecated. Please use evaluate_js instead.",
                 "inputSchema": {
                     "type": "object",
                     "properties": {
@@ -100,7 +117,7 @@ JsonRpc2.register("tools/call", function (params, id) {
         };
     }
     
-    if (function_calling_name == "evaluate_js_es3") {
+    if (function_calling_name == "evaluate_js" || function_calling_name == "evaluate_js_es3") {
         return {
             "content": [
                 {

@@ -9,7 +9,7 @@
 // 
 "use strict";
 
-var ALLOW_UNSAFE_EVAL = false; // Verify the evaluator with testEvaluator() before using eval().
+var ALLOW_UNSAFE_EVAL = true; // Verify the evaluator with testEvaluator() before using eval().
 var STRICT_INTEGRITY = false;  // When enabled, only scripts matching a trusted integrity hash may execute.
 var INTEGRITY_ALGORITHM = "default";  // "default" uses Adler-32; SHA-256/384/512 use the built-in .NET implementation.
 var INTEGRITY_ALLOWED_ALGORITHMS = {
