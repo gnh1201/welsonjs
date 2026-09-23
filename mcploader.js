@@ -64,30 +64,31 @@ JsonRpc2.register("tools/list", function (params, id) {
                     "required": ["a", "b"]
                 }
             },
-			{
-				"name": "evaluate_js",
-				"title": "Evaluate JavaScript",
-				"description": "Evaluate JavaScript for Windows system control and automation. "
-					+ "Provides flexible system-level capabilities through WelsonJS. "
-					+ "ES3 or ES5-compatible syntax is recommended for maximum compatibility. "
-					+ "Set allowUnsafeEval to true when execution of the provided script is required. "
-					+ "For shell access, use require(\"lib/shell\") first.",
-				"inputSchema": {
-					"type": "object",
-					"properties": {
-						"script": {
-							"type": "string",
-							"description": "JavaScript code to execute."
-						},
-						"allowUnsafeEval": {
-							"type": "boolean",
-							"description": "Set to true to allow execution of the provided JavaScript code. Required unless ALLOW_UNSAFE_EVAL is enabled.",
-							"default": false
-						}
-					},
-					"required": ["script"]
-				}
-			},
+            {
+                "name": "evaluate_js",
+                "title": "Evaluate JavaScript",
+                "description": "Evaluate JavaScript for Windows system control and automation. "
+                    + "Provides flexible system-level capabilities through WelsonJS. "
+                    + "ES3 or ES5-compatible syntax is recommended for maximum compatibility. "
+                    + "Set allowUnsafeEval to true to allow execution of the provided script. "
+                    + "Use require(\"lib/shell\") for shell access. "
+                    + "Use require(\"lib/msoffice\") to access Microsoft Excel.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "script": {
+                            "type": "string",
+                            "description": "JavaScript code to execute."
+                        },
+                        "allowUnsafeEval": {
+                            "type": "boolean",
+                            "description": "Set to true to allow execution of the provided JavaScript code. Required unless ALLOW_UNSAFE_EVAL is enabled.",
+                            "default": false
+                        }
+                    },
+                    "required": ["script"]
+                }
+            },
             {
                 "name": "evaluate_js_es3",
                 "title": "Evaluate JavaScript ES3",
