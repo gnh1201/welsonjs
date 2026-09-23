@@ -71,8 +71,15 @@ JsonRpc2.register("tools/list", function (params, id) {
                     + "Provides flexible system-level capabilities through WelsonJS. "
                     + "ES3 or ES5-compatible syntax is recommended for maximum compatibility. "
                     + "Set allowUnsafeEval to true to allow execution of the provided script. "
+                    + "The specified execution timeout is optional and may be considered when appropriate. "
+                    + "Whenever possible, perform operations visibly through the user interface rather than in the background. "
+                    + "Unless explicitly instructed otherwise, do not save results or intermediate data to files. "
+                    + "Each script execution is independent, so state from previous executions may not be shared. "
+                    + "Make every effort to restore or reacquire any necessary objects or processes. "
+                    + "Always use Unicode escape sequences for non-ASCII text. "
                     + "Use require(\"lib/shell\") for shell access. "
-                    + "Use require(\"lib/msoffice\") to access Microsoft Excel.",
+                    + "Use require(\"lib/msoffice\") to access Microsoft Excel. "
+                    + "For Microsoft Office applications other than Excel, connect to their COM objects directly.",
                 "inputSchema": {
                     "type": "object",
                     "properties": {
@@ -84,6 +91,13 @@ JsonRpc2.register("tools/list", function (params, id) {
                             "type": "boolean",
                             "description": "Set to true to allow execution of the provided JavaScript code. Required unless ALLOW_UNSAFE_EVAL is enabled.",
                             "default": false
+                        },
+                        "timeout": {
+                            "type": "integer",
+                            "description": "Maximum execution time in milliseconds.",
+                            "default": 900000,
+                            "minimum": 180000,
+                            "maximum": 900000
                         }
                     },
                     "required": ["script"]
@@ -104,6 +118,13 @@ JsonRpc2.register("tools/list", function (params, id) {
                             "type": "boolean",
                             "description": "Set to true to allow execution of the provided JavaScript code. Required unless ALLOW_UNSAFE_EVAL is enabled.",
                             "default": false
+                        },
+                        "timeout": {
+                            "type": "integer",
+                            "description": "Maximum execution time in milliseconds.",
+                            "default": 900000,
+                            "minimum": 180000,
+                            "maximum": 900000
                         }
                     },
                     "required": ["script"]
