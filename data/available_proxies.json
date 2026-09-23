@@ -12,6 +12,18 @@
         "documentation": "https://scrapeops.io?fpr=namhyeon75"
     },
     {
+        "type": "stateless",
+        "provider": "scrapingant",
+        "url": "https://api.scrapingant.com/v2/general?url={url}&x-api-key={api_key}",
+        "documentation": "https://scrapingant.com/?ref=zdbjmzn"
+    },
+    {
+        "type": "stateful",
+        "provider": "scrapingant",
+        "url": "http://scrapingant:{api_key}@proxy.scrapingant.com:8080",
+        "documentation": "https://scrapingant.com/?ref=zdbjmzn"
+    },
+    {
         "type": "serp",
         "provider": "serpapi",
         "url": "https://serpapi.com/search.json?api_key={api_key}&engine={engine}&q={q}",
