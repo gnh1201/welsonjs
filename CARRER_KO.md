@@ -1,6 +1,6 @@
 # WelsonJS에 함께 기여해 주세요
 
-[English version available](CARRER.md)
+[English version available](CAREER.md)
 
 ## Windows에서 JavaScript를 더 오래, 더 넓게
 
