@@ -18,8 +18,6 @@
 
 <img src="https://catswords.blob.core.windows.net/welsonjs/images/logo.svg?utm_source=welsonjs" height="32" alt="WelsonJS logo with four diagonal stripes in red, green, blue, and yellow, overlaid with the letters JS."/> WelsonJS - Built-in JavaScript for Industrial Automation on Windows.
 
-> ***Incident***: [[September 24, 2026 KST] Object Storage Incident Notice #497](https://github.com/gnh1201/welsonjs/discussions/497)
-
 ![Cover Art: Windows in 1999, Art by @_bag0@x.com](https://catswords.blob.core.windows.net/welsonjs/images/cover.png?utm_source=welsonjs)
 
 Now, you can build, automate, and orchestrate Windows applications and industrial systems using JavaScript, transpiled languages such as TypeScript, CoffeeScript, and ReScript, and HTML/CSS, all powered by the built-in ECMAScript engine.
