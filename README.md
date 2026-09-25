@@ -20,7 +20,7 @@
 
 ![Cover Art: Windows in 1999, Art by @_bag0@x.com](https://catswords.blob.core.windows.net/welsonjs/images/cover.png?utm_source=welsonjs)
 
-Now, You can build a Windows desktop app with JavaScript, TypeScript, CoffeeScript, ReScript, and HTML/CSS on Windows built-in ECMAScript engine.
+Now, you can build, automate, and orchestrate Windows applications and industrial systems using JavaScript, transpiled languages such as TypeScript, CoffeeScript, and ReScript, and HTML/CSS, all powered by the built-in ECMAScript engine.
 
 WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)*** + :heart:[Contributions](https://github.com/sponsors/gnh1201?utm_source=welsonjs)
 
