@@ -1,7 +1,7 @@
 # WelsonJS post-install script
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: Namhyeon Go <gnh1201@catswords.re.kr>, and Catswords OSS contributors.
-# Updated on: 2026-09-06
+# Updated on: 2026-09-27
 # https://github.com/gnh1201/welsonjs
 
 # ================================
