@@ -179,7 +179,8 @@ $TmpDir    = Join-Path $env:TEMP "$AppName-downloads"
 # ================================
 $ObjectStorageEndpoints = @(
     "https://catswords.blob.core.windows.net/welsonjs/",
-    "https://kr.object.iwinv.kr/welsonjs/"
+    "https://kr.object.iwinv.kr/welsonjs/",
+    "https://welsonjs.s3.jp-tok.cloud-object-storage.appdomain.cloud/"
 )
 $ObjectStorageHealthPath = ".well-known/welsonjs.txt"
 $ActiveObjectStorageEndpoint = $null
@@ -382,7 +383,7 @@ function Download-File {
         [Parameter(Mandatory = $true)]
         [string]$DestinationPath
     )
-	
+
     $OriginalUrl = $Url
     $Url = Resolve-ObjectStorageUrl -Url $Url
 
