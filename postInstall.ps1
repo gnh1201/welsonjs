@@ -1,7 +1,7 @@
 # WelsonJS post-install script
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: Namhyeon Go <gnh1201@catswords.re.kr>, and Catswords OSS contributors.
-# Updated on: 2026-09-06
+# Updated on: 2026-09-27
 # https://github.com/gnh1201/welsonjs
 
 # ================================
@@ -174,6 +174,17 @@ $AppName   = "welsonjs"
 $TargetDir = Join-Path $env:APPDATA $AppName
 $TmpDir    = Join-Path $env:TEMP "$AppName-downloads"
 
+# ================================
+# OBJECT STORAGE ENDPOINTS
+# ================================
+$ObjectStorageEndpoints = @(
+    "https://catswords.blob.core.windows.net/welsonjs/",
+    "https://kr.object.iwinv.kr/welsonjs/",
+    "https://welsonjs.s3.jp-tok.cloud-object-storage.appdomain.cloud/"
+)
+$ObjectStorageHealthPath = ".well-known/welsonjs.txt"
+$ActiveObjectStorageEndpoint = $null
+
 Write-Host ""
 Write-Host "[*] Target directory   : $TargetDir"
 Write-Host "[*] Temporary directory: $TmpDir"
@@ -263,6 +274,89 @@ Write-Host ""
 # ================================
 # HELPER FUNCTIONS
 # ================================
+function Test-ObjectStorageEndpoint {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Endpoint
+    )
+
+    $healthUrl = $Endpoint.TrimEnd("/") + "/" + $ObjectStorageHealthPath
+
+    Write-Host "[*] Checking object storage:"
+    Write-Host "    $healthUrl"
+
+    try {
+        $response = Invoke-WebRequest `
+            -Uri $healthUrl `
+            -Method Get `
+            -UseBasicParsing `
+            -TimeoutSec 10 `
+            -ErrorAction Stop
+
+        $content = $response.Content.Trim()
+
+        if ($content -eq "true") {
+            Write-Host "[+] Object storage is healthy."
+            return $true
+        }
+
+        Write-Host "[WARN] Object storage returned unexpected response: '$content'"
+        return $false
+    }
+    catch {
+        Write-Host "[WARN] Object storage health check failed: $($_.Exception.Message)"
+        return $false
+    }
+}
+
+function Get-ActiveObjectStorageEndpoint {
+
+    if ($ActiveObjectStorageEndpoint) {
+        return $ActiveObjectStorageEndpoint
+    }
+
+    foreach ($endpoint in $ObjectStorageEndpoints) {
+        if (Test-ObjectStorageEndpoint -Endpoint $endpoint) {
+            $ActiveObjectStorageEndpoint = $endpoint.TrimEnd("/")
+
+            Write-Host "[+] Selected object storage:"
+            Write-Host "    $ActiveObjectStorageEndpoint"
+
+            return $ActiveObjectStorageEndpoint
+        }
+    }
+
+    Write-Host ""
+    Write-Host "[ERROR] All object storage endpoints are unavailable."
+    Write-Host ""
+
+    return $null
+}
+
+function Resolve-ObjectStorageUrl {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Url
+    )
+
+    $activeEndpoint = Get-ActiveObjectStorageEndpoint
+
+    if (-not $activeEndpoint) {
+        return $Url
+    }
+
+    foreach ($endpoint in $ObjectStorageEndpoints) {
+        $endpoint = $endpoint.TrimEnd("/")
+
+        if ($Url.StartsWith($endpoint + "/", [System.StringComparison]::OrdinalIgnoreCase)) {
+            $relativePath = $Url.Substring($endpoint.Length)
+            return $activeEndpoint + $relativePath
+        }
+    }
+
+    return $Url
+}
+
 function Ensure-EmptyDirectory {
     param(
         [Parameter(Mandatory = $true)]
@@ -289,6 +383,15 @@ function Download-File {
         [Parameter(Mandatory = $true)]
         [string]$DestinationPath
     )
+
+    $OriginalUrl = $Url
+    $Url = Resolve-ObjectStorageUrl -Url $Url
+
+    if ($OriginalUrl -ne $Url) {
+        Write-Host "[*] Object storage failover:"
+        Write-Host "    $OriginalUrl"
+        Write-Host "    -> $Url"
+    }
 
     Write-Host "[*] Downloading:"
     Write-Host "    $Url"
