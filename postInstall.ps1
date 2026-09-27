@@ -342,7 +342,7 @@ function Resolve-ObjectStorageUrl {
     $activeEndpoint = Get-ActiveObjectStorageEndpoint
 
     if (-not $activeEndpoint) {
-        throw "No available object storage endpoint."
+        return $Url
     }
 
     foreach ($endpoint in $ObjectStorageEndpoints) {
