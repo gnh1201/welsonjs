@@ -1208,41 +1208,67 @@ try {
     }
     
     # Enable TLS 1.3 support (component: tls13)
+    # TLS 1.2 is also enabled for compatibility.
     # https://learn.microsoft.com/ko-kr/sql/relational-databases/security/networking/connect-with-tls-1-3?view=sql-server-ver17
     # https://learn.microsoft.com/en-us/windows-server/security/tls/tls-registry-settings?tabs=diffie-hellman
     if (Test-ComponentSelected -Name "tls13") {
-        $base = 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols'
+        try {
+            $os = Get-CimInstance Win32_OperatingSystem
+            $version = [System.Version]$os.Version
 
-        # TLS 1.2 is also enabled when enabling TLS 1.3 for compatibility.
-        foreach ($protocol in @('TLS 1.2', 'TLS 1.3')) {
-            $protocolPath = Join-Path $base $protocol
+            $base = 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols'
 
-            foreach ($role in @('Client', 'Server')) {
-                $path = Join-Path $protocolPath $role
-                $enabled = $null
+            function Enable-TlsClient {
+                param (
+                    [Parameter(Mandatory = $true)]
+                    [string]$Protocol
+                )
 
-                if (Test-Path $path) {
-                    $property = Get-ItemProperty -Path $path -Name 'Enabled' -ErrorAction SilentlyContinue
+                $path = Join-Path $base "$Protocol\Client"
 
-                    if ($null -ne $property) {
-                        $enabled = $property.Enabled
-                    }
-                }
-
-                if ($enabled -eq 1) {
-                    Write-Host "[*] $protocol $role is already enabled."
-                }
-                else {
+                if (-not (Test-Path $path)) {
                     New-Item $path -Force | Out-Null
-                    New-ItemProperty -Path $path `
-                                     -Name 'Enabled' `
-                                     -Value 1 `
-                                     -PropertyType 'DWord' `
-                                     -Force | Out-Null
-
-                    Write-Host "[*] $protocol $role support enabled."
                 }
+
+                $property = Get-ItemProperty -Path $path -ErrorAction SilentlyContinue
+
+                if ($property.Enabled -eq 1 -and
+                    $property.DisabledByDefault -eq 0) {
+                    Write-Host "[*] $Protocol Client is already enabled."
+                    return
+                }
+
+                New-ItemProperty -Path $path `
+                                 -Name 'Enabled' `
+                                 -Value 1 `
+                                 -PropertyType 'DWord' `
+                                 -Force | Out-Null
+
+                New-ItemProperty -Path $path `
+                                 -Name 'DisabledByDefault' `
+                                 -Value 0 `
+                                 -PropertyType 'DWord' `
+                                 -Force | Out-Null
+
+                Write-Host "[*] $Protocol Client support enabled."
             }
+
+            # TLS 1.2: Windows 7 and later
+            if ($version -ge [System.Version]'6.1') {
+                Enable-TlsClient 'TLS 1.2'
+            }
+
+            # TLS 1.3: Windows 10 and later
+            if ($version -ge [System.Version]'10.0') {
+                Enable-TlsClient 'TLS 1.3'
+            }
+            else {
+                Write-Host "[!] TLS 1.3 Client is not available on this version of Windows."
+            }
+        }
+        catch {
+            Write-Host "[!] Failed to configure TLS support: $($_.Exception.Message)"
+            exit 1
         }
     }
 }
