@@ -1208,6 +1208,8 @@ try {
     }
     
     # Enable TLS 1.3 support (component: tls13)
+    # https://learn.microsoft.com/ko-kr/sql/relational-databases/security/networking/connect-with-tls-1-3?view=sql-server-ver17
+    # https://learn.microsoft.com/en-us/windows-server/security/tls/tls-registry-settings?tabs=diffie-hellman
     if (Test-ComponentSelected -Name "tls13") {
         $base = 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.3'
 
