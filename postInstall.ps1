@@ -1211,32 +1211,37 @@ try {
     # https://learn.microsoft.com/ko-kr/sql/relational-databases/security/networking/connect-with-tls-1-3?view=sql-server-ver17
     # https://learn.microsoft.com/en-us/windows-server/security/tls/tls-registry-settings?tabs=diffie-hellman
     if (Test-ComponentSelected -Name "tls13") {
-        $base = 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.3'
+        $base = 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols'
 
-        foreach ($role in @('Client', 'Server')) {
-            $path = Join-Path $base $role
-            $enabled = $null
+        # TLS 1.2 is also enabled when enabling TLS 1.3 for compatibility.
+        foreach ($protocol in @('TLS 1.2', 'TLS 1.3')) {
+            $protocolPath = Join-Path $base $protocol
 
-            if (Test-Path $path) {
-                $property = Get-ItemProperty -Path $path -Name 'Enabled' -ErrorAction SilentlyContinue
+            foreach ($role in @('Client', 'Server')) {
+                $path = Join-Path $protocolPath $role
+                $enabled = $null
 
-                if ($null -ne $property) {
-                    $enabled = $property.Enabled
+                if (Test-Path $path) {
+                    $property = Get-ItemProperty -Path $path -Name 'Enabled' -ErrorAction SilentlyContinue
+
+                    if ($null -ne $property) {
+                        $enabled = $property.Enabled
+                    }
                 }
-            }
 
-            if ($enabled -eq 1) {
-                Write-Host "[*] TLS 1.3 $role is already enabled."
-            }
-            else {
-                New-Item $path -Force | Out-Null
-                New-ItemProperty -Path $path `
-                                 -Name 'Enabled' `
-                                 -Value 1 `
-                                 -PropertyType 'DWord' `
-                                 -Force | Out-Null
+                if ($enabled -eq 1) {
+                    Write-Host "[*] $protocol $role is already enabled."
+                }
+                else {
+                    New-Item $path -Force | Out-Null
+                    New-ItemProperty -Path $path `
+                                     -Name 'Enabled' `
+                                     -Value 1 `
+                                     -PropertyType 'DWord' `
+                                     -Force | Out-Null
 
-                Write-Host "[*] TLS 1.3 $role support enabled."
+                    Write-Host "[*] $protocol $role support enabled."
+                }
             }
         }
     }
