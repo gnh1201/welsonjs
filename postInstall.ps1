@@ -1226,7 +1226,6 @@ try {
 
                 $path = Join-Path $base "$Protocol\Client"
 
-                # Create the protocol and Client keys if they do not exist.
                 if (-not (Test-Path $path)) {
                     New-Item $path -Force | Out-Null
                 }
@@ -1237,7 +1236,7 @@ try {
                     $property.Enabled -eq 1 -and
                     $property.DisabledByDefault -eq 0) {
                     Write-Host "[*] $Protocol Client is already enabled."
-                    return
+                    return $true
                 }
 
                 New-ItemProperty -Path $path `
@@ -1253,20 +1252,29 @@ try {
                                  -Force | Out-Null
 
                 Write-Host "[*] $Protocol Client support enabled."
+                return $true
             }
 
             # TLS 1.2: Windows 7 and later
+            $tls12Enabled = $false
+
             if ($version -ge [System.Version]'6.1') {
-                Enable-TlsClient 'TLS 1.2'
+                $tls12Enabled = Enable-TlsClient 'TLS 1.2'
             }
 
             # TLS 1.3: Windows 10 and later
+            $tls13Enabled = $false
+
             if ($version -ge [System.Version]'10.0') {
-                Enable-TlsClient 'TLS 1.3'
+                $tls13Enabled = Enable-TlsClient 'TLS 1.3'
             }
-            else {
+
+            if (-not $tls12Enabled) {
+                Write-Host "[!] TLS 1.2 Client is not available on this version of Windows."
+            }
+
+            if (-not $tls13Enabled) {
                 Write-Host "[!] TLS 1.3 Client is not available on this version of Windows."
-                Write-Host "[*] TLS 1.2 Client support has been enabled for compatibility."
             }
         }
         catch {
