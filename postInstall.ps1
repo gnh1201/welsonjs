@@ -891,6 +891,11 @@ try {
     else {
         Write-Host "[*] HWP Automation URL component not selected. Skipping download."
     }
+    
+    # Download TLS 1.3 support (component: tls13)
+    if (Test-ComponentSelected -Name "tls13") {
+        Write-Host "[*] No additional download is required for TLS 1.3 support."
+    }
 }
 catch {
     Write-Host "[FATAL] Download phase failed."
@@ -1200,6 +1205,38 @@ try {
     }
     else {
         Write-Host "[*] HWP Automation component not selected. Skipping installation."
+    }
+    
+    # Enable TLS 1.3 support (component: tls13)
+    if (Test-ComponentSelected -Name "tls13") {
+        $base = 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols\TLS 1.3'
+
+        foreach ($role in @('Client', 'Server')) {
+            $path = Join-Path $base $role
+            $enabled = $null
+
+            if (Test-Path $path) {
+                $property = Get-ItemProperty -Path $path -Name 'Enabled' -ErrorAction SilentlyContinue
+
+                if ($null -ne $property) {
+                    $enabled = $property.Enabled
+                }
+            }
+
+            if ($enabled -eq 1) {
+                Write-Host "[*] TLS 1.3 $role is already enabled."
+            }
+            else {
+                New-Item $path -Force | Out-Null
+                New-ItemProperty -Path $path `
+                                 -Name 'Enabled' `
+                                 -Value 1 `
+                                 -PropertyType 'DWord' `
+                                 -Force | Out-Null
+
+                Write-Host "[*] TLS 1.3 $role support enabled."
+            }
+        }
     }
 }
 catch {
