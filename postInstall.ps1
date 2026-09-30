@@ -1213,8 +1213,8 @@ try {
     # https://learn.microsoft.com/en-us/windows-server/security/tls/tls-registry-settings?tabs=diffie-hellman
     if (Test-ComponentSelected -Name "tls13") {
         try {
-            $os = Get-CimInstance Win32_OperatingSystem
-            $version = [System.Version]$os.Version
+            # Use .NET API for compatibility with older PowerShell versions.
+            $version = [Environment]::OSVersion.Version
 
             $base = 'HKLM:\SYSTEM\CurrentControlSet\Control\SecurityProviders\SCHANNEL\Protocols'
 
@@ -1226,13 +1226,15 @@ try {
 
                 $path = Join-Path $base "$Protocol\Client"
 
+                # Create the protocol and Client keys if they do not exist.
                 if (-not (Test-Path $path)) {
                     New-Item $path -Force | Out-Null
                 }
 
                 $property = Get-ItemProperty -Path $path -ErrorAction SilentlyContinue
 
-                if ($property.Enabled -eq 1 -and
+                if ($property -and
+                    $property.Enabled -eq 1 -and
                     $property.DisabledByDefault -eq 0) {
                     Write-Host "[*] $Protocol Client is already enabled."
                     return
@@ -1264,11 +1266,11 @@ try {
             }
             else {
                 Write-Host "[!] TLS 1.3 Client is not available on this version of Windows."
+                Write-Host "[*] TLS 1.2 Client support has been enabled for compatibility."
             }
         }
         catch {
             Write-Host "[!] Failed to configure TLS support: $($_.Exception.Message)"
-            exit 1
         }
     }
 }
