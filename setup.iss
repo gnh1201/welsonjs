@@ -1,5 +1,5 @@
 ; @created_on 2020-06-26
-; @updated_on 2026-08-17
+; @updated_on 2026-09-30
 ; @author Namhyeon Go <gnh1201@catswords.re.kr> and Catswords OSS contributors.
 
 [Setup]
@@ -44,6 +44,7 @@ Name: "nmap"; Description: "Download Nmap and Npcap"; Types: custom;
 Name: "windivert"; Description: "Download WinDivert (Windows Packet Divert)"; Types: custom;
 Name: "android_platform_tools"; Description: "Download Android Platform Tools"; Types: custom;
 Name: "hwp_automation"; Description: "Download HWP (Word Processor for Korean) Automation"; Types: custom;
+Name: "tls13"; Description: "Enable TLS 1.3 support"; Types: custom;
 
 [Registry]
 Root: HKCR; Subkey: "{cm:AppName}.Script"; ValueType: string; ValueData: "{cm:AppName} Script"; Flags: uninsdeletekey
