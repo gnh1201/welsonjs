@@ -1,450 +1,86 @@
-# AGENTS.md
+# WelsonJS Agent Architecture Guide
 
-*WelsonJS Agent Architecture Guide*
+This guide describes the architecture and contributor conventions visible in this repository. Treat the source code and project files as authoritative when behavior changes.
 
-WelsonJS consists of two major execution layers:
+## 1. Runtime overview
 
-1. **JavaScript execution environment** based on Windows Script Host (WSH) with `core-js` polyfills
-2. **Native/Managed module environment** provided through the `WelsonJS.ManagedObject` suite
+WelsonJS is a Windows application framework built around the Windows Script Host (WSH) JScript engine, with an application loader in `app.js`, startup scripts at the repository root, JavaScript modules in `lib/`, and optional .NET components in `native/WelsonJS.Augmented/`.
 
-This document defines the agents that operate inside WelsonJS, including their responsibilities, interaction boundaries, and design principles.
+The runtime is not a general-purpose sandbox. Scripts can reach Windows facilities through COM, JavaScript modules, and installed managed components. Document required privileges and side effects for any such functionality.
 
----
+### JavaScript runtime and modules
 
-## **1. Overview & Design Principles**
+- `app.js` initializes the runtime, exposes the module loader, and dispatches application commands. `require()` resolves project modules, most commonly from `lib/`.
+- Root scripts such as `bootstrap.js`, `testloader.js`, `webloader.js`, and `uriloader.js` provide startup and task-specific entry points.
+- `lib/` contains the following feature groups. The names below are the current checked-in module names; consult each module for its exact API and runtime requirements.
 
-WelsonJS aims to enable Windows application development using JavaScript on top of the legacy WSH engine while safely extending system-level functionality through .NET modules.
+  | Area | Modules and capabilities |
+  | --- | --- |
+  | Runtime and common utilities | `std.js` (sleep, repeat/rotation helpers, events, dialogs, resource helpers), `toolkit.js` (shared helper utilities), `config.js` (XML-backed configuration lookup), `jsunit.js` (assertions and test suite support), `fakeworker.js` (worker-style scheduling), `fsm.js` (finite-state-machine primitives), `rand.js` (random values, UUID, shuffle/sample helpers), `extramath.js` (similarity, vector and layout helpers), `strings.js` (string helpers), `base64.js`, `punycode.js`, `lz77.js`, `xml.js`, `uri.js`, `filetypes.js`. |
+  | Files, data, and persistence | `file.js` (file/folder IO, environment loading, path helpers), `archive.js` (archive operations through configured external tools), `db.js` (ADO database access and BLOB helpers), `credentials.js` (credential values loaded from file or memory), `cookie.js` (cookie helpers), `hosts.js` (hosts file access), `har.js` (HTTP Archive handling), `totp.js` (time-based one-time password helper). |
+  | Windows host integration | `system.js` (environment, OS/process/network/system information), `shell.js` (Windows Script Host shell and process operations), `registry.js`, `wmi.js`, `powershell.js`, `virtualinput.js` (virtual keyboard/mouse and dialogs), `security.js` (selected Windows security-setting and antivirus-product operations), `task-scheduler.js`, `task.js` (task/process utilities), `winservice.js`, `winlibs.js` (Windows library helpers), `pipe-ipc.js` and `namedsharedmemory.js` (IPC), `msmq.js` (Microsoft Message Queuing), `wintap.js` (WinTAP integration). |
+  | Network and service protocols | `http.js` (HTTP client utilities), `httpserver.js`, `websocket.js`, `jsonrpc2.js`, `stdio-server.js`, `router.js`, `sendmail.js`, `ip-reputation.js`, `serp.js`, `catproxy.js` (CatProxy client), `shadowsocks.js`, `tun2socks.js`, `cloudflare.js`, `nmap.js` (Nmap interface). |
+  | Browsers, UI, and desktop applications | `browser.js` (embedded browser/DOM helpers), `chrome.js` (Chrome DevTools Protocol and browser automation), `gtk.js` (GTKServer UI), `msoffice.js` (Excel, PowerPoint, Word, Outlook automation), `kakaotalk.js`, `adb.js` (Android Debug Bridge and emulator), `ldplayer.js`, `noxplayer.js`, `ovftool.js` (VMware OVF Tool), `autohotkey.js`, `autoit.js`, `sandboxie.js`. |
+  | External runtimes and AI/data services | `python3.js`, `vbscript.js`, `wamr.js` (WebAssembly Micro Runtime), `aviation.js` (aviation data API), `coupang.js` (Coupang search API), `chatgpt.js`, `anthropic.js`, `grok.js`, `groq.js`, and `language-inference-engine.js` (LLM provider integrations). |
+  | Source examples | `fortune.coffee` and `fortune.ls` are CoffeeScript and LiveScript examples rather than JavaScript modules. |
 
-All agents follow these principles:
+  These libraries are adapters and utilities, not a uniform native-agent layer: some use COM/WSH, some invoke external executables, and some call remote services. Many need local software, credentials, network access, or elevated Windows privileges. In particular, treat `security.js`, `shell.js`, `powershell.js`, `registry.js`, `virtualinput.js`, and service/process modules as host-changing APIs; inspect implementation and authorization requirements before use. Never log credentials or sensitive payloads.
+- The engine is legacy JScript. Keep syntax and host API usage compatible with the supported WSH environment. Do not describe ES6+ syntax as generally available just because selected `core-js` shims are present.
+- COM and Windows APIs are host capabilities. Managed modules are optional dependencies and are loaded or used where the application and environment provide them.
 
-* **Single responsibility** — each agent performs one well-defined task
-* **Minimal & explicit interfaces**
-* **Security & integrity first**
-* **Polyfill-based compatibility** (ES3 → ES5)
-* **Graceful degradation when native modules are unavailable**
+## 2. Managed projects
 
----
+The solution `native/WelsonJS.Augmented/WelsonJS.Augmented.sln` contains these projects:
 
-## **2. Agent Types**
+| Project | Role |
+| --- | --- |
+| `Catswords.Phantomizer` | Assembly loading support. Consult its implementation and README for supported sources, caching, and verification behavior. |
+| `WelsonJS.ManagedObject` | Shared managed types and Windows/COM integration helpers used by other projects. |
+| `WelsonJS.Launcher` | Managed application launcher and related startup/UI components. |
+| `WelsonJS.Service` | Windows service host and lifecycle support. |
+| `WelsonJS.Esent` | ESENT database integration. |
+| `WelsonJS.Cryptography` | Managed cryptographic algorithms, including implementations in this project such as ARIA and HIGHT. |
+| `WelsonJS.Cryptography.Test` | Standalone cryptography validation project. |
 
-WelsonJS defines two main categories of agents:
+Do not assume every capability is implemented by a managed project: many APIs live in `lib/` and interact directly with WSH, COM, external programs, or optional components. Preserve graceful handling of unavailable optional dependencies where the surrounding API already provides it.
 
-| Category                         | Description                                                                                                                |
-| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| **JavaScript Runtime Agent**     | Executes user scripts in a WSH + polyfill environment. Provides compatibility up to ES5 using `core-js` and related shims. |
-| **Native/Managed Module Agents** | Extensions written in C# or VB.NET under the `WelsonJS.ManagedObject` solution that provide system-level capabilities.           |
+## 3. Contributor principles
 
----
+- Keep changes scoped to the responsible module or project and use explicit interfaces between runtime and managed code.
+- Preserve WSH/JScript compatibility in root scripts and `lib/` unless a file explicitly targets another engine.
+- Validate inputs at JavaScript-to-managed or JavaScript-to-COM boundaries, and report errors with enough context to diagnose the failing operation.
+- Make OS, privilege, installed-software, network, and user-interaction requirements clear. Avoid claiming a security boundary or fallback unless the implementation provides one.
+- Follow the existing project conventions and document externally visible changes near the relevant API or profile.
 
-## **3. JavaScript Runtime Agent**
+## 4. Test profiles and runner
 
-### **3.1 Description**
+Test profiles are JSON files under `data/`, including:
 
-The JavaScript Runtime Agent executes scripts using the Windows Script Host engine (JScript).
-Although the engine itself is **ES3-level**, WelsonJS uses **core-js polyfills** to emulate many **ES5 features**, allowing more modern syntax and APIs.
+- `data/test-oss-korea-2023.json` — broad legacy profile.
+- `data/test-misc.json` — miscellaneous runtime and integration examples.
+- `data/test-msoffice.json` — Microsoft Office automation examples.
 
-### **3.2 Responsibilities**
+Profiles use schema version `0.2` and describe tests using metadata and a `tests` array. A profile entry documents a test; it does not by itself implement or execute the test.
 
-* Load and initialize polyfills (`core-js`, `JSON2.js`, additional shims)
-* Provide CommonJS-style module system (`require`, `exports`, caching, resolution)
-* Execute user scripts in a controlled environment
-* Provide bound APIs that connect to native agents
-* Ensure minimal pollution of the global scope
-* Provide compatibility with classical WSH functions and COM interoperability
-* Handle script errors and propagate exceptions with useful metadata
-
-### **3.3 Execution Constraints**
-
-* Must assume an **ES3 core** with **ES5 via polyfills**
-* Features requiring ES6+ must be explicitly shimmed or avoided
-* All host-bound functionality must route through defined native agents
-
----
-
-## **4. Native/Managed Module Agents (ManagedObject Agents)**
-
-The **WelsonJS.ManagedObject** solution provides several functional agents designed as modular .NET libraries.
-Each project acts as a distinct agent with its own role and responsibility.
-
----
-
-### **4.1 Catswords.Phantomizer — Assembly Loading Agent**
-
-**Purpose:**
-Dynamic loading and resolution of native/managed assemblies.
-
-**Responsibilities:**
-
-* Load DLLs from disk or remote CDN
-* Support `.dll.gz` compressed downloads for performance
-* Perform integrity/signed verification
-* Cache resolved versions locally
-* Provide fallback when assemblies fail to load
-
-**Notes:**
-This agent enables WelsonJS to remain lightweight while extending capabilities dynamically.
-
----
-
-### **4.2 WelsonJS.Esent — Database Access Agent**
-
-**Purpose:**
-Expose Windows’ native **ESENT** database engine to JavaScript.
-
-**Responsibilities:**
-
-* Create, open, and manage ESENT databases
-* Provide JS-friendly abstraction for tables, cursors, and transactions
-* Perform safe parameter marshaling
-* Ensure proper disposal of unmanaged resources
-* Support transactional metadata operations (e.g., metadata store, instance tracking)
-
----
-
-### **4.3 WelsonJS.Cryptography — Cryptography Agent**
-
-**Purpose:**
-Provide cryptographic functions not available in WSH/JS.
-
-**Responsibilities:**
-
-* Expose symmetric/legacy/industrial cryptographic algorithms
-* Bridge specialized Korean algorithms (SEED, ARIA, HIGHT, LEA) where required
-* Provide secure random generation utilities
-* Ensure compliance with expected test vectors
-* Offer safe JS bindings that validate parameters and reject unsafe operations
-
-**Additional:**
-`WelsonJS.Cryptography.Test` provides validation and regression testing for algorithm correctness.
-
----
-
-### **4.4 WelsonJS.Launcher — Bootstrap Agent**
-
-**Purpose:**
-Serve as the entry point of a WelsonJS application.
-
-**Responsibilities:**
-
-* Initialize environment
-* Load Phantomizer & ManagedObject modules
-* Load and execute the main JavaScript script
-* Handle configuration (AppName, BaseUrl, service mode, etc.)
-* Provide safe-mode and fallback execution
-* Manage initial logging and diagnostics
-
-**Notes:**
-Launcher must start with only .NET BCL dependencies to ensure predictable initialization.
-
----
-
-### **4.5 WelsonJS.Service — Windows Service Agent**
-
-**Purpose:**
-Allow WelsonJS applications to run as Windows services.
-
-**Responsibilities:**
-
-* Install/uninstall service
-* Run JavaScript scripts in service context
-* Manage service lifecycle events (start, stop)
-* Provide safe shutdown & worker loop management
-
----
-
-### **4.6 WelsonJS.ManagedObject — General Utility Agent**
-
-**Purpose:**
-A shared utility library providing cross-cutting functionality.
-
-Typical responsibilities include:
-
-* IO helpers
-* Reflection helpers
-* JS–Native bridging utilities
-* Shared types and error-handling helpers
-* Logging abstractions
-
-It acts as the common foundation for other ManagedObject modules.
-
----
-
-## **5. Optional & Internal Agents**
-
-### **5.1 Interop / Binding Agent**
-
-Acts as a transport layer between JS Runtime Agent and ManagedObject Agents.
-
-Responsibilities:
-
-* Marshal parameters and return values
-* Validate type compatibility
-* Protect against injection or malformed input
-* Normalize exceptions into JS-friendly error objects
-* Enforce version negotiation and capability detection
-
-Often implemented inside each ManagedObject module but may be abstracted.
-
----
-
-### **5.2 Security / Policy Agent**
-
-Provides security boundaries.
-
-Responsibilities:
-
-* Module integrity verification
-* Allowed module list management
-* Restricting file system or registry access
-* Enforcing sandbox policies for script execution
-* Logging suspicious activity
-
----
-
-### **5.3 Fallback / Compatibility Agent**
-
-Ensures application execution even without native modules.
-
-Responsibilities:
-
-* JS-only polyfill alternatives
-* Reduced functionality mode
-* Diagnostics for missing dependencies
-
----
-
-## **6. Agent Interaction Model**
+`testloader.js` contains a `test_implements` map keyed by test ID. It expects a single test ID and a profile path, looks up that ID in both places, and calls the corresponding implementation. For example:
 
 ```text
-[WelsonJS.Launcher] 
-       ↓ Initialization + Configuration
-[JavaScript Runtime Agent] ←→ [ManagedObject Agents]
-       ↑                           ↑
-   (Interop Layer)          (Security/Policy)
+cscript.exe app.js testloader es5_polyfills data\test-oss-korea-2023.json
 ```
 
-* **Launcher** bootstraps the system.
-* **JS Runtime Agent** handles all user logic.
-* **ManagedObject Agents** provide extended OS-level capabilities.
-* **Interop Layer** ensures safe crossing between JS and .NET worlds.
-* **Security Agent** governs what is allowed.
+The runner logs the result and waits before closing. It is an interactive/manual harness, not a profile-wide automated pass/fail runner. Test implementations can have side effects or require Windows features, installed applications, network access, or user interaction; inspect the selected implementation before running it. Keep IDs consistent between the profile and `test_implements`, and describe requirements and effects in the profile entry.
 
----
+The cryptography validation project is separate from the JavaScript profile runner. Use the relevant project documentation and build configuration for that suite.
 
-## **7. Implementation Guidelines**
+## 5. Repository map
 
-* Follow "least-privilege" principles for all native module operations.
-* All JS ↔ Native APIs must be explicit and documented.
-* Native agents must degrade gracefully when unavailable.
-* Polyfills must not assume ES6+ features unless explicitly shimmed.
-* Fallback behaviors must be deterministic and logged.
-* All agents must respect long-term compatibility from Windows XP → Windows 10/11.
+| Path | Contents |
+| --- | --- |
+| `app.js` | WSH runtime, module loading, and command dispatch. |
+| `lib/` | JavaScript libraries and integrations. |
+| `data/` | Configuration, data files, and JSON test profiles. |
+| `native/WelsonJS.Augmented/` | WelsonJS managed solution and projects. |
+| `native/ManagedEsent/` | Vendored ManagedEsent source, samples, and tests. |
+| `examples/` | Application and integration examples. |
 
----
-
-## **8. Purpose of This Document**
-
-AGENTS.md provides a shared understanding across contributors so that:
-
-* New ManagedObject modules follow consistent architecture.
-* JS runtime bindings remain predictable and safe.
-* Extension developers can easily understand boundaries and responsibilities.
-* The ecosystem grows without introducing breaking or conflicting functionality.
-
----
-
-## **9. Test Structure (Test Plan)**
-
-WelsonJS uses **JSON-based test profiles** plus a script runner (`testloader.js`) to verify both the JavaScript Runtime Agent and the ManagedObject Agents.
-
-A representative profile is `test-oss-korea-2023.json`, used in the 2023 South Korea OSS Contest to validate the WelsonJS environment.
-
----
-
-### **9.1 Testing Approach**
-
-* Tests are grouped into **profiles** (single JSON file per profile).
-* Each profile describes:
-
-  * Test **metadata** (description, updated date, dependencies, authors, references, tags)
-  * **Schema version**
-  * An array of **test entries**, each with `id`, `description`, and `tags`
-* `testloader.js`:
-
-  * Loads a given profile JSON
-  * Interprets each test `id` as a runnable unit (usually bound to a script or implementation defined inside WelsonJS)
-  * Executes them in the same WSH + polyfill environment that real users will use
-  * Aggregates pass/fail status and reports the result
-
-This keeps tests:
-
-* Close to **real execution** (same engine, same polyfills)
-* Capable of testing **JS-only behavior** and **JS ↔ native agent integration**
-* Easy to extend by just adding new entries into JSON
-
----
-
-### **9.2 Test Layers Mapped to Existing IDs**
-
-The existing test profile covers multiple layers of the system.
-
-1. **JavaScript Runtime / Polyfill Layer**
-
-   * `es5_polyfills` – checks whether polyfills above ES5 level run successfully on the built-in engine.
-   * These tests verify `core-js`, JSON handling, and basic language/runtime correctness.
-
-2. **Windows Systems & ManagedObject Integration**
-
-   * Registry: `registry_find_provider`, `registry_write`, `registry_read`
-   * WMI: `wmi_create_object`, `wmi_execute_query`, `wmi_result_query`
-   * Shell: `shell_create_object`, `shell_build_command_line`, `shell_set_charset`, `shell_working_directory`, `shell_create_process`, `shell_execute`, `shell_run`, `shell_run_as`, `shell_find_my_documents`, `shell_release`
-   * PowerShell: `powershell_set_command`, `powershell_set_file`, `powershell_set_uri`, `powershell_execute`, `powershell_run_as`
-   * System information: `system_resolve_env`, `system_check_as`, `system_get_os_version`, `system_get_architecture`, `system_get_uuid`, `system_get_working_directory`, `system_get_script_directory`, `system_get_network_interfaces`, `system_get_process_list`, `system_get_process_list_by_name`, `system_register_uri`, `system_pipe_ipc`
-
-   These exercise the **Interop/Binding Agent** and various **ManagedObject Agents** that expose Windows APIs.
-
-3. **Human Interface / Virtual Input (VHID)**
-
-   * `vhid_find_window`, `vhid_send_click`, `vhid_send_keys`, `vhid_send_key_enter`, `vhid_send_key_functions`, `vhid_alert`, `vhid_confirm`, `vhid_prompt`
-
-   These validate keyboard/mouse simulation and dialog APIs, ensuring the Virtual Human Interface agent behaves as expected.
-
-4. **Network & HTTP Layer**
-
-   * `network_http_get`, `network_http_post`, `network_http_extended`, `network_attach_debugger`, `network_detect_charset`, `network_detect_http_ssl`, `network_send_icmp`
-
-   These tests exercise HTTP/ICMP functionality and optional debugger integration (e.g., Fiddler) via ManagedObject Agents.
-
-5. **Advanced String / NLP / Utility**
-
-   * `extramath_dtm`, `extramath_cosine_similarity`, `base64_encode`, `base64_decode`
-
-   These validate extra math/string/NLP-style helpers that may be implemented in JS or as native helpers.
-
-6. **Chromium / Browser Control**
-
-   * `chromium_run`, `chromium_create_profile`, `chromium_run_incognito`, `chromium_navigate`, `chromium_get_active_pages`, `chromium_find_page_by_id`, `chromium_find_pages_by_title`, `chromium_move_focused`, `chromium_adjust_window_size`, `chromium_get_element_position`, `chromium_get_mapreduced_element_position`, `chromium_set_value_to_textbox`, `chromium_send_click`, `chromium_send_keys`, `chromium_auto_scroll_until_end`
-
-   These test the ChromiumDevTools-related agent responsible for controlling a Chromium-based browser.
-
-7. **gRPC & GUI Integration**
-
-   * gRPC: `grpc_run_server`, `grpc_receive_command`
-   * WebView: `gui_check`
-
-   These validate that **network service agents** (gRPC) and **GUI/WebView integration** work correctly in real environments.
-
----
-
-### **9.3 Test Profile Schema**
-
-A test profile JSON follows this general schema:
-
-* **description**: Human-readable description of the profile
-* **updated_on**: Last update date (string, e.g. `"2023-10-30"`)
-* **dependencies**: Object listing required WelsonJS version or other requirements
-* **authors**: Array of strings identifying authors
-* **references**: Array of related URLs (repository, social, external descriptions)
-* **tags**: Profile-wide tags (technologies, platforms, etc.)
-* **schema**:
-
-  * `version`: Schema version used by `testloader.js` (e.g. `"0.2"`)
-* **tests**:
-
-  * Array of test objects, each having:
-
-    * `id`: Unique test identifier (string)
-    * `description`: What the test checks (string)
-    * `tags`: Array of tags describing category and domain
-
-Example (simplified):
-
-```json
-{
-  "description": "2023 South Korea OSS Contest Test Profile for WelsonJS",
-  "updated_on": "2023-10-30",
-  "dependencies": {
-    "welsonjs": "0.2.7"
-  },
-  "schema": {
-    "version": "0.2"
-  },
-  "tests": [
-    {
-      "id": "es5_polyfills",
-      "description": "Checks whether polyfills above the ES5 level run successfully (using Windows' built-in engine).",
-      "tags": ["JavaScript Engine", "ECMAScript Polyfills"]
-    }
-  ]
-}
-```
-
-> The exact semantics for how each `id` maps to a concrete script or implementation are defined in `testloader.js` and the surrounding WelsonJS test harness.
-
----
-
-### **9.4 Using `testloader.js`**
-
-`testloader.js` is the standard runner that:
-
-1. Accepts one or more **profile JSON** paths (e.g., `test-oss-korea-2023.json`).
-2. Parses the profile according to the schema version.
-3. Iterates over `tests[]`, and for each `id`:
-
-   * Resolves the underlying implementation (JS file, bound function, etc.)
-   * Executes the test logic in the WSH + polyfill environment
-   * Captures success/failure and any diagnostic output
-4. Produces a summary result (per test and overall).
-
-When adding or modifying tests:
-
-* Prefer **extending existing profiles** rather than inventing new formats.
-* Keep `id` stable once published, so existing CI or documentation references do not break.
-* Use `tags` to reflect which agent(s) a test touches (e.g., `"Windows Systems"`, `"Chromium-Based Browser"`, `"gRPC"`).
-
----
-
-### **9.5 Naming & Organization**
-
-Recommended file organization:
-
-```text
-/tests
-  test-oss-korea-2023.json   # Contest profile (broad coverage)
-  ...                        # Future profiles (e.g., cryptography-only, ESENT-only)
-testloader.js
-```
-
-Guidelines:
-
-* Use **profile-level tags** to describe the scope (`"windows"`, `"wsh"`, `"chromium"`, `"grpc"`, etc.).
-* Keep large, real-world coverage (like the OSS contest profile) but also allow smaller focused profiles for specific agents (e.g., ESENT regression suite, Cryptography regression suite).
-* For new features or agents, introduce corresponding `tests[]` entries with descriptive `id` and `description`, and appropriate `tags`.
-
----
-
-### **9.6 Regression & Compatibility**
-
-Because WelsonJS targets a wide range of Windows environments:
-
-* Use the existing wide-coverage profile (like the OSS contest profile) as a **baseline regression suite**.
-* When fixing a bug in any agent (e.g., ESENT, Chromium control, VHID input, HTTP stack):
-
-  * Add or update a test entry in a JSON profile.
-  * Ensure `testloader.js` can run it in automated environments.
-* Keep compatibility in mind: if behavior must differ by OS version, reflect that in tests or tags (e.g., Windows XP vs Windows 10).
-
----
-
-### **9.7 CI / Automation (Optional)**
-
-If a CI pipeline is configured:
-
-* Add a step that:
-
-  * Invokes `testloader.js` on one or more profiles
-  * Fails the build if any test in the profile fails
-* Optionally support:
-
-  * Running a **quick subset** (e.g., only `es5_polyfills` + core system tests)
-  * Running the full OSS profile for release candidates or nightly builds
+When updating this guide, verify project names, entry-point behavior, and profile paths against the checked-in repository rather than carrying forward outdated architecture descriptions.
