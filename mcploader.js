@@ -15,7 +15,9 @@ function main(args) {
     // and stays functional through the deprecation window (at least twelve months)
     // see the deprecated features registry: https://modelcontextprotocol.io/specification/2026-07-28/deprecated
     var _notify = function(message) {
-        console._stderr.WriteLine(message);
+        if (console._stderr && typeof console._stderr.WriteLine === "function") {
+            console._stderr.WriteLine(typeof message === "object" ? JSON.stringify(message) : String(message));
+        }
     };
     
     server.addEventListener("message", function(e) {

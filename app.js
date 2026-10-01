@@ -101,8 +101,8 @@ var console = {
             return WScript.Arguments.Named.Exists("quiet");
         }, false);
     })(),
-    _stderr: WScript.StdErr,
-    _stdout: WScript.StdOut,
+    _stderr: typeof WScript !== "undefined" ? WScript.StdErr : null,
+    _stdout: typeof WScript !== "undefined" ? WScript.StdOut : null,
     _echoCallback: function(params, type) {
         if (this._muted) return;
         
