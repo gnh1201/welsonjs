@@ -11,11 +11,14 @@ function main(args) {
     
     // notify
     var _notify = function(message) {
-        console._messages.push(message);
+        console.log(message);
     };
     
     server.addEventListener("message", function(e) {
         var message = e.target.receive();
+        
+        // clear all console messsages
+        console.clear();
         
         // response
         e.target.send(JsonRpc2.dispatch(message, _notify));
@@ -164,7 +167,7 @@ JsonRpc2.register("tools/call", function (params, id, callback) {
             && ("allowUnsafeEval" in params.arguments)
             ? params.arguments.allowUnsafeEval
             : false;
-
+        
         return {
             "content": [
                 {
