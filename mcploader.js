@@ -9,18 +9,27 @@ var JsonRpc2 = require("lib/jsonrpc2");
 function main(args) {
     var server = StdioServer.create();
     
+    // notify
+    // Log to stderr (stdio servers) or use OpenTelemetry instead.
+    // MCP logging (notifications/message) is deprecated as of protocol version 2026-07-28 (SEP-2577)
+    // and stays functional through the deprecation window (at least twelve months)
+    // see the deprecated features registry: https://modelcontextprotocol.io/specification/2026-07-28/deprecated
+    var _notify = function(message) {
+        console._stderr.WriteLine(message);
+    };
+    
     server.addEventListener("message", function(e) {
         var message = e.target.receive();
         
         // response
-        e.target.send(JsonRpc2.dispatch(message));
+        e.target.send(JsonRpc2.dispatch(message, _notify));
     });
     
     server.listen();
 }
 
 // initialize
-JsonRpc2.register("initialize", function (params, id) {
+JsonRpc2.register("initialize", function (params, id, callback) {
     return {
         "protocolVersion": "2025-11-25",
         "capabilities": {
@@ -39,12 +48,12 @@ JsonRpc2.register("initialize", function (params, id) {
 });
 
 // notifications/initialized
-JsonRpc2.register("notifications/initialized", function (params, id) {
+JsonRpc2.register("notifications/initialized", function (params, id, callback) {
     return false;
 });
 
 // tools/list
-JsonRpc2.register("tools/list", function (params, id) {
+JsonRpc2.register("tools/list", function (params, id, callback) {
     return {
         "tools": [
             {
@@ -79,6 +88,7 @@ JsonRpc2.register("tools/list", function (params, id) {
                     + "Always use Unicode escape sequences for non-ASCII text. "
                     + "Use require(\"lib/shell\") for shell access. "
                     + "Use require(\"lib/msoffice\") to access Microsoft Excel. "
+                    + "Use `_notify(message)` instead of `console.log` when logging is needed. "
                     + "If the outcome cannot be determined programmatically, ask the user for confirmation.",
                 "inputSchema": {
                     "type": "object",
@@ -136,7 +146,12 @@ JsonRpc2.register("tools/list", function (params, id) {
 });
 
 // tools/call
-JsonRpc2.register("tools/call", function (params, id) {
+JsonRpc2.register("tools/call", function (params, id, callback) {
+    var _notify = callback;
+    if (typeof _notify !== "function") {
+        _notify = console.log;
+    }
+
     var function_calling_name = params.name;
     if (function_calling_name == "add_both_numbers") {
         return {
