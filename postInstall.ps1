@@ -234,6 +234,130 @@ if ($AllComponentsSelected) {
 Write-Host ""
 
 # ================================
+# MCP CLIENT CONFIGURATION
+# ================================
+# These settings register the local stdio server only. They do not start it.
+# Existing client settings are preserved; only the welsonjs-mcp entry is updated.
+function Write-Utf8File {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path,
+        [Parameter(Mandatory = $true)]
+        [string]$Content
+    )
+
+    $parent = Split-Path -Parent $Path
+    if (-not (Test-Path $parent)) {
+        New-Item -ItemType Directory -Path $parent -Force | Out-Null
+    }
+
+    [System.IO.File]::WriteAllText($Path, $Content, (New-Object System.Text.UTF8Encoding($false)))
+}
+
+function Set-JsonMcpServer {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path,
+        [Parameter(Mandatory = $true)]
+        [object]$Server
+    )
+
+    try {
+        if (Test-Path $Path) {
+            $content = [System.IO.File]::ReadAllText($Path)
+            $config = if ($content.Trim()) { $content | ConvertFrom-Json -ErrorAction Stop } else { [pscustomobject]@{} }
+        }
+        else {
+            $config = [pscustomobject]@{}
+        }
+
+        if (-not $config.PSObject.Properties['mcpServers']) {
+            $config | Add-Member -MemberType NoteProperty -Name 'mcpServers' -Value ([pscustomobject]@{})
+        }
+
+        $servers = $config.mcpServers
+        if ($servers.PSObject.Properties['welsonjs-mcp']) {
+            $servers.'welsonjs-mcp' = $Server
+        }
+        else {
+            $servers | Add-Member -MemberType NoteProperty -Name 'welsonjs-mcp' -Value $Server
+        }
+
+        Write-Utf8File -Path $Path -Content (($config | ConvertTo-Json -Depth 20) + [Environment]::NewLine)
+        Write-Host "[*] MCP server configured: $Path"
+    }
+    catch {
+        Write-Host "[WARN] Could not configure MCP client file ${Path}: $($_.Exception.Message)"
+    }
+}
+
+function Set-TomlMcpServer {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path,
+        [Parameter(Mandatory = $true)]
+        [string]$WorkingDirectory
+    )
+
+    try {
+        $escapedWorkingDirectory = $WorkingDirectory.Replace('\', '\\').Replace('"', '\"')
+        $serverBlock = @"
+[mcp_servers.welsonjs-mcp]
+command = "cscript.exe"
+args = ["/nologo", "app.js", "mcploader", "/quiet"]
+cwd = "$escapedWorkingDirectory"
+"@
+
+        $content = if (Test-Path $Path) { [System.IO.File]::ReadAllText($Path) } else { "" }
+        $pattern = '(?ms)^\[mcp_servers\.welsonjs-mcp\]\r?\n.*?(?=^\[|\z)'
+
+        if ([regex]::IsMatch($content, $pattern)) {
+            $content = [regex]::Replace($content, $pattern, ($serverBlock.TrimEnd() + [Environment]::NewLine))
+        }
+        else {
+            if ($content -and -not $content.EndsWith("`n")) {
+                $content += [Environment]::NewLine
+            }
+            if ($content.Trim()) {
+                $content += [Environment]::NewLine
+            }
+            $content += $serverBlock
+        }
+
+        Write-Utf8File -Path $Path -Content $content
+        Write-Host "[*] MCP server configured: $Path"
+    }
+    catch {
+        Write-Host "[WARN] Could not configure TOML MCP file ${Path}: $($_.Exception.Message)"
+    }
+}
+
+function Install-McpClientConfiguration {
+    $serverArgs = @('/nologo', (Join-Path $ScriptRoot 'app.js'), 'mcploader', '/quiet')
+
+    # Codex and Grok Build use TOML mcp_servers tables.
+    Set-TomlMcpServer -Path (Join-Path $env:USERPROFILE '.codex\config.toml') -WorkingDirectory $ScriptRoot
+    Set-TomlMcpServer -Path (Join-Path $env:USERPROFILE '.grok\config.toml') -WorkingDirectory $ScriptRoot
+
+    # GitHub Copilot CLI, Claude Desktop, Claude Code, Cursor Agent, and Antigravity CLI use JSON mcpServers maps.
+    Set-JsonMcpServer -Path (Join-Path $env:USERPROFILE '.copilot\mcp-config.json') -Server ([pscustomobject]@{
+        type = 'local'; command = 'cscript.exe'; args = $serverArgs; tools = @('*')
+    })
+    Set-JsonMcpServer -Path (Join-Path $env:APPDATA 'Claude\claude_desktop_config.json') -Server ([pscustomobject]@{
+        command = 'cscript.exe'; args = $serverArgs
+    })
+    Set-JsonMcpServer -Path (Join-Path $env:USERPROFILE '.claude.json') -Server ([pscustomobject]@{
+        command = 'cscript.exe'; args = $serverArgs
+    })
+    Set-JsonMcpServer -Path (Join-Path $env:USERPROFILE '.cursor\mcp.json') -Server ([pscustomobject]@{
+        command = 'cscript.exe'; args = $serverArgs
+    })
+    Set-JsonMcpServer -Path (Join-Path $env:USERPROFILE '.gemini\config\mcp_config.json') -Server ([pscustomobject]@{
+        command = 'cscript.exe'; args = $serverArgs
+    })
+}
+
+# ================================
 # ARCHITECTURE DETECTION
 # ================================
 function Get-NativeArchitecture {
@@ -1280,6 +1404,14 @@ try {
         catch {
             Write-Host "[!] Failed to configure TLS support: $($_.Exception.Message)"
         }
+    }
+
+    # Register the local MCP server only when the MCP component was selected.
+    if (Test-ComponentSelected -Name "mcp") {
+        Install-McpClientConfiguration
+    }
+    else {
+        Write-Host "[*] MCP component not selected. Skipping client configuration."
     }
 }
 catch {
