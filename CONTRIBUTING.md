@@ -1,146 +1,83 @@
-<!-- omit in toc -->
 # Contributing to WelsonJS
 
-First off, thanks for taking the time to contribute! ❤️
+[한국어 문서](CONTRIBUTING_KO.md)
 
-All types of contributions are encouraged and valued. See the [Table of Contents](#table-of-contents) for different ways to help and details about how this project handles them. Please make sure to read the relevant section before making your contribution. It will make it a lot easier for us maintainers and smooth out the experience for all involved. The community looks forward to your contributions. 🎉
+WelsonJS is an open-source industrial JavaScript runtime and application framework for Windows, built on the built-in JavaScript engine. It connects JavaScript with Windows capabilities such as COM, desktop applications, files, processes, and optional .NET components.
 
-> And if you like the project, but just don't have time to contribute, that's fine. There are other easy ways to support the project and show your appreciation, which we would also be very happy about:
-> - Star the project
-> - Tweet about it
-> - Refer this project in your project's readme
-> - Mention the project at local meetups and tell your friends/colleagues
+Many organizations rely on long-running Windows software, local data, desktop workflows, and connected equipment. WelsonJS explores how a lightweight runtime and reusable modules can connect these established environments with newer services and tools. The project is grounded in Windows today; work on other platforms is exploratory rather than a current promise.
 
-<!-- omit in toc -->
-## Table of Contents
+We welcome contributions of all sizes: code, issue reports, reproducible test cases, documentation, examples, reviews, and experiments. You do not need experience in every area. Interest in Windows, JavaScript runtimes, business or industrial software, desktop automation, or maintaining systems with real-world constraints is useful.
 
-- [Code of Conduct](#code-of-conduct)
-- [I Have a Question](#i-have-a-question)
-- [I Want To Contribute](#i-want-to-contribute)
-  - [Reporting Bugs](#reporting-bugs)
-  - [Suggesting Enhancements](#suggesting-enhancements)
-  - [Your First Code Contribution](#your-first-code-contribution)
-  - [Improving The Documentation](#improving-the-documentation)
-- [Styleguides](#styleguides)
-  - [Commit Messages](#commit-messages)
-- [Join The Project Team](#join-the-project-team)
+## Table of contents
 
+- [Code of conduct](#code-of-conduct)
+- [Project and development context](#project-and-development-context)
+- [Ask a question](#ask-a-question)
+- [Report a bug](#report-a-bug)
+- [Suggest an enhancement](#suggest-an-enhancement)
+- [Make a contribution](#make-a-contribution)
+- [Code and test guidelines](#code-and-test-guidelines)
+- [Security issues](#security-issues)
+- [Developer support and contact](#developer-support-and-contact)
 
-## Code of Conduct
+## Code of conduct
 
-This project and everyone participating in it is governed by the [WelsonJS Code of Conduct](https://github.com/gnh1201/welsonjs/blob/master/CODE_OF_CONDUCT.md).
-By participating, you are expected to uphold this code. Please report unacceptable behavior to <abuse@catswords.net>.
+Participation in this project is governed by the [WelsonJS Code of Conduct](CODE_OF_CONDUCT.md). Please report unacceptable behavior to <abuse@catswords.net>.
 
-## I Have a Question
+## Project and development context
 
-> If you want to ask a question, we assume that you have read the available [Documentation](https://catswords-oss.rdbl.io/5719744820/5330609327).
+The repository contains the WSH-based runtime and loaders, JavaScript modules in `lib/`, examples, test profiles in `data/`, and optional managed components under `native/`. Review [AGENTS.md](AGENTS.md) for the architecture and contributor conventions, and consult the relevant module or project files for current behavior.
 
-Before you ask a question, it is best to search for existing [Issues](https://github.com/gnh1201/welsonjs/issues) that might help you. In case you have found a suitable issue and still need clarification, you can write your question in this issue. It is also advisable to search the internet for answers first.
+The runtime is not a general-purpose sandbox. Modules may use COM, Windows APIs, external programs, remote services, or optional managed components. Before proposing or testing an integration, identify its requirements and effects. Some work requires Windows features, installed software, credentials, network access, user interaction, or elevated privileges.
 
-If you then still feel the need to ask a question and need clarification, we recommend the following:
+WelsonJS uses legacy JScript in its WSH scripts. Keep root scripts and `lib/` compatible with the target runtime; do not assume modern JavaScript or Node.js APIs are available unless the target file explicitly uses another engine.
 
-- Open an [Issue](https://github.com/gnh1201/welsonjs/issues/new).
-- Provide as much context as you can about what you're running into.
-- Provide project and platform versions (nodejs, npm, etc), depending on what seems relevant.
+## Ask a question
 
-We will then take care of the issue as soon as possible.
+Search the [project documentation](https://catswords-oss.rdbl.io/5719744820/5330609327) and [existing issues](https://github.com/gnh1201/welsonjs/issues) first. If you still need help, [open an issue](https://github.com/gnh1201/welsonjs/issues/new) with the relevant environment and what you are trying to do. Include Windows, runtime, and dependency versions where they affect the question.
 
-You might want to create a separate issue tag for questions and include it in this description. People should then tag their issues accordingly.
+## Report a bug
 
-Depending on how large the project is, you may want to outsource the questioning, e.g. to Stack Overflow. You may add additional contact and information possibilities:
+Before opening an issue, check whether it is reproducible with the latest project version and whether an existing issue describes it. A useful report includes:
 
-- ActivityPub
-- Stack Overflow tag or Public Forums
-- E-Mail List
+- What you expected and what happened
+- Steps or a small example that reproduces the problem
+- Windows version and architecture, WelsonJS revision, and relevant software or dependency versions
+- Error text, logs, and input/output details that help diagnose it
+- Whether the issue is consistent or limited to a particular environment
 
-## I Want To Contribute
+Use the [bug report form](https://github.com/gnh1201/welsonjs/issues/new). Do not include credentials, personal data, or other sensitive information.
 
-> ### Legal Notice <!-- omit in toc -->
-> When contributing to this project, you must agree that you have authored 100% of the content, that you have the necessary rights to the content and that the content you contribute may be provided under the project license.
+## Suggest an enhancement
 
-### Reporting Bugs
+Search existing issues and documentation before proposing a change. In the [feature request](https://github.com/gnh1201/welsonjs/issues/new), describe the use case, current behavior, desired behavior, and relevant alternatives or constraints. For ideas involving new operating systems, devices, or protocols, distinguish the proposed direction from functionality that is already implemented and tested.
 
-<!-- omit in toc -->
-#### Before Submitting a Bug Report
+## Make a contribution
 
-A good bug report shouldn't leave others needing to chase you up for more information. Therefore, we ask you to investigate carefully, collect information and describe the issue in detail in your report. Please complete the following steps in advance to help us fix any potential bug as fast as possible.
+You can start with a small bug fix, reproduce behavior on a Windows version, clarify documentation, add an example, or review a change. For code contributions:
 
-- Make sure that you are using the latest version.
-- Determine if your bug is really a bug and not an error on your side e.g. using incompatible environment components/versions (Make sure that you have read the [documentation](https://catswords.social/@catswords_oss). If you are looking for support, you might want to check [this section](#i-have-a-question)).
-- To see if other users have experienced (and potentially already solved) the same issue you are having, check if there is not already a bug report existing for your bug or error in the [bug tracker](https://github.com/gnh1201/welsonjs/issues?q=label%3Abug).
-- Also make sure to search the internet (including Stack Overflow) to see if users outside of the GitHub community have discussed the issue.
-- Collect information about the bug:
-  - Stack trace (Traceback)
-  - OS, Platform and Version (Windows, Linux, macOS, x86, ARM)
-  - Version of the interpreter, compiler, SDK, runtime environment, package manager, depending on what seems relevant.
-  - Possibly your input and the output
-  - Can you reliably reproduce the issue? And can you also reproduce it with older versions?
+1. Find or open an issue to discuss substantial changes and avoid duplicating ongoing work.
+2. Keep the change focused on the responsible module or project.
+3. Describe externally visible behavior, dependencies, privileges, and side effects where relevant.
+4. Open a pull request with the motivation, summary of changes, and the verification you performed. Link related issues when applicable.
 
-<!-- omit in toc -->
-#### How Do I Submit a Good Bug Report?
+By submitting a contribution, you confirm that you have the rights to provide it under the project's applicable license.
 
-> You must never report security related issues, vulnerabilities or bugs including sensitive information to the issue tracker, or elsewhere in public. Instead sensitive bugs must be sent by email to <abuse@catswords.re.kr>.
-<!-- You may add a PGP key to allow the messages to be sent encrypted as well. -->
+## Code and test guidelines
 
-We use GitHub issues to track bugs and errors. If you run into an issue with the project:
+- Follow the existing style and preserve WSH/JScript compatibility in root scripts and `lib/`, unless a file explicitly targets another runtime.
+- Validate values at JavaScript-to-COM and JavaScript-to-managed boundaries, and report errors with enough context to diagnose failures.
+- Keep optional dependencies optional where the surrounding API already supports their absence.
+- Update relevant documentation, examples, or test profile entries when externally visible behavior changes.
+- Test only the affected behavior and describe what you ran. The JavaScript profile runner in `testloader.js` runs one selected test ID; it is an interactive/manual harness, not an automatic pass over a profile. Inspect the selected implementation before running it because it may access Windows features, applications, networks, or user interfaces.
+- The managed cryptography validation project is separate from the JavaScript profile runner; follow its project documentation and build configuration.
 
-- Open an [Issue](https://github.com/gnh1201/welsonjs/issues/new). (Since we can't be sure at this point whether it is a bug or not, we ask you not to talk about a bug yet and not to label the issue.)
-- Explain the behavior you would expect and the actual behavior.
-- Please provide as much context as possible and describe the *reproduction steps* that someone else can follow to recreate the issue on their own. This usually includes your code. For good bug reports you should isolate the problem and create a reduced test case.
-- Provide the information you collected in the previous section.
+## Security issues
 
-Once it's filed:
+Do not report vulnerabilities or sensitive security details in public issues. Send them to <abuse@catswords.re.kr> instead.
 
-- The project team will label the issue accordingly.
-- A team member will try to reproduce the issue with your provided steps. If there are no reproduction steps or no obvious way to reproduce the issue, the team will ask you for those steps and mark the issue as `needs-repro`. Bugs with the `needs-repro` tag will not be addressed until they are reproduced.
-- If the team is able to reproduce the issue, it will be marked `needs-fix`, as well as possibly other tags (such as `critical`), and the issue will be left to be [implemented by someone](#your-first-code-contribution).
+## Developer support and contact
 
-<!-- You might want to create an issue template for bugs and errors that can be used as a guide and that defines the structure of the information to be included. If you do so, reference it here in the description. -->
+WelsonJS does not currently offer formal employment. The project may consider bug bounties or other developer support for meaningful contributions; availability and terms depend on the contribution and project circumstances. Contact <oss@catswords.re.kr> to discuss a specific proposal.
 
-
-### Suggesting Enhancements
-
-This section guides you through submitting an enhancement suggestion for WelsonJS, **including completely new features and minor improvements to existing functionality**. Following these guidelines will help maintainers and the community to understand your suggestion and find related suggestions.
-
-<!-- omit in toc -->
-#### Before Submitting an Enhancement
-
-- Make sure that you are using the latest version.
-- Read the [documentation](https://catswords-oss.rdbl.io/5719744820/5330609327) carefully and find out if the functionality is already covered, maybe by an individual configuration.
-- Perform a [search](https://github.com/gnh1201/welsonjs/issues) to see if the enhancement has already been suggested. If it has, add a comment to the existing issue instead of opening a new one.
-- Find out whether your idea fits with the scope and aims of the project. It's up to you to make a strong case to convince the project's developers of the merits of this feature. Keep in mind that we want features that will be useful to the majority of our users and not just a small subset. If you're just targeting a minority of users, consider writing an add-on/plugin library.
-
-<!-- omit in toc -->
-#### How Do I Submit a Good Enhancement Suggestion?
-
-Enhancement suggestions are tracked as [GitHub issues](https://github.com/gnh1201/welsonjs/issues).
-
-- Use a **clear and descriptive title** for the issue to identify the suggestion.
-- Provide a **step-by-step description of the suggested enhancement** in as many details as possible.
-- **Describe the current behavior** and **explain which behavior you expected to see instead** and why. At this point you can also tell which alternatives do not work for you.
-- You may want to **include screenshots and animated GIFs** which help you demonstrate the steps or point out the part which the suggestion is related to. You can use [this tool](https://www.cockos.com/licecap/) to record GIFs on macOS and Windows, and [this tool](https://github.com/colinkeenan/silentcast) or [this tool](https://github.com/GNOME/byzanz) on Linux. <!-- this should only be included if the project has a GUI -->
-- **Explain why this enhancement would be useful** to most WelsonJS users. You may also want to point out the other projects that solved it better and which could serve as inspiration.
-
-<!-- You might want to create an issue template for enhancement suggestions that can be used as a guide and that defines the structure of the information to be included. If you do so, reference it here in the description. -->
-
-### Your First Code Contribution
-
-Just Notepad, in Windows machine.
-
-## Styleguides
-
-### Commit Messages
-
-Flexible. We will respect your style.
-
-## Join The Project Team
-
-Contact us:
-
-* ActivityPub [@catswords_oss@catswords.social](https://catswords.social/@catswords_oss)
-* XMPP [catswords@conference.omemo.id](xmpp:catswords@conference.omemo.id?join)
-* [Join Catswords OSS on Microsoft Teams (teams.live.com)](https://teams.live.com/l/community/FEACHncAhq8ldnojAI)
-* [Join Catswords OSS #welsonjs on Discord (discord.gg)](https://discord.gg/XKG5CjtXEj)
-
-## Attribution
-This guide is based on the **contributing-gen**. [Make your own](https://github.com/bttger/contributing-gen)!
+You can also find the project community through [Discord](https://discord.gg/XKG5CjtXEj), [Microsoft Teams](https://teams.live.com/l/community/FEACHncAhq8ldnojAI), or [ActivityPub](https://catswords.social/@catswords_oss).
