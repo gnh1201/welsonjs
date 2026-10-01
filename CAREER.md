@@ -1,129 +1,58 @@
 # Join WelsonJS
 
-[Korean (한국어) version available](CAREER_KO.md)
+[한국어 문서](CAREER_KO.md)
 
-## Making JavaScript Run Longer, and Go Further on Windows
+## Make Windows JavaScript useful in more places
 
-**WelsonJS is an open-source project focused on extending and modernizing an industrial JavaScript runtime environment for Windows.**
+WelsonJS is an open-source industrial JavaScript runtime and application framework for Windows, built on the built-in JavaScript engine. It brings JavaScript together with Windows facilities such as COM, desktop applications, files, processes, and optional .NET components.
 
-Windows has been used for decades in a wide range of business and industrial environments. Even when new technologies become available, replacing existing systems, devices, data, and workflows all at once is often not practical.
+Many organizations still depend on long-running Windows software, local databases, desktop workflows, and connected devices. Replacing all of them is not always practical. WelsonJS explores how a lightweight JavaScript runtime and reusable modules can connect these existing environments with newer services and tools.
 
-WelsonJS aims to **connect existing Windows systems with newer technologies through JavaScript, and make long-standing execution environments useful in new ways.**
+The project is grounded in Windows today. Ideas from its runtime and integration work may inspire experiments on other platforms, but cross-platform support is exploratory rather than a current promise.
 
-At the same time, the **runtime technology behind WelsonJS does not have to be limited to Windows.** We are interested in exploring how JavaScript runtime environments can be extended to different operating systems and hardware platforms, including Linux and mobile environments, as well as developing runtime technologies that can be shared across platforms.
+## Ways to contribute
 
-## Your Experience May Be a Great Fit
+You do not need experience in every part of the stack. Contributions can help in areas such as:
 
-WelsonJS is not a project that requires a specific background or career path. We welcome contributors with different experiences, from Windows and JavaScript development to industrial equipment and legacy systems.
+- Windows Script Host, legacy JScript, JavaScript runtimes, and compatibility
+- Windows desktop development, COM, Windows APIs, C#, and .NET Framework
+- Integrations with files, databases, HTTP services, browsers, Microsoft Office, and other desktop software
+- Device and system integration, including serial, TCP/IP, and Windows system services
+- Runtime performance, reliability, and operation in offline or restricted networks
+- Examples, documentation, issue reproduction, code review, and open-source maintenance
 
-Experience or interest in any of the following can be useful in different areas of the project:
+The repository includes JavaScript modules in `lib/`, startup and example scripts, optional managed components in `native/`, and manually selected test cases. Check the implementation and its documented requirements before working with an integration: some need Windows features, external software, network access, credentials, user interaction, or elevated privileges. WSH uses legacy JScript, so syntax and host APIs must match the target runtime.
 
-* Windows desktop application development
-* JavaScript or script runtime development
-* Windows development with C# or .NET Framework
-* WinForms or WPF application development
-* Windows APIs and operating system features
-* RDBMS, NoSQL, and local databases
-* Offline data management and synchronization
-* REST APIs or socket-based system integration
-* USB and serial communication
-* RS-232 / RS-485 device integration
-* Ethernet / TCP/IP-based system integration
-* Industrial protocols such as Modbus RTU / Modbus TCP
-* Industrial communication and messaging such as OPC UA and MQTT
-* PLCs and other industrial equipment
-* Input and output devices such as printers, card readers, and barcode readers
-* POS systems or similar business terminal applications
-* Legacy system maintenance and modernization
-* Large-scale data processing and performance optimization
-* System design and development for traffic spikes or isolated and closed-network environments
-* System design and development for industrial control using mobile networks such as LTE and tethering
-* Development for Linux, Android, iOS, and other platforms
-* Understanding of traffic management and operations in high-traffic environments such as online video streaming, e-commerce, and social media services
-* Applying emerging AI technologies, including LLMs, to industrial systems
-* Code review and open-source collaboration through GitHub
+Contributions are not limited to code. A clear bug report, a reproducible test case, a small fix, a useful example, or a documentation correction can make the project better.
 
-**You do not need experience in all of these areas.**
+## What the project works on
 
-Experience or interest in just one area can be enough to make a meaningful contribution. Contributions are not limited to writing code. **Bug reports, testing, documentation, examples, benchmarks, bug fixes, and new ideas** are all valuable contributions to WelsonJS.
+### Connecting Windows capabilities
 
-## Problems WelsonJS Explores
+WelsonJS modules wrap capabilities available through WSH, COM, Windows APIs, optional managed libraries, and external programs. The aim is to make these interfaces usable from JavaScript while keeping each module's dependencies and behavior clear.
 
-WelsonJS is not limited to a single industry or use case. We work on a range of problems that arise when modern software meets long-running systems and real-world environments.
+### Supporting established environments
 
-### Legacy Systems and Modernization
+The project values practical compatibility with Windows systems and workflows that remain in use. Work may involve diagnosing host-specific behavior, maintaining older code, and improving reliability where modern runtimes or continuous connectivity are unavailable.
 
-Instead of replacing long-running Windows systems outright, we explore how existing environments can be preserved while introducing new technologies and capabilities.
+### Integrating applications and services
 
-### Local Data and Offline Environments
+The codebase includes adapters for local data, network protocols, desktop applications, and selected external services. These integrations vary in maturity and requirements; contributions should describe what is implemented and avoid implying universal support for a protocol, device, or platform.
 
-We work on ways to reliably store and process data in environments that cannot always depend on network connectivity, including synchronization with remote systems when connectivity is available.
+### Exploring runtime ideas
 
-### Restricted Network Environments
+We welcome experiments that investigate how runtime concepts could work beyond Windows. Such work is exploratory and should identify the target platform and what has actually been tested.
 
-We explore how applications and systems can remain useful and maintainable in environments with limited connectivity, including **isolated and closed networks**.
+## Who might enjoy this project
 
-### Connecting Windows Systems with External Devices
+WelsonJS may suit people who like understanding how existing systems work and connecting them to new tools. You might be interested in Windows internals, JavaScript engines, business or industrial software, desktop automation, or maintaining systems with real-world constraints.
 
-We work with **USB, RS-232, RS-485, Ethernet, and other interfaces**, as well as communication methods and protocols such as **Serial, TCP/IP, HTTP, Modbus RTU/TCP, OPC UA, and MQTT**.
+You can start small: reproduce an issue on a Windows version, improve a module's error handling, add an example, clarify documentation, or review a change. Experience with POS or industrial environments is useful context, but it is not a requirement.
 
-This includes connecting Windows applications with a wide range of equipment, from **PLCs and other controllers to output devices such as printers and input devices such as card readers and barcode readers**.
+## Developer support
 
-### Supporting Diverse Windows Environments
-
-We care about compatibility and stability across different generations and configurations of Windows.
-
-### Runtime and Platform Expansion
-
-We are interested in extending the runtime technologies developed through WelsonJS beyond a single operating system.
-
-This includes exploring **Linux, mobile platforms, and other operating systems and hardware environments**, as well as investigating how different system APIs and execution environments can be connected through a common runtime architecture.
-
-We are also interested in how ideas and experience gained from Windows can be applied to other platforms.
-
-### Performance and Reliability
-
-We consider performance, resource usage, and unexpected operating conditions so that applications can remain reliable under a wide range of real-world environments.
-
-## Who We'd Like to Build With
-
-People who enjoy **understanding existing technologies and connecting them with new ones**, rather than only working with the latest technology.
-
-People who are curious about why systems that have been used in the real world for many years were built the way they were.
-
-People who want to explore Windows as a platform.
-
-People who are interested in using JavaScript beyond the web browser.
-
-People who enjoy understanding how industrial equipment, peripherals, local systems, and software work together.
-
-Experience developing or operating **POS and other business terminal systems**, or designing systems for **isolated and closed-network environments**, can be particularly relevant to the kinds of problems WelsonJS explores.
-
-We are also interested in people who want to explore **runtime technology itself and its potential across platforms such as Linux and mobile operating systems**.
-
-Above all, we welcome people who enjoy **reading code, running experiments, finding problems, and working together to build solutions** through open-source development.
-
-## Start Small
-
-You do not need to implement a major feature to get started with WelsonJS.
-
-You can begin by fixing a small bug, testing the project on a particular Windows environment, adding an example, or improving the documentation.
-
-Trying WelsonJS on a new platform or experimenting with the runtime on another operating system can also be a meaningful contribution.
-
-Your experience with different environments can itself become valuable knowledge for the project.
-
-**If you enjoy working with Windows and JavaScript, or want to explore how far JavaScript runtime technology can go, that is already a good place to start.**
-
-Join us in building WelsonJS.
-
-## Developer Support
-
-WelsonJS **does not currently offer formal employment or hiring arrangements**.
-
-However, we may be able to provide **bug bounties or other forms of developer support** for meaningful contributions to the project.
-
-If you would like to discuss a particular contribution or support arrangement, feel free to reach out at any time. **The scope and form of support can be discussed and negotiated depending on the contribution and the circumstances of the project.**
+WelsonJS does not currently offer formal employment. The project may consider bug bounties or other developer support for meaningful contributions; availability and terms depend on the contribution and project circumstances. Contact us to discuss a specific proposal.
 
 ## Contact
+
 * oss@catswords.re.kr
