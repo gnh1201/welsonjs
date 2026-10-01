@@ -101,15 +101,18 @@ var console = {
             return WScript.Arguments.Named.Exists("quiet");
         }, false);
     })(),
+    _stderr: typeof WScript !== "undefined" ? WScript.StdErr : null,
+    _stdout: typeof WScript !== "undefined" ? WScript.StdOut : null,
+	_stdin: typeof WScript !== "undefined" ? WScript.StdIn : null,
     _echoCallback: function(params, type) {
         if (this._muted) return;
         
         if (typeof WScript !== "undefined") {
             if (this._muted) {
-                WScript.StdErr.WriteLine("[*] " + params.message);
+                this._stderr.WriteLine("[*] " + params.message);
                 return;
             }
-            WScript.StdOut.WriteLine("[*] " + params.message);
+            this._stdout.WriteLine("[*] " + params.message);
         }
     },
     _echo: function(args, type) {
@@ -1221,7 +1224,7 @@ function __main__() {
     console.log(" This software is distributed as open source under the GPL 3.0 or MS-RL licenses.");
     console.log(" Please support this project: https://github.com/sponsors/gnh1201");
     console.log(" Source code available: https://github.com/gnh1201/welsonjs");
-	console.log(" #OPENTOWORK");
+    console.log(" #OPENTOWORK");
     console.log("");
 
     if (typeof window === "undefined") {

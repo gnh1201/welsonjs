@@ -9,18 +9,26 @@ var JsonRpc2 = require("lib/jsonrpc2");
 function main(args) {
     var server = StdioServer.create();
     
+    // notify
+    var _notify = function(message) {
+        console.log(message);
+    };
+    
     server.addEventListener("message", function(e) {
         var message = e.target.receive();
         
+        // clear all console messsages
+        console.clear();
+        
         // response
-        e.target.send(JsonRpc2.dispatch(message));
+        e.target.send(JsonRpc2.dispatch(message, _notify));
     });
     
     server.listen();
 }
 
 // initialize
-JsonRpc2.register("initialize", function (params, id) {
+JsonRpc2.register("initialize", function (params, id, callback) {
     return {
         "protocolVersion": "2025-11-25",
         "capabilities": {
@@ -39,12 +47,12 @@ JsonRpc2.register("initialize", function (params, id) {
 });
 
 // notifications/initialized
-JsonRpc2.register("notifications/initialized", function (params, id) {
+JsonRpc2.register("notifications/initialized", function (params, id, callback) {
     return false;
 });
 
 // tools/list
-JsonRpc2.register("tools/list", function (params, id) {
+JsonRpc2.register("tools/list", function (params, id, callback) {
     return {
         "tools": [
             {
@@ -79,7 +87,8 @@ JsonRpc2.register("tools/list", function (params, id) {
                     + "Always use Unicode escape sequences for non-ASCII text. "
                     + "Use require(\"lib/shell\") for shell access. "
                     + "Use require(\"lib/msoffice\") to access Microsoft Excel. "
-                    + "For Microsoft Office applications other than Excel, connect to their COM objects directly.",
+                    + "Use `_notify(message)` instead of `console.log` when logging is needed. "
+                    + "If the outcome cannot be determined programmatically, ask the user for confirmation.",
                 "inputSchema": {
                     "type": "object",
                     "properties": {
@@ -136,7 +145,9 @@ JsonRpc2.register("tools/list", function (params, id) {
 });
 
 // tools/call
-JsonRpc2.register("tools/call", function (params, id) {
+JsonRpc2.register("tools/call", function (params, id, callback) {
+    var _notify = typeof callback === "function" ? callback : console.log;
+    
     var function_calling_name = params.name;
     if (function_calling_name == "add_both_numbers") {
         return {
@@ -156,22 +167,29 @@ JsonRpc2.register("tools/call", function (params, id) {
             && ("allowUnsafeEval" in params.arguments)
             ? params.arguments.allowUnsafeEval
             : false;
-
+        
         return {
             "content": [
                 {
                     "type": "text",
                     "text": (function(script) {
+                        var text = "";
+                        
                         try {
                             if (!ALLOW_UNSAFE_EVAL && !allowUnsafeEval) {
                                 throw new Error("Unsafe eval is not allowed. Please set ALLOW_UNSAFE_EVAL to true if you want to allow it.");
                             }
-                            var evaluate = new Function(script);
-                            return String(evaluate());
+                            var evaluate = new Function("_notify", script);
+                            text += String(evaluate(_notify));
+                            if (console._messages.length > 0) {
+                                text += "\r\n\r\n" + console._messages.join("\r\n");
+                            }
                         } catch (e) {
                             isError = true;
-                            return "Error: " + e.message;
+                            text += "Error: " + e.message;
                         }
+                        
+                        return text;
                     })(params.arguments.script)
                 }
             ],
