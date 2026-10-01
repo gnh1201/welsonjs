@@ -10,14 +10,8 @@ function main(args) {
     var server = StdioServer.create();
     
     // notify
-    // Log to stderr (stdio servers) or use OpenTelemetry instead.
-    // MCP logging (notifications/message) is deprecated as of protocol version 2026-07-28 (SEP-2577)
-    // and stays functional through the deprecation window (at least twelve months)
-    // see the deprecated features registry: https://modelcontextprotocol.io/specification/2026-07-28/deprecated
     var _notify = function(message) {
-        if (console._stderr && typeof console._stderr.WriteLine === "function") {
-            console._stderr.WriteLine(typeof message === "object" ? JSON.stringify(message) : String(message));
-        }
+        console._messages.push(message);
     };
     
     server.addEventListener("message", function(e) {
@@ -149,11 +143,8 @@ JsonRpc2.register("tools/list", function (params, id, callback) {
 
 // tools/call
 JsonRpc2.register("tools/call", function (params, id, callback) {
-    var _notify = callback;
-    if (typeof _notify !== "function") {
-        _notify = console.log;
-    }
-
+    var _notify = typeof callback === "function" ? callback : console.log;
+    
     var function_calling_name = params.name;
     if (function_calling_name == "add_both_numbers") {
         return {
@@ -179,16 +170,23 @@ JsonRpc2.register("tools/call", function (params, id, callback) {
                 {
                     "type": "text",
                     "text": (function(script) {
+                        var text = "";
+                        
                         try {
                             if (!ALLOW_UNSAFE_EVAL && !allowUnsafeEval) {
                                 throw new Error("Unsafe eval is not allowed. Please set ALLOW_UNSAFE_EVAL to true if you want to allow it.");
                             }
-                            var evaluate = new Function(script);
-                            return String(evaluate());
+                            var evaluate = new Function("_notify", script);
+                            text += String(evaluate(_notify));
+                            if (console._messages.length > 0) {
+                                text += "\r\n\r\n" + console._messages.join("\r\n");
+                            }
                         } catch (e) {
                             isError = true;
-                            return "Error: " + e.message;
+                            text += "Error: " + e.message;
                         }
+                        
+                        return text;
                     })(params.arguments.script)
                 }
             ],

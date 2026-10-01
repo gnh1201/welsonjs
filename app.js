@@ -103,6 +103,7 @@ var console = {
     })(),
     _stderr: typeof WScript !== "undefined" ? WScript.StdErr : null,
     _stdout: typeof WScript !== "undefined" ? WScript.StdOut : null,
+	_stdin: typeof WScript !== "undefined" ? WScript.StdIn : null,
     _echoCallback: function(params, type) {
         if (this._muted) return;
         
