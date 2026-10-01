@@ -79,7 +79,7 @@ JsonRpc2.register("tools/list", function (params, id) {
                     + "Always use Unicode escape sequences for non-ASCII text. "
                     + "Use require(\"lib/shell\") for shell access. "
                     + "Use require(\"lib/msoffice\") to access Microsoft Excel. "
-                    + "For Microsoft Office applications other than Excel, connect to their COM objects directly.",
+                    + "Returning a value is not required. If there is a result to return, return it using a supported data type.",
                 "inputSchema": {
                     "type": "object",
                     "properties": {
