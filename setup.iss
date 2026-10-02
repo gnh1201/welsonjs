@@ -30,6 +30,7 @@ ChangesAssociations=yes
 ; Add an optional component for the user to select during installation
 Name: "fileassoc"; Description: "Associate .js files to run with WelsonJS"; Types: full compact custom;
 Name: "artifacts"; Description: "WelsonJS Launcher and Windows Service"; Types: full compact custom;
+Name: "mcp"; Description: "Configure WelsonJS MCP server for supported AI CLIs"; Types: full compact custom;
 Name: "python"; Description: "Download Python Windows embeddable package"; Types: full;
 Name: "curl"; Description: "Download cURL (Universal HTTP client)"; Types: full;
 Name: "websocat"; Description: "Download websocat (Command-line WebSocket client)"; Types: full;
