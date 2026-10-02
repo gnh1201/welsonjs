@@ -28,7 +28,7 @@ function main(args) {
 }
 
 // initialize
-JsonRpc2.register("initialize", function (params, id, callback) {
+JsonRpc2.register("initialize", function (rpc, params, id, callback) {
     return {
         "protocolVersion": "2025-11-25",
         "capabilities": {
@@ -47,12 +47,12 @@ JsonRpc2.register("initialize", function (params, id, callback) {
 });
 
 // notifications/initialized
-JsonRpc2.register("notifications/initialized", function (params, id, callback) {
+JsonRpc2.register("notifications/initialized", function (rpc, params, id, callback) {
     return false;
 });
 
 // tools/list
-JsonRpc2.register("tools/list", function (params, id, callback) {
+JsonRpc2.register("tools/list", function (rpc, params, id, callback) {
     return {
         "tools": [
             {
@@ -88,6 +88,7 @@ JsonRpc2.register("tools/list", function (params, id, callback) {
                     + "Use require(\"lib/shell\") for shell access. "
                     + "Use require(\"lib/msoffice\") to access Microsoft Excel. "
                     + "Use `_notify(message)` instead of `console.log` when logging is needed. "
+                    + "To persist values, use `_getState(key)` and `_setState(key, value)`. "
                     + "If the outcome cannot be determined programmatically, ask the user for confirmation.",
                 "inputSchema": {
                     "type": "object",
@@ -145,8 +146,10 @@ JsonRpc2.register("tools/list", function (params, id, callback) {
 });
 
 // tools/call
-JsonRpc2.register("tools/call", function (params, id, callback) {
+JsonRpc2.register("tools/call", function (rpc, params, id, callback) {
     var _notify = typeof callback === "function" ? callback : console.log;
+    var _getState = typeof rpc.getState === "function" ? function(key) { return rpc.getState(key); } : null; // `_getState(key);`
+    var _setState = typeof rpc.setState === "function" ? function(key, value) { rpc.setState(key, value); } : null; // `_setState(key, state);`
     
     var function_calling_name = params.name;
     if (function_calling_name == "add_both_numbers") {
@@ -179,8 +182,8 @@ JsonRpc2.register("tools/call", function (params, id, callback) {
                             if (!ALLOW_UNSAFE_EVAL && !allowUnsafeEval) {
                                 throw new Error("Unsafe eval is not allowed. Please set ALLOW_UNSAFE_EVAL to true if you want to allow it.");
                             }
-                            var evaluate = new Function("_notify", script);
-                            text += String(evaluate(_notify));
+                            var evaluate = new Function("_notify", "_getState", "_setState", script);
+                            text += String(evaluate(_notify, _getState, _setState));
                             if (console._messages.length > 0) {
                                 text += "\r\n\r\n" + console._messages.join("\r\n");
                             }
