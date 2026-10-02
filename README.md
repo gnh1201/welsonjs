@@ -253,10 +253,18 @@ For detailed information on the open-source license status of this project, plea
 * [catswords-jsrt-rs](https://github.com/gnh1201/catswords-jsrt-rs?utm_source=welsonjs): Minimal ChakraCore (JsRT) bindings for Rust.
 * [jsrt-claw](https://github.com/gnh1201/jsrt-claw?utm_source=welsonjs): OpenClaw-compatible skill definition for a built-in JSRT (JScript 5.x).
 
-## WelsonJS on Product Hunt
+## Featured
+
+### Product Hunt
 WelsonJS was featured on Product Hunt on September 9th, 2026, at 12:01 AM PDT.
 
 [![WelsonJS on Product Hunt](https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1245343&theme=light&t=1788932620105)](https://www.producthunt.com/products/welsonjs?embed=true&amp;utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-welsonjs)
+
+### Dev Tools Dir
+
+WelsonJS was featured on Dev Tools Dir
+
+[![WelsonJS on Dev Tools Dir](https://devtoolsdir.com/devtoolsdir/images/badges/featured-on-light.svg)](https://devtoolsdir.com/projects/welsonjs?utm_source=badge)
 
 ## Disclaimer
 To the maximum extent permitted by applicable law, Namhyeon Go and Catswords Research shall not be held liable for any direct, indirect, incidental, special, or consequential damages arising out of or in connection with the use of this software outside its intended purpose or scope.
