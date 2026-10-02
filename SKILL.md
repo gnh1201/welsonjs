@@ -14,7 +14,7 @@ Use this skill when a task involves this repository's `mcploader.js`, its MCP to
 - Read `AGENTS.md` and inspect the relevant implementation under `lib/` before relying on an API. `README.md` gives the broad project map; `mcploader.js` documents the MCP surface.
 - WelsonJS uses legacy WSH JScript. Prefer ES3/ES5-compatible syntax in root scripts and `lib/` unless the target file explicitly uses another engine. Do not assume Node.js APIs or modern JavaScript syntax are available.
 - Project modules are commonly loaded with `require("lib/<module>")`. Confirm the module's exports and host requirements before using it. Some features need Windows, COM, optional software, credentials, network access, or elevated privileges.
-- An `evaluate_js` execution is independent; do not assume variables or COM objects survive between calls. Reacquire required objects each time.
+- Each `evaluate_js` execution is independent; local variables and COM objects do not survive between calls. When a value or instance needs to be reused, save it with `_setState(key, value)` in one execution and retrieve it with `_getState(key)` in a later execution. These helpers are `null` when the JSON-RPC runtime does not provide state support, so check availability before calling them. Reacquire objects that cannot be preserved as state.
 
 ## Use the MCP tools accurately
 

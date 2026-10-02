@@ -83,12 +83,12 @@ JsonRpc2.register("tools/list", function (rpc, params, id, callback) {
                     + "Whenever possible, perform operations visibly through the user interface rather than in the background. "
                     + "Unless explicitly instructed otherwise, do not save results or intermediate data to files. "
                     + "Each script execution is independent, so state from previous executions may not be shared. "
+                    + "Use `_setState(key, value)` and `_getState(key)` when variables or instances need to be reused across script executions. "
                     + "Make every effort to restore or reacquire any necessary objects or processes. "
                     + "Always use Unicode escape sequences for non-ASCII text. "
                     + "Use require(\"lib/shell\") for shell access. "
                     + "Use require(\"lib/msoffice\") to access Microsoft Excel. "
                     + "Use `_notify(message)` instead of `console.log` when logging is needed. "
-                    + "To persist values, use `_getState(key)` and `_setState(key, value)`. "
                     + "If the outcome cannot be determined programmatically, ask the user for confirmation.",
                 "inputSchema": {
                     "type": "object",
