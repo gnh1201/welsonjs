@@ -18,11 +18,13 @@ Use this skill when a task involves this repository's `mcploader.js`, its MCP to
 
 ## Use the MCP tools accurately
 
-The server is a stdio JSON-RPC server exposed by `mcploader.js`. Its registered MCP operations currently include:
+The server is a stdio JSON-RPC server exposed by `mcploader.js`. It advertises protocol version `2025-11-25`, server name `WelsonJS MCP` (version `1.1.0`), and the `io.modelcontextprotocol/ui` extension for `text/html;profile=mcp-app`. Its registered tools currently include:
 
 - `add_both_numbers`: adds numeric arguments `a` and `b`.
-- `evaluate_js`: executes the `script` argument through `new Function` and returns its string result and captured console messages. Set `allowUnsafeEval: true` for the call unless the host has explicitly enabled the global `ALLOW_UNSAFE_EVAL` setting. The checked-in `app.js` defaults that setting to `false`.
+- `evaluate_js`: executes the `script` argument through `new Function` and returns its string result and captured console messages. Set `allowUnsafeEval: true` for the call unless the host has enabled the global `ALLOW_UNSAFE_EVAL` setting. The checked-in `app.js` defaults that setting to `false`. The function receives `_notify`, `_getState`, and `_setState`; state helpers are `null` when the JSON-RPC runtime does not provide state support.
 - `evaluate_js_es3`: deprecated alias; use `evaluate_js`.
+
+Both evaluation tools declare a `timeout` argument with a 180,000–900,000 ms schema range and a 900,000 ms default. The current `mcploader.js` implementation does not read or enforce that argument, so do not rely on it to interrupt a long-running script.
 
 Do not imply that unsafe evaluation has been enabled by the skill or by the MCP tool description. If execution is rejected, explain that the host's unsafe-eval setting or explicit call argument is required; do not try to change host configuration to bypass it.
 
@@ -33,7 +35,7 @@ When writing an `evaluate_js` script:
 - Use `_notify(message)` for progress or diagnostic output. Avoid `console.log`; the loader supplies `_notify` to the script and separately returns collected console messages.
 - Use ASCII source text. Encode non-ASCII string content with JavaScript Unicode escapes such as `"\\uC548\\uB155"`, as required by the MCP tool guidance in `mcploader.js`.
 - Use `require("lib/shell")` for supported shell operations and `require("lib/msoffice")` for Office automation; inspect those modules before selecting methods.
-- Set a suitable timeout only within the tool's declared range (180,000 to 900,000 ms; default 900,000 ms). Avoid long timeouts when the work is expected to finish quickly.
+- The schema's `timeout` field is not currently enforced by `mcploader.js`; keep scripts bounded and do not claim that a timeout will stop execution.
 - If the result cannot be established from returned output, describe the uncertainty and ask the user to confirm the visible outcome.
 
 ## Handle Windows side effects carefully
