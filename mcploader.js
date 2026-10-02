@@ -148,8 +148,8 @@ JsonRpc2.register("tools/list", function (rpc, params, id, callback) {
 // tools/call
 JsonRpc2.register("tools/call", function (rpc, params, id, callback) {
     var _notify = typeof callback === "function" ? callback : console.log;
-    var _getState = typeof rpc.getState === "function" ? rpc.getState : null; // `rpc.getState(key);`
-    var _setState = typeof rpc.setState === "function" ? rpc.setState : null; // `rpc.setState(key, state);`
+    var _getState = typeof rpc.getState === "function" ? function(key) { return rpc.getState(key); } : null; // `_getState(key);`
+    var _setState = typeof rpc.setState === "function" ? function(key, value) { rpc.setState(key, value); } : null; // `_setState(key, state);`
     
     var function_calling_name = params.name;
     if (function_calling_name == "add_both_numbers") {
