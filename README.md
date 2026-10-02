@@ -262,7 +262,7 @@ WelsonJS was featured on Product Hunt on September 9th, 2026, at 12:01 AM PDT.
 
 ### Dev Tools Dir
 
-WelsonJS was featured on Dev Tools Dir
+WelsonJS was featured on Dev Tools Dir on Sunday, November 1, 2026 at 08:00 AM UTC
 
 [![WelsonJS on Dev Tools Dir](https://devtoolsdir.com/devtoolsdir/images/badges/featured-on-light.svg)](https://devtoolsdir.com/projects/welsonjs?utm_source=badge)
 
