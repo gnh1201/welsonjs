@@ -220,7 +220,7 @@
     # Microsoft OpenJDK build
     # ===========================
     microsoft_jdk = @{
-        x64 = "https://aka.ms/download-jdk/microsoft-jdk-25.0.4-windows-x64.exe"
+        x64   = "https://aka.ms/download-jdk/microsoft-jdk-25.0.4-windows-x64.exe"
         arm64 = $null  # no official ARM64 build
         x86   = "https://aka.ms/download-jdk/microsoft-jdk-25.0.4-windows-aarch64.exe"
     }
@@ -230,5 +230,12 @@
     # ===========================
     hwp_automation = @{
         any = "https://catswords.blob.core.windows.net/welsonjs/packages/native/FilePathCheckerModuleExample/2007.01.09/FilePathCheckerModuleExample.dll.gz"
+    }
+    
+    # ===========================
+    # Nuget
+    # ===========================
+    nuget = @{
+        any = "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe"
     }
 }
