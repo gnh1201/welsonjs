@@ -656,16 +656,18 @@ function Extract-CompressedFile {
         $extractedOk = $true
     }
 
-    # Detect root folder unwrap
+    # Unwrap repeated single-folder roots (some archives include redundant
+    # directory levels, e.g. package/package/rg.exe).
     $entries    = Get-ChildItem -Path $tmpExtractDir -Force
     $SourceRoot = $tmpExtractDir
 
-    if ($entries.Count -eq 1 -and $entries[0].PSIsContainer) {
+    while ($entries.Count -eq 1 -and $entries[0].PSIsContainer) {
         $SourceRoot = $entries[0].FullName
         Write-Host "[*] Detected single root folder inside archive: $($entries[0].Name)"
         Write-Host "[*] Unwrapping folder content..."
+        $entries = Get-ChildItem -Path $SourceRoot -Force
     }
-    else {
+    if ($SourceRoot -eq $tmpExtractDir) {
         Write-Host "[*] Extracting multi-item archive (no root folder unwrapping needed)."
     }
 
@@ -792,7 +794,7 @@ try {
         "windivert", "android_platform_tools", "tun2socks", "sendboxie",
         "ldplayer", "tap_windows6", "thc_hydra", "shadowsocks_libev",
         "winlibs_mingw", "golang", "x86dbg", "w7zip", "hashcat",
-        "microsoft_jdk", "nuget"
+        "microsoft_jdk", "nuget", "ripgrep"
     )
 
     foreach ($component in $downloadComponents) {
@@ -871,38 +873,40 @@ try {
         }
     }
 
-    # Make NuGet available from new shells for the current user.
-    if (Test-ComponentSelected -Name "nuget") {
-        $nugetDirectory = Join-Path $TargetDir "nuget"
-        $nugetExecutable = Join-Path $nugetDirectory "nuget.exe"
-        if (Test-Path $nugetExecutable) {
-            $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
-            $pathEntries = @($userPath -split ";" | Where-Object { $_ -and $_.Trim() -ne "" })
-            $normalizedNugetDirectory = [System.IO.Path]::GetFullPath($nugetDirectory).TrimEnd("\")
-            $alreadyRegistered = $false
-            foreach ($pathEntry in $pathEntries) {
-                try {
-                    if ([System.IO.Path]::GetFullPath($pathEntry).TrimEnd("\") -ieq $normalizedNugetDirectory) {
-                        $alreadyRegistered = $true
-                        break
+    # Make command-line tools available from new shells for the current user.
+    foreach ($tool in @(@{ Name = "nuget"; Executable = "nuget.exe" }, @{ Name = "ripgrep"; Executable = "rg.exe" })) {
+        if (Test-ComponentSelected -Name $tool.Name) {
+            $toolDirectory = Join-Path $TargetDir $tool.Name
+            $toolExecutable = Join-Path $toolDirectory $tool.Executable
+            if (Test-Path $toolExecutable) {
+                $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+                $pathEntries = @($userPath -split ";" | Where-Object { $_ -and $_.Trim() -ne "" })
+                $normalizedToolDirectory = [System.IO.Path]::GetFullPath($toolDirectory).TrimEnd("\")
+                $alreadyRegistered = $false
+                foreach ($pathEntry in $pathEntries) {
+                    try {
+                        if ([System.IO.Path]::GetFullPath($pathEntry).TrimEnd("\") -ieq $normalizedToolDirectory) {
+                            $alreadyRegistered = $true
+                            break
+                        }
                     }
+                    catch { }
                 }
-                catch { }
-            }
 
-            if (-not $alreadyRegistered) {
-                $pathEntries += $normalizedNugetDirectory
-                $newUserPath = $pathEntries -join ";"
-                [Environment]::SetEnvironmentVariable("Path", $newUserPath, "User")
-                $env:Path = "$newUserPath;$env:Path"
-                Write-Host "[*] Added NuGet to the current user's PATH: $normalizedNugetDirectory"
+                if (-not $alreadyRegistered) {
+                    $pathEntries += $normalizedToolDirectory
+                    $newUserPath = $pathEntries -join ";"
+                    [Environment]::SetEnvironmentVariable("Path", $newUserPath, "User")
+                    $env:Path = "$newUserPath;$env:Path"
+                    Write-Host "[*] Added $($tool.Name) to the current user's PATH: $normalizedToolDirectory"
+                }
+                else {
+                    Write-Host "[*] $($tool.Name) is already present in the current user's PATH."
+                }
             }
             else {
-                Write-Host "[*] NuGet is already present in the current user's PATH."
+                Write-Host "[WARN] $($tool.Executable) not found. Skipping PATH registration."
             }
-        }
-        else {
-            Write-Host "[WARN] nuget.exe not found. Skipping PATH registration."
         }
     }
 

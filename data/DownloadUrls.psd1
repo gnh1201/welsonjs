@@ -238,4 +238,13 @@
     nuget = @{
         any = "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe"
     }
+    
+    # ===========================
+    # ripgrep
+    # ===========================
+    ripgrep = @{
+        x64   = "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-x86_64-pc-windows-msvc.zip"
+        arm64 = "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-aarch64-pc-windows-msvc.zip"
+        x86   = "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-i686-pc-windows-msvc.zip"
+    }
 }

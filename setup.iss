@@ -59,6 +59,7 @@ Name: "w7zip"; Description: "Download 7-Zip installer"; Types: custom;
 Name: "hashcat"; Description: "Download hashcat archive"; Types: custom;
 Name: "microsoft_jdk"; Description: "Download Microsoft OpenJDK installer"; Types: custom;
 Name: "nuget"; Description: "Download NuGet command-line tool"; Types: custom;
+Name: "ripgrep"; Description: "Download ripgrep (fast text search tool)"; Types: custom;
 
 [Registry]
 Root: HKCR; Subkey: "{cm:AppName}.Script"; ValueType: string; ValueData: "{cm:AppName} Script"; Flags: uninsdeletekey
