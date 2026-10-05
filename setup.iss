@@ -1,5 +1,5 @@
 ; @created_on 2020-06-26
-; @updated_on 2026-09-30
+; @updated_on 2026-10-05
 ; @author Namhyeon Go <gnh1201@catswords.re.kr> and Catswords OSS contributors.
 
 [Setup]
