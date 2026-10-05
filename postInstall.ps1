@@ -843,29 +843,6 @@ catch {
 # EXTRACT / INSTALL PHASE
 # ================================
 try {
-    foreach ($component in $additionalComponents) {
-        if (-not (Test-ComponentSelected -Name $component)) { continue }
-        $url = Get-DownloadUrl -Component $component -Arch $arch
-        if (-not $url) { continue }
-        $fileName = [System.IO.Path]::GetFileName(([uri]$url).AbsolutePath)
-        if ($component -eq "curl") { $fileName = "curl.zip" }
-        if (-not $fileName) { $fileName = "$component.download" }
-        $archivePath = Join-Path $TmpDir $fileName
-        if (-not (Test-Path $archivePath)) { continue }
-        $destination = Join-Path $TargetDir $component
-        $extension = [System.IO.Path]::GetExtension($archivePath).ToLowerInvariant()
-        if ($archivePath.ToLowerInvariant().EndsWith(".tar.gz")) {
-            Extract-TarGzArchive -ArchivePath $archivePath -DestinationDirectory $destination
-        }
-        elseif ($extension -in @(".zip", ".7z")) {
-            Extract-CompressedFile -CompressedPath $archivePath -DestinationDirectory $destination
-        }
-        else {
-            New-Item -ItemType Directory -Path $destination -Force | Out-Null
-            Move-Item -Path $archivePath -Destination (Join-Path $destination $fileName) -Force
-        }
-    }
-
     # Extract or stage downloadable components using the shared component list.
     foreach ($component in $downloadComponents) {
         if (-not (Test-ComponentSelected -Name $component)) { continue }
@@ -891,6 +868,41 @@ try {
         else {
             New-Item -ItemType Directory -Path $destination -Force | Out-Null
             Move-Item -Path $archivePath -Destination (Join-Path $destination $fileName) -Force
+        }
+    }
+
+    # Make NuGet available from new shells for the current user.
+    if (Test-ComponentSelected -Name "nuget") {
+        $nugetDirectory = Join-Path $TargetDir "nuget"
+        $nugetExecutable = Join-Path $nugetDirectory "nuget.exe"
+        if (Test-Path $nugetExecutable) {
+            $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+            $pathEntries = @($userPath -split ";" | Where-Object { $_ -and $_.Trim() -ne "" })
+            $normalizedNugetDirectory = [System.IO.Path]::GetFullPath($nugetDirectory).TrimEnd("\")
+            $alreadyRegistered = $false
+            foreach ($pathEntry in $pathEntries) {
+                try {
+                    if ([System.IO.Path]::GetFullPath($pathEntry).TrimEnd("\") -ieq $normalizedNugetDirectory) {
+                        $alreadyRegistered = $true
+                        break
+                    }
+                }
+                catch { }
+            }
+
+            if (-not $alreadyRegistered) {
+                $pathEntries += $normalizedNugetDirectory
+                $newUserPath = $pathEntries -join ";"
+                [Environment]::SetEnvironmentVariable("Path", $newUserPath, "User")
+                $env:Path = "$newUserPath;$env:Path"
+                Write-Host "[*] Added NuGet to the current user's PATH: $normalizedNugetDirectory"
+            }
+            else {
+                Write-Host "[*] NuGet is already present in the current user's PATH."
+            }
+        }
+        else {
+            Write-Host "[WARN] nuget.exe not found. Skipping PATH registration."
         }
     }
 
