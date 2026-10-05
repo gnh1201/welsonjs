@@ -220,7 +220,7 @@
     # Microsoft OpenJDK build
     # ===========================
     microsoft_jdk = @{
-        x64 = "https://aka.ms/download-jdk/microsoft-jdk-25.0.4-windows-x64.exe"
+        x64   = "https://aka.ms/download-jdk/microsoft-jdk-25.0.4-windows-x64.exe"
         arm64 = $null  # no official ARM64 build
         x86   = "https://aka.ms/download-jdk/microsoft-jdk-25.0.4-windows-aarch64.exe"
     }
@@ -230,5 +230,21 @@
     # ===========================
     hwp_automation = @{
         any = "https://catswords.blob.core.windows.net/welsonjs/packages/native/FilePathCheckerModuleExample/2007.01.09/FilePathCheckerModuleExample.dll.gz"
+    }
+    
+    # ===========================
+    # Nuget
+    # ===========================
+    nuget = @{
+        any = "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe"
+    }
+    
+    # ===========================
+    # ripgrep
+    # ===========================
+    ripgrep = @{
+        x64   = "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-x86_64-pc-windows-msvc.zip"
+        arm64 = "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-aarch64-pc-windows-msvc.zip"
+        x86   = "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-i686-pc-windows-msvc.zip"
     }
 }

@@ -656,16 +656,18 @@ function Extract-CompressedFile {
         $extractedOk = $true
     }
 
-    # Detect root folder unwrap
+    # Unwrap repeated single-folder roots (some archives include redundant
+    # directory levels, e.g. package/package/rg.exe).
     $entries    = Get-ChildItem -Path $tmpExtractDir -Force
     $SourceRoot = $tmpExtractDir
 
-    if ($entries.Count -eq 1 -and $entries[0].PSIsContainer) {
+    while ($entries.Count -eq 1 -and $entries[0].PSIsContainer) {
         $SourceRoot = $entries[0].FullName
         Write-Host "[*] Detected single root folder inside archive: $($entries[0].Name)"
         Write-Host "[*] Unwrapping folder content..."
+        $entries = Get-ChildItem -Path $SourceRoot -Force
     }
-    else {
+    if ($SourceRoot -eq $tmpExtractDir) {
         Write-Host "[*] Extracting multi-item archive (no root folder unwrapping needed)."
     }
 
@@ -775,248 +777,56 @@ function Extract-GZipFile {
 # ================================
 # COMPRESSED / INSTALLER PATHS
 # ================================
-$PythonCompressed        = Join-Path $TmpDir "python.zip"
-$CurlCompressed          = Join-Path $TmpDir "curl.zip"
-$YaraCompressed          = Join-Path $TmpDir "yara.zip"
-$WamrArchive             = Join-Path $TmpDir "wamr.tar.gz"
-$WebsocatCompressed      = Join-Path $TmpDir "websocat.zip"
-$ArtifactsCompressed     = Join-Path $TmpDir "artifacts.zip"
 $GtkRuntimeInstaller     = Join-Path $TmpDir "gtk-runtime.exe"
-$TessdataCompressed      = Join-Path $TmpDir "tessdata.zip"
-$TessdataBestCompressed  = Join-Path $TmpDir "tessdata_best.zip"
-$TessdataFastCompressed  = Join-Path $TmpDir "tessdata_fast.zip"
 $NpcapInstaller          = Join-Path $TmpDir "npcap-setup.exe"
 $NmapInstaller           = Join-Path $TmpDir "nmap-setup.exe"
-$GtkServerCompressed     = Join-Path $TmpDir "gtkserver.zip"
-$WinDivertCompressed     = Join-Path $TmpDir "windivert.zip"
-$AndroidPlatformToolsCompressed = Join-Path $TmpDir "android-platform-tools.zip"
 $HwpAutomationCompressed = Join-Path $TmpDir "FilePathCheckerModuleExample.dll.gz"
 
 # ================================
 # DOWNLOAD PHASE
 # ================================
 try {
-    # Download Python (component: python)
-    if (Test-ComponentSelected -Name "python") {
-        $url = Get-DownloadUrl -Component "python" -Arch $arch
-        if ($url) {
-            Download-File -Url $url -DestinationPath $PythonCompressed
+    # Download archive/file components through one shared path.
+    # Nmap/Npcap, GTK runtime and HWP keep dedicated installation handling.
+    $downloadComponents = @(
+        "python", "curl", "yara", "wamr", "websocat", "artifacts",
+        "gtkserver", "tessdata", "tessdata_best", "tessdata_fast",
+        "windivert", "android_platform_tools", "tun2socks", "sendboxie",
+        "ldplayer", "tap_windows6", "thc_hydra", "shadowsocks_libev",
+        "winlibs_mingw", "golang", "x86dbg", "w7zip", "hashcat",
+        "microsoft_jdk", "nuget", "ripgrep"
+    )
+
+    foreach ($component in $downloadComponents) {
+        if (-not (Test-ComponentSelected -Name $component)) { continue }
+        $url = Get-DownloadUrl -Component $component -Arch $arch
+        if (-not $url) {
+            Write-Host "[*] $component URL not available for arch: $arch. Skipping download."
+            continue
         }
-        else {
-            Write-Host "[*] Python URL not available for arch: $arch. Skipping download."
-        }
-    }
-    else {
-        Write-Host "[*] Python component not selected. Skipping download."
+        $fileName = [System.IO.Path]::GetFileName(([uri]$url).AbsolutePath)
+        if ($component -eq "curl") { $fileName = "curl.zip" }
+        if (-not $fileName) { $fileName = "$component.download" }
+        Download-File -Url $url -DestinationPath (Join-Path $TmpDir "$component-$fileName")
     }
 
-    # Download curl (component: curl)
-    if (Test-ComponentSelected -Name "curl") {
-        $url = Get-DownloadUrl -Component "curl" -Arch $arch
-        if ($url) {
-            Download-File -Url $url -DestinationPath $CurlCompressed
-        }
-        else {
-            Write-Host "[*] curl URL not available for arch: $arch. Skipping download."
-        }
-    }
-    else {
-        Write-Host "[*] curl component not selected. Skipping download."
-    }
-
-    # Download YARA (component: yara)
-    if (Test-ComponentSelected -Name "yara") {
-        $url = Get-DownloadUrl -Component "yara" -Arch $arch
-        if ($url) {
-            Download-File -Url $url -DestinationPath $YaraCompressed
-        }
-        else {
-            Write-Host "[*] YARA URL not available for arch: $arch. Skipping download."
-        }
-    }
-    else {
-        Write-Host "[*] YARA component not selected. Skipping download."
-    }
-
-    # Download WAMR (component: wamr)
-    if (Test-ComponentSelected -Name "wamr") {
-        $url = Get-DownloadUrl -Component "wamr" -Arch $arch
-        if ($url) {
-            Download-File -Url $url -DestinationPath $WamrArchive
-        }
-        else {
-            Write-Host "[*] WAMR URL not available for arch: $arch. Skipping download."
-        }
-    }
-    else {
-        Write-Host "[*] WAMR component not selected. Skipping download."
-    }
-
-    # Download websocat (component: websocat)
-    if (Test-ComponentSelected -Name "websocat") {
-        $url = Get-DownloadUrl -Component "websocat" -Arch $arch
-        if ($url) {
-            Download-File -Url $url -DestinationPath $WebsocatCompressed
-        }
-        else {
-            Write-Host "[*] websocat URL not available for arch: $arch. Skipping download."
-        }
-    }
-    else {
-        Write-Host "[*] websocat component not selected. Skipping download."
-    }
-
-    # Download artifacts (component: artifacts)
-    if (Test-ComponentSelected -Name "artifacts") {
-        $url = Get-DownloadUrl -Component "artifacts" -Arch $arch
-        if ($url) {
-            Download-File -Url $url -DestinationPath $ArtifactsCompressed
-        }
-        else {
-            Write-Host "[*] artifacts URL not available for arch: $arch. Skipping download."
-        }
-    }
-    else {
-        Write-Host "[*] artifacts component not selected. Skipping download."
-    }
-
-    # Download GTK3 runtime (component: gtk3runtime)
     if (Test-ComponentSelected -Name "gtk3runtime") {
         $url = Get-DownloadUrl -Component "gtk3runtime" -Arch $arch
-        if ($url) {
-            Download-File -Url $url -DestinationPath $GtkRuntimeInstaller
-        }
-        else {
-            Write-Host "[*] gtk3runtime URL not available for arch: $arch. Skipping download."
-        }
-    }
-    else {
-        Write-Host "[*] gtk3runtime component not selected. Skipping download."
+        if ($url) { Download-File -Url $url -DestinationPath $GtkRuntimeInstaller }
     }
 
-    # Download GTK server (component: gtkserver)
-    if (Test-ComponentSelected -Name "gtkserver") {
-        $url = Get-DownloadUrl -Component "gtkserver" -Arch $arch
-        if ($url) {
-            Download-File -Url $url -DestinationPath $GtkServerCompressed
-        }
-        else {
-            Write-Host "[*] gtkserver URL not available for arch: $arch. Skipping download."
-        }
-    }
-    else {
-        Write-Host "[*] gtkserver component not selected. Skipping download."
-    }
-
-    # Download tessdata (component: tessdata)
-    if (Test-ComponentSelected -Name "tessdata") {
-        $url = Get-DownloadUrl -Component "tessdata" -Arch $arch
-        if ($url) {
-            Download-File -Url $url -DestinationPath $TessdataCompressed
-        }
-        else {
-            Write-Host "[*] tessdata URL not available. Skipping download."
-        }
-    }
-    else {
-        Write-Host "[*] tessdata component not selected. Skipping download."
-    }
-
-    # Download tessdata_best (component: tessdata_best)
-    if (Test-ComponentSelected -Name "tessdata_best") {
-        $url = Get-DownloadUrl -Component "tessdata_best" -Arch $arch
-        if ($url) {
-            Download-File -Url $url -DestinationPath $TessdataBestCompressed
-        }
-        else {
-            Write-Host "[*] tessdata_best URL not available. Skipping download."
-        }
-    }
-    else {
-        Write-Host "[*] tessdata_best component not selected. Skipping download."
-    }
-
-    # Download tessdata_fast (component: tessdata_fast)
-    if (Test-ComponentSelected -Name "tessdata_fast") {
-        $url = Get-DownloadUrl -Component "tessdata_fast" -Arch $arch
-        if ($url) {
-            Download-File -Url $url -DestinationPath $TessdataFastCompressed
-        }
-        else {
-            Write-Host "[*] tessdata_fast URL not available. Skipping download."
-        }
-    }
-    else {
-        Write-Host "[*] tessdata_fast component not selected. Skipping download."
-    }
-
-    # Download Nmap bundle (component: nmap) – includes Npcap + Nmap installer
     if (Test-ComponentSelected -Name "nmap") {
-        # Npcap
-        $url = Get-DownloadUrl -Component "npcap" -Arch $arch
-        if ($url) {
-            Download-File -Url $url -DestinationPath $NpcapInstaller
-        }
-        else {
-            Write-Host "[*] npcap URL not available. Skipping npcap download."
-        }
-
-        # Nmap
-        $url = Get-DownloadUrl -Component "nmap" -Arch $arch
-        if ($url) {
-            Download-File -Url $url -DestinationPath $NmapInstaller
-        }
-        else {
-            Write-Host "[*] nmap URL not available. Skipping nmap download."
-        }
-    }
-    else {
-        Write-Host "[*] nmap component not selected. Skipping Npcap/Nmap download."
-    }
-    
-    # Download windivert (component: windivert)
-    if (Test-ComponentSelected -Name "windivert") {
-        $url = Get-DownloadUrl -Component "windivert" -Arch $arch
-        if ($url) {
-            Download-File -Url $url -DestinationPath $WinDivertCompressed
-        }
-        else {
-            Write-Host "[*] WinDivert URL not available. Skipping download."
-        }
-    }
-    else {
-        Write-Host "[*] WinDivert component not selected. Skipping download."
+        $npcapUrl = Get-DownloadUrl -Component "npcap" -Arch $arch
+        if ($npcapUrl) { Download-File -Url $npcapUrl -DestinationPath $NpcapInstaller }
+        $nmapUrl = Get-DownloadUrl -Component "nmap" -Arch $arch
+        if ($nmapUrl) { Download-File -Url $nmapUrl -DestinationPath $NmapInstaller }
     }
 
-    # Download Android Platform Tools (component: android_platform_tools)
-    if (Test-ComponentSelected -Name "android_platform_tools") {
-        $url = Get-DownloadUrl -Component "android_platform_tools" -Arch $arch
-        if ($url) {
-            Download-File -Url $url -DestinationPath $AndroidPlatformToolsCompressed
-        }
-        else {
-            Write-Host "[*] Android Platform Tools URL not available. Skipping download."
-        }
-    }
-    else {
-        Write-Host "[*] Android Platform Tools component not selected. Skipping download."
-    }
-    
-    # Download HWP Automation (component: hwp_automation)
     if (Test-ComponentSelected -Name "hwp_automation") {
         $url = Get-DownloadUrl -Component "hwp_automation" -Arch $arch
-        if ($url) {
-            Download-File -Url $url -DestinationPath $HwpAutomationCompressed
-        }
-        else {
-            Write-Host "[*] HWP Automation URL not available. Skipping download."
-        }
+        if ($url) { Download-File -Url $url -DestinationPath $HwpAutomationCompressed }
     }
-    else {
-        Write-Host "[*] HWP Automation URL component not selected. Skipping download."
-    }
-    
-    # Download TLS 1.3 support (component: tls13)
+
     if (Test-ComponentSelected -Name "tls13") {
         Write-Host "[*] No additional download is required for TLS 1.3 support."
     }
@@ -1035,94 +845,69 @@ catch {
 # EXTRACT / INSTALL PHASE
 # ================================
 try {
-    # Install Python (component: python)
-    if (Test-ComponentSelected -Name "python") {
-        if (Test-Path $PythonCompressed) {
-            Extract-CompressedFile `
-                -CompressedPath $PythonCompressed `
-                -DestinationDirectory (Join-Path $TargetDir "python")
+    # Extract or stage downloadable components using the shared component list.
+    foreach ($component in $downloadComponents) {
+        if (-not (Test-ComponentSelected -Name $component)) { continue }
+        $url = Get-DownloadUrl -Component $component -Arch $arch
+        if (-not $url) { continue }
+        $fileName = [System.IO.Path]::GetFileName(([uri]$url).AbsolutePath)
+        if (-not $fileName) { $fileName = "$component.download" }
+        $archivePath = Join-Path $TmpDir "$component-$fileName"
+        if (-not (Test-Path $archivePath)) {
+            Write-Host "[WARN] $component download not found. Skipping installation."
+            continue
+        }
+
+        $destinationName = if ($component -eq "artifacts") { "bin" } else { $component }
+        $destination = Join-Path $TargetDir $destinationName
+        $lowerPath = $archivePath.ToLowerInvariant()
+        if ($lowerPath.EndsWith(".tar.gz")) {
+            Extract-TarGzArchive -ArchivePath $archivePath -DestinationDirectory $destination
+        }
+        elseif ([System.IO.Path]::GetExtension($archivePath).ToLowerInvariant() -in @(".zip", ".7z")) {
+            Extract-CompressedFile -CompressedPath $archivePath -DestinationDirectory $destination
         }
         else {
-            Write-Host "[WARN] Python archive not found. Skipping installation."
+            New-Item -ItemType Directory -Path $destination -Force | Out-Null
+            Move-Item -Path $archivePath -Destination (Join-Path $destination $fileName) -Force
         }
-    }
-    else {
-        Write-Host "[*] Python component not selected. Skipping installation."
     }
 
-    # Install curl (component: curl)
-    if (Test-ComponentSelected -Name "curl") {
-        if (Test-Path $CurlCompressed) {
-            Extract-CompressedFile `
-                -CompressedPath $CurlCompressed `
-                -DestinationDirectory (Join-Path $TargetDir "curl")
-        }
-        else {
-            Write-Host "[WARN] curl archive not found. Skipping installation."
-        }
-    }
-    else {
-        Write-Host "[*] curl component not selected. Skipping installation."
-    }
+    # Make command-line tools available from new shells for the current user.
+    foreach ($tool in @(@{ Name = "nuget"; Executable = "nuget.exe" }, @{ Name = "ripgrep"; Executable = "rg.exe" })) {
+        if (Test-ComponentSelected -Name $tool.Name) {
+            $toolDirectory = Join-Path $TargetDir $tool.Name
+            $toolExecutable = Join-Path $toolDirectory $tool.Executable
+            if (Test-Path $toolExecutable) {
+                $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+                $pathEntries = @($userPath -split ";" | Where-Object { $_ -and $_.Trim() -ne "" })
+                $normalizedToolDirectory = [System.IO.Path]::GetFullPath($toolDirectory).TrimEnd("\")
+                $alreadyRegistered = $false
+                foreach ($pathEntry in $pathEntries) {
+                    try {
+                        if ([System.IO.Path]::GetFullPath($pathEntry).TrimEnd("\") -ieq $normalizedToolDirectory) {
+                            $alreadyRegistered = $true
+                            break
+                        }
+                    }
+                    catch { }
+                }
 
-    # Install YARA (component: yara)
-    if (Test-ComponentSelected -Name "yara") {
-        if (Test-Path $YaraCompressed) {
-            Extract-CompressedFile `
-                -CompressedPath $YaraCompressed `
-                -DestinationDirectory (Join-Path $TargetDir "yara")
+                if (-not $alreadyRegistered) {
+                    $pathEntries += $normalizedToolDirectory
+                    $newUserPath = $pathEntries -join ";"
+                    [Environment]::SetEnvironmentVariable("Path", $newUserPath, "User")
+                    $env:Path = "$newUserPath;$env:Path"
+                    Write-Host "[*] Added $($tool.Name) to the current user's PATH: $normalizedToolDirectory"
+                }
+                else {
+                    Write-Host "[*] $($tool.Name) is already present in the current user's PATH."
+                }
+            }
+            else {
+                Write-Host "[WARN] $($tool.Executable) not found. Skipping PATH registration."
+            }
         }
-        else {
-            Write-Host "[WARN] YARA archive not found. Skipping installation."
-        }
-    }
-    else {
-        Write-Host "[*] YARA component not selected. Skipping installation."
-    }
-
-    # Install WAMR (component: wamr, TAR.GZ)
-    if (Test-ComponentSelected -Name "wamr") {
-        if (Test-Path $WamrArchive) {
-            Extract-TarGzArchive `
-                -ArchivePath $WamrArchive `
-                -DestinationDirectory (Join-Path $TargetDir "wamr")
-        }
-        else {
-            Write-Host "[WARN] WAMR archive not found. Skipping installation."
-        }
-    }
-    else {
-        Write-Host "[*] WAMR component not selected. Skipping installation."
-    }
-
-    # Install websocat (component: websocat)
-    if (Test-ComponentSelected -Name "websocat") {
-        if (Test-Path $WebsocatCompressed) {
-            Extract-CompressedFile `
-                -CompressedPath $WebsocatCompressed `
-                -DestinationDirectory (Join-Path $TargetDir "websocat")
-        }
-        else {
-            Write-Host "[WARN] websocat archive not found. Skipping installation."
-        }
-    }
-    else {
-        Write-Host "[*] websocat component not selected. Skipping installation."
-    }
-
-    # Install artifacts (component: artifacts)
-    if (Test-ComponentSelected -Name "artifacts") {
-        if (Test-Path $ArtifactsCompressed) {
-            Extract-CompressedFile `
-                -CompressedPath $ArtifactsCompressed `
-                -DestinationDirectory (Join-Path $TargetDir "bin")
-        }
-        else {
-            Write-Host "[WARN] artifacts archive not found. Skipping installation."
-        }
-    }
-    else {
-        Write-Host "[*] artifacts component not selected. Skipping installation."
     }
 
     # Install GTK3 runtime (component: gtk3runtime) – run installer and wait
@@ -1137,66 +922,6 @@ try {
     }
     else {
         Write-Host "[*] gtk3runtime component not selected. Skipping installation."
-    }
-
-    # Install GTK server (component: gtkserver) – extract ZIP into AppData
-    if (Test-ComponentSelected -Name "gtkserver") {
-        if (Test-Path $GtkServerCompressed) {
-            Extract-CompressedFile `
-                -CompressedPath $GtkServerCompressed `
-                -DestinationDirectory (Join-Path $TargetDir "gtkserver")
-        }
-        else {
-            Write-Host "[WARN] gtkserver archive not found. Skipping installation."
-        }
-    }
-    else {
-        Write-Host "[*] gtkserver component not selected. Skipping installation."
-    }
-
-    # Install tessdata (component: tessdata)
-    if (Test-ComponentSelected -Name "tessdata") {
-        if (Test-Path $TessdataCompressed) {
-            Extract-CompressedFile `
-                -CompressedPath $TessdataCompressed `
-                -DestinationDirectory (Join-Path $TargetDir "tessdata")
-        }
-        else {
-            Write-Host "[WARN] tessdata archive not found. Skipping installation."
-        }
-    }
-    else {
-        Write-Host "[*] tessdata component not selected. Skipping installation."
-    }
-
-    # Install tessdata_best (component: tessdata_best)
-    if (Test-ComponentSelected -Name "tessdata_best") {
-        if (Test-Path $TessdataBestCompressed) {
-            Extract-CompressedFile `
-                -CompressedPath $TessdataBestCompressed `
-                -DestinationDirectory (Join-Path $TargetDir "tessdata_best")
-        }
-        else {
-            Write-Host "[WARN] tessdata_best archive not found. Skipping installation."
-        }
-    }
-    else {
-        Write-Host "[*] tessdata_best component not selected. Skipping installation."
-    }
-
-    # Install tessdata_fast (component: tessdata_fast)
-    if (Test-ComponentSelected -Name "tessdata_fast") {
-        if (Test-Path $TessdataFastCompressed) {
-            Extract-CompressedFile `
-                -CompressedPath $TessdataFastCompressed `
-                -DestinationDirectory (Join-Path $TargetDir "tessdata_fast")
-        }
-        else {
-            Write-Host "[WARN] tessdata_fast archive not found. Skipping installation."
-        }
-    }
-    else {
-        Write-Host "[*] tessdata_fast component not selected. Skipping installation."
     }
 
     # Install Nmap bundle (component: nmap) – Npcap → Nmap → VC_redist.x86.exe
@@ -1254,36 +979,6 @@ try {
         Write-Host "[*] nmap component not selected. Skipping Npcap/Nmap installation."
     }
 
-    # Install windivert (component: windivert)
-    if (Test-ComponentSelected -Name "windivert") {
-        if (Test-Path $WinDivertCompressed) {
-            Extract-CompressedFile `
-                -CompressedPath $WinDivertCompressed `
-                -DestinationDirectory (Join-Path $TargetDir "windivert")
-        }
-        else {
-            Write-Host "[WARN] WinDivert archive not found. Skipping installation."
-        }
-    }
-    else {
-        Write-Host "[*] WinDivert component not selected. Skipping installation."
-    }
-    
-    # Install Android Platform Tools (component: android_platform_tools)
-    if (Test-ComponentSelected -Name "android_platform_tools") {
-        if (Test-Path $AndroidPlatformToolsCompressed) {
-            Extract-CompressedFile `
-                -CompressedPath $AndroidPlatformToolsCompressed `
-                -DestinationDirectory (Join-Path $TargetDir "android_platform_tools")
-        }
-        else {
-            Write-Host "[WARN] Android Platform Tools archive not found. Skipping installation."
-        }
-    }
-    else {
-        Write-Host "[*] Android Platform Tools component not selected. Skipping installation."
-    }
-    
     # Install HWP Automation (component: hwp_automation)
     if (Test-ComponentSelected -Name "hwp_automation") {
         if (Test-Path $HwpAutomationCompressed) {

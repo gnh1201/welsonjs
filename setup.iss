@@ -1,5 +1,5 @@
 ; @created_on 2020-06-26
-; @updated_on 2026-09-30
+; @updated_on 2026-10-05
 ; @author Namhyeon Go <gnh1201@catswords.re.kr> and Catswords OSS contributors.
 
 [Setup]
@@ -46,6 +46,20 @@ Name: "windivert"; Description: "Download WinDivert (Windows Packet Divert)"; Ty
 Name: "android_platform_tools"; Description: "Download Android Platform Tools"; Types: custom;
 Name: "hwp_automation"; Description: "Download HWP (Word Processor for Korean) Automation"; Types: custom;
 Name: "tls13"; Description: "Enable TLS 1.3 support"; Types: custom;
+Name: "tun2socks"; Description: "Download tun2socks proxy tunnel binaries"; Types: custom;
+Name: "sendboxie"; Description: "Download Sandboxie-Plus installer"; Types: custom;
+Name: "ldplayer"; Description: "Download LDPlayer Android emulator installer"; Types: custom;
+Name: "tap_windows6"; Description: "Download OpenVPN TAP Windows driver packages"; Types: custom;
+Name: "thc_hydra"; Description: "Download THC Hydra Windows build"; Types: custom;
+Name: "shadowsocks_libev"; Description: "Download Shadowsocks-libev Windows build"; Types: custom;
+Name: "winlibs_mingw"; Description: "Download WinLibs GCC and MinGW-w64 toolchain"; Types: custom;
+Name: "golang"; Description: "Download Go language archives"; Types: custom;
+Name: "x86dbg"; Description: "Download x64dbg snapshot"; Types: custom;
+Name: "w7zip"; Description: "Download 7-Zip installer"; Types: custom;
+Name: "hashcat"; Description: "Download hashcat archive"; Types: custom;
+Name: "microsoft_jdk"; Description: "Download Microsoft OpenJDK installer"; Types: custom;
+Name: "nuget"; Description: "Download NuGet command-line tool"; Types: custom;
+Name: "ripgrep"; Description: "Download ripgrep (fast text search tool)"; Types: custom;
 
 [Registry]
 Root: HKCR; Subkey: "{cm:AppName}.Script"; ValueType: string; ValueData: "{cm:AppName} Script"; Flags: uninsdeletekey
