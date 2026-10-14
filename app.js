@@ -907,7 +907,12 @@ require._getCurrentScriptDirectory = function() {
                 throw new Error("No detected an absolute path.");
             }
         } else if (typeof document !== "undefined") {
-            return require._getDirectoryName(document.location.pathname);
+            return (function(dirpath) {
+                if (dirpath.charAt(0) == '/') {
+                    return dirpath.substring(1).replace(/\//g, "\\");
+                }
+                return dirpath;
+            })(require._getDirectoryName(document.location.pathname));
         } else {
             throw new Error("No detected an absolute path.");
         }
