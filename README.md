@@ -250,6 +250,7 @@ For detailed information on the open-source license status of this project, plea
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs.svg?type=large&utm_source=welsonjs)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs?ref=badge_large&utm_source=welsonjs)
 
 ## Subprojects
+* [YAWW (Yet Another Windows WebView)](https://github.com/gnh1201/yaww?utm_source=welsonjs): WebView for Windows, with WebView2, EdgeHTML, MSHTML, and ChakraCore.
 * [catswords-jsrt-rs](https://github.com/gnh1201/catswords-jsrt-rs?utm_source=welsonjs): Minimal ChakraCore (JsRT) bindings for Rust.
 * [jsrt-claw](https://github.com/gnh1201/jsrt-claw?utm_source=welsonjs): OpenClaw-compatible skill definition for a built-in JSRT (JScript 5.x).
 
