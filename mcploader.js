@@ -84,6 +84,7 @@ JsonRpc2.register("tools/list", function (rpc, params, id, callback) {
                     + "Unless explicitly instructed otherwise, do not save results or intermediate data to files. "
                     + "Each script execution is independent, so state from previous executions may not be shared. "
                     + "Use `_setState(key, value)` and `_getState(key)` when variables or instances need to be reused across script executions. "
+                    + "Use `_hasState(key)`, `_deleteState(key)`, `_listStateKeys()`, and `_clearState()` to manage that state. "
                     + "Make every effort to restore or reacquire any necessary objects or processes. "
                     + "Always use Unicode escape sequences for non-ASCII text. "
                     + "Use require(\"lib/shell\") for shell access. "
@@ -139,6 +140,28 @@ JsonRpc2.register("tools/list", function (rpc, params, id, callback) {
                     },
                     "required": ["script"]
                 }
+            },
+            {
+                "name": "manage_state",
+                "title": "Manage evaluation state",
+                "description": "Inspect or modify values shared between evaluate_js calls in this MCP session.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "action": {
+                            "type": "string",
+                            "enum": ["get", "set", "delete", "list", "clear"]
+                        },
+                        "key": {
+                            "type": "string",
+                            "description": "State key; required for get, set, and delete."
+                        },
+                        "value": {
+                            "description": "JSON-compatible value; required for set."
+                        }
+                    },
+                    "required": ["action"]
+                }
             }
         ],
         "isError": false
@@ -150,6 +173,10 @@ JsonRpc2.register("tools/call", function (rpc, params, id, callback) {
     var _notify = typeof callback === "function" ? callback : console.log;
     var _getState = typeof rpc.getState === "function" ? function(key) { return rpc.getState(key); } : null; // `_getState(key);`
     var _setState = typeof rpc.setState === "function" ? function(key, value) { rpc.setState(key, value); } : null; // `_setState(key, state);`
+    var _hasState = typeof rpc.hasState === "function" ? function(key) { return rpc.hasState(key); } : null;
+    var _deleteState = typeof rpc.deleteState === "function" ? function(key) { return rpc.deleteState(key); } : null;
+    var _listStateKeys = typeof rpc.listStateKeys === "function" ? function() { return rpc.listStateKeys(); } : null;
+    var _clearState = typeof rpc.clearState === "function" ? function() { return rpc.clearState(); } : null;
     
     var function_calling_name = params.name;
     if (function_calling_name == "add_both_numbers") {
@@ -182,8 +209,8 @@ JsonRpc2.register("tools/call", function (rpc, params, id, callback) {
                             if (!ALLOW_UNSAFE_EVAL && !allowUnsafeEval) {
                                 throw new Error("Unsafe eval is not allowed. Please set ALLOW_UNSAFE_EVAL to true if you want to allow it.");
                             }
-                            var evaluate = new Function("_notify", "_getState", "_setState", script);
-                            text += String(evaluate(_notify, _getState, _setState));
+                            var evaluate = new Function("_notify", "_getState", "_setState", "_hasState", "_deleteState", "_listStateKeys", "_clearState", script);
+                            text += String(evaluate(_notify, _getState, _setState, _hasState, _deleteState, _listStateKeys, _clearState));
                             if (console._messages.length > 0) {
                                 text += "\r\n\r\n" + console._messages.join("\r\n");
                             }
@@ -197,6 +224,35 @@ JsonRpc2.register("tools/call", function (rpc, params, id, callback) {
                 }
             ],
             "isError": isError
+        }
+    }
+
+    if (function_calling_name == "manage_state") {
+        var argumentsObject = params && params.arguments ? params.arguments : {};
+        var action = argumentsObject.action;
+        var key = argumentsObject.key;
+        var result;
+
+        try {
+            if (action == "get") {
+                if (!_hasState(key)) throw new Error("State key does not exist");
+                result = {"key": String(key), "value": _getState(key)};
+            } else if (action == "set") {
+                if (typeof key !== "string" || !("value" in argumentsObject)) throw new Error("set requires key and value");
+                _setState(key, argumentsObject.value);
+                result = {"key": key, "value": argumentsObject.value};
+            } else if (action == "delete") {
+                result = {"key": String(key), "deleted": _deleteState(key)};
+            } else if (action == "list") {
+                result = {"keys": _listStateKeys()};
+            } else if (action == "clear") {
+                result = {"deleted": _clearState()};
+            } else {
+                throw new Error("Unknown state action: " + action);
+            }
+            return {"content": [{"type": "text", "text": JSON.stringify(result)}], "isError": false};
+        } catch (e) {
+            return {"content": [{"type": "text", "text": "Error: " + e.message}], "isError": true};
         }
     }
 });
