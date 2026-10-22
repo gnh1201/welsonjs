@@ -789,7 +789,7 @@ try {
     # Download archive/file components through one shared path.
     # Nmap/Npcap, GTK runtime and HWP keep dedicated installation handling.
     $downloadComponents = @(
-        "python", "curl", "yara", "wamr", "websocat", "artifacts",
+        "python", "curl", "llamacpp", "yara", "wamr", "websocat", "artifacts",
         "gtkserver", "tessdata", "tessdata_best", "tessdata_fast",
         "windivert", "android_platform_tools", "tun2socks", "sendboxie",
         "ldplayer", "tap_windows6", "thc_hydra", "shadowsocks_libev",
@@ -874,7 +874,12 @@ try {
     }
 
     # Make command-line tools available from new shells for the current user.
-    foreach ($tool in @(@{ Name = "nuget"; Executable = "nuget.exe" }, @{ Name = "ripgrep"; Executable = "rg.exe" })) {
+    foreach ($tool in @(
+        @{ Name = "nuget"; Executable = "nuget.exe" },
+        @{ Name = "ripgrep"; Executable = "rg.exe" },
+        @{ Name = "llamacpp"; Executable = "llama-server.exe" },
+        @{ Name = "llamacpp"; Executable = "llama-cli.exe" }
+    )) {
         if (Test-ComponentSelected -Name $tool.Name) {
             $toolDirectory = Join-Path $TargetDir $tool.Name
             $toolExecutable = Join-Path $toolDirectory $tool.Executable

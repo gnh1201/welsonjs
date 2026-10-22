@@ -24,6 +24,15 @@
     }
 
     # ===========================
+    # Llama.cpp (AMD ROCm Windows binaries)
+    # ===========================
+    llamacpp = @{
+        x64   = "https://repo.radeon.com/rocm/llama.cpp/windows/rocm-rel-7.2.1/llama-b8407-windows-rocm-7.2.1-gfx110X-gfx115X-gfx120X-x64.zip"
+        arm64 = $null  # AMD ROCm Windows package is x64-only
+        x86   = $null  # AMD ROCm Windows package is x64-only
+    }
+
+    # ===========================
     # YARA
     # ===========================
     yara = @{
