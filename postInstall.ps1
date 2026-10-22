@@ -212,6 +212,20 @@ if ($Components -and $Components.Trim() -ne "") {
     $AllComponentsSelected = $false
 }
 
+# SmolLM2 requires the llama.cpp binaries. Inno Setup represents the nested
+# component as "llamacpp\smollm2", while direct callers may pass "smollm2".
+if (-not $AllComponentsSelected -and
+    ($SelectedComponents -contains "smollm2" -or
+     $SelectedComponents -contains "llamacpp\smollm2")) {
+    if ($SelectedComponents -notcontains "smollm2") {
+        $SelectedComponents += "smollm2"
+    }
+    if ($SelectedComponents -notcontains "llamacpp") {
+        $SelectedComponents += "llamacpp"
+    }
+    Write-Host "[*] SmolLM2 selected: llamacpp dependency enabled."
+}
+
 function Test-ComponentSelected {
     param(
         [Parameter(Mandatory = $true)]
@@ -789,7 +803,7 @@ try {
     # Download archive/file components through one shared path.
     # Nmap/Npcap, GTK runtime and HWP keep dedicated installation handling.
     $downloadComponents = @(
-        "python", "curl", "yara", "wamr", "websocat", "artifacts",
+        "python", "curl", "llamacpp", "smollm2", "yara", "wamr", "websocat", "artifacts",
         "gtkserver", "tessdata", "tessdata_best", "tessdata_fast",
         "windivert", "android_platform_tools", "tun2socks", "sendboxie",
         "ldplayer", "tap_windows6", "thc_hydra", "shadowsocks_libev",
@@ -874,7 +888,12 @@ try {
     }
 
     # Make command-line tools available from new shells for the current user.
-    foreach ($tool in @(@{ Name = "nuget"; Executable = "nuget.exe" }, @{ Name = "ripgrep"; Executable = "rg.exe" })) {
+    foreach ($tool in @(
+        @{ Name = "nuget"; Executable = "nuget.exe" },
+        @{ Name = "ripgrep"; Executable = "rg.exe" },
+        @{ Name = "llamacpp"; Executable = "llama-server.exe" },
+        @{ Name = "llamacpp"; Executable = "llama-cli.exe" }
+    )) {
         if (Test-ComponentSelected -Name $tool.Name) {
             $toolDirectory = Join-Path $TargetDir $tool.Name
             $toolExecutable = Join-Path $toolDirectory $tool.Executable
