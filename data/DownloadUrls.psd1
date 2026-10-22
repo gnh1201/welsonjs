@@ -40,6 +40,13 @@
     }
 
     # ===========================
+    # SmolLM3 Q4_K_M GGUF model
+    # ===========================
+    smollm3 = @{
+        any   = "https://huggingface.co/ggml-org/SmolLM3-3B-GGUF/resolve/main/SmolLM3-Q4_K_M.gguf"
+    }
+
+    # ===========================
     # YARA
     # ===========================
     yara = @{

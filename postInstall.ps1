@@ -212,18 +212,27 @@ if ($Components -and $Components.Trim() -ne "") {
     $AllComponentsSelected = $false
 }
 
-# SmolLM2 requires the llama.cpp binaries. Inno Setup represents the nested
-# component as "llamacpp\smollm2", while direct callers may pass "smollm2".
+# SmolLM2 and SmolLM3 require the llama.cpp binaries. Inno Setup represents
+# them as nested components, while direct callers may pass their short names.
 if (-not $AllComponentsSelected -and
     ($SelectedComponents -contains "smollm2" -or
-     $SelectedComponents -contains "llamacpp\smollm2")) {
-    if ($SelectedComponents -notcontains "smollm2") {
+     $SelectedComponents -contains "llamacpp\smollm2" -or
+     $SelectedComponents -contains "smollm3" -or
+     $SelectedComponents -contains "llamacpp\smollm3")) {
+    if (($SelectedComponents -contains "smollm2" -or
+         $SelectedComponents -contains "llamacpp\smollm2") -and
+        $SelectedComponents -notcontains "smollm2") {
         $SelectedComponents += "smollm2"
+    }
+    if (($SelectedComponents -contains "smollm3" -or
+         $SelectedComponents -contains "llamacpp\smollm3") -and
+        $SelectedComponents -notcontains "smollm3") {
+        $SelectedComponents += "smollm3"
     }
     if ($SelectedComponents -notcontains "llamacpp") {
         $SelectedComponents += "llamacpp"
     }
-    Write-Host "[*] SmolLM2 selected: llamacpp dependency enabled."
+    Write-Host "[*] SmolLM model selected: llamacpp dependency enabled."
 }
 
 function Test-ComponentSelected {
@@ -803,7 +812,7 @@ try {
     # Download archive/file components through one shared path.
     # Nmap/Npcap, GTK runtime and HWP keep dedicated installation handling.
     $downloadComponents = @(
-        "python", "curl", "llamacpp", "smollm2", "yara", "wamr", "websocat", "artifacts",
+        "python", "curl", "llamacpp", "smollm2", "smollm3", "yara", "wamr", "websocat", "artifacts",
         "gtkserver", "tessdata", "tessdata_best", "tessdata_fast",
         "windivert", "android_platform_tools", "tun2socks", "sendboxie",
         "ldplayer", "tap_windows6", "thc_hydra", "shadowsocks_libev",
