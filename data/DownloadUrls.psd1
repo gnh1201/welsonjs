@@ -24,12 +24,12 @@
     }
 
     # ===========================
-    # Llama.cpp (AMD ROCm Windows binaries)
+    # Llama.cpp Windows CPU binaries
     # ===========================
     llamacpp = @{
-        x64   = "https://repo.radeon.com/rocm/llama.cpp/windows/rocm-rel-7.2.1/llama-b8407-windows-rocm-7.2.1-gfx110X-gfx115X-gfx120X-x64.zip"
-        arm64 = $null  # AMD ROCm Windows package is x64-only
-        x86   = $null  # AMD ROCm Windows package is x64-only
+        x64   = "https://github.com/ggml-org/llama.cpp/releases/download/b11808/llama-b11808-bin-win-cpu-x64.zip"
+        arm64 = "https://github.com/ggml-org/llama.cpp/releases/download/b11808/llama-b11808-bin-win-cpu-arm64.zip"
+        x86   = $null  # no official x86 CPU package
     }
 
     # ===========================

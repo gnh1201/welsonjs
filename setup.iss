@@ -33,7 +33,7 @@ Name: "artifacts"; Description: "WelsonJS Launcher and Windows Service"; Types: 
 Name: "mcp"; Description: "Configure WelsonJS MCP server for supported AI CLIs"; Types: full compact custom;
 Name: "python"; Description: "Download Python Windows embeddable package"; Types: full;
 Name: "curl"; Description: "Download cURL (Universal HTTP client)"; Types: full;
-Name: "llamacpp"; Description: "Download Llama.cpp AMD ROCm binaries"; Types: custom;
+Name: "llamacpp"; Description: "Download Llama.cpp Windows CPU binaries"; Types: custom;
 Name: "llamacpp\bitnet"; Description: "Download Microsoft BitNet b1.58 2B4T GGUF model (requires Llama.cpp)"; Types: custom; Flags: dontinheritcheck;
 Name: "websocat"; Description: "Download websocat (Command-line WebSocket client)"; Types: full;
 Name: "yara"; Description: "Download YARA (Binary pattern matching library)"; Types: custom;
