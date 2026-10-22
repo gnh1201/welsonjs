@@ -33,6 +33,9 @@ Name: "artifacts"; Description: "WelsonJS Launcher and Windows Service"; Types: 
 Name: "mcp"; Description: "Configure WelsonJS MCP server for supported AI CLIs"; Types: full compact custom;
 Name: "python"; Description: "Download Python Windows embeddable package"; Types: full;
 Name: "curl"; Description: "Download cURL (Universal HTTP client)"; Types: full;
+Name: "llamacpp"; Description: "Download Llama.cpp Windows CPU binaries"; Types: custom;
+Name: "llamacpp\smollm2"; Description: "Download SmolLM2 360M Instruct Q8_0 GGUF model (requires Llama.cpp)"; Types: custom; Flags: dontinheritcheck;
+Name: "llamacpp\smollm3"; Description: "Download SmolLM3 Q4_K_M GGUF model (requires Llama.cpp)"; Types: custom; Flags: dontinheritcheck;
 Name: "websocat"; Description: "Download websocat (Command-line WebSocket client)"; Types: full;
 Name: "yara"; Description: "Download YARA (Binary pattern matching library)"; Types: custom;
 Name: "wamr"; Description: "Download WebAssembly Micro Runtime (Add support *.wasm file)"; Types: custom;
@@ -133,12 +136,22 @@ PostHogApiKey=phc_pmRHJ0aVEhtULRT4ilexwCjYpGtE9VYRhlA05fwiYt8
 [Code]
 const
   UninstSiteURL = 'https://catswords.z12.web.core.windows.net/?utm_source=welsonjs_uninstall';
+  SalesforceOrgID = '00DdJ000004Vdh7';
+  SalesforceURL = 'https://webto.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8&orgId=' + SalesforceOrgID;
+  SalesforceLeadSource = 'Web';
 
+var
+  CustomerPage: TInputQueryWizardPage;
+  CustomerConsentCheckBox: TNewCheckBox;
+  CustomerSubmitted: Boolean;
+
+// Get selected components
 function GetSelectedComponents(Value: string): string;
 begin
   Result := WizardSelectedComponents(False);
 end;
 
+// Set elevation bit
 procedure SetElevationBit(Filename: string);
 var
   Buffer: string;
@@ -147,7 +160,7 @@ begin
   Filename := ExpandConstant(Filename);
   Log('Setting elevation bit for ' + Filename);
 
-  Stream := TFileStream.Create(FileName, fmOpenReadWrite);
+  Stream := TFileStream.Create(Filename, fmOpenReadWrite);
   try
     Stream.Seek(21, soFromBeginning);
     SetLength(Buffer, 1);
@@ -160,26 +173,233 @@ begin
   end;
 end;
 
+// Get Program Files directory
 function GetProgramFiles(Param: string): string;
 begin
-  if IsWin64 then Result := ExpandConstant('{commonpf64}')
-    else Result := ExpandConstant('{commonpf32}')
+  if IsWin64 then
+    Result := ExpandConstant('{commonpf64}')
+  else
+    Result := ExpandConstant('{commonpf32}');
 end;
 
-procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
-var
-  ErrorCode: Integer;
+// Create customer information page
+procedure InitializeWizard;
 begin
-  if CurUninstallStep = usDone then
-    ShellExec('open', UninstSiteURL, '', '', SW_SHOW, ewNoWait, ErrorCode);
+  CustomerPage := CreateInputQueryPage(
+    wpWelcome,
+    'Customer Information',
+    'Please provide your contact information.',
+    'Optional. Enter your contact details if you need technical support. They will be sent to Catswords Research''s CRM after installation if you consent below.'
+  );
+
+  CustomerPage.Add('Name', False);
+  CustomerPage.Add('Email', False);
+  CustomerPage.Add('Company', False);
+
+  CustomerConsentCheckBox := TNewCheckBox.Create(WizardForm);
+  CustomerConsentCheckBox.Parent := CustomerPage.Surface;
+  CustomerConsentCheckBox.Caption := 'I consent to the collection and use of this information for technical support.';
+  CustomerConsentCheckBox.Left := CustomerPage.PromptLabels[0].Left;
+  CustomerConsentCheckBox.Top := CustomerPage.Edits[2].Top +
+    CustomerPage.Edits[2].Height + ScaleY(8);
+  CustomerConsentCheckBox.Width := CustomerPage.Surface.Width;
+  CustomerConsentCheckBox.Height := ScaleY(32);
+  CustomerConsentCheckBox.Anchors := [akLeft, akTop, akRight];
+  CustomerConsentCheckBox.Checked := False;
+
+  CustomerSubmitted := False;
 end;
 
+function HexDigit(Value: Integer): string;
+begin
+  if Value < 10 then
+    Result := Chr(Ord('0') + Value)
+  else
+    Result := Chr(Ord('A') + Value - 10);
+end;
+
+// URL-encode a string as UTF-8
+function UrlEncode(Value: string): string;
+var
+  I, B: Integer;
+  S: AnsiString;
+begin
+  Result := '';
+  S := UTF8Encode(Value);
+
+  for I := 1 to Length(S) do
+  begin
+    B := Ord(S[I]);
+
+    if ((B >= Ord('A')) and (B <= Ord('Z'))) or
+       ((B >= Ord('a')) and (B <= Ord('z'))) or
+       ((B >= Ord('0')) and (B <= Ord('9'))) or
+       (B = Ord('-')) or
+       (B = Ord('_')) or
+       (B = Ord('.')) or
+       (B = Ord('~')) then
+      Result := Result + Chr(B)
+    else if B = Ord(' ') then
+      Result := Result + '+'
+    else
+      Result := Result + '%' + HexDigit(B div 16) + HexDigit(B mod 16);
+  end;
+end;
+
+// Check whether any customer information was entered
+function HasCustomerInformation: Boolean;
+var
+  I: Integer;
+begin
+  Result := False;
+
+  for I := 0 to 2 do
+  begin
+    if Trim(CustomerPage.Values[I]) <> '' then
+    begin
+      Result := True;
+      Exit;
+    end;
+  end;
+end;
+
+// Check the current user's Windows UI language, including Korean variants
+function IsKoreanUILanguage: Boolean;
+begin
+  Result := (GetUILanguage and $3FF) = $12;
+end;
+
+// Submit customer information to Salesforce Web-to-Lead
+function SubmitCustomerInfo: Boolean;
+var
+  Http: Variant;
+  Body: string;
+  FullName: string;
+  FirstName: string;
+  LastName: string;
+  NamePart: string;
+  LastSpace: Integer;
+  StatusCode: Integer;
+begin
+  Result := False;
+
+  FullName := Trim(CustomerPage.Values[0]);
+  LastSpace := RPos(' ', FullName);
+  if LastSpace > 0 then
+  begin
+    FirstName := Trim(Copy(FullName, 1, LastSpace - 1));
+    LastName := Trim(Copy(FullName, LastSpace + 1, Length(FullName)));
+
+    if IsKoreanUILanguage and (Length(FirstName) <= 5) then
+    begin
+      NamePart := FirstName;
+      FirstName := LastName;
+      LastName := NamePart;
+    end;
+  end
+  else
+  begin
+    // If the name has no spaces, its given/family name boundary is unclear.
+    // Keep it in Salesforce's first_name field by default.
+    FirstName := FullName;
+    LastName := '';
+  end;
+
+  Body :=
+    'oid=' + UrlEncode(SalesforceOrgID) +
+    '&first_name=' + UrlEncode(FirstName) +
+    '&last_name=' + UrlEncode(LastName) +
+    '&email=' + UrlEncode(Trim(CustomerPage.Values[1])) +
+    '&company=' + UrlEncode(Trim(CustomerPage.Values[2])) +
+    '&lead_source=' + UrlEncode(SalesforceLeadSource);
+
+  try
+    Http := CreateOleObject('WinHttp.WinHttpRequest.5.1');
+
+    Http.SetTimeouts(5000, 5000, 10000, 10000);
+
+    Http.Open('POST', SalesforceURL, False);
+
+    Http.SetRequestHeader(
+      'Content-Type',
+      'application/x-www-form-urlencoded; charset=UTF-8'
+    );
+
+    Http.Send(Body);
+
+    StatusCode := Http.Status;
+    Result := (StatusCode >= 200) and (StatusCode < 300);
+
+    // A successful HTTP response confirms delivery to the endpoint only;
+    // Web-to-Lead does not provide a reliable machine-readable lead result.
+    Log('Salesforce Web-to-Lead HTTP status (not a lead-creation confirmation): ' +
+      IntToStr(StatusCode));
+  except
+    Log('Salesforce Web-to-Lead request failed: ' + GetExceptionMessage);
+    Result := False;
+  end;
+end;
+
+// Handle installation steps
 procedure CurStepChanged(CurStep: TSetupStep);
 begin
   if CurStep = ssPostInstall then
   begin
-    CopyFile(ExpandConstant('{app}\settings.example.ini'), ExpandConstant('{app}\settings.ini'), False);
-    CopyFile(ExpandConstant('{app}\defaultService.example.js'), ExpandConstant('{app}\defaultService.js'), False);
+    // Preserve existing configuration file initialization
+    CopyFile(
+      ExpandConstant('{app}\settings.example.ini'),
+      ExpandConstant('{app}\settings.ini'),
+      False
+    );
+
+    CopyFile(
+      ExpandConstant('{app}\defaultService.example.js'),
+      ExpandConstant('{app}\defaultService.js'),
+      False
+    );
+
+    // Submit customer information only once
+    if not CustomerSubmitted then
+    begin
+      CustomerSubmitted := True;
+
+      if HasCustomerInformation and CustomerConsentCheckBox.Checked then
+      begin
+        if not SubmitCustomerInfo then
+          MsgBox(
+            'Could not confirm that the customer information was submitted.' + #13#10 +
+            'Catswords Research''s CRM may still have received the request if the connection was interrupted.' + #13#10 +
+            'Installation will continue.',
+            mbInformation,
+            MB_OK
+          )
+        else
+          MsgBox(
+            'The information was sent to Catswords Research''s CRM.' + #13#10 +
+            'This confirms the request was sent, but not that a contact record was created.',
+            mbInformation,
+            MB_OK
+          );
+      end;
+    end;
   end;
+end;
+
+// Preserve existing uninstall behavior
+procedure CurUninstallStepChanged(
+  CurUninstallStep: TUninstallStep);
+var
+  ErrorCode: Integer;
+begin
+  if CurUninstallStep = usDone then
+    ShellExec(
+      'open',
+      UninstSiteURL,
+      '',
+      '',
+      SW_SHOW,
+      ewNoWait,
+      ErrorCode
+    );
 end;
 

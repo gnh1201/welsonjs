@@ -24,6 +24,29 @@
     }
 
     # ===========================
+    # Llama.cpp Windows CPU binaries
+    # ===========================
+    llamacpp = @{
+        x64   = "https://github.com/ggml-org/llama.cpp/releases/download/b11808/llama-b11808-bin-win-cpu-x64.zip"
+        arm64 = "https://github.com/ggml-org/llama.cpp/releases/download/b11808/llama-b11808-bin-win-cpu-arm64.zip"
+        x86   = $null  # no official x86 CPU package
+    }
+
+    # ===========================
+    # SmolLM2 360M Instruct Q8_0 GGUF model
+    # ===========================
+    smollm2 = @{
+        any   = "https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct-GGUF/resolve/main/smollm2-360m-instruct-q8_0.gguf"
+    }
+
+    # ===========================
+    # SmolLM3 Q4_K_M GGUF model
+    # ===========================
+    smollm3 = @{
+        any   = "https://huggingface.co/ggml-org/SmolLM3-3B-GGUF/resolve/main/SmolLM3-Q4_K_M.gguf"
+    }
+
+    # ===========================
     # YARA
     # ===========================
     yara = @{
