@@ -33,6 +33,13 @@
     }
 
     # ===========================
+    # Microsoft BitNet GGUF model
+    # ===========================
+    bitnet = @{
+        any   = "https://huggingface.co/microsoft/bitnet-b1.58-2B-4T-gguf/resolve/main/ggml-model-i2_s.gguf"
+    }
+
+    # ===========================
     # YARA
     # ===========================
     yara = @{

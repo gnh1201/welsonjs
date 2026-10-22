@@ -212,6 +212,20 @@ if ($Components -and $Components.Trim() -ne "") {
     $AllComponentsSelected = $false
 }
 
+# BitNet requires the llama.cpp binaries. Inno Setup represents the nested
+# component as "llamacpp\bitnet", while direct callers may pass "bitnet".
+if (-not $AllComponentsSelected -and
+    ($SelectedComponents -contains "bitnet" -or
+     $SelectedComponents -contains "llamacpp\bitnet")) {
+    if ($SelectedComponents -notcontains "bitnet") {
+        $SelectedComponents += "bitnet"
+    }
+    if ($SelectedComponents -notcontains "llamacpp") {
+        $SelectedComponents += "llamacpp"
+    }
+    Write-Host "[*] BitNet selected: llamacpp dependency enabled."
+}
+
 function Test-ComponentSelected {
     param(
         [Parameter(Mandatory = $true)]
@@ -789,7 +803,7 @@ try {
     # Download archive/file components through one shared path.
     # Nmap/Npcap, GTK runtime and HWP keep dedicated installation handling.
     $downloadComponents = @(
-        "python", "curl", "llamacpp", "yara", "wamr", "websocat", "artifacts",
+        "python", "curl", "llamacpp", "bitnet", "yara", "wamr", "websocat", "artifacts",
         "gtkserver", "tessdata", "tessdata_best", "tessdata_fast",
         "windivert", "android_platform_tools", "tun2socks", "sendboxie",
         "ldplayer", "tap_windows6", "thc_hydra", "shadowsocks_libev",
