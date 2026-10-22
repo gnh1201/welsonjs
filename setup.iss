@@ -186,7 +186,7 @@ begin
     wpWelcome,
     'Customer Information',
     'Please provide your contact information.',
-    'Optional. Enter your contact details for future technical support. They will be sent to Catswords OSS via Salesforce after installation if you consent below.'
+    'Optional. Enter your contact details if you need technical support. They will be sent to Catswords Research''s CRM after installation if you consent below.'
   );
 
   CustomerPage.Add('Name', False);
@@ -365,14 +365,14 @@ begin
         if not SubmitCustomerInfo then
           MsgBox(
             'Could not confirm that the customer information was submitted.' + #13#10 +
-            'Salesforce may still have received the request if the connection was interrupted.' + #13#10 +
+            'Catswords Research''s CRM may still have received the request if the connection was interrupted.' + #13#10 +
             'Installation will continue.',
             mbInformation,
             MB_OK
           )
         else
           MsgBox(
-            'The information was sent to Catswords OSS via Salesforce.' + #13#10 +
+            'The information was sent to Catswords Research''s CRM.' + #13#10 +
             'This confirms the request was sent, but not that a contact record was created.',
             mbInformation,
             MB_OK
