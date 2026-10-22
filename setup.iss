@@ -133,12 +133,13 @@ PostHogApiKey=phc_pmRHJ0aVEhtULRT4ilexwCjYpGtE9VYRhlA05fwiYt8
 [Code]
 const
   UninstSiteURL = 'https://catswords.z12.web.core.windows.net/?utm_source=welsonjs_uninstall';
-  SalesforceURL = 'https://webto.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8&orgId=00DdJ000004GiXR';
-  SalesforceOrgID = '00DdJ000004GiXR';
+  SalesforceOrgID = '00DdJ000004Vdh7';
+  SalesforceURL = 'https://webto.salesforce.com/servlet/servlet.WebToLead?encoding=UTF-8&orgId=' + SalesforceOrgID;
   SalesforceLeadSource = 'Web';
 
 var
   CustomerPage: TInputQueryWizardPage;
+  CustomerConsentCheckBox: TNewCheckBox;
   CustomerSubmitted: Boolean;
 
 // Get selected components
@@ -185,18 +186,33 @@ begin
     wpWelcome,
     'Customer Information',
     'Please provide your contact information.',
-    'The information you provide will be used as basic contact information for technical support and inquiries regarding WelsonJS. All fields are optional.'
+    'Optional. Enter your contact details for future technical support. They will be sent to Catswords OSS via Salesforce after installation if you consent below.'
   );
 
-  CustomerPage.Add('First Name', False);
-  CustomerPage.Add('Last Name', False);
+  CustomerPage.Add('Name', False);
   CustomerPage.Add('Email', False);
   CustomerPage.Add('Company', False);
-  CustomerPage.Add('Phone', False);
-  CustomerPage.Add('Mobile', False);
-  CustomerPage.Add('Website', False);
+
+  CustomerConsentCheckBox := TNewCheckBox.Create(WizardForm);
+  CustomerConsentCheckBox.Parent := CustomerPage.Surface;
+  CustomerConsentCheckBox.Caption := 'I consent to the collection and use of this information for technical support.';
+  CustomerConsentCheckBox.Left := CustomerPage.PromptLabels[0].Left;
+  CustomerConsentCheckBox.Top := CustomerPage.Edits[2].Top +
+    CustomerPage.Edits[2].Height + ScaleY(8);
+  CustomerConsentCheckBox.Width := CustomerPage.Surface.Width;
+  CustomerConsentCheckBox.Height := ScaleY(32);
+  CustomerConsentCheckBox.Anchors := [akLeft, akTop, akRight];
+  CustomerConsentCheckBox.Checked := False;
 
   CustomerSubmitted := False;
+end;
+
+function HexDigit(Value: Integer): string;
+begin
+  if Value < 10 then
+    Result := Chr(Ord('0') + Value)
+  else
+    Result := Chr(Ord('A') + Value - 10);
 end;
 
 // URL-encode a string as UTF-8
@@ -223,7 +239,7 @@ begin
     else if B = Ord(' ') then
       Result := Result + '+'
     else
-      Result := Result + '%' + IntToHex(B, 2);
+      Result := Result + '%' + HexDigit(B div 16) + HexDigit(B mod 16);
   end;
 end;
 
@@ -234,9 +250,9 @@ var
 begin
   Result := False;
 
-  for I := 0 to 6 do
+  for I := 0 to 2 do
   begin
-    if CustomerPage.Values[I] <> '' then
+    if Trim(CustomerPage.Values[I]) <> '' then
     begin
       Result := True;
       Exit;
@@ -244,24 +260,54 @@ begin
   end;
 end;
 
+// Check the current user's Windows UI language, including Korean variants
+function IsKoreanUILanguage: Boolean;
+begin
+  Result := (GetUILanguage and $3FF) = $12;
+end;
+
 // Submit customer information to Salesforce Web-to-Lead
 function SubmitCustomerInfo: Boolean;
 var
   Http: Variant;
   Body: string;
+  FullName: string;
+  FirstName: string;
+  LastName: string;
+  NamePart: string;
+  LastSpace: Integer;
   StatusCode: Integer;
 begin
   Result := False;
 
+  FullName := Trim(CustomerPage.Values[0]);
+  LastSpace := RPos(' ', FullName);
+  if LastSpace > 0 then
+  begin
+    FirstName := Trim(Copy(FullName, 1, LastSpace - 1));
+    LastName := Trim(Copy(FullName, LastSpace + 1, Length(FullName)));
+
+    if IsKoreanUILanguage and (Length(FirstName) <= 5) then
+    begin
+      NamePart := FirstName;
+      FirstName := LastName;
+      LastName := NamePart;
+    end;
+  end
+  else
+  begin
+    // If the name has no spaces, its given/family name boundary is unclear.
+    // Keep it in Salesforce's first_name field by default.
+    FirstName := FullName;
+    LastName := '';
+  end;
+
   Body :=
     'oid=' + UrlEncode(SalesforceOrgID) +
-    '&first_name=' + UrlEncode(CustomerPage.Values[0]) +
-    '&last_name=' + UrlEncode(CustomerPage.Values[1]) +
-    '&email=' + UrlEncode(CustomerPage.Values[2]) +
-    '&company=' + UrlEncode(CustomerPage.Values[3]) +
-    '&phone=' + UrlEncode(CustomerPage.Values[4]) +
-    '&mobile=' + UrlEncode(CustomerPage.Values[5]) +
-    '&url=' + UrlEncode(CustomerPage.Values[6]) +
+    '&first_name=' + UrlEncode(FirstName) +
+    '&last_name=' + UrlEncode(LastName) +
+    '&email=' + UrlEncode(Trim(CustomerPage.Values[1])) +
+    '&company=' + UrlEncode(Trim(CustomerPage.Values[2])) +
     '&lead_source=' + UrlEncode(SalesforceLeadSource);
 
   try
@@ -279,12 +325,14 @@ begin
     Http.Send(Body);
 
     StatusCode := Http.Status;
-    Result := (StatusCode >= 200) and (StatusCode < 400);
+    Result := (StatusCode >= 200) and (StatusCode < 300);
 
-    Log('Salesforce Web-to-Lead HTTP status: ' +
+    // A successful HTTP response confirms delivery to the endpoint only;
+    // Web-to-Lead does not provide a reliable machine-readable lead result.
+    Log('Salesforce Web-to-Lead HTTP status (not a lead-creation confirmation): ' +
       IntToStr(StatusCode));
   except
-    Log('Salesforce Web-to-Lead submission failed.');
+    Log('Salesforce Web-to-Lead request failed: ' + GetExceptionMessage);
     Result := False;
   end;
 end;
@@ -312,12 +360,20 @@ begin
     begin
       CustomerSubmitted := True;
 
-      if HasCustomerInformation then
+      if HasCustomerInformation and CustomerConsentCheckBox.Checked then
       begin
         if not SubmitCustomerInfo then
           MsgBox(
-            'Failed to submit customer information.' + #13#10 +
+            'Could not confirm that the customer information was submitted.' + #13#10 +
+            'Salesforce may still have received the request if the connection was interrupted.' + #13#10 +
             'Installation will continue.',
+            mbInformation,
+            MB_OK
+          )
+        else
+          MsgBox(
+            'The information was sent to Catswords OSS via Salesforce.' + #13#10 +
+            'This confirms the request was sent, but not that a contact record was created.',
             mbInformation,
             MB_OK
           );
