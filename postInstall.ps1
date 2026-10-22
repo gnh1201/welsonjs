@@ -212,18 +212,18 @@ if ($Components -and $Components.Trim() -ne "") {
     $AllComponentsSelected = $false
 }
 
-# BitNet requires the llama.cpp binaries. Inno Setup represents the nested
-# component as "llamacpp\bitnet", while direct callers may pass "bitnet".
+# SmolLM2 requires the llama.cpp binaries. Inno Setup represents the nested
+# component as "llamacpp\smollm2", while direct callers may pass "smollm2".
 if (-not $AllComponentsSelected -and
-    ($SelectedComponents -contains "bitnet" -or
-     $SelectedComponents -contains "llamacpp\bitnet")) {
-    if ($SelectedComponents -notcontains "bitnet") {
-        $SelectedComponents += "bitnet"
+    ($SelectedComponents -contains "smollm2" -or
+     $SelectedComponents -contains "llamacpp\smollm2")) {
+    if ($SelectedComponents -notcontains "smollm2") {
+        $SelectedComponents += "smollm2"
     }
     if ($SelectedComponents -notcontains "llamacpp") {
         $SelectedComponents += "llamacpp"
     }
-    Write-Host "[*] BitNet selected: llamacpp dependency enabled."
+    Write-Host "[*] SmolLM2 selected: llamacpp dependency enabled."
 }
 
 function Test-ComponentSelected {
@@ -803,7 +803,7 @@ try {
     # Download archive/file components through one shared path.
     # Nmap/Npcap, GTK runtime and HWP keep dedicated installation handling.
     $downloadComponents = @(
-        "python", "curl", "llamacpp", "bitnet", "yara", "wamr", "websocat", "artifacts",
+        "python", "curl", "llamacpp", "smollm2", "yara", "wamr", "websocat", "artifacts",
         "gtkserver", "tessdata", "tessdata_best", "tessdata_fast",
         "windivert", "android_platform_tools", "tun2socks", "sendboxie",
         "ldplayer", "tap_windows6", "thc_hydra", "shadowsocks_libev",

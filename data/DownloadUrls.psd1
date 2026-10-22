@@ -33,10 +33,10 @@
     }
 
     # ===========================
-    # Microsoft BitNet GGUF model
+    # SmolLM2 360M Instruct Q8_0 GGUF model
     # ===========================
-    bitnet = @{
-        any   = "https://huggingface.co/microsoft/bitnet-b1.58-2B-4T-gguf/resolve/main/ggml-model-i2_s.gguf"
+    smollm2 = @{
+        any   = "https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct-GGUF/resolve/main/smollm2-360m-instruct-q8_0.gguf"
     }
 
     # ===========================
