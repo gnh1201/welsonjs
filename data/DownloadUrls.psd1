@@ -40,10 +40,10 @@
     }
 
     # ===========================
-    # SmolLM2 135M Q8_0 GGUF model
+    # SmolLM2 135M Instruct Q8_0 GGUF model
     # ===========================
     smollm2_135m = @{
-        any   = "https://huggingface.co/ggml-org/SmolLM2-135M-GGUF/resolve/main/SmolLM2-135M-Q8_0.gguf"
+        any   = "https://huggingface.co/gnh1201/SmolLM2-135M-Instruct-Q8_0-GGUF/resolve/main/smollm2-135m-instruct-q8_0.gguf"
     }
 
     # ===========================
