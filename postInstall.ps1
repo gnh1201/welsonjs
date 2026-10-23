@@ -212,17 +212,24 @@ if ($Components -and $Components.Trim() -ne "") {
     $AllComponentsSelected = $false
 }
 
-# SmolLM2 and SmolLM3 require the llama.cpp binaries. Inno Setup represents
-# them as nested components, while direct callers may pass their short names.
+# SmolLM models require the llama.cpp binaries. Inno Setup represents them as
+# nested components, while direct callers may pass their short names.
 if (-not $AllComponentsSelected -and
     ($SelectedComponents -contains "smollm2" -or
      $SelectedComponents -contains "llamacpp\smollm2" -or
+     $SelectedComponents -contains "smollm2_135m" -or
+     $SelectedComponents -contains "llamacpp\smollm2_135m" -or
      $SelectedComponents -contains "smollm3" -or
      $SelectedComponents -contains "llamacpp\smollm3")) {
     if (($SelectedComponents -contains "smollm2" -or
          $SelectedComponents -contains "llamacpp\smollm2") -and
         $SelectedComponents -notcontains "smollm2") {
         $SelectedComponents += "smollm2"
+    }
+    if (($SelectedComponents -contains "smollm2_135m" -or
+         $SelectedComponents -contains "llamacpp\smollm2_135m") -and
+        $SelectedComponents -notcontains "smollm2_135m") {
+        $SelectedComponents += "smollm2_135m"
     }
     if (($SelectedComponents -contains "smollm3" -or
          $SelectedComponents -contains "llamacpp\smollm3") -and
@@ -812,7 +819,7 @@ try {
     # Download archive/file components through one shared path.
     # Nmap/Npcap, GTK runtime and HWP keep dedicated installation handling.
     $downloadComponents = @(
-        "python", "curl", "llamacpp", "smollm2", "smollm3", "yara", "wamr", "websocat", "artifacts",
+        "python", "curl", "llamacpp", "smollm2", "smollm2_135m", "smollm3", "yara", "wamr", "websocat", "artifacts",
         "gtkserver", "tessdata", "tessdata_best", "tessdata_fast",
         "windivert", "android_platform_tools", "tun2socks", "sendboxie",
         "ldplayer", "tap_windows6", "thc_hydra", "shadowsocks_libev",
