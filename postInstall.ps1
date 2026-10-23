@@ -223,6 +223,8 @@ if (-not $AllComponentsSelected -and
      $SelectedComponents -contains "llamacpp\lfm2_5_350m" -or
      $SelectedComponents -contains "gemma3_270m" -or
      $SelectedComponents -contains "llamacpp\gemma3_270m" -or
+     $SelectedComponents -contains "k2_horizon_1b" -or
+     $SelectedComponents -contains "llamacpp\k2_horizon_1b" -or
      $SelectedComponents -contains "smollm3_3b" -or
      $SelectedComponents -contains "llamacpp\smollm3_3b")) {
     if (($SelectedComponents -contains "smollm2_360m" -or
@@ -244,6 +246,11 @@ if (-not $AllComponentsSelected -and
          $SelectedComponents -contains "llamacpp\gemma3_270m") -and
         $SelectedComponents -notcontains "gemma3_270m") {
         $SelectedComponents += "gemma3_270m"
+    }
+    if (($SelectedComponents -contains "k2_horizon_1b" -or
+         $SelectedComponents -contains "llamacpp\k2_horizon_1b") -and
+        $SelectedComponents -notcontains "k2_horizon_1b") {
+        $SelectedComponents += "k2_horizon_1b"
     }
     if (($SelectedComponents -contains "smollm3_3b" -or
          $SelectedComponents -contains "llamacpp\smollm3_3b") -and
@@ -833,7 +840,7 @@ try {
     # Download archive/file components through one shared path.
     # Nmap/Npcap, GTK runtime and HWP keep dedicated installation handling.
     $downloadComponents = @(
-        "python", "curl", "llamacpp", "smollm2_360m", "smollm2_135m", "lfm2_5_350m", "gemma3_270m", "smollm3_3b", "yara", "wamr", "websocat", "artifacts",
+        "python", "curl", "llamacpp", "smollm2_360m", "smollm2_135m", "lfm2_5_350m", "gemma3_270m", "k2_horizon_1b", "smollm3_3b", "yara", "wamr", "websocat", "artifacts",
         "gtkserver", "tessdata", "tessdata_best", "tessdata_fast",
         "windivert", "android_platform_tools", "tun2socks", "sendboxie",
         "ldplayer", "tap_windows6", "thc_hydra", "shadowsocks_libev",

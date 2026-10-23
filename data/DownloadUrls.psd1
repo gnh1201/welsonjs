@@ -61,6 +61,13 @@
     }
 
     # ===========================
+    # K2-Horizon 1B Q4_K_M GGUF model
+    # ===========================
+    k2_horizon_1b = @{
+        any   = "https://huggingface.co/IFM/K2-Horizon-0.9B-GGUF/resolve/main/K2-Horizon-1B-Q4_K_M.gguf"
+    }
+
+    # ===========================
     # SmolLM3 3B Q4_K_M GGUF model
     # ===========================
     smollm3_3b = @{

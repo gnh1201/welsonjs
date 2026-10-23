@@ -38,6 +38,7 @@ Name: "llamacpp\smollm2_360m"; Description: "Download SmolLM2 360M Instruct Q8_0
 Name: "llamacpp\smollm2_135m"; Description: "Download SmolLM2 135M Instruct Q8_0 GGUF model (requires Llama.cpp)"; Types: full; Flags: dontinheritcheck;
 Name: "llamacpp\lfm2_5_350m"; Description: "Download LFM2.5 350M Q8_0 GGUF model (requires Llama.cpp)"; Types: custom; Flags: dontinheritcheck;
 Name: "llamacpp\gemma3_270m"; Description: "Download Gemma 3 270M Q8_0 GGUF model (requires Llama.cpp)"; Types: custom; Flags: dontinheritcheck;
+Name: "llamacpp\k2_horizon_1b"; Description: "Download K2-Horizon 1B Q4_K_M GGUF model (requires Llama.cpp)"; Types: custom; Flags: dontinheritcheck;
 Name: "llamacpp\smollm3_3b"; Description: "Download SmolLM3 3B Q4_K_M GGUF model (requires Llama.cpp)"; Types: custom; Flags: dontinheritcheck;
 Name: "websocat"; Description: "Download websocat (Command-line WebSocket client)"; Types: full;
 Name: "yara"; Description: "Download YARA (Binary pattern matching library)"; Types: custom;
