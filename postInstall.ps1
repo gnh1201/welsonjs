@@ -215,26 +215,47 @@ if ($Components -and $Components.Trim() -ne "") {
 # SmolLM models require the llama.cpp binaries. Inno Setup represents them as
 # nested components, while direct callers may pass their short names.
 if (-not $AllComponentsSelected -and
-    ($SelectedComponents -contains "smollm2" -or
-     $SelectedComponents -contains "llamacpp\smollm2" -or
+    ($SelectedComponents -contains "smollm2_360m" -or
+     $SelectedComponents -contains "llamacpp\smollm2_360m" -or
      $SelectedComponents -contains "smollm2_135m" -or
      $SelectedComponents -contains "llamacpp\smollm2_135m" -or
-     $SelectedComponents -contains "smollm3" -or
-     $SelectedComponents -contains "llamacpp\smollm3")) {
-    if (($SelectedComponents -contains "smollm2" -or
-         $SelectedComponents -contains "llamacpp\smollm2") -and
-        $SelectedComponents -notcontains "smollm2") {
-        $SelectedComponents += "smollm2"
+     $SelectedComponents -contains "lfm2_5_350m" -or
+     $SelectedComponents -contains "llamacpp\lfm2_5_350m" -or
+     $SelectedComponents -contains "gemma3_270m" -or
+     $SelectedComponents -contains "llamacpp\gemma3_270m" -or
+     $SelectedComponents -contains "k2_horizon_1b" -or
+     $SelectedComponents -contains "llamacpp\k2_horizon_1b" -or
+     $SelectedComponents -contains "smollm3_3b" -or
+     $SelectedComponents -contains "llamacpp\smollm3_3b")) {
+    if (($SelectedComponents -contains "smollm2_360m" -or
+         $SelectedComponents -contains "llamacpp\smollm2_360m") -and
+        $SelectedComponents -notcontains "smollm2_360m") {
+        $SelectedComponents += "smollm2_360m"
     }
     if (($SelectedComponents -contains "smollm2_135m" -or
          $SelectedComponents -contains "llamacpp\smollm2_135m") -and
         $SelectedComponents -notcontains "smollm2_135m") {
         $SelectedComponents += "smollm2_135m"
     }
-    if (($SelectedComponents -contains "smollm3" -or
-         $SelectedComponents -contains "llamacpp\smollm3") -and
-        $SelectedComponents -notcontains "smollm3") {
-        $SelectedComponents += "smollm3"
+    if (($SelectedComponents -contains "lfm2_5_350m" -or
+         $SelectedComponents -contains "llamacpp\lfm2_5_350m") -and
+        $SelectedComponents -notcontains "lfm2_5_350m") {
+        $SelectedComponents += "lfm2_5_350m"
+    }
+    if (($SelectedComponents -contains "gemma3_270m" -or
+         $SelectedComponents -contains "llamacpp\gemma3_270m") -and
+        $SelectedComponents -notcontains "gemma3_270m") {
+        $SelectedComponents += "gemma3_270m"
+    }
+    if (($SelectedComponents -contains "k2_horizon_1b" -or
+         $SelectedComponents -contains "llamacpp\k2_horizon_1b") -and
+        $SelectedComponents -notcontains "k2_horizon_1b") {
+        $SelectedComponents += "k2_horizon_1b"
+    }
+    if (($SelectedComponents -contains "smollm3_3b" -or
+         $SelectedComponents -contains "llamacpp\smollm3_3b") -and
+        $SelectedComponents -notcontains "smollm3_3b") {
+        $SelectedComponents += "smollm3_3b"
     }
     if ($SelectedComponents -notcontains "llamacpp") {
         $SelectedComponents += "llamacpp"
@@ -819,7 +840,7 @@ try {
     # Download archive/file components through one shared path.
     # Nmap/Npcap, GTK runtime and HWP keep dedicated installation handling.
     $downloadComponents = @(
-        "python", "curl", "llamacpp", "smollm2", "smollm2_135m", "smollm3", "yara", "wamr", "websocat", "artifacts",
+        "python", "curl", "llamacpp", "smollm2_360m", "smollm2_135m", "lfm2_5_350m", "gemma3_270m", "k2_horizon_1b", "smollm3_3b", "yara", "wamr", "websocat", "artifacts",
         "gtkserver", "tessdata", "tessdata_best", "tessdata_fast",
         "windivert", "android_platform_tools", "tun2socks", "sendboxie",
         "ldplayer", "tap_windows6", "thc_hydra", "shadowsocks_libev",
