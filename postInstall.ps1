@@ -212,25 +212,76 @@ if ($Components -and $Components.Trim() -ne "") {
     $AllComponentsSelected = $false
 }
 
+# Expand a selected product-family checkbox into its model downloads. Also
+# accept the individual nested paths used by earlier installer builds.
+if (-not $AllComponentsSelected) {
+    $modelFamilies = @{
+        "llamacpp\smollm" = @("smollm2_360m", "smollm2_1_7b", "smollm2_135m", "smollm3_3b")
+        # Keep accepting family selections from installer builds before SmolLM2/3 were combined.
+        "llamacpp\smollm2" = @("smollm2_360m", "smollm2_1_7b", "smollm2_135m")
+        "llamacpp\smollm3" = @("smollm3_3b")
+        "llamacpp\gemma3" = @("gemma3_270m", "gemma3_1b_qat")
+        "llamacpp\lfm2_5" = @("lfm2_5_350m", "lfm2_5_2_6b")
+        "llamacpp\k2_horizon" = @("k2_horizon_1b")
+    }
+
+    foreach ($family in $modelFamilies.Keys) {
+        if ($SelectedComponents -contains $family) {
+            foreach ($modelComponent in $modelFamilies[$family]) {
+                if ($SelectedComponents -notcontains $modelComponent) {
+                    $SelectedComponents += $modelComponent
+                }
+            }
+        }
+    }
+
+    foreach ($modelComponent in @(
+        "smollm2_360m", "smollm2_1_7b", "smollm2_135m", "smollm3_3b",
+        "gemma3_270m", "gemma3_1b_qat", "lfm2_5_350m", "lfm2_5_2_6b",
+        "k2_horizon_1b"
+    )) {
+        if ($SelectedComponents -contains "llamacpp\smollm2\$modelComponent" -or
+            $SelectedComponents -contains "llamacpp\smollm3\$modelComponent" -or
+            $SelectedComponents -contains "llamacpp\gemma3\$modelComponent" -or
+            $SelectedComponents -contains "llamacpp\lfm2_5\$modelComponent" -or
+            $SelectedComponents -contains "llamacpp\k2_horizon\$modelComponent") {
+            if ($SelectedComponents -notcontains $modelComponent) {
+                $SelectedComponents += $modelComponent
+            }
+        }
+    }
+}
+
 # SmolLM models require the llama.cpp binaries. Inno Setup represents them as
 # nested components, while direct callers may pass their short names.
 if (-not $AllComponentsSelected -and
     ($SelectedComponents -contains "smollm2_360m" -or
      $SelectedComponents -contains "llamacpp\smollm2_360m" -or
+     $SelectedComponents -contains "smollm2_1_7b" -or
+     $SelectedComponents -contains "llamacpp\smollm2_1_7b" -or
      $SelectedComponents -contains "smollm2_135m" -or
      $SelectedComponents -contains "llamacpp\smollm2_135m" -or
      $SelectedComponents -contains "lfm2_5_350m" -or
      $SelectedComponents -contains "llamacpp\lfm2_5_350m" -or
      $SelectedComponents -contains "gemma3_270m" -or
      $SelectedComponents -contains "llamacpp\gemma3_270m" -or
+     $SelectedComponents -contains "gemma3_1b_qat" -or
+     $SelectedComponents -contains "llamacpp\gemma3_1b_qat" -or
      $SelectedComponents -contains "k2_horizon_1b" -or
      $SelectedComponents -contains "llamacpp\k2_horizon_1b" -or
      $SelectedComponents -contains "smollm3_3b" -or
-     $SelectedComponents -contains "llamacpp\smollm3_3b")) {
+     $SelectedComponents -contains "llamacpp\smollm3_3b" -or
+     $SelectedComponents -contains "lfm2_5_2_6b" -or
+     $SelectedComponents -contains "llamacpp\lfm2_5_2_6b")) {
     if (($SelectedComponents -contains "smollm2_360m" -or
          $SelectedComponents -contains "llamacpp\smollm2_360m") -and
         $SelectedComponents -notcontains "smollm2_360m") {
         $SelectedComponents += "smollm2_360m"
+    }
+    if (($SelectedComponents -contains "smollm2_1_7b" -or
+         $SelectedComponents -contains "llamacpp\smollm2_1_7b") -and
+        $SelectedComponents -notcontains "smollm2_1_7b") {
+        $SelectedComponents += "smollm2_1_7b"
     }
     if (($SelectedComponents -contains "smollm2_135m" -or
          $SelectedComponents -contains "llamacpp\smollm2_135m") -and
@@ -247,6 +298,11 @@ if (-not $AllComponentsSelected -and
         $SelectedComponents -notcontains "gemma3_270m") {
         $SelectedComponents += "gemma3_270m"
     }
+    if (($SelectedComponents -contains "gemma3_1b_qat" -or
+         $SelectedComponents -contains "llamacpp\gemma3_1b_qat") -and
+        $SelectedComponents -notcontains "gemma3_1b_qat") {
+        $SelectedComponents += "gemma3_1b_qat"
+    }
     if (($SelectedComponents -contains "k2_horizon_1b" -or
          $SelectedComponents -contains "llamacpp\k2_horizon_1b") -and
         $SelectedComponents -notcontains "k2_horizon_1b") {
@@ -257,10 +313,15 @@ if (-not $AllComponentsSelected -and
         $SelectedComponents -notcontains "smollm3_3b") {
         $SelectedComponents += "smollm3_3b"
     }
+    if (($SelectedComponents -contains "lfm2_5_2_6b" -or
+         $SelectedComponents -contains "llamacpp\lfm2_5_2_6b") -and
+        $SelectedComponents -notcontains "lfm2_5_2_6b") {
+        $SelectedComponents += "lfm2_5_2_6b"
+    }
     if ($SelectedComponents -notcontains "llamacpp") {
         $SelectedComponents += "llamacpp"
     }
-    Write-Host "[*] SmolLM model selected: llamacpp dependency enabled."
+    Write-Host "[*] LLM model selected: llamacpp dependency enabled."
 }
 
 function Test-ComponentSelected {
@@ -840,7 +901,7 @@ try {
     # Download archive/file components through one shared path.
     # Nmap/Npcap, GTK runtime and HWP keep dedicated installation handling.
     $downloadComponents = @(
-        "python", "curl", "llamacpp", "smollm2_360m", "smollm2_135m", "lfm2_5_350m", "gemma3_270m", "k2_horizon_1b", "smollm3_3b", "yara", "wamr", "websocat", "artifacts",
+        "python", "curl", "llamacpp", "smollm2_360m", "smollm2_1_7b", "smollm2_135m", "lfm2_5_350m", "lfm2_5_2_6b", "gemma3_270m", "gemma3_1b_qat", "k2_horizon_1b", "smollm3_3b", "yara", "wamr", "websocat", "artifacts",
         "gtkserver", "tessdata", "tessdata_best", "tessdata_fast",
         "windivert", "android_platform_tools", "tun2socks", "sendboxie",
         "ldplayer", "tap_windows6", "thc_hydra", "shadowsocks_libev",
