@@ -1,5 +1,5 @@
 ; @created_on 2020-06-26
-; @updated_on 2026-10-05
+; @updated_on 2026-10-24
 ; @author Namhyeon Go <gnh1201@catswords.re.kr> and Catswords OSS contributors.
 
 [Setup]
@@ -34,12 +34,10 @@ Name: "mcp"; Description: "Configure WelsonJS MCP server for supported AI CLIs";
 Name: "python"; Description: "Download Python Windows embeddable package"; Types: full;
 Name: "curl"; Description: "Download cURL (Universal HTTP client)"; Types: full;
 Name: "llamacpp"; Description: "Download Llama.cpp Windows CPU binaries"; Types: custom;
-Name: "llamacpp\smollm2_360m"; Description: "Download SmolLM2 360M Instruct Q8_0 GGUF model (requires Llama.cpp)"; Types: custom; Flags: dontinheritcheck;
-Name: "llamacpp\smollm2_135m"; Description: "Download SmolLM2 135M Instruct Q8_0 GGUF model (requires Llama.cpp)"; Types: full; Flags: dontinheritcheck;
-Name: "llamacpp\lfm2_5_350m"; Description: "Download LFM2.5 350M Q8_0 GGUF model (requires Llama.cpp)"; Types: custom; Flags: dontinheritcheck;
-Name: "llamacpp\gemma3_270m"; Description: "Download Gemma 3 270M Q8_0 GGUF model (requires Llama.cpp)"; Types: custom; Flags: dontinheritcheck;
-Name: "llamacpp\k2_horizon_1b"; Description: "Download K2-Horizon 1B Q4_K_M GGUF model (requires Llama.cpp)"; Types: custom; Flags: dontinheritcheck;
-Name: "llamacpp\smollm3_3b"; Description: "Download SmolLM3 3B Q4_K_M GGUF model (requires Llama.cpp)"; Types: custom; Flags: dontinheritcheck;
+Name: "llamacpp\smollm"; Description: "SmolLM (SmolLM2 and SmolLM3; 4 models)"; Types: full;
+Name: "llamacpp\gemma3"; Description: "Gemma 3 (2 models)"; Types: custom;
+Name: "llamacpp\lfm2_5"; Description: "LFM2.5 (2 models)"; Types: full;
+Name: "llamacpp\k2_horizon"; Description: "K2-Horizon (1 model)"; Types: custom;
 Name: "websocat"; Description: "Download websocat (Command-line WebSocket client)"; Types: full;
 Name: "yara"; Description: "Download YARA (Binary pattern matching library)"; Types: custom;
 Name: "wamr"; Description: "Download WebAssembly Micro Runtime (Add support *.wasm file)"; Types: custom;
