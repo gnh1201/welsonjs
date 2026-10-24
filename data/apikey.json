@@ -15,5 +15,6 @@
     "aviationstack": "file:data/aviationstack_apikey.txt",
     "abuseipdb": "file:data/abuseipdb_apikey.txt",
     "orcarouter": "file:data/orcarouter_apikey.txt",
+    "cheaperinference": "file:data/cheaperinference_apikey.txt",
     "scrapingant": "file:data/scrapingant_apikey.txt"
 }
