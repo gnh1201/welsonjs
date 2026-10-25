@@ -40,6 +40,13 @@
     }
 
     # ===========================
+    # SmolLM2 1.7B Instruct Q4_K_M GGUF model
+    # ===========================
+    smollm2_1_7b = @{
+        any   = "https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct-GGUF/resolve/main/smollm2-1.7b-instruct-q4_k_m.gguf"
+    }
+
+    # ===========================
     # SmolLM2 135M Instruct Q8_0 GGUF model
     # ===========================
     smollm2_135m = @{
@@ -54,10 +61,24 @@
     }
 
     # ===========================
+    # LFM2.5 2.6B Q4_0 GGUF model
+    # ===========================
+    lfm2_5_2_6b = @{
+        any   = "https://huggingface.co/LiquidAI/LFM2.5-2.6B-GGUF/resolve/main/LFM2.5-2.6B-Q4_0.gguf"
+    }
+
+    # ===========================
     # Gemma 3 270M Q8_0 GGUF model
     # ===========================
     gemma3_270m = @{
         any   = "https://huggingface.co/ggml-org/gemma-3-270m-GGUF/resolve/main/gemma-3-270m-Q8_0.gguf"
+    }
+
+    # ===========================
+    # Gemma 3 1B QAT Q4_0 GGUF model
+    # ===========================
+    gemma3_1b_qat = @{
+        any   = "https://huggingface.co/google/gemma-3-1b-it-qat-q4_0-gguf/resolve/main/gemma-3-1b-it-q4_0.gguf"
     }
 
     # ===========================
