@@ -33,66 +33,17 @@
     }
 
     # ===========================
-    # SmolLM2 360M Instruct Q8_0 GGUF model
+    # Hy-MT2 1.8B Q4_K_M GGUF model
     # ===========================
-    smollm2_360m = @{
-        any   = "https://huggingface.co/HuggingFaceTB/SmolLM2-360M-Instruct-GGUF/resolve/main/smollm2-360m-instruct-q8_0.gguf"
+    hy_mt2_1_8b = @{
+        any   = "https://huggingface.co/tencent/Hy-MT2-1.8B-GGUF/resolve/main/Hy-MT2-1.8B-Q4_K_M.gguf"
     }
 
     # ===========================
-    # SmolLM2 1.7B Instruct Q4_K_M GGUF model
+    # FrogNano 4B 2609 Q4_K_M GGUF model
     # ===========================
-    smollm2_1_7b = @{
-        any   = "https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct-GGUF/resolve/main/smollm2-1.7b-instruct-q4_k_m.gguf"
-    }
-
-    # ===========================
-    # SmolLM2 135M Instruct Q8_0 GGUF model
-    # ===========================
-    smollm2_135m = @{
-        any   = "https://huggingface.co/gnh1201/SmolLM2-135M-Instruct-Q8_0-GGUF/resolve/main/smollm2-135m-instruct-q8_0.gguf"
-    }
-
-    # ===========================
-    # LFM2.5 350M Q8_0 GGUF model
-    # ===========================
-    lfm2_5_350m = @{
-        any   = "https://huggingface.co/LiquidAI/LFM2.5-350M-GGUF/resolve/main/LFM2.5-350M-Q8_0.gguf"
-    }
-
-    # ===========================
-    # LFM2.5 2.6B Q4_0 GGUF model
-    # ===========================
-    lfm2_5_2_6b = @{
-        any   = "https://huggingface.co/LiquidAI/LFM2.5-2.6B-GGUF/resolve/main/LFM2.5-2.6B-Q4_0.gguf"
-    }
-
-    # ===========================
-    # Gemma 3 270M Q8_0 GGUF model
-    # ===========================
-    gemma3_270m = @{
-        any   = "https://huggingface.co/ggml-org/gemma-3-270m-GGUF/resolve/main/gemma-3-270m-Q8_0.gguf"
-    }
-
-    # ===========================
-    # Gemma 3 1B QAT Q4_0 GGUF model
-    # ===========================
-    gemma3_1b_qat = @{
-        any   = "https://huggingface.co/google/gemma-3-1b-it-qat-q4_0-gguf/resolve/main/gemma-3-1b-it-q4_0.gguf"
-    }
-
-    # ===========================
-    # K2-Horizon 1B Q4_K_M GGUF model
-    # ===========================
-    k2_horizon_1b = @{
-        any   = "https://huggingface.co/IFM/K2-Horizon-0.9B-GGUF/resolve/main/K2-Horizon-1B-Q4_K_M.gguf"
-    }
-
-    # ===========================
-    # SmolLM3 3B Q4_K_M GGUF model
-    # ===========================
-    smollm3_3b = @{
-        any   = "https://huggingface.co/ggml-org/SmolLM3-3B-GGUF/resolve/main/SmolLM3-Q4_K_M.gguf"
+    frognano_4b_2609 = @{
+        any   = "https://huggingface.co/gnh1201/FrogNano-4B-2609-Q4_K_M-GGUF/resolve/main/frognano-4b-2609-q4_k_m.gguf"
     }
 
     # ===========================
