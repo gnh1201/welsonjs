@@ -142,13 +142,24 @@ Loader -.->|"Present webpage"| HTA
 * RPC(Remote Procedure Call) protocol clients: [gRPC](https://grpc.io/), [JSON-RPC 2.0](https://www.jsonrpc.org/specification?utm_source=welsonjs)
 * Various types of HTTP clients: [XHR(MSXML)](https://developer.mozilla.org/docs/Glossary/XMLHttpRequest?utm_source=welsonjs), [cURL](https://curl.se/?utm_source=welsonjs), [BITS](https://en.m.wikipedia.org/w/index.php?title=Background_Intelligent_Transfer_Service&utm_source=welsonjs), [CERT](https://github.com/MicrosoftDocs/windowsserverdocs/blob/main/WindowsServerDocs/administration/windows-commands/certutil.md?utm_source=welsonjs), Web Proxy, SEO/SERP
 * [WelsonJS.ManagedObject](https://www.nuget.org/packages/WelsonJS.ManagedObject?utm_source=welsonjs): A native module for Windows Service applications, window handle control, bitmap manipulation, virtual mouse and keyboard events, and [Named Shared Memory](https://learn.microsoft.com/en-us/windows/win32/memory/creating-named-shared-memory?utm_source=welsonjs)-based IPC.
-* AI integrations: LLM-based (generative) AI services (e.g., ChatGPT, Google Gemini).
+* AI integrations: Cloud LLM services (e.g., ChatGPT, Google Gemini) and local LLM inference through llama.cpp.
 * Aviation Data integrations: [AviationStack](https://aviationstack.com?utm_source=FirstPromoter&utm_medium=Affiliate&fpr=namhyeon71), [SerpApi Google Flights API](https://serpapi.com/google-flights-api?utm_source=welsonjs)
 * OVFTool (VMware) integration: [OVFTool for Broadcom/VMware infrastructures](https://developer.broadcom.com/tools/open-virtualization-format-ovf-tool/latest?utm_source=welsonjs)
 * ***:fire: NEW!*** Windows built-in database engine, aka. [ESENT (ESE) database](https://learn.microsoft.com/en-us/windows/win32/extensible-storage-engine/database-overview?utm_source=welsonjs) interface library (WelsonJS.Esent)
 * ***:fire: NEW!*** WelsonJS JCTG(JavaScript-Click-To-Go): Run WelsonJS script files written in JavaScript directly from Windows File Explorer with a (double) click. Just like an `.exe` file.
 * ***:fire: NEW!*** WelsonJS [MCP(Model Context Protocol)](https://github.com/gnh1201/welsonjs/wiki/MCP-server)
 * Everything you can imagine.
+
+### Local LLM support
+
+Cloud LLM services can require an API account, a network connection for every request, and sending prompts to an external provider. WelsonJS offers an optional local inference path using the llama.cpp CPU runtime and GGUF model files, so applications can run supported models on the Windows machine and send inference requests to a local server instead.
+
+The installer can download the llama.cpp runtime and these models:
+
+* [Hy-MT2 1.8B Q4_K_M](https://huggingface.co/tencent/Hy-MT2-1.8B-GGUF) for machine translation.
+* [FrogNano 4B 2609 Q4_K_M](https://huggingface.co/gnh1201/FrogNano-4B-2609-Q4_K_M-GGUF) for software engineering (SWE) tasks.
+
+The `examples/open_llamacpp.js` example starts the local llama.cpp server with the Hy-MT2 model. The `lib/llamacpp.js` module can also start and check the local server, while `lib/language-inference-engine.js` provides a `llamacpp` provider for requests to `http://localhost:8080/v1/chat/completions`. After the initial downloads, local inference does not need a cloud LLM API key or send prompts to a remote LLM provider. Model downloads do require an internet connection, and inference speed depends on the machine's available CPU and memory.
 
 ## Quick start
 

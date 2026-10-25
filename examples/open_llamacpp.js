@@ -5,7 +5,7 @@ function main() {
     var llama = new LlamaCpp();
 
     llama.setModelPath(
-        SYS.getAppDataDir() + "\\lfm2_5_350m\\LFM2.5-350M-Q8_0.gguf"
+        SYS.getAppDataDir() + "\\hy_mt2_1_8b\\Hy-MT2-1.8B-Q4_K_M.gguf"
     );
 
     try {
