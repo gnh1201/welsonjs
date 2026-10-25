@@ -2,7 +2,7 @@ var SYS = require("lib/system");
 var LlamaCpp = require("lib/llamacpp");
 
 function main() {
-    var llama = new LlamaCpp().create();
+    var llama = new LlamaCpp();
 
     llama.setModelPath(
         SYS.getAppDataDir() + "\\lfm2_5_350m\\LFM2.5-350M-Q8_0.gguf"
