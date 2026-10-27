@@ -1,6 +1,6 @@
 {
     "description": "WelsonJS test profile for Microsoft Office",
-    "updated_on": "2026-01-18",
+    "updated_on": "2026-10-27",
     "dependencies": {
         "welsonjs": "0.2.7"
     },
@@ -47,6 +47,13 @@
             "tags": ["Office", "Excel"]
         },
         {
+            "id": "excel_range_and_shapes",
+            "description": "Verify Excel range values, formatting, shape creation, and XLSX saving",
+            "tags": ["Office", "Excel", "Range", "Shape"],
+            "requirements": ["Microsoft Excel", "write access to tmp\\excel-api-test.xlsx"],
+            "effects": ["opens Excel", "creates or overwrites tmp\\excel-api-test.xlsx"]
+        },
+        {
             "id": "open_excel_with_chatgpt",
             "description": "Verify whether a Microsoft Excel file can be opened and edited using ChatGPT",
             "tags": ["Office", "Excel"]
@@ -62,9 +69,30 @@
             "tags": ["Office", "PowerPoint"]
         },
         {
+            "id": "powerpoint_add_picture",
+            "description": "Verify that a relative image path can be inserted into a new PowerPoint slide and saved",
+            "tags": ["Office", "PowerPoint", "Image"],
+            "requirements": ["Microsoft PowerPoint", "local image file", "write access to tmp\\powerpoint-image-test.pptx"],
+            "effects": ["opens PowerPoint", "creates or overwrites tmp\\powerpoint-image-test.pptx"]
+        },
+        {
+            "id": "powerpoint_slide_and_shapes",
+            "description": "Verify PowerPoint slide, title, text, shape, background, and presentation saving helpers",
+            "tags": ["Office", "PowerPoint", "Slide", "Shape"],
+            "requirements": ["Microsoft PowerPoint", "write access to tmp\\powerpoint-api-test.pptx"],
+            "effects": ["opens PowerPoint", "creates or overwrites tmp\\powerpoint-api-test.pptx"]
+        },
+        {
             "id": "open_word_file",
             "description": "Verify whether a Microsoft Word file can be opened and edited",
             "tags": ["Office", "Word"]
+        },
+        {
+            "id": "word_document_and_shapes",
+            "description": "Verify Word document text, formatting, page setup, shapes, image insertion, DOCX saving, and PDF export",
+            "tags": ["Office", "Word", "Shape", "Image", "PDF"],
+            "requirements": ["Microsoft Word", "local image file", "write access to tmp\\word-api-test.docx and tmp\\word-api-test.pdf"],
+            "effects": ["opens Word", "creates or overwrites the DOCX and PDF test outputs"]
         },
         {
             "id": "outlook_open_session",
