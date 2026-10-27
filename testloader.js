@@ -814,6 +814,30 @@ var test_implements = {
         excel.open();   // Open a Excel window
     },
 
+    "excel_range_and_shapes": function() {
+        var Office = require("lib/msoffice");
+        var SYS = require("lib/system");
+
+        var excel = new Office.Excel();
+        var output = SYS.getCurrentWorkingDirectory() + "\\tmp\\excel-api-test.xlsx";
+        try {
+            excel.open();
+            var range = excel.getRange("A1:B2");
+            range.setValues([["WelsonJS", 1], ["Office API", 2]]);
+            var values = range.getValues();
+            if (values[0][0] !== "WelsonJS" || values[1][1] != 2) throw new Error("Excel range values were not persisted");
+            range.setFont({ name: "Arial", size: 12, bold: true });
+            range.setBackgroundColor(16777215).setWrapText(true);
+            excel.addRectangle(20, 20, 120, 40).setName("WelsonJSRectangle");
+            excel.addTextBox("WelsonJS", 20, 70, 180, 40).setNoLine();
+            if (excel.getShapeCount() < 2) throw new Error("Expected Excel shapes to be created");
+            if (!excel.saveAs(output)) throw new Error("Excel output was not created: " + output);
+            console.log("Excel range and shape test passed: " + output);
+        } finally {
+            excel.close();
+        }
+    },
+
     "open_excel_with_chatgpt": function() {
         // Load libraries
         var Office = require("lib/msoffice");
@@ -860,11 +884,79 @@ var test_implements = {
         var powerpoint = new Office.PowerPoint();   // Create a PowerPoint instance
         powerpoint.open();   // Open a PowerPoint window
     },
+
+    "powerpoint_add_picture": function() {
+        var Office = require("lib/msoffice");
+        var SYS = require("lib/system");
+
+        var powerpoint = new Office.PowerPoint();
+        var output = SYS.getCurrentWorkingDirectory() + "\\tmp\\powerpoint-image-test.pptx";
+        try {
+            powerpoint.open();
+            var slide = powerpoint.addSlide(Office.PowerPoint.SlideLayouts.Blank);
+            var picture = slide.addPicture("app\\assets\\img\\cascade icons\\logo-large.png", 50, 50, 240, 80);
+            if (slide.getShapeCount() !== 1) throw new Error("Expected one picture shape, got " + slide.getShapeCount());
+            powerpoint.saveAs(output);
+            if (!FILE.fileExists(output)) throw new Error("PowerPoint output was not created: " + output);
+            console.log("PowerPoint image insertion passed: " + output);
+            console.log("Picture size: " + picture.getSize().width + "x" + picture.getSize().height);
+        } finally {
+            powerpoint.close();
+        }
+    },
+
+    "powerpoint_slide_and_shapes": function() {
+        var Office = require("lib/msoffice");
+        var SYS = require("lib/system");
+
+        var powerpoint = new Office.PowerPoint();
+        var output = SYS.getCurrentWorkingDirectory() + "\\tmp\\powerpoint-api-test.pptx";
+        try {
+            powerpoint.open();
+            var slide = powerpoint.addSlide(Office.PowerPoint.SlideLayouts.Blank);
+            slide.setTitle("WelsonJS PowerPoint API");
+            slide.addText("Slide helpers and shape wrappers", 60, 120, 400, 50).setTextStyle({ fontSize: 20, bold: true });
+            slide.addRectangle(60, 190, 240, 100).setFillColor(16711680).setNoLine();
+            slide.setBackgroundColor(16777215);
+            if (powerpoint.getSlideCount() !== 1 || slide.getShapeCount() < 3) throw new Error("PowerPoint slide helpers did not create the expected shapes");
+            if (!powerpoint.saveAs(output)) throw new Error("PowerPoint output was not created: " + output);
+            console.log("PowerPoint slide and shape test passed: " + output);
+        } finally {
+            powerpoint.close();
+        }
+    },
     
     "open_word_file": function() {
         var Office = require("lib/msoffice");    // Load libraries
         var word = new Office.Word();   // Create an Word instance
         word.open("data\\example.docx");   // Open the Word window
+    },
+
+    "word_document_and_shapes": function() {
+        var Office = require("lib/msoffice");
+        var SYS = require("lib/system");
+
+        var word = new Office.Word();
+        var output = SYS.getCurrentWorkingDirectory() + "\\tmp\\word-api-test.docx";
+        var pdf = SYS.getCurrentWorkingDirectory() + "\\tmp\\word-api-test.pdf";
+        try {
+            word.open();
+            word.setText("WelsonJS Office API");
+            word.appendText(" document");
+            word.addParagraph("Shape and image helpers");
+            if (word.getText().indexOf("WelsonJS") < 0) throw new Error("Word document text was not readable");
+            word.replaceText("document", "test document", true);
+            word.formatText("WelsonJS", { fontName: "Arial", fontSize: 14, bold: true });
+            word.setPageMargins(36, 36, 36, 36).setPageOrientation(Office.Word.Orientation.Landscape);
+            word.addRectangle(40, 80, 160, 60).setFillColor(16711680).setNoLine();
+            word.addPicture("app\\assets\\img\\cascade icons\\logo-large.png", 220, 80, 160, 60);
+            if (word.getShapeCount() < 2) throw new Error("Expected Word shapes to be created");
+            if (!word.saveAs(output)) throw new Error("Word output was not created: " + output);
+            if (!word.exportAsPDF(pdf)) throw new Error("Word PDF output was not created: " + pdf);
+            console.log("Word document and shape test passed: " + output);
+        } finally {
+            word.close();
+        }
     },
     
     "sharedmemory": function() {
