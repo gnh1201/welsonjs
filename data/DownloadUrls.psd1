@@ -47,6 +47,13 @@
     }
 
     # ===========================
+    # Qwen3Guard local safety model
+    # ===========================
+    qwen3guard_06b = @{
+        any   = "https://huggingface.co/mradermacher/Qwen3Guard-Gen-0.6B-GGUF/resolve/main/Qwen3Guard-Gen-0.6B.Q4_K_M.gguf"
+    }
+
+    # ===========================
     # YARA
     # ===========================
     yara = @{

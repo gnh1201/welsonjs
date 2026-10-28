@@ -807,7 +807,7 @@ try {
     # Download archive/file components through one shared path.
     # Nmap/Npcap, GTK runtime and HWP keep dedicated installation handling.
     $downloadComponents = @(
-        "python", "curl", "llamacpp", "hy_mt2_1_8b", "frognano_4b_2609", "yara", "wamr", "websocat", "artifacts",
+        "python", "curl", "llamacpp", "hy_mt2_1_8b", "frognano_4b_2609", "qwen3guard_06b", "yara", "wamr", "websocat", "artifacts",
         "gtkserver", "tessdata", "tessdata_best", "tessdata_fast",
         "windivert", "android_platform_tools", "tun2socks", "sendboxie",
         "ldplayer", "tap_windows6", "thc_hydra", "shadowsocks_libev",
