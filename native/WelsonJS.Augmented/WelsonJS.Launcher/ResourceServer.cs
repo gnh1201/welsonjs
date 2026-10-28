@@ -30,6 +30,7 @@ namespace WelsonJS.Launcher
         private readonly List<IApiEndpoint> _apis = new List<IApiEndpoint>();
         private readonly SemaphoreSlim _requestSlots = new SemaphoreSlim(32, 32);
         private readonly ApiEndpoints.LlamaCpp _llamaCppEndpoint;
+        private readonly ApiEndpoints.WelsonJsMcp _welsonJsMcpEndpoint;
         private BlobConfig _blobConfig;
         private readonly ILogger _logger;
 
@@ -76,6 +77,8 @@ namespace WelsonJS.Launcher
             _apis.Add(new ApiEndpoints.JsonRpc2(this, _httpClient, _logger));
             _llamaCppEndpoint = new ApiEndpoints.LlamaCpp(this, _httpClient, _logger);
             _apis.Add(_llamaCppEndpoint);
+            _welsonJsMcpEndpoint = new ApiEndpoints.WelsonJsMcp(this, _httpClient, _logger);
+            _apis.Add(_welsonJsMcpEndpoint);
 
             // Register the prefix
             _listener.Prefixes.Add(prefix);
@@ -109,6 +112,7 @@ namespace WelsonJS.Launcher
             _isRunning = false;
             if (_cts != null) _cts.Cancel();
             _llamaCppEndpoint.Shutdown();
+            _welsonJsMcpEndpoint.Shutdown();
             _listener.Stop();
 
             MessageBox.Show("Server stopped.");

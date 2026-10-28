@@ -447,7 +447,7 @@ namespace WelsonJS.Launcher
             File.Copy(sourcePath, destinationPath, overwrite: true);
         }
 
-        private static string GetAppRootDirectory()
+        public static string GetAppRootDirectory()
         {
             string[] candidates = new[]
             {
