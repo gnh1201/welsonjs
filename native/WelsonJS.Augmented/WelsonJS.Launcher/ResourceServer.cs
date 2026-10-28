@@ -72,6 +72,7 @@ namespace WelsonJS.Launcher
             _apis.Add(new ApiEndpoints.Whois(this, _httpClient, _logger));
             _apis.Add(new ApiEndpoints.ImageColorPicker(this, _httpClient, _logger));
             _apis.Add(new ApiEndpoints.JsonRpc2(this, _httpClient, _logger));
+            _apis.Add(new ApiEndpoints.LlamaCpp(this, _httpClient, _logger));
 
             // Register the prefix
             _listener.Prefixes.Add(prefix);
