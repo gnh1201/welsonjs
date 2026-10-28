@@ -212,22 +212,32 @@ if ($Components -and $Components.Trim() -ne "") {
     $AllComponentsSelected = $false
 }
 
-# Llama.cpp model components may be passed as short names or nested Inno Setup paths.
-if (-not $AllComponentsSelected -and
-    (($SelectedComponents -contains "hy_mt2_1_8b" -or
-      $SelectedComponents -contains "llamacpp\hy_mt2_1_8b") -or
-     ($SelectedComponents -contains "frognano_4b_2609" -or
-      $SelectedComponents -contains "llamacpp\frognano_4b_2609"))) {
-    foreach ($modelComponent in @("hy_mt2_1_8b", "frognano_4b_2609")) {
-        if ($SelectedComponents -contains "llamacpp\$modelComponent" -and
-            $SelectedComponents -notcontains $modelComponent) {
-            $SelectedComponents += $modelComponent
+# All GGUF models in this installer are served by llama.cpp. Accept both
+# short names and nested Inno Setup component paths for every model.
+$llamaModelComponents = @(
+    "hy_mt2_1_8b",
+    "frognano_4b_2609",
+    "qwen3guard_06b"
+)
+
+if (-not $AllComponentsSelected) {
+    $llamaModelSelected = $false
+    foreach ($modelComponent in $llamaModelComponents) {
+        $nestedComponent = "llamacpp\$modelComponent"
+        if ($SelectedComponents -contains $modelComponent -or
+            $SelectedComponents -contains $nestedComponent) {
+            $llamaModelSelected = $true
+            if ($SelectedComponents -contains $nestedComponent -and
+                $SelectedComponents -notcontains $modelComponent) {
+                $SelectedComponents += $modelComponent
+            }
         }
     }
-    if ($SelectedComponents -notcontains "llamacpp") {
+
+    if ($llamaModelSelected -and $SelectedComponents -notcontains "llamacpp") {
         $SelectedComponents += "llamacpp"
+        Write-Host "[*] LLM model selected: llamacpp dependency enabled."
     }
-    Write-Host "[*] LLM model selected: llamacpp dependency enabled."
 }
 
 function Test-ComponentSelected {
