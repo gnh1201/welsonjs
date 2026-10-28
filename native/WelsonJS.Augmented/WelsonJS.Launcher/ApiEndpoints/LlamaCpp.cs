@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 
@@ -13,6 +14,8 @@ namespace WelsonJS.Launcher.ApiEndpoints
     public sealed class LlamaCpp : IApiEndpoint
     {
         private const string Prefix = "llamacpp";
+        private const long MaxRequestBodyBytes = 64 * 1024;
+        private const int RequestBodyTimeoutMilliseconds = 5000;
         private readonly ResourceServer _server;
         private readonly ILogger _logger;
         private readonly LlamaCppProcessManager _manager;
@@ -60,6 +63,11 @@ namespace WelsonJS.Launcher.ApiEndpoints
             }
         }
 
+        public void Shutdown()
+        {
+            _manager.Shutdown();
+        }
+
         private static string GetString(Dictionary<string, object> input, string key, bool required)
         {
             object value; input.TryGetValue(key, out value); string text = value == null ? null : Convert.ToString(value);
@@ -73,7 +81,26 @@ namespace WelsonJS.Launcher.ApiEndpoints
         }
         private static async Task<string> ReadBody(HttpListenerContext context)
         {
-            using (var reader = new StreamReader(context.Request.InputStream, Encoding.UTF8)) return await reader.ReadToEndAsync();
+            if (context.Request.ContentLength64 > MaxRequestBodyBytes)
+                throw new InvalidDataException("Request body is too large.");
+
+            var buffer = new byte[8192];
+            using (var body = new MemoryStream())
+            {
+                while (body.Length < MaxRequestBodyBytes)
+                {
+                    int remaining = (int)Math.Min(buffer.Length, MaxRequestBodyBytes - body.Length);
+                    Task<int> readTask = context.Request.InputStream.ReadAsync(buffer, 0, remaining);
+                    if (await Task.WhenAny(readTask, Task.Delay(RequestBodyTimeoutMilliseconds)) != readTask)
+                        throw new TimeoutException("Request body read timed out.");
+                    int read = await readTask;
+                    if (read == 0) break;
+                    body.Write(buffer, 0, read);
+                }
+                if (body.Length >= MaxRequestBodyBytes)
+                    throw new InvalidDataException("Request body is too large.");
+                return Encoding.UTF8.GetString(body.ToArray());
+            }
         }
         private async Task Write(HttpListenerContext context, object value, int status = 200)
         {

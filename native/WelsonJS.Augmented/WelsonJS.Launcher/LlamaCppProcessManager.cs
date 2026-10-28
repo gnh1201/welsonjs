@@ -28,14 +28,17 @@ namespace WelsonJS.Launcher
                     ? Path.Combine(Program.GetAppDataPath(), "llamacpp", "llama-server.exe")
                     : Path.GetFullPath(executablePath);
                 modelPath = Path.GetFullPath(modelPath ?? string.Empty);
+                string trustedExecutablePath = Path.GetFullPath(Path.Combine(Program.GetAppDataPath(), "llamacpp", "llama-server.exe"));
 
                 if (!File.Exists(executablePath)) throw new FileNotFoundException("llama-server.exe was not found.", executablePath);
                 if (!string.Equals(Path.GetFileName(executablePath), "llama-server.exe", StringComparison.OrdinalIgnoreCase))
                     throw new ArgumentException("Only llama-server.exe may be launched.", nameof(executablePath));
+                if (!string.Equals(executablePath, trustedExecutablePath, StringComparison.OrdinalIgnoreCase))
+                    throw new UnauthorizedAccessException("Only the installed llama.cpp executable may be launched.");
                 if (!File.Exists(modelPath)) throw new FileNotFoundException("GGUF model was not found.", modelPath);
                 if (_processes.Values.Any(x => x.Port == port && !x.Process.HasExited))
                     throw new InvalidOperationException("The requested port is already managed by another llama.cpp process.");
-                if (!IsPortAvailable(port))
+                if (!IsPortAvailable(host, port))
                     throw new InvalidOperationException("The requested port is already in use.");
 
                 var process = new Process
@@ -55,6 +58,7 @@ namespace WelsonJS.Launcher
                 {
                     Id = Guid.NewGuid().ToString("N"),
                     Process = process,
+                    Pid = process.Id,
                     ExecutablePath = executablePath,
                     ModelPath = modelPath,
                     Host = host,
@@ -68,38 +72,52 @@ namespace WelsonJS.Launcher
 
         public List<Dictionary<string, object>> List()
         {
+            List<ManagedProcess> snapshot;
             lock (_sync)
             {
                 CleanupExited();
-                return _processes.Values.Select(ToInfo).ToList();
+                // Do not hold the manager lock while probing a listening socket.
+                snapshot = _processes.Values.ToList();
             }
+            return snapshot.Select(ToInfo).ToList();
         }
 
         public Dictionary<string, object> Get(string id)
         {
+            ManagedProcess item;
             lock (_sync)
             {
-                ManagedProcess item;
                 if (string.IsNullOrEmpty(id) || !_processes.TryGetValue(id, out item)) return null;
-                return ToInfo(item);
             }
+            return ToInfo(item);
         }
 
         public bool Stop(string id)
         {
+            ManagedProcess item;
             lock (_sync)
             {
-                ManagedProcess item;
                 if (string.IsNullOrEmpty(id) || !_processes.TryGetValue(id, out item)) return false;
-                if (!item.Process.HasExited)
-                {
-                    item.Process.Kill();
-                    item.Process.WaitForExit(5000);
-                }
-                item.Process.Dispose();
-                _processes.Remove(id);
-                return true;
             }
+
+            if (!item.Process.HasExited)
+            {
+                item.Process.Kill();
+                // Kill is asynchronous. Keep the record if the child does not
+                // exit within the bounded wait so it remains controllable.
+                if (!item.Process.WaitForExit(5000)) return true;
+            }
+
+            lock (_sync)
+            {
+                ManagedProcess current;
+                if (_processes.TryGetValue(id, out current) && object.ReferenceEquals(current, item))
+                {
+                    _processes.Remove(id);
+                    item.Process.Dispose();
+                }
+            }
+            return true;
         }
 
         private void CleanupExited()
@@ -125,17 +143,24 @@ namespace WelsonJS.Launcher
             return port;
         }
 
-        private static bool IsPortAvailable(int port)
+        private static bool IsPortAvailable(string host, int port)
         {
             TcpListener listener = null;
             try
             {
-                listener = new TcpListener(IPAddress.Loopback, port);
+                listener = new TcpListener(IPAddress.Parse(host), port);
                 listener.Start();
                 return true;
             }
             catch (SocketException) { return false; }
             finally { if (listener != null) listener.Stop(); }
+        }
+
+        public void Shutdown()
+        {
+            string[] ids;
+            lock (_sync) ids = _processes.Keys.ToArray();
+            foreach (var id in ids) Stop(id);
         }
 
         private static string BuildArguments(string host, int port, int contextSize, int threads, string modelPath)
@@ -150,10 +175,12 @@ namespace WelsonJS.Launcher
 
         private static Dictionary<string, object> ToInfo(ManagedProcess item)
         {
-            bool exited = item.Process.HasExited;
+            bool exited;
+            try { exited = item.Process.HasExited; }
+            catch (ObjectDisposedException) { exited = true; }
             return new Dictionary<string, object>
             {
-                ["id"] = item.Id, ["pid"] = item.Process.Id, ["running"] = !exited,
+                ["id"] = item.Id, ["pid"] = item.Pid, ["running"] = !exited,
                 ["host"] = item.Host, ["port"] = item.Port, ["portListening"] = !exited && IsPortListening(item.Host, item.Port),
                 ["executablePath"] = item.ExecutablePath, ["modelPath"] = item.ModelPath,
                 ["startedAtUtc"] = item.StartedAtUtc.ToString("o")
@@ -168,7 +195,7 @@ namespace WelsonJS.Launcher
 
         private sealed class ManagedProcess
         {
-            public string Id; public Process Process; public string ExecutablePath; public string ModelPath;
+            public string Id; public int Pid; public Process Process; public string ExecutablePath; public string ModelPath;
             public string Host; public int Port; public DateTime StartedAtUtc;
         }
     }
