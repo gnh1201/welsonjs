@@ -16,7 +16,7 @@ flowchart TD
     E -->|Yes| G[Anonymize data]
     G --> H[Send anonymized data only<br/>to remote LLM API]
     C -->|Unsafe| I[Block remote transmission]
-    I --> J[Local llamacpp<br/>localhost:8080]
+    I --> J[Launcher-managed local llamacpp]
 ```
 
 ## Components
@@ -78,7 +78,7 @@ Remote providers registered in the common engine include OpenAI, Anthropic, Groq
 
 Unsafe data is routed to the `llamacpp` provider instead of a remote provider.
 
-- Default address: `http://localhost:8080/v1/chat/completions`
+- The launcher allocates the local server port and returns it in the start response. The client uses the returned `host` and `port` for `/v1/chat/completions`.
 - Default fallback model: `hy_mt2_1_8b`
 
 The Unsafe path is therefore:
@@ -87,7 +87,7 @@ The Unsafe path is therefore:
 sequenceDiagram
     participant Engine as LanguageInferenceEngine
     participant Guard as Qwen3Guard<br/>(localhost:8081)
-    participant Local as llama.cpp<br/>(localhost:8080)
+    participant Local as launcher-managed llama.cpp
 
     Engine->>Guard: classify(message)
     Guard-->>Engine: Safety: Unsafe
@@ -95,7 +95,7 @@ sequenceDiagram
     Local-->>Engine: local response
 ```
 
-Qwen3Guard is the classification model. The llama.cpp server on port 8080 is the local response-generation model. They have different roles and ports.
+Qwen3Guard is the classification model. The launcher-managed llama.cpp server is the local response-generation model. They have different roles and may use different ports.
 
 ## Policy by classification
 
@@ -148,7 +148,7 @@ llamacpp
 qwen3guard_06b
 ```
 
-Unsafe requests also require a local generation model capable of serving the 8080 endpoint. Even when a remote provider is selected, Qwen3Guard always runs locally first.
+Unsafe requests require a launcher-managed local generation model. Even when a remote provider is selected, Qwen3Guard always runs locally first.
 
 ## Security scope
 

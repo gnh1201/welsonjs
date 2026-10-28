@@ -16,7 +16,7 @@ flowchart TD
     E -->|예| G[비식별화 수행]
     G --> H[비식별화된 데이터만 외부 LLM API]
     C -->|Unsafe| I[외부 전송 금지]
-    I --> J[로컬 llamacpp<br/>localhost:8080]
+    I --> J[런처 관리 로컬 llamacpp]
 ```
 
 ## 구성 요소
@@ -78,7 +78,7 @@ sequenceDiagram
 
 Unsafe 데이터는 외부 provider로 전달하지 않고 `llamacpp` provider로 라우팅한다.
 
-- 기본 주소: `http://localhost:8080/v1/chat/completions`
+- 런처가 사용 가능한 포트를 할당하고 응답한다. 클라이언트는 응답받은 `host`와 `port`로 `/v1/chat/completions`를 호출한다.
 - 기본 fallback 모델: `hy_mt2_1_8b`
 
 따라서 Unsafe 데이터의 흐름은 다음과 같다.
@@ -87,7 +87,7 @@ Unsafe 데이터는 외부 provider로 전달하지 않고 `llamacpp` provider�
 sequenceDiagram
     participant Engine as LanguageInferenceEngine
     participant Guard as Qwen3Guard<br/>(localhost:8081)
-    participant Local as llama.cpp<br/>(localhost:8080)
+    participant Local as 런처 관리 llama.cpp
 
     Engine->>Guard: classify(message)
     Guard-->>Engine: Safety: Unsafe
@@ -95,7 +95,7 @@ sequenceDiagram
     Local-->>Engine: local response
 ```
 
-Qwen3Guard는 판정 모델이고, llama.cpp의 8080 서버는 실제 응답을 생성하는 로컬 모델이다. 두 모델은 역할과 포트가 다르다.
+Qwen3Guard는 판정 모델이고, 런처가 관리하는 llama.cpp는 실제 응답을 생성하는 로컬 모델이다. 두 모델은 역할과 포트가 다를 수 있다.
 
 ## 등급별 정책
 
@@ -147,7 +147,7 @@ llamacpp
 qwen3guard_06b
 ```
 
-또한 Unsafe 요청을 로컬에서 처리하려면 8080 포트에 로컬 생성 모델을 실행할 수 있어야 한다. 외부 provider를 사용하더라도 Qwen3Guard는 항상 로컬에서 먼저 실행된다.
+또한 Unsafe 요청을 로컬에서 처리하려면 WelsonJS.Launcher를 통해 로컬 생성 모델을 실행해야 한다. 외부 provider를 사용하더라도 Qwen3Guard는 항상 로컬에서 먼저 실행된다.
 
 ## 보안 범위
 

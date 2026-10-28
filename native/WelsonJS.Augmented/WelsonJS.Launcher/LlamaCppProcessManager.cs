@@ -22,6 +22,7 @@ namespace WelsonJS.Launcher
                 CleanupExited();
                 host = NormalizeHost(host);
                 port = ValidatePort(port);
+                if (port == 0) port = FindAvailablePort(host);
                 contextSize = contextSize <= 0 ? 4096 : contextSize;
                 threads = threads < 0 ? 0 : threads;
                 executablePath = string.IsNullOrEmpty(executablePath)
@@ -139,8 +140,20 @@ namespace WelsonJS.Launcher
 
         private static int ValidatePort(int port)
         {
-            if (port < 1 || port > 65535) throw new ArgumentOutOfRangeException(nameof(port));
+            if (port < 0 || port > 65535) throw new ArgumentOutOfRangeException(nameof(port));
             return port;
+        }
+
+        private static int FindAvailablePort(string host)
+        {
+            TcpListener listener = null;
+            try
+            {
+                listener = new TcpListener(IPAddress.Parse(host), 0);
+                listener.Start();
+                return ((IPEndPoint)listener.LocalEndpoint).Port;
+            }
+            finally { if (listener != null) listener.Stop(); }
         }
 
         private static bool IsPortAvailable(string host, int port)

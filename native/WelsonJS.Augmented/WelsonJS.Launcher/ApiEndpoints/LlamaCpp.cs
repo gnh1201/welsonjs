@@ -49,7 +49,7 @@ namespace WelsonJS.Launcher.ApiEndpoints
                 if (input == null) throw new ArgumentException("Request body must be a JSON object.");
                 if (path.EndsWith("/start", StringComparison.OrdinalIgnoreCase))
                 {
-                    var result = _manager.Start(GetString(input, "modelPath", true), GetString(input, "executablePath", false), GetString(input, "host", false), GetInt(input, "port", 8080), GetInt(input, "contextSize", 4096), GetInt(input, "threads", 0));
+                    var result = _manager.Start(GetString(input, "modelPath", true), GetString(input, "executablePath", false), GetString(input, "host", false), GetInt(input, "port", 0), GetInt(input, "contextSize", 4096), GetInt(input, "threads", 0));
                     await Write(context, result, 201); return;
                 }
                 string id = GetString(input, "id", true);

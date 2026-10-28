@@ -12,13 +12,13 @@ Content-Type: application/json
 
 {
   "modelPath": "C:\\Users\\user\\AppData\\Roaming\\WelsonJS\\qwen3guard_06b\\Qwen3Guard-Gen-0.6B.Q4_K_M.gguf",
-  "port": 8081,
+  "port": 0,
   "contextSize": 4096,
   "threads": 0
 }
 ```
 
-`executablePath` is optional and defaults to `%APPDATA%\WelsonJS\llamacpp\llama-server.exe`. The launcher only accepts an executable named `llama-server.exe` and only allows binding to `localhost`, `127.0.0.1`, or `::1`.
+`port: 0` asks the launcher to allocate an available localhost port. The response is authoritative; clients must use the returned `host` and `port` when calling llama.cpp. `executablePath` is no longer a free-form executable location and must resolve to the installed `%APPDATA%\WelsonJS\llamacpp\llama-server.exe`.
 
 The response contains a launcher-managed `id`, process ID, port, model path, and `running`/`portListening` state.
 
@@ -47,6 +47,7 @@ Only processes started through this launcher instance can be stopped through thi
 ## Security and lifecycle
 
 - The API is intended for the local launcher HTTP listener.
+- JavaScript clients must request startup through this API; they must not launch `llama-server.exe` directly.
 - Arbitrary command arguments are not accepted; the launcher builds a fixed llama.cpp command line.
 - The launcher owns the child `llama-server.exe` process and can terminate it by managed ID.
 - The API does not expose a non-loopback bind address.
