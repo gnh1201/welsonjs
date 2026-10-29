@@ -18,17 +18,32 @@
             overflow: hidden;
         }
 
+        /* Ribbon, editor area and banner stack vertically; the editor area takes the rest. */
+        #app > .app {
+            display: flex;
+            flex-direction: column;
+        }
+
         #container {
             border: 1px solid grey;
-            height: calc(100% - 167px);
+            flex: 1 1 auto;
+            min-height: 0;
             display: flex;
             overflow: hidden;
+        }
+
+        /* min-width/min-height: 0 let the panes shrink below their content size when the
+           window gets smaller; otherwise Monaco's fixed-size content pushes the prompt
+           editor out of view. */
+        #editor, #mapView, #promptEditor {
+            min-width: 0;
+            min-height: 0;
         }
 
         #editor {
             flex: 3;
         }
-        
+
         #mapView {
             flex: 3;
         }
@@ -257,7 +272,9 @@
 
                         const instance = monaco.editor.create(containerRef.current, {
                             value: initialValue,
-                            language: 'javascript'
+                            language: 'javascript',
+                            // re-layout whenever the container size changes (window resize, map toggle)
+                            automaticLayout: true
                         });
 
                         instance.onDidChangeModelContent(() => {
@@ -444,15 +461,9 @@
                         settingsRef.current = result.settings;
                     });
 
+                // The panes are sized by the flex layout; Monaco only needs to re-measure.
                 const resizeEditor = () => {
-                    if (editorRef.current) {
-                        const ribbon = document.querySelector('nav')?.offsetHeight || 0;
-                        const banner = document.querySelector('.banner')?.offsetHeight || 0;
-                        const h = document.documentElement.clientHeight - ribbon - banner;
-                        const editorDiv = document.getElementById('editor');
-                        if (editorDiv) editorDiv.style.height = h + 'px';
-                        if (editorRef.current) editorRef.current.layout();
-                    }
+                    if (editorRef.current) editorRef.current.layout();
                 };
 
                 const pushPromptMessage = (role, content) => {
