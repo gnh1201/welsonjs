@@ -222,9 +222,24 @@
                         return;
 
                     require(['vs/editor/editor.main'], () => {
+                        const defaultValue = ['// hello.js', 'function main() {', '    console.log("Hello World");', '}', '', 'exports.main = main;', '', 'exports.VERSIONINFO = "Hello World (hello.js) version 0.1";', 'exports.AUTHOR = "oss@catswords.re.kr";', 'exports.global = global;', 'exports.require = global.require;'].join('\n');
+                        let initialValue = defaultValue;
+
+                        try {
+                            const savedValue = localStorage.getItem('welsonjs.editor.source');
+                            if (savedValue !== null)
+                                initialValue = savedValue;
+                        } catch (e) {}
+
                         const instance = monaco.editor.create(containerRef.current, {
-                            value: ['// hello.js', 'function main() {', '    console.log("Hello World");', '}', '', 'exports.main = main;', '', 'exports.VERSIONINFO = "Hello World (hello.js) version 0.1";', 'exports.AUTHOR = "oss@catswords.re.kr";', 'exports.global = global;', 'exports.require = global.require;'].join('\n'),
+                            value: initialValue,
                             language: 'javascript'
+                        });
+
+                        instance.onDidChangeModelContent(() => {
+                            try {
+                                localStorage.setItem('welsonjs.editor.source', instance.getValue());
+                            } catch (e) {}
                         });
 
                         monaco.languages.registerCompletionItemProvider('javascript', {
