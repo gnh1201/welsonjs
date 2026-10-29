@@ -30,6 +30,10 @@ WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)*** + :h
 
 **Note**: The default license for this project is GPL 3.0. However, if the GPL 3.0 license is not compatible with Microsoft products, it is subject to the MS-RL license.
 
+## 🎬 Demo (WelsonJS MCP)
+
+https://catswords.blob.core.windows.net/welsonjs/videos/welsonjs-mcp-powerpoint-2026.mp4
+
 ## Collaborations
 * :octocat: [GitHub Sponsors](https://github.com/sponsors/gnh1201?utm_source=welsonjs), :euro: [Liberapay](https://liberapay.com/catswords?utm_source=welsonjs), :coffee: [Buy me a coffee](https://buymeacoffee.com/catswords?utm_source=welsonjs)
 * <img src="https://catswords.blob.core.windows.net/welsonjs/images/serpapi_logo_32.png?utm_source=welsonjs" height="32" alt="SerpApi"/> [SerpApi: Search API](https://serpapi.com/?utm_source=welsonjs) - Scrape search engine results with a simple API.
