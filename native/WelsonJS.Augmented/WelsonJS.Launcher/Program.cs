@@ -602,13 +602,24 @@ namespace WelsonJS.Launcher
 
         public static string GetWorkingDirectory(string instanceId, bool followSubDirectory = false)
         {
-            string workingDirectory = Path.Combine(GetAppDataPath(), instanceId);
+            string instanceDirectoryName = ".welsonjs_" + instanceId;
+            string workingDirectory = Path.Combine(GetAppDataPath(), instanceDirectoryName);
+            string legacyWorkingDirectory = Path.Combine(GetAppDataPath(), instanceId);
 
             if (followSubDirectory)
             {
                 if (!Directory.Exists(workingDirectory))
                 {
-                    workingDirectory = Path.Combine(Path.GetTempPath(), instanceId);
+                    if (Directory.Exists(legacyWorkingDirectory))
+                    {
+                        workingDirectory = legacyWorkingDirectory;
+                    }
+                    else
+                    {
+                        workingDirectory = Path.Combine(Path.GetTempPath(), instanceDirectoryName);
+                        if (!Directory.Exists(workingDirectory))
+                            workingDirectory = Path.Combine(Path.GetTempPath(), instanceId);
+                    }
                 }
 
                 workingDirectory = GetFinalDirectory(workingDirectory);
