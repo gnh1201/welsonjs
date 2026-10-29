@@ -469,9 +469,6 @@
                         appendTextToEditor('\n// Terminal window was blocked by the browser. Please allow popups for localhost.');
                     }
                     axios.post('/welsonjs-instance/run', { script: script })
-                        .then(response => {
-                            appendTextToEditor('\n// instance terminal opened (PID: ' + (response.data.pid || 'unknown') + ')');
-                        })
                         .catch(error => appendTextToEditor('\n// Script execution failed: ' + (error.message || error)));
                 };
 

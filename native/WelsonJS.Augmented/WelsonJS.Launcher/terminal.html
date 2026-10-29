@@ -36,7 +36,7 @@
                         if (data.instanceId && data.instanceId !== instanceId) {
                             instanceId = data.instanceId;
                             sequence = 0;
-                            terminal.echo('--- instance ' + instanceId + ' ---');
+                            terminal.echo('--- instance ' + instanceId + ' (PID: ' + (data.pid || 'unknown') + ') ---');
                         }
                         var lines = data.lines || [];
                         lines.forEach(function (line) {
