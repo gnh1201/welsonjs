@@ -149,7 +149,7 @@
             }
 
             function RibbonMenu({
-                onOpenFileClick, onSaveFileClick, onCopliotClick, onAzureCognitiveClick,
+                onOpenFileClick, onSaveFileClick, onAzureCognitiveClick,
                 onSavePromptClick, onLoadPromptClick, onQueryWhoisClick, onQueryDnsClick,
                 onQueryIpClick, onMapClick, onRunScriptClick, onTerminalClick,
                 onExcelExampleClick, onPowerPointExampleClick, onWordExampleClick, onHwpExampleClick,
@@ -183,7 +183,6 @@
                 ];
 
                 const cognitiveToolsButtons = [
-                    { id: 'btnCopilot', icon: 'mif-rocket', caption: 'Copilot', onClick: onCopliotClick },
                     { id: 'btnAzureCognitive', icon: 'mif-rocket', caption: 'Azure', onClick: onAzureCognitiveClick },
                     { id: 'btnSavePrompt', icon: 'mif-floppy-disks', caption: 'Save', onClick: onSavePromptClick },
                     { id: 'btnLoadPrompt', icon: 'mif-file-upload', caption: 'Load', onClick: onLoadPromptClick }
@@ -669,96 +668,6 @@
                     document.body.removeChild(a);
                 };
 
-                const sendMessageToCopilot = () => {
-                    const promptMessage = prompt("Enter a prompt message:", '');
-                    if (!promptMessage || promptMessage.trim() == '') {
-                        alert("A prompt message is required.");
-                        return;
-                    }
-
-                    appendTextToEditor(`\n// ${promptMessage}... Generating text with Copilot...`);
-                    pushPromptMessage("user", promptMessage);
-
-                    (async () => {
-                        const targetWsUrl = await getTargetByUrl('copilot.microsoft.com');
-                        if (targetWsUrl) {
-                            await _sendMessageToCopilot(targetWsUrl, promptMessage);
-                        } else {
-                            alert("Microsoft Copilot not running. Please visit copilot.microsoft.com first.");
-                        }
-                    })();
-                };
-
-                const _sendMessageToCopilot = async (wsUrl, promptMessage) => {
-                    const socket = new WebSocket(wsUrl);
-                    const steps = [
-                        {
-                            id: 1,
-                            method: 'Input.insertText',
-                            params: {
-                                text: promptMessage
-                            }
-                        },
-                        {
-                            id: 2,
-                            method: 'Input.dispatchKeyEvent',
-                            params: {
-                                type: 'keyDown',
-                                key: 'Enter',
-                                code: 'Enter'
-                            }
-                        },
-                        {
-                            id: 3,
-                            method: 'Runtime.evaluate',
-                            params: {
-                                expression: '((e)=>e[e.length-1].querySelector("code")?.innerText||e[e.length-1].innerText)(document.querySelectorAll("[data-content=ai-message]"))'
-                            }
-                        }
-                    ];
-
-                    socket.onopen = () => {
-                        steps.forEach((step) => {
-                            if (step.id == 3) {
-                                setTimeout(() => {
-                                    socket.send(JSON.stringify(step));
-                                }, 9000);
-                            } else {
-                                socket.send(JSON.stringify(step));
-                            }
-                        });
-                    };
-
-                    socket.onmessage = (event) => {
-                        const response = JSON.parse(event.data);
-                        console.log("Sent successfully:", response.result);
-
-                        if (response.id == 3) {
-                            const responseContent = response.result.result.value;
-
-                            appendTextToEditor("/*\n" + responseContent + "\n*/");
-                            pushPromptMessage("assistant", responseContent);
-
-                            socket.close();
-                        }
-                    };
-                };
-
-                const getTargetByUrl = async (urlPart) => {
-                    const response = await fetch(`/devtools/json`);
-                    const targets = await response.json();
-
-                    const target = targets.find(target => target.url.includes(urlPart));
-
-                    if (target) {
-                        console.log(`Found target: ${target.title} (${target.id})`);
-                        return target.webSocketDebuggerUrl;
-                    } else {
-                        console.log('Target not found');
-                        return null;
-                    }
-                };
-
                 const sendMessageToAzureCognitive = () => {
                     const promptMessage = prompt("Enter a prompt message:", '');
                     if (!promptMessage || promptMessage.trim() == '') {
@@ -1008,7 +917,6 @@
                     _e(RibbonMenu, {
                         onOpenFileClick: openFile,
                         onSaveFileClick: saveFile,
-                        onCopliotClick: sendMessageToCopilot,
                         onAzureCognitiveClick: sendMessageToAzureCognitive,
                         onSavePromptClick: savePromptMessages,
                         onLoadPromptClick: loadPromptMessages,
