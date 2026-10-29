@@ -32,7 +32,7 @@ WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)*** + :h
 
 ## 🎬 Demo (WelsonJS MCP)
 
-<video src="https://catswords.blob.core.windows.net/welsonjs/videos/welsonjs-mcp-powerpoint-2026.mp4"/>
+<video src="https://catswords.blob.core.windows.net/welsonjs/videos/welsonjs-mcp-powerpoint-2026.mp4"></video>
 
 ## Collaborations
 * :octocat: [GitHub Sponsors](https://github.com/sponsors/gnh1201?utm_source=welsonjs), :euro: [Liberapay](https://liberapay.com/catswords?utm_source=welsonjs), :coffee: [Buy me a coffee](https://buymeacoffee.com/catswords?utm_source=welsonjs)
