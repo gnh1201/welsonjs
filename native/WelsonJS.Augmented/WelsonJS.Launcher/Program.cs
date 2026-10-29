@@ -256,10 +256,11 @@ namespace WelsonJS.Launcher
             // get current time
             DateTime now = DateTime.Now;
 
-            // record to the metadata database
-            using (InstancesForm instancesForm = new InstancesForm())
+            // record to the metadata database (opening it can fail, e.g. while the
+            // database is locked by another launcher process)
+            try
             {
-                try
+                using (InstancesForm instancesForm = new InstancesForm())
                 {
                     instancesForm.GetDatabaseInstance().Insert(new Dictionary<string, object>
                     {
@@ -267,10 +268,10 @@ namespace WelsonJS.Launcher
                         ["FirstDeployTime"] = now
                     }, out _);
                 }
-                catch (Exception ex)
-                {
-                    _logger.Error($"Failed to record first deploy time: {ex.Message}");
-                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Failed to record first deploy time: {ex.Message}");
             }
 
             // record to the instance directory
@@ -642,6 +643,7 @@ namespace WelsonJS.Launcher
         {
             Uri resourceServerUri = new Uri(GetAppConfig("ResourceServerPrefix"));
             Uri devToolsUri = new Uri(GetAppConfig("ChromiumDevToolsPrefix"));
+            string browserPath = ResolveChromiumExecutable();
 
             string userDataDir = Path.Combine(GetAppDataPath(), "EdgeUserProfile");
             string remoteAllowOrigins = $"{resourceServerUri.Scheme}://{resourceServerUri.Host}:{resourceServerUri.Port}";
@@ -653,16 +655,64 @@ namespace WelsonJS.Launcher
             string[] arguments = {
                 isAppMode ? $"\"--app={url}\"" : $"\"{url}\"",
                 $"--remote-debugging-port={remoteDebuggingPort}",
-                $"--remote-allow-origins={remoteAllowOrigins}",  // for security reason
+                $"--remote-allow-origins={remoteAllowOrigins}",
                 $"--user-data-dir=\"{userDataDir}\""
             };
 
             Process.Start(new ProcessStartInfo
             {
-                FileName = Program.GetAppConfig("ChromiumExecutablePath"),
+                FileName = browserPath,
                 Arguments = string.Join(" ", arguments),
                 UseShellExecute = true
             });
+        }
+
+        private static string ResolveChromiumExecutable()
+        {
+            var candidates = new List<string>
+            {
+                GetAppConfig("ChromiumExecutablePath"),
+                "msedge.exe",
+                "chrome.exe",
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Microsoft", "Edge", "Application", "msedge.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Microsoft", "Edge", "Application", "msedge.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "Google", "Chrome", "Application", "chrome.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Google", "Chrome", "Application", "chrome.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Google", "Chrome", "Application", "chrome.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Google", "Chrome Beta", "Application", "chrome.exe"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Google", "Chrome SxS", "Application", "chrome.exe")
+            };
+
+            foreach (string candidate in candidates)
+            {
+                if (string.IsNullOrWhiteSpace(candidate))
+                    continue;
+
+                string resolved = FindExecutable(candidate);
+                if (resolved != null)
+                    return resolved;
+            }
+
+            throw new FileNotFoundException("Microsoft Edge or Google Chrome was not found. Install one of them to open the WelsonJS editor.");
+        }
+
+        private static string FindExecutable(string candidate)
+        {
+            if (Path.IsPathRooted(candidate))
+                return File.Exists(candidate) ? candidate : null;
+
+            string path = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
+            foreach (string directory in path.Split(Path.PathSeparator))
+            {
+                if (string.IsNullOrWhiteSpace(directory))
+                    continue;
+
+                string fullPath = Path.Combine(directory.Trim(), candidate);
+                if (File.Exists(fullPath))
+                    return fullPath;
+            }
+
+            return null;
         }
 
         public static string GetAppConfig(string key)

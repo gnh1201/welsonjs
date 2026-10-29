@@ -18,17 +18,32 @@
             overflow: hidden;
         }
 
+        /* Ribbon, editor area and banner stack vertically; the editor area takes the rest. */
+        #app > .app {
+            display: flex;
+            flex-direction: column;
+        }
+
         #container {
             border: 1px solid grey;
-            height: calc(100% - 167px);
+            flex: 1 1 auto;
+            min-height: 0;
             display: flex;
             overflow: hidden;
+        }
+
+        /* min-width/min-height: 0 let the panes shrink below their content size when the
+           window gets smaller; otherwise Monaco's fixed-size content pushes the prompt
+           editor out of view. */
+        #editor, #mapView, #promptEditor {
+            min-width: 0;
+            min-height: 0;
         }
 
         #editor {
             flex: 3;
         }
-        
+
         #mapView {
             flex: 3;
         }
@@ -134,9 +149,11 @@
             }
 
             function RibbonMenu({
-                onOpenFileClick, onSaveFileClick, onCopliotClick, onAzureCognitiveClick,
+                onOpenFileClick, onSaveFileClick, onAzureCognitiveClick,
                 onSavePromptClick, onLoadPromptClick, onQueryWhoisClick, onQueryDnsClick,
-                onQueryIpClick, onMapClick, onRunScriptClick
+                onQueryIpClick, onMapClick, onRunScriptClick, onTerminalClick,
+                onExcelExampleClick, onPowerPointExampleClick, onWordExampleClick, onHwpExampleClick,
+                onDiscordClick, onKakaoClick, onWorldTouristExampleClick
             }) {
                 const fileButtons = [
                     {
@@ -150,11 +167,22 @@
                         icon: 'mif-floppy-disks',
                         caption: 'Save File',
                         onClick: onSaveFileClick
+                    },
+                    {
+                        id: 'btnRunScript',
+                        icon: 'mif-play',
+                        caption: 'Run File',
+                        onClick: onRunScriptClick
+                    },
+                    {
+                        id: 'btnTerminal',
+                        icon: 'mif-prompt',
+                        caption: 'Terminal',
+                        onClick: onTerminalClick
                     }
                 ];
 
                 const cognitiveToolsButtons = [
-                    { id: 'btnCopilot', icon: 'mif-rocket', caption: 'Copilot', onClick: onCopliotClick },
                     { id: 'btnAzureCognitive', icon: 'mif-rocket', caption: 'Azure', onClick: onAzureCognitiveClick },
                     { id: 'btnSavePrompt', icon: 'mif-floppy-disks', caption: 'Save', onClick: onSavePromptClick },
                     { id: 'btnLoadPrompt', icon: 'mif-file-upload', caption: 'Load', onClick: onLoadPromptClick }
@@ -167,8 +195,17 @@
                     { id: 'btnMap', icon: 'mif-rocket', caption: 'Map', onClick: onMapClick }
                 ];
 
-                const runtimeButtons = [
-                    { id: 'btnRunScript', icon: 'mif-play', caption: 'Run', onClick: onRunScriptClick }
+                const examplesButtons = [
+                    { id: 'btnExcelExample', icon: 'mif-file-text', caption: 'Excel', onClick: onExcelExampleClick },
+                    { id: 'btnPowerPointExample', icon: 'mif-file-text', caption: 'PowerPoint', onClick: onPowerPointExampleClick },
+                    { id: 'btnWordExample', icon: 'mif-file-text', caption: 'Word', onClick: onWordExampleClick },
+                    { id: 'btnHwpExample', icon: 'mif-file-text', caption: 'HWP', onClick: onHwpExampleClick },
+                    { id: 'btnWorldTouristExample', icon: 'mif-map2', caption: 'Places', onClick: onWorldTouristExampleClick }
+                ];
+
+                const communityButtons = [
+                    { id: 'btnDiscord', icon: 'mif-earth', caption: 'Discord', onClick: onDiscordClick },
+                    { id: 'btnKakao', icon: 'mif-earth', caption: 'Kakao+', onClick: onKakaoClick }
                 ];
 
                 return _e(
@@ -183,7 +220,8 @@
                             _e(Group, { title: 'File', buttons: fileButtons }),
                             _e(Group, { title: 'Cognitive Tools (AI)', buttons: cognitiveToolsButtons }),
                             _e(Group, { title: 'Network Tools', buttons: networkToolsButtons }),
-                            _e(Group, { title: 'Runtime', buttons: runtimeButtons })
+                            _e(Group, { title: 'Office Automation', buttons: examplesButtons }),
+                            _e(Group, { title: 'Community', buttons: communityButtons })
                         )
                     )
                 );
@@ -233,7 +271,9 @@
 
                         const instance = monaco.editor.create(containerRef.current, {
                             value: initialValue,
-                            language: 'javascript'
+                            language: 'javascript',
+                            // re-layout whenever the container size changes (window resize, map toggle)
+                            automaticLayout: true
                         });
 
                         instance.onDidChangeModelContent(() => {
@@ -410,6 +450,7 @@
                 const fileNameRef = React.useRef('hello.js');
                 const promptMessagesRef = React.useRef([]);
                 const mapViewRef = React.useRef(null);
+                const coordinateMarkersRef = React.useRef([]);
                 const [showMap, setShowMap] = React.useState(false);
 
                 const fetchSettings = () => axios.get(`/settings`)
@@ -419,15 +460,9 @@
                         settingsRef.current = result.settings;
                     });
 
+                // The panes are sized by the flex layout; Monaco only needs to re-measure.
                 const resizeEditor = () => {
-                    if (editorRef.current) {
-                        const ribbon = document.querySelector('nav')?.offsetHeight || 0;
-                        const banner = document.querySelector('.banner')?.offsetHeight || 0;
-                        const h = document.documentElement.clientHeight - ribbon - banner;
-                        const editorDiv = document.getElementById('editor');
-                        if (editorDiv) editorDiv.style.height = h + 'px';
-                        if (editorRef.current) editorRef.current.layout();
-                    }
+                    if (editorRef.current) editorRef.current.layout();
                 };
 
                 const pushPromptMessage = (role, content) => {
@@ -448,7 +483,7 @@
 
                 const appendTextToEditor = (text) => {
                     const editor = editorRef.current;
-                    const position = editor.getPosition();
+                    const position = editor.getPosition() || { lineNumber: 1, column: 1 };
                     const range = new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column);
                     editor.executeEdits('', [{
                         range: range,
@@ -458,19 +493,133 @@
                     resizeEditor();
                 };
 
+                const insertExample = (fileName, source) => {
+                    const editor = editorRef.current;
+                    if (!editor)
+                        return;
+
+                    const position = editor.getPosition();
+                    const range = new monaco.Range(
+                        position.lineNumber,
+                        position.column,
+                        position.lineNumber,
+                        position.column
+                    );
+                    editor.executeEdits('insert-example', [{
+                        range: range,
+                        text: '\n\n' + source + '\n',
+                        forceMoveMarkers: true
+                    }]);
+                    fileNameRef.current = fileName;
+                };
+
+                const showExcelExample = () => insertExample('excel-example.js', [
+                    '// Excel automation example',
+                    'var Office = require("lib/msoffice");',
+                    '',
+                    'function main() {',
+                    '    var excel = new Office.Excel();',
+                    '    excel.open();',
+                    '    excel.getCellByPosition(1, 1).setValue("Hello from WelsonJS");',
+                    '}',
+                    '',
+                    'exports.main = main;'
+                ].join('\n'));
+
+                const showPowerPointExample = () => insertExample('powerpoint-example.js', [
+                    '// PowerPoint automation example',
+                    'var Office = require("lib/msoffice");',
+                    '',
+                    'function main() {',
+                    '    var powerpoint = new Office.PowerPoint();',
+                    '    powerpoint.open();',
+                    '    var slide = powerpoint.addSlide();',
+                    '    slide.setTitle("Hello from WelsonJS");',
+                    '}',
+                    '',
+                    'exports.main = main;'
+                ].join('\n'));
+
+                const showWordExample = () => insertExample('word-example.js', [
+                    '// Word automation example',
+                    'var Office = require("lib/msoffice");',
+                    '',
+                    'function main() {',
+                    '    var word = new Office.Word();',
+                    '    word.open();',
+                    '    word.setText("Hello from WelsonJS");',
+                    '}',
+                    '',
+                    'exports.main = main;'
+                ].join('\n'));
+
+                const showHwpExample = () => insertExample('hwp-example.js', [
+                    '// Hancom Hangul (HWP) automation example',
+                    'var HWP = require("lib/hwp");',
+                    '',
+                    'function main() {',
+                    '    var hwp = HWP.create({ visible: true });',
+                    '    hwp.getInstance();',
+                    '    hwp.insertText("WelsonJS 한글 문서 예제");',
+                    '}',
+                    '',
+                    'exports.main = main;'
+                ].join('\n'));
+
+                const showWorldTouristExample = () => {
+                    insertExample('world-tourist-coordinates.js', [
+                        '// Major tourist destinations in Korea and around the world',
+                        'var places = [',
+                        '    { name: "Gyeongbokgung Palace", coordinate: [37.5796, 126.9770] },',
+                        '    { name: "N Seoul Tower", coordinate: [37.5512, 126.9882] },',
+                        '    { name: "Eiffel Tower", coordinate: [48.8584, 2.2945] },',
+                        '    { name: "Statue of Liberty", coordinate: [40.6892, -74.0445] },',
+                        '    { name: "Big Ben", coordinate: [51.5007, -0.1246] },',
+                        '    { name: "Taj Mahal", coordinate: [27.1751, 78.0421] },',
+                        '    { name: "Sydney Opera House", coordinate: [-33.8568, 151.2153] },',
+                        '    { name: "Colosseum", coordinate: [41.8902, 12.4922] },',
+                        '    { name: "Machu Picchu", coordinate: [-13.1631, -72.5450] },',
+                        '    { name: "Great Wall of China", coordinate: [40.4319, 116.5704] }',
+                        '];',
+                        '',
+                        'function main() {',
+                        '    console.log("World tourist destination coordinates loaded:", places.length);',
+                        '}',
+                        '',
+                        'exports.main = main;'
+                    ].join('\n'));
+                };
+
                 const runScript = () => {
                     const script = editorRef.current ? editorRef.current.getValue() : '';
                     if (!script.trim()) {
                         appendTextToEditor('\n// Script is empty.');
                         return;
                     }
-                    const terminalWindow = window.open('/terminal.html', 'WelsonJSInstanceTerminal', 'width=1000,height=700,resizable=yes,scrollbars=yes');
+                    // Open the window inside the click handler so popup blockers allow it,
+                    // then attach it to the interactive session once the instance starts.
+                    const terminalWindow = openTerminalWindow('wait=1');
+                    axios.post('/welsonjs-instance/run', { script: script })
+                        .then(response => {
+                            if (terminalWindow && response.data && response.data.sessionId) {
+                                terminalWindow.location.href = '/terminal.html?session=' + encodeURIComponent(response.data.sessionId);
+                            }
+                        })
+                        .catch(error => appendTextToEditor('\n// Script execution failed: ' + (error.message || error)));
+                };
+
+                const openTerminalWindow = (query) => {
+                    const terminalWindow = window.open('/terminal.html' + (query ? '?' + query : ''), 'WelsonJSInstanceTerminal', 'width=1100,height=720,resizable=yes,scrollbars=no');
                     if (!terminalWindow) {
                         appendTextToEditor('\n// Terminal window was blocked by the browser. Please allow popups for localhost.');
                     }
-                    axios.post('/welsonjs-instance/run', { script: script })
-                        .catch(error => appendTextToEditor('\n// Script execution failed: ' + (error.message || error)));
+                    return terminalWindow;
                 };
+
+                const openTerminal = () => openTerminalWindow('');
+
+                // Lets the terminal window deploy the current editor content into each new instance.
+                window.getWelsonJSEditorScript = () => editorRef.current ? editorRef.current.getValue() : '';
 
                 const openFile = () => {
                     const fileInput = document.createElement('input');
@@ -517,96 +666,6 @@
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
-                };
-
-                const sendMessageToCopilot = () => {
-                    const promptMessage = prompt("Enter a prompt message:", '');
-                    if (!promptMessage || promptMessage.trim() == '') {
-                        alert("A prompt message is required.");
-                        return;
-                    }
-
-                    appendTextToEditor(`\n// ${promptMessage}... Generating text with Copilot...`);
-                    pushPromptMessage("user", promptMessage);
-
-                    (async () => {
-                        const targetWsUrl = await getTargetByUrl('copilot.microsoft.com');
-                        if (targetWsUrl) {
-                            await _sendMessageToCopilot(targetWsUrl, promptMessage);
-                        } else {
-                            alert("Microsoft Copilot not running. Please visit copilot.microsoft.com first.");
-                        }
-                    })();
-                };
-
-                const _sendMessageToCopilot = async (wsUrl, promptMessage) => {
-                    const socket = new WebSocket(wsUrl);
-                    const steps = [
-                        {
-                            id: 1,
-                            method: 'Input.insertText',
-                            params: {
-                                text: promptMessage
-                            }
-                        },
-                        {
-                            id: 2,
-                            method: 'Input.dispatchKeyEvent',
-                            params: {
-                                type: 'keyDown',
-                                key: 'Enter',
-                                code: 'Enter'
-                            }
-                        },
-                        {
-                            id: 3,
-                            method: 'Runtime.evaluate',
-                            params: {
-                                expression: '((e)=>e[e.length-1].querySelector("code")?.innerText||e[e.length-1].innerText)(document.querySelectorAll("[data-content=ai-message]"))'
-                            }
-                        }
-                    ];
-
-                    socket.onopen = () => {
-                        steps.forEach((step) => {
-                            if (step.id == 3) {
-                                setTimeout(() => {
-                                    socket.send(JSON.stringify(step));
-                                }, 9000);
-                            } else {
-                                socket.send(JSON.stringify(step));
-                            }
-                        });
-                    };
-
-                    socket.onmessage = (event) => {
-                        const response = JSON.parse(event.data);
-                        console.log("Sent successfully:", response.result);
-
-                        if (response.id == 3) {
-                            const responseContent = response.result.result.value;
-
-                            appendTextToEditor("/*\n" + responseContent + "\n*/");
-                            pushPromptMessage("assistant", responseContent);
-
-                            socket.close();
-                        }
-                    };
-                };
-
-                const getTargetByUrl = async (urlPart) => {
-                    const response = await fetch(`/devtools/json`);
-                    const targets = await response.json();
-
-                    const target = targets.find(target => target.url.includes(urlPart));
-
-                    if (target) {
-                        console.log(`Found target: ${target.title} (${target.id})`);
-                        return target.webSocketDebuggerUrl;
-                    } else {
-                        console.log('Target not found');
-                        return null;
-                    }
                 };
 
                 const sendMessageToAzureCognitive = () => {
@@ -785,9 +844,62 @@
                     });
                 };
                 
+                const extractCoordinates = (source) => {
+                    const coordinates = [];
+                    const seen = {};
+                    const pattern = /(-?\d{1,3}(?:\.\d+)?)\s*[,;]\s*(-?\d{1,3}(?:\.\d+)?)/g;
+                    let match;
+
+                    while ((match = pattern.exec(source || '')) !== null) {
+                        const latitude = Number(match[1]);
+                        const longitude = Number(match[2]);
+                        if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180)
+                            continue;
+
+                        const key = latitude + ',' + longitude;
+                        if (!seen[key]) {
+                            seen[key] = true;
+                            coordinates.push({ latitude: latitude, longitude: longitude });
+                        }
+                    }
+
+                    return coordinates;
+                };
+
+                const plotEditorCoordinates = () => {
+                    const map = mapViewRef.current;
+                    if (!map || typeof L === 'undefined')
+                        return;
+
+                    coordinateMarkersRef.current.forEach(marker => map.removeLayer(marker));
+                    coordinateMarkersRef.current = [];
+
+                    const coordinates = extractCoordinates(editorRef.current ? editorRef.current.getValue() : '');
+                    const bounds = [];
+                    coordinates.forEach(coordinate => {
+                        const latlng = [coordinate.latitude, coordinate.longitude];
+                        const marker = L.marker(latlng)
+                            .addTo(map)
+                            .bindPopup('Coordinate: ' + coordinate.latitude + ', ' + coordinate.longitude);
+                        coordinateMarkersRef.current.push(marker);
+                        bounds.push(latlng);
+                    });
+
+                    if (bounds.length === 1)
+                        map.setView(bounds[0], 14);
+                    else if (bounds.length > 1)
+                        map.fitBounds(bounds, { padding: [30, 30] });
+                };
+
                 function toggleMap() {
-                    setShowMap(v => !v);
+                    const nextVisible = !showMap;
+                    setShowMap(nextVisible);
+                    if (nextVisible)
+                        setTimeout(plotEditorCoordinates, 100);
                 }
+
+                const openDiscord = () => navigate('https://discord.gg/XKG5CjtXEj?utm_source=welsonjs');
+                const openKakao = () => navigate('https://pf.kakao.com/_mNxisj');
 
                 React.useEffect(() => {
                     window.addEventListener('resize', () => {
@@ -805,7 +917,6 @@
                     _e(RibbonMenu, {
                         onOpenFileClick: openFile,
                         onSaveFileClick: saveFile,
-                        onCopliotClick: sendMessageToCopilot,
                         onAzureCognitiveClick: sendMessageToAzureCognitive,
                         onSavePromptClick: savePromptMessages,
                         onLoadPromptClick: loadPromptMessages,
@@ -814,6 +925,14 @@
                         onQueryIpClick: queryIp,
                         onMapClick: toggleMap,
                         onRunScriptClick: runScript,
+                        onTerminalClick: openTerminal,
+                        onExcelExampleClick: showExcelExample,
+                        onPowerPointExampleClick: showPowerPointExample,
+                        onWordExampleClick: showWordExample,
+                        onHwpExampleClick: showHwpExample,
+                        onDiscordClick: openDiscord,
+                        onKakaoClick: openKakao,
+                        onWorldTouristExampleClick: showWorldTouristExample,
                     }),
                     _e('div', { id: 'container' },
                         _e(Editor, { editorRef: editorRef, visible: !showMap }),

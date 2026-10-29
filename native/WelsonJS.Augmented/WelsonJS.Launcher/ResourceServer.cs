@@ -31,6 +31,8 @@ namespace WelsonJS.Launcher
         private readonly SemaphoreSlim _requestSlots = new SemaphoreSlim(32, 32);
         private readonly ApiEndpoints.LlamaCpp _llamaCppEndpoint;
         private readonly ApiEndpoints.WelsonJsInstance _welsonJsInstanceEndpoint;
+        private readonly ApiEndpoints.Terminal _terminalEndpoint;
+        private readonly TerminalSessionManager _terminalSessions = new TerminalSessionManager();
         private BlobConfig _blobConfig;
         private readonly ILogger _logger;
 
@@ -79,9 +81,16 @@ namespace WelsonJS.Launcher
             _apis.Add(_llamaCppEndpoint);
             _welsonJsInstanceEndpoint = new ApiEndpoints.WelsonJsInstance(this, _httpClient, _logger);
             _apis.Add(_welsonJsInstanceEndpoint);
+            _terminalEndpoint = new ApiEndpoints.Terminal(this, _httpClient, _logger);
+            _apis.Add(_terminalEndpoint);
 
             // Register the prefix
             _listener.Prefixes.Add(prefix);
+        }
+
+        public TerminalSessionManager TerminalSessions
+        {
+            get { return _terminalSessions; }
         }
 
         public string GetPrefix()
@@ -113,6 +122,7 @@ namespace WelsonJS.Launcher
             if (_cts != null) _cts.Cancel();
             _llamaCppEndpoint.Shutdown();
             _welsonJsInstanceEndpoint.Shutdown();
+            _terminalEndpoint.Shutdown();
             _listener.Stop();
 
             MessageBox.Show("Server stopped.");
@@ -535,6 +545,28 @@ namespace WelsonJS.Launcher
             }
 
             _allowedOrigins = Array.Empty<string>();
+        }
+
+        /// <summary>
+        /// Returns true when a request may drive local processes: it must target a
+        /// loopback host (which also defeats DNS rebinding), and a browser-supplied
+        /// Origin must be this server's own origin or an explicitly allowed one.
+        /// A wildcard CORS policy never qualifies.
+        /// </summary>
+        public static bool IsTrustedLocalRequest(HttpListenerContext context)
+        {
+            Uri url = context?.Request?.Url;
+            if (url == null || !url.IsLoopback)
+                return false;
+
+            string origin = context.Request.Headers["Origin"];
+            if (string.IsNullOrEmpty(origin))
+                return true; // Not a cross-site browser request.
+
+            if (string.Equals(origin, url.GetLeftPart(UriPartial.Authority), StringComparison.OrdinalIgnoreCase))
+                return true;
+
+            return (_allowedOrigins ?? Array.Empty<string>()).Contains(origin, StringComparer.Ordinal);
         }
 
         private static bool TryApplyCors(HttpListenerContext context)

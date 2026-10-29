@@ -95,6 +95,7 @@
   <ItemGroup>
     <Compile Include="ApiEndpoints\JsonRpc2.cs" />
     <Compile Include="ApiEndpoints\LlamaCpp.cs" />
+    <Compile Include="ApiEndpoints\Terminal.cs" />
     <Compile Include="ApiEndpoints\WelsonJsInstance.cs" />
     <Compile Include="AppSignalTraceListener.cs" />
     <Compile Include="AssemblyLoader.cs" />
@@ -145,6 +146,8 @@
     <Compile Include="LogFileTraceListener.cs" />
     <Compile Include="LlamaCppProcessManager.cs" />
     <Compile Include="WelsonJsInstanceProcessManager.cs" />
+    <Compile Include="ConPtySession.cs" />
+    <Compile Include="TerminalSessionManager.cs" />
     <EmbeddedResource Include="EnvForm.resx">
       <DependentUpon>EnvForm.cs</DependentUpon>
     </EmbeddedResource>
