@@ -1225,7 +1225,9 @@ function __main__() {
     console.log("    \\_/\\_/ \\___|_|___/\\___/|_| |_|\\___/|____/ ");
     console.log("");
     console.log(" WelsonJS - Build a Windows app on the Windows built-in JavaScript engine");
-    console.log(" C-2021-000237 (cros.or.kr), 10.5281/zenodo.11382385 (doi.org), 2023-A0562 (oss.kr), Codename Macadamia");
+    console.log(" The following registration numbers and project codename are associated with this software:");
+    console.log(" C-2021-000237 (cros.or.kr), 10.5281/zenodo.11382385 (doi.org), 2023-A0562 (oss.kr)");
+    console.log(" 284757291 (copyrightservice.co.uk), Codename Macadamia");
     console.log(" This software is distributed as open source under the GPL 3.0 or MS-RL licenses.");
     console.log(" Please support this project: https://github.com/sponsors/gnh1201");
     console.log(" Source code available: https://github.com/gnh1201/welsonjs");
