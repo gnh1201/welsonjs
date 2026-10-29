@@ -11,10 +11,12 @@ source so it is rendered as page content. This does not reproduce the
 standalone `mshta.exe` host or its HTA privilege and ActiveX behavior. The
 ChakraCore controller is separate from the page's JavaScript engine.
 
-The build uses the YAWW library from the `native/yaww` submodule. It does
-not add or build YAWW's example targets. ChakraCore is fetched and built during
-CMake configuration/build. The MSHTML backend requires the Visual Studio C++
-ATL component.
+The build uses the YAWW library from the `native/yaww` submodule and does not
+add YAWW's example targets. YAWW fetches the ChakraCore headers and downloads
+its architecture-matched prebuilt ChakraCore archive by default; the archive's
+SHA-256 is verified during configuration, and `ChakraCore.dll` is deployed
+beside the executable. The MSHTML backend requires the Visual Studio C++ ATL
+component.
 
 ```powershell
 cmake -S native/welsonjs-hta -B out/build/welsonjs-hta -A Win32
@@ -27,5 +29,4 @@ open the file picker. You can also pass a document path, `--chakra-console`,
 `--no-chakra`, or `--chakra-script <path>`.
 
 YAWW is licensed under GPL-3.0. See `native/yaww/LICENSE` for its terms.
-
 

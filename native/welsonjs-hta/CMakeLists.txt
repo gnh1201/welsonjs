@@ -11,6 +11,8 @@ set(WEBVIEW_USE_EDGE OFF CACHE BOOL "Disable the WebView2 backend" FORCE)
 set(WEBVIEW_USE_MSHTML ON CACHE BOOL "Enable the MSHTML backend" FORCE)
 set(WEBVIEW_ENABLE_CHAKRACORE ON CACHE BOOL
     "Enable the ChakraCore host scripting API" FORCE)
+set(WEBVIEW_CHAKRACORE_USE_PREBUILT ON CACHE BOOL
+    "Use prebuilt ChakraCore binaries" FORCE)
 set(WEBVIEW_BUILD_CHAKRA_EXAMPLE OFF CACHE BOOL
     "Build only the WelsonJS app controller" FORCE)
 set(WEBVIEW_ENABLE_SCINTILLA_CONSOLE OFF CACHE BOOL
@@ -33,4 +35,3 @@ add_custom_command(TARGET welsonjs-hta POST_BUILD
   VERBATIM)
 
 webview_deploy_chakracore(welsonjs-hta)
-
