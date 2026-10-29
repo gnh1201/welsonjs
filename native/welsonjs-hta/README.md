@@ -1,32 +1,33 @@
 # WelsonJS HTA
 
-This is a standalone YAWW application named `welsonjs-hta`, inspired by the
-`open-file` and `chakra-control` examples. Its own `welsonjs_hta.cpp` presents a file picker for
-`.hta`, `.htm`, and `.html` documents, opens the selected local document in a
-YAWW MSHTML window, and starts the host-side ChakraCore controller. A document
-path can also be passed on the command line.
+`welsonjs-hta` is a standalone YAWW launcher for local `.hta`, `.htm`, and
+`.html` documents. `.hta` files always use MSHTML. For `.htm` and `.html`, the
+launcher selects WebView2 when its runtime is available, then EdgeHTML when its
+Windows API is available, and otherwise falls back to MSHTML. Run it without
+arguments to open a file picker, or pass a document path directly.
+
+Each viewer runs the host-side ChakraCore controller from the adjacent
+`webview.js`. Pass `--chakra-console`, `--no-chakra`, or
+`--chakra-script <path>` to configure it. ChakraCore is separate from the
+document's page JavaScript engine.
 
 For MSHTML, `.hta` input is copied to a temporary `.html` file beside the
-source so it is rendered as page content. This does not reproduce the
-standalone `mshta.exe` host or its HTA privilege and ActiveX behavior. The
-ChakraCore controller is separate from the page's JavaScript engine.
+source so URLMON renders it as page content. This does not reproduce the
+standalone `mshta.exe` host or its HTA privilege and ActiveX behavior.
 
-The build uses the YAWW library from the `native/yaww` submodule and does not
-add YAWW's example targets. YAWW fetches the ChakraCore headers and downloads
-its architecture-matched prebuilt ChakraCore archive by default; the archive's
-SHA-256 is verified during configuration, and `ChakraCore.dll` is deployed
-beside the executable. The MSHTML backend requires the Visual Studio C++ ATL
-component.
+The build uses YAWW from the `native/yaww` submodule and builds a dispatcher
+plus separate WebView2, EdgeHTML, and MSHTML viewers. ChakraCore's
+architecture-matched prebuilt archive is used by default and its SHA-256 is
+verified during configuration. WebView2 requires the WebView2 Runtime;
+EdgeHTML depends on the Windows WebViewControl API. The MSHTML backend requires
+the Visual Studio C++ ATL component.
 
 ```powershell
-cmake -S native/welsonjs-hta -B out/build/welsonjs-hta -A Win32
+cmake -S native/welsonjs-hta -B out/build/welsonjs-hta -A x64
 cmake --build out/build/welsonjs-hta --config Release --target welsonjs-hta
 ```
 
-The executable and its adjacent `webview.js` and ChakraCore runtime are
-written to `out/build/welsonjs-hta/bin/Release/`. Run it without arguments to
-open the file picker. You can also pass a document path, `--chakra-console`,
-`--no-chakra`, or `--chakra-script <path>`.
-
-YAWW is licensed under GPL-3.0. See `native/yaww/LICENSE` for its terms.
-
+The launcher and engine-specific viewers are written to
+`out/build/welsonjs-hta/bin/Release/`, alongside `webview.js` and the required
+runtime DLLs. YAWW is licensed under GPL-3.0. See `native/yaww/LICENSE` for its
+terms.
