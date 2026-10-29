@@ -352,7 +352,7 @@ namespace WelsonJS.Launcher
             );
         }
 
-        private static void DeployBaseFiles(string appRoot, string workingDirectory)
+        internal static void DeployBaseFiles(string appRoot, string workingDirectory)
         {
             CopyFile(
                 Path.Combine(appRoot, "app.js"),
@@ -373,7 +373,7 @@ namespace WelsonJS.Launcher
             );
         }
 
-        private static void DeployOptionalDataFiles(string appRoot, string workingDirectory)
+        internal static void DeployOptionalDataFiles(string appRoot, string workingDirectory)
         {
             CopyFile(
                 Path.Combine(appRoot, "data", "apikey.json"),
@@ -394,7 +394,7 @@ namespace WelsonJS.Launcher
             );
         }
 
-        private static void DeployEntrypoint(string sourceJsPath, string workingDirectory)
+        internal static void DeployEntrypoint(string sourceJsPath, string workingDirectory)
         {
             CopyFile(
                 sourceJsPath,
@@ -470,30 +470,29 @@ namespace WelsonJS.Launcher
             throw new FileNotFoundException("Could not locate app.js in any known application root directory.");
         }
 
-        private static string CreateInstanceDirectory(string instanceId)
+        internal static string CreateInstanceDirectory(string instanceId)
         {
+            if (string.IsNullOrWhiteSpace(instanceId))
+                throw new ArgumentException("Instance ID is required.", nameof(instanceId));
+
             string workingDirectory = GetWorkingDirectory(instanceId);
 
-            try
-            {
-                // check if the working directory exists
-                if (Directory.Exists(workingDirectory))
-                {
-                    throw new InvalidOperationException("GUID validation failed. Directory already exists.");
-                }
+            if (Directory.Exists(workingDirectory))
+                throw new InvalidOperationException($"Instance directory already exists: {workingDirectory}");
 
-                Directory.CreateDirectory(workingDirectory);
-            }
-            catch
-            {
-                throw new Exception("Instance Initialization failed");
-            }
+            Directory.CreateDirectory(workingDirectory);
+
+            if (!Directory.Exists(workingDirectory))
+                throw new IOException($"Instance directory could not be created: {workingDirectory}");
 
             return workingDirectory;
         }
 
         public static void RunCommandPrompt(string workingDirectory, string entryFileName, string scriptName, bool isConsoleApplication = false, bool isInteractiveServiceApplication = false)
         {
+            if (string.IsNullOrWhiteSpace(workingDirectory) || !Directory.Exists(workingDirectory))
+                throw new DirectoryNotFoundException($"Working directory not found: {workingDirectory}");
+
             if (!isConsoleApplication)
             {
                 if (!File.Exists(Path.Combine(workingDirectory, entryFileName)))
@@ -509,51 +508,66 @@ namespace WelsonJS.Launcher
                 }
             }
 
-            Process process = new Process
-            {
-                StartInfo = new ProcessStartInfo("cmd")
-                {
-                    UseShellExecute = false,
-                    RedirectStandardInput = true,
-                    RedirectStandardOutput = true,
-                    CreateNoWindow = true,
-                    Arguments = "/k",
-                }
-            };
-            process.Start();
-
-            StreamWriter input = process.StandardInput;
-            StreamReader output = process.StandardOutput;
-
-            input.WriteLine("pushd " + workingDirectory);
-            input.WriteLine();
-            input.Flush();
-            output.ReadLine();
+            ProcessStartInfo startInfo;
 
             if (isInteractiveServiceApplication)
             {
-                input.WriteLine($"start cmd /c startInteractiveService.bat");
-                input.WriteLine();
-                input.Flush();
-                output.ReadLine();
+                startInfo = new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = "/c call " + QuoteCommandArgument(Path.Combine(workingDirectory, "startInteractiveService.bat")),
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    WorkingDirectory = workingDirectory
+                };
             }
             else if (!isConsoleApplication)
             {
-                input.WriteLine(entryFileName);
-                input.WriteLine();
-                input.Flush();
-                output.ReadLine();
+                startInfo = new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = "/c call " + QuoteCommandArgument(Path.Combine(workingDirectory, entryFileName)),
+                    UseShellExecute = false,
+                    CreateNoWindow = false,
+                    WorkingDirectory = workingDirectory
+                };
             }
             else
             {
-                input.WriteLine($"start cmd /c cscript app.js {scriptName}");
-                input.WriteLine();
-                input.Flush();
-                output.ReadLine();
+                startInfo = new ProcessStartInfo
+                {
+                    FileName = GetCscriptPath(),
+                    Arguments = "//nologo app.js " + QuoteCommandArgument(scriptName),
+                    UseShellExecute = false,
+                    CreateNoWindow = false,
+                    WorkingDirectory = workingDirectory
+                };
             }
-            input.Close();
 
-            process.WaitForExit();
+            using (Process process = Process.Start(startInfo))
+            {
+                if (process == null)
+                    throw new InvalidOperationException("Failed to start the instance process.");
+
+                if (!isInteractiveServiceApplication)
+                    process.WaitForExit();
+            }
+        }
+
+        internal static string GetCscriptPath()
+        {
+            string systemRoot = Environment.GetEnvironmentVariable("SystemRoot") ?? "C:\\Windows";
+            string folder = Environment.Is64BitOperatingSystem ? "SysWOW64" : "System32";
+            string path = Path.Combine(systemRoot, folder, "cscript.exe");
+            if (!File.Exists(path))
+                throw new FileNotFoundException("Windows Script Host was not found.", path);
+            return path;
+        }
+
+        private static string QuoteCommandArgument(string value)
+        {
+            if (string.IsNullOrEmpty(value)) return "\"\"";
+            return "\"" + value.Replace("\"", "\\\"") + "\"";
         }
 
         public static string GetFinalDirectory(string path)

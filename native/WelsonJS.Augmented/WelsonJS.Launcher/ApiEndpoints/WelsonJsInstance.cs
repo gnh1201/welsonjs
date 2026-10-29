@@ -1,23 +1,24 @@
-// WelsonJsMcp.cs
+// WelsonJsInstance.cs
 // SPDX-License-Identifier: GPL-3.0-or-later
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Script.Serialization;
 
 namespace WelsonJS.Launcher.ApiEndpoints
 {
-    public sealed class WelsonJsMcp : IApiEndpoint
+    public sealed class WelsonJsInstance : IApiEndpoint
     {
-        private const string Prefix = "welsonjs-mcp";
+        private const string Prefix = "welsonjs-instance";
         private const long MaxRequestBodyBytes = 1024 * 1024;
-        private readonly WelsonJsMcpProcessManager _manager = new WelsonJsMcpProcessManager();
+        private readonly WelsonJsInstanceProcessManager _manager = new WelsonJsInstanceProcessManager();
         private readonly JavaScriptSerializer _serializer = new JavaScriptSerializer();
         private readonly ILogger _logger;
 
-        public WelsonJsMcp(ResourceServer server, System.Net.Http.HttpClient httpClient, ILogger logger)
+        public WelsonJsInstance(ResourceServer server, HttpClient httpClient, ILogger logger)
         {
             _logger = logger;
         }
@@ -25,11 +26,9 @@ namespace WelsonJS.Launcher.ApiEndpoints
         public bool CanHandle(System.Net.HttpListenerContext context, string path)
         {
             if (context == null || path == null || !path.StartsWith(Prefix + "/", StringComparison.OrdinalIgnoreCase)) return false;
-            bool read = path.Equals(Prefix + "/status", StringComparison.OrdinalIgnoreCase);
-            bool write = path.Equals(Prefix + "/start", StringComparison.OrdinalIgnoreCase)
-                || path.Equals(Prefix + "/stop", StringComparison.OrdinalIgnoreCase)
-                || path.Equals(Prefix + "/evaluate", StringComparison.OrdinalIgnoreCase);
-            return (read && context.Request.HttpMethod.Equals("GET", StringComparison.OrdinalIgnoreCase))
+            bool output = path.Equals(Prefix + "/output", StringComparison.OrdinalIgnoreCase);
+            bool write = path.Equals(Prefix + "/run", StringComparison.OrdinalIgnoreCase);
+            return (output && context.Request.HttpMethod.Equals("GET", StringComparison.OrdinalIgnoreCase))
                 || (write && context.Request.HttpMethod.Equals("POST", StringComparison.OrdinalIgnoreCase));
         }
 
@@ -37,31 +36,25 @@ namespace WelsonJS.Launcher.ApiEndpoints
         {
             try
             {
-                if (path.EndsWith("/status", StringComparison.OrdinalIgnoreCase))
+                if (path.EndsWith("/output", StringComparison.OrdinalIgnoreCase))
                 {
-                    await Write(context, _manager.Status());
-                    return;
-                }
-                if (path.EndsWith("/start", StringComparison.OrdinalIgnoreCase))
-                {
-                    await Write(context, _manager.Start());
-                    return;
-                }
-                if (path.EndsWith("/stop", StringComparison.OrdinalIgnoreCase))
-                {
-                    _manager.Stop();
-                    await Write(context, new { stopped = true });
+                    int since = 0;
+                    int.TryParse(context.Request.QueryString["since"], out since);
+                    var result = _manager.Output(since);
+                    foreach (var pair in _manager.Status()) result[pair.Key] = pair.Value;
+                    await Write(context, result);
                     return;
                 }
 
-                var input = Parse(await ReadBody(context));
-                string script = input.ContainsKey("script") ? Convert.ToString(input["script"]) : null;
-                int timeout = input.ContainsKey("timeout") ? Convert.ToInt32(input["timeout"]) : 900000;
-                await Write(context, _manager.Evaluate(script, timeout));
+                var input = _serializer.DeserializeObject(await ReadBody(context)) as Dictionary<string, object>;
+                if (input == null || !input.ContainsKey("script"))
+                    throw new ArgumentException("Request body must contain a script.");
+
+                await Write(context, _manager.Start(Convert.ToString(input["script"])));
             }
             catch (Exception ex)
             {
-                _logger.Error("[WelsonJsMcp] Request failed", ex);
+                _logger.Error("[WelsonJsInstance] Request failed", ex);
                 await Write(context, new { error = ex.Message }, 400);
             }
         }
@@ -69,14 +62,6 @@ namespace WelsonJS.Launcher.ApiEndpoints
         public void Shutdown()
         {
             _manager.Stop();
-        }
-
-        private Dictionary<string, object> Parse(string body)
-        {
-            if (string.IsNullOrEmpty(body)) throw new ArgumentException("Request body must be a JSON object.");
-            var result = _serializer.DeserializeObject(body) as Dictionary<string, object>;
-            if (result == null) throw new ArgumentException("Request body must be a JSON object.");
-            return result;
         }
 
         private static async Task<string> ReadBody(System.Net.HttpListenerContext context)

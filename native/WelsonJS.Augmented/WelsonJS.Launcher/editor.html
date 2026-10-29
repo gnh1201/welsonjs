@@ -136,7 +136,7 @@
             function RibbonMenu({
                 onOpenFileClick, onSaveFileClick, onCopliotClick, onAzureCognitiveClick,
                 onSavePromptClick, onLoadPromptClick, onQueryWhoisClick, onQueryDnsClick,
-                onQueryIpClick, onMapClick, onRunScriptClick, onStartMcpClick, onStopMcpClick, mcpRunning
+                onQueryIpClick, onMapClick, onRunScriptClick
             }) {
                 const fileButtons = [
                     {
@@ -168,9 +168,7 @@
                 ];
 
                 const runtimeButtons = [
-                    { id: 'btnRunScript', icon: 'mif-play', caption: 'Run', onClick: onRunScriptClick },
-                    { id: 'btnStartMcp', icon: 'mif-play', caption: mcpRunning ? 'MCP Running' : 'Start MCP', onClick: onStartMcpClick },
-                    { id: 'btnStopMcp', icon: 'mif-stop', caption: 'Stop MCP', onClick: onStopMcpClick }
+                    { id: 'btnRunScript', icon: 'mif-play', caption: 'Run', onClick: onRunScriptClick }
                 ];
 
                 return _e(
@@ -225,7 +223,7 @@
 
                     require(['vs/editor/editor.main'], () => {
                         const instance = monaco.editor.create(containerRef.current, {
-                            value: ['// lib/sayhello.js', 'function say() {', '    console.log("hello");', '}', '', 'exports.say = say;', '', 'exports.VERSIONINFO = "SayHello (sayhello.js) version 0.1";', 'exports.AUTHOR = "oss@catswords.re.kr";', 'exports.global = global;', 'exports.require = global.require;'].join('\n'),
+                            value: ['// hello.js', 'function main() {', '    console.log("Hello World");', '}', '', 'exports.main = main;', '', 'exports.VERSIONINFO = "Hello World (hello.js) version 0.1";', 'exports.AUTHOR = "oss@catswords.re.kr";', 'exports.global = global;', 'exports.require = global.require;'].join('\n'),
                             language: 'javascript'
                         });
 
@@ -394,11 +392,10 @@
                 const editorRef = React.useRef(null);
                 const promptEditorRef = React.useRef(null);
                 const settingsRef = React.useRef({});
-                const fileNameRef = React.useRef('sayhello.js');
+                const fileNameRef = React.useRef('hello.js');
                 const promptMessagesRef = React.useRef([]);
                 const mapViewRef = React.useRef(null);
                 const [showMap, setShowMap] = React.useState(false);
-                const [mcpRunning, setMcpRunning] = React.useState(false);
 
                 const fetchSettings = () => axios.get(`/settings`)
                     .then(response => {
@@ -446,37 +443,19 @@
                     resizeEditor();
                 };
 
-                const refreshMcpStatus = () => axios.get('/welsonjs-mcp/status')
-                    .then(response => setMcpRunning(!!(response.data && response.data.running)))
-                    .catch(() => setMcpRunning(false));
-
-                const startMcp = () => axios.post('/welsonjs-mcp/start', {})
-                    .then(response => {
-                        setMcpRunning(!!(response.data && response.data.running));
-                        appendTextToEditor('\n// welsonjs-mcp started (PID: ' + (response.data.pid || 'unknown') + ')');
-                    })
-                    .catch(error => appendTextToEditor('\n// Failed to start welsonjs-mcp: ' + (error.message || error)));
-
-                const stopMcp = () => axios.post('/welsonjs-mcp/stop', {})
-                    .then(() => {
-                        setMcpRunning(false);
-                        appendTextToEditor('\n// welsonjs-mcp stopped');
-                    })
-                    .catch(error => appendTextToEditor('\n// Failed to stop welsonjs-mcp: ' + (error.message || error)));
-
                 const runScript = () => {
                     const script = editorRef.current ? editorRef.current.getValue() : '';
                     if (!script.trim()) {
                         appendTextToEditor('\n// Script is empty.');
                         return;
                     }
-                    axios.post('/welsonjs-mcp/evaluate', { script: script, timeout: 900000 })
+                    const terminalWindow = window.open('/terminal.html', 'WelsonJSInstanceTerminal', 'width=1000,height=700,resizable=yes,scrollbars=yes');
+                    if (!terminalWindow) {
+                        appendTextToEditor('\n// Terminal window was blocked by the browser. Please allow popups for localhost.');
+                    }
+                    axios.post('/welsonjs-instance/run', { script: script })
                         .then(response => {
-                            setMcpRunning(true);
-                            const result = response.data || {};
-                            const content = result.content || [];
-                            const text = content.map(item => item.text || '').join('\n');
-                            appendTextToEditor('\n/* evaluate_js result\n' + text + '\n*/');
+                            appendTextToEditor('\n// instance terminal opened (PID: ' + (response.data.pid || 'unknown') + ')');
                         })
                         .catch(error => appendTextToEditor('\n// Script execution failed: ' + (error.message || error)));
                 };
@@ -806,7 +785,6 @@
                 }, []);
 
                 React.useEffect(() => {
-                    refreshMcpStatus();
                 }, []);
 
                 fetchSettings();
@@ -824,9 +802,6 @@
                         onQueryIpClick: queryIp,
                         onMapClick: toggleMap,
                         onRunScriptClick: runScript,
-                        onStartMcpClick: startMcp,
-                        onStopMcpClick: stopMcp,
-                        mcpRunning: mcpRunning
                     }),
                     _e('div', { id: 'container' },
                         _e(Editor, { editorRef: editorRef, visible: !showMap }),

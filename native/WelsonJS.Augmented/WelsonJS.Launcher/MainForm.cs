@@ -130,18 +130,21 @@ namespace WelsonJS.Launcher
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
                     string filePath = openFileDialog.FileName;
+                    string scriptName = txtUseSpecificScript.Text;
+                    bool useSpecificScript = cbUseSpecificScript.Checked;
+                    bool interactiveService = cbInteractiveServiceApp.Checked;
 
                     DisableUI();
-                    Task.Run(() => RunAppPackageFile(filePath));
+                    Task.Run(() => RunAppPackageFile(filePath, scriptName, useSpecificScript, interactiveService));
                 }
             }
         }
 
-        private void RunAppPackageFile(string filePath)
+        private void RunAppPackageFile(string filePath, string scriptName, bool useSpecificScript, bool interactiveService)
         {
             _instanceId = Guid.NewGuid().ToString();
             _workingDirectory = Program.GetWorkingDirectory(_instanceId);
-            _scriptName = txtUseSpecificScript.Text;
+            _scriptName = scriptName;
 
             try
             {
@@ -161,7 +164,7 @@ namespace WelsonJS.Launcher
                 _workingDirectory = Program.GetWorkingDirectory(_instanceId, true);
 
                 // Run the application
-                Program.RunCommandPrompt(_workingDirectory, _entryFileName, _scriptName, cbUseSpecificScript.Checked, cbInteractiveServiceApp.Checked);
+                Program.RunCommandPrompt(_workingDirectory, _entryFileName, _scriptName, useSpecificScript, interactiveService);
             }
             catch (Exception ex)
             {
