@@ -87,12 +87,15 @@
     <Reference Include="System.Management" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiEndpoints\JsonRpc2.cs" />
+    <Compile Include="ApiEndpoints\LlamaCpp.cs" />
+    <Compile Include="ApiEndpoints\WelsonJsInstance.cs" />
     <Compile Include="AppSignalTraceListener.cs" />
     <Compile Include="AssemblyLoader.cs" />
     <Compile Include="IApiEndpoint.cs" />
@@ -140,6 +143,8 @@
     <Compile Include="TraceLogger.cs" />
     <Compile Include="WebSocketManager.cs" />
     <Compile Include="LogFileTraceListener.cs" />
+    <Compile Include="LlamaCppProcessManager.cs" />
+    <Compile Include="WelsonJsInstanceProcessManager.cs" />
     <EmbeddedResource Include="EnvForm.resx">
       <DependentUpon>EnvForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -198,6 +203,7 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="editor.html" />
+    <EmbeddedResource Include="terminal.html" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ManagedEsent\EsentInterop\EsentInterop.csproj">

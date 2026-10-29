@@ -36,6 +36,7 @@ Name: "curl"; Description: "Download cURL (Universal HTTP client)"; Types: full;
 Name: "llamacpp"; Description: "Download Llama.cpp Windows CPU binaries"; Types: custom;
 Name: "llamacpp\hy_mt2_1_8b"; Description: "Hy-MT2 1.8B Q4_K_M GGUF (machine translation specialized)"; Types: full; Flags: dontinheritcheck;
 Name: "llamacpp\frognano_4b_2609"; Description: "FrogNano 4B 2609 Q4_K_M GGUF (SWE specialized)"; Types: full; Flags: dontinheritcheck;
+Name: "qwen3guard_06b"; Description: "Download Qwen3Guard-Gen-0.6B local safety model"; Types: full;
 Name: "websocat"; Description: "Download websocat (Command-line WebSocket client)"; Types: full;
 Name: "yara"; Description: "Download YARA (Binary pattern matching library)"; Types: custom;
 Name: "wamr"; Description: "Download WebAssembly Micro Runtime (Add support *.wasm file)"; Types: custom;

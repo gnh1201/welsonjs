@@ -136,7 +136,7 @@
             function RibbonMenu({
                 onOpenFileClick, onSaveFileClick, onCopliotClick, onAzureCognitiveClick,
                 onSavePromptClick, onLoadPromptClick, onQueryWhoisClick, onQueryDnsClick,
-                onQueryIpClick, onMapClick
+                onQueryIpClick, onMapClick, onRunScriptClick
             }) {
                 const fileButtons = [
                     {
@@ -167,6 +167,10 @@
                     { id: 'btnMap', icon: 'mif-rocket', caption: 'Map', onClick: onMapClick }
                 ];
 
+                const runtimeButtons = [
+                    { id: 'btnRunScript', icon: 'mif-play', caption: 'Run', onClick: onRunScriptClick }
+                ];
+
                 return _e(
                     'nav',
                     { 'className': 'ribbon-menu' },
@@ -178,7 +182,8 @@
                         _e('div', { className: 'section active', id: 'editor-tab' },
                             _e(Group, { title: 'File', buttons: fileButtons }),
                             _e(Group, { title: 'Cognitive Tools (AI)', buttons: cognitiveToolsButtons }),
-                            _e(Group, { title: 'Network Tools', buttons: networkToolsButtons })
+                            _e(Group, { title: 'Network Tools', buttons: networkToolsButtons }),
+                            _e(Group, { title: 'Runtime', buttons: runtimeButtons })
                         )
                     )
                 );
@@ -217,9 +222,24 @@
                         return;
 
                     require(['vs/editor/editor.main'], () => {
+                        const defaultValue = ['// hello.js', 'function main() {', '    console.log("Hello World");', '}', '', 'exports.main = main;', '', 'exports.VERSIONINFO = "Hello World (hello.js) version 0.1";', 'exports.AUTHOR = "oss@catswords.re.kr";', 'exports.global = global;', 'exports.require = global.require;'].join('\n');
+                        let initialValue = defaultValue;
+
+                        try {
+                            const savedValue = localStorage.getItem('welsonjs.editor.source');
+                            if (savedValue !== null)
+                                initialValue = savedValue;
+                        } catch (e) {}
+
                         const instance = monaco.editor.create(containerRef.current, {
-                            value: ['// lib/sayhello.js', 'function say() {', '    console.log("hello");', '}', '', 'exports.say = say;', '', 'exports.VERSIONINFO = "SayHello (sayhello.js) version 0.1";', 'exports.AUTHOR = "oss@catswords.re.kr";', 'exports.global = global;', 'exports.require = global.require;'].join('\n'),
+                            value: initialValue,
                             language: 'javascript'
+                        });
+
+                        instance.onDidChangeModelContent(() => {
+                            try {
+                                localStorage.setItem('welsonjs.editor.source', instance.getValue());
+                            } catch (e) {}
                         });
 
                         monaco.languages.registerCompletionItemProvider('javascript', {
@@ -387,7 +407,7 @@
                 const editorRef = React.useRef(null);
                 const promptEditorRef = React.useRef(null);
                 const settingsRef = React.useRef({});
-                const fileNameRef = React.useRef('sayhello.js');
+                const fileNameRef = React.useRef('hello.js');
                 const promptMessagesRef = React.useRef([]);
                 const mapViewRef = React.useRef(null);
                 const [showMap, setShowMap] = React.useState(false);
@@ -436,6 +456,20 @@
                         forceMoveMarkers: true
                     }]);
                     resizeEditor();
+                };
+
+                const runScript = () => {
+                    const script = editorRef.current ? editorRef.current.getValue() : '';
+                    if (!script.trim()) {
+                        appendTextToEditor('\n// Script is empty.');
+                        return;
+                    }
+                    const terminalWindow = window.open('/terminal.html', 'WelsonJSInstanceTerminal', 'width=1000,height=700,resizable=yes,scrollbars=yes');
+                    if (!terminalWindow) {
+                        appendTextToEditor('\n// Terminal window was blocked by the browser. Please allow popups for localhost.');
+                    }
+                    axios.post('/welsonjs-instance/run', { script: script })
+                        .catch(error => appendTextToEditor('\n// Script execution failed: ' + (error.message || error)));
                 };
 
                 const openFile = () => {
@@ -762,6 +796,9 @@
                     window.dispatchEvent(new Event('resize'));
                 }, []);
 
+                React.useEffect(() => {
+                }, []);
+
                 fetchSettings();
 
                 return _e('div', { className: 'app' },
@@ -775,7 +812,8 @@
                         onQueryWhoisClick: queryWhois,
                         onQueryDnsClick: queryDns,
                         onQueryIpClick: queryIp,
-                        onMapClick: toggleMap
+                        onMapClick: toggleMap,
+                        onRunScriptClick: runScript,
                     }),
                     _e('div', { id: 'container' },
                         _e(Editor, { editorRef: editorRef, visible: !showMap }),

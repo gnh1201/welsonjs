@@ -28,6 +28,9 @@ namespace WelsonJS.Launcher
         private string _prefix;
         private string _resourceName;
         private readonly List<IApiEndpoint> _apis = new List<IApiEndpoint>();
+        private readonly SemaphoreSlim _requestSlots = new SemaphoreSlim(32, 32);
+        private readonly ApiEndpoints.LlamaCpp _llamaCppEndpoint;
+        private readonly ApiEndpoints.WelsonJsInstance _welsonJsInstanceEndpoint;
         private BlobConfig _blobConfig;
         private readonly ILogger _logger;
 
@@ -72,6 +75,10 @@ namespace WelsonJS.Launcher
             _apis.Add(new ApiEndpoints.Whois(this, _httpClient, _logger));
             _apis.Add(new ApiEndpoints.ImageColorPicker(this, _httpClient, _logger));
             _apis.Add(new ApiEndpoints.JsonRpc2(this, _httpClient, _logger));
+            _llamaCppEndpoint = new ApiEndpoints.LlamaCpp(this, _httpClient, _logger);
+            _apis.Add(_llamaCppEndpoint);
+            _welsonJsInstanceEndpoint = new ApiEndpoints.WelsonJsInstance(this, _httpClient, _logger);
+            _apis.Add(_welsonJsInstanceEndpoint);
 
             // Register the prefix
             _listener.Prefixes.Add(prefix);
@@ -103,7 +110,9 @@ namespace WelsonJS.Launcher
         public void Stop()
         {
             _isRunning = false;
-            _cts.Cancel();
+            if (_cts != null) _cts.Cancel();
+            _llamaCppEndpoint.Shutdown();
+            _welsonJsInstanceEndpoint.Shutdown();
             _listener.Stop();
 
             MessageBox.Show("Server stopped.");
@@ -120,13 +129,32 @@ namespace WelsonJS.Launcher
             {
                 try
                 {
-                    await ProcessRequest(await _listener.GetContextAsync());
+                    var context = await _listener.GetContextAsync();
+                    // Keep accepting requests while a client is uploading a body or
+                    // an endpoint is waiting on an external process.
+                    _ = Task.Run(() => DispatchRequest(context, token));
                 }
                 catch (Exception ex)
                 {
                     if (token.IsCancellationRequested || !_isRunning) break;
                     _logger?.Error($"Error: {ex.Message}");
                 }
+            }
+        }
+
+        private async Task DispatchRequest(HttpListenerContext context, CancellationToken token)
+        {
+            try
+            {
+                await _requestSlots.WaitAsync(token);
+                try { await ProcessRequest(context); }
+                finally { _requestSlots.Release(); }
+            }
+            catch (OperationCanceledException) { context.Response.Abort(); }
+            catch (Exception ex)
+            {
+                _logger?.Error($"Request failed: {ex.Message}");
+                try { context.Response.StatusCode = 500; context.Response.Close(); } catch { }
             }
         }
 
@@ -145,6 +173,12 @@ namespace WelsonJS.Launcher
             if ("favicon.ico".Equals(path, StringComparison.OrdinalIgnoreCase))
             {
                 await ServeResource(context, GetResource("favicon"), "image/x-icon");
+                return;
+            }
+
+            if ("terminal.html".Equals(path, StringComparison.OrdinalIgnoreCase))
+            {
+                await ServeResource(context, GetResource("terminal.html"), "text/html");
                 return;
             }
 

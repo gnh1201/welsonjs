@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>WelsonJS Instance Terminal</title>
+    <link rel="stylesheet" href="http://localhost:3000/ajax/libs/jquery.terminal/2.48.1/css/jquery.terminal.min.css">
+    <style>
+        html, body, #terminal { width: 100%; height: 100%; margin: 0; }
+        body { background: #111; }
+        #terminal { font-size: 14px; }
+    </style>
+</head>
+<body>
+    <div id="terminal"></div>
+    <script src="http://localhost:3000/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="http://localhost:3000/ajax/libs/jquery.terminal/2.48.1/js/jquery.terminal.min.js"></script>
+    <script>
+        (function () {
+            var sequence = 0;
+            var instanceId = null;
+            var terminal = $('#terminal').terminal(function (command, term) {
+                if (command && command !== 'clear') {
+                    term.echo('This terminal displays the output of the editor Run command.');
+                }
+            }, {
+                greetings: 'WelsonJS instance terminal\nWaiting for Run...',
+                prompt: 'welsonjs> ',
+                name: 'welsonjs-instance-terminal',
+                history: false,
+                scrollOnEcho: true
+            });
+
+            function poll() {
+                $.getJSON('/welsonjs-instance/output?since=' + encodeURIComponent(sequence))
+                    .done(function (data) {
+                        if (data.instanceId && data.instanceId !== instanceId) {
+                            instanceId = data.instanceId;
+                            sequence = 0;
+                            terminal.echo('--- instance ' + instanceId + ' (PID: ' + (data.pid || 'unknown') + ') ---');
+                        }
+                        var lines = data.lines || [];
+                        lines.forEach(function (line) {
+                            sequence = Math.max(sequence, Number(line.sequence) || sequence);
+                            if (line.stream === 'stderr') {
+                                terminal.error(line.text || '');
+                            } else {
+                                terminal.echo(line.text || '');
+                            }
+                        });
+                        if (data.running === false && data.instanceId) {
+                            terminal.set_prompt('welsonjs (stopped)> ');
+                        }
+                    })
+                    .always(function () { window.setTimeout(poll, 300); });
+            }
+
+            poll();
+        }());
+    </script>
+</body>
+</html>
