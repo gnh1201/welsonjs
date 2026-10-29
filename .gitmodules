@@ -4,6 +4,6 @@
 [submodule "native/ChakraCore"]
 	path = native/ChakraCore
 	url = https://github.com/chakra-core/ChakraCore.git
-[submodule "native/webview"]
+[submodule "native/yaww"]
 	path = native/yaww
 	url = https://github.com/gnh1201/yaww.git
