@@ -136,7 +136,9 @@
             function RibbonMenu({
                 onOpenFileClick, onSaveFileClick, onCopliotClick, onAzureCognitiveClick,
                 onSavePromptClick, onLoadPromptClick, onQueryWhoisClick, onQueryDnsClick,
-                onQueryIpClick, onMapClick, onRunScriptClick
+                onQueryIpClick, onMapClick, onRunScriptClick,
+                onExcelExampleClick, onPowerPointExampleClick, onWordExampleClick, onHwpExampleClick,
+                onDiscordClick, onKakaoClick
             }) {
                 const fileButtons = [
                     {
@@ -150,6 +152,12 @@
                         icon: 'mif-floppy-disks',
                         caption: 'Save File',
                         onClick: onSaveFileClick
+                    },
+                    {
+                        id: 'btnRunScript',
+                        icon: 'mif-play',
+                        caption: 'Run File',
+                        onClick: onRunScriptClick
                     }
                 ];
 
@@ -167,8 +175,16 @@
                     { id: 'btnMap', icon: 'mif-rocket', caption: 'Map', onClick: onMapClick }
                 ];
 
-                const runtimeButtons = [
-                    { id: 'btnRunScript', icon: 'mif-play', caption: 'Run', onClick: onRunScriptClick }
+                const examplesButtons = [
+                    { id: 'btnExcelExample', icon: 'mif-file-text', caption: 'Excel', onClick: onExcelExampleClick },
+                    { id: 'btnPowerPointExample', icon: 'mif-file-text', caption: 'PowerPoint', onClick: onPowerPointExampleClick },
+                    { id: 'btnWordExample', icon: 'mif-file-text', caption: 'Word', onClick: onWordExampleClick },
+                    { id: 'btnHwpExample', icon: 'mif-file-text', caption: 'HWP', onClick: onHwpExampleClick }
+                ];
+
+                const communityButtons = [
+                    { id: 'btnDiscord', icon: 'mif-earth', caption: 'Discord', onClick: onDiscordClick },
+                    { id: 'btnKakao', icon: 'mif-earth', caption: 'Kakao+', onClick: onKakaoClick }
                 ];
 
                 return _e(
@@ -183,7 +199,8 @@
                             _e(Group, { title: 'File', buttons: fileButtons }),
                             _e(Group, { title: 'Cognitive Tools (AI)', buttons: cognitiveToolsButtons }),
                             _e(Group, { title: 'Network Tools', buttons: networkToolsButtons }),
-                            _e(Group, { title: 'Runtime', buttons: runtimeButtons })
+                            _e(Group, { title: 'Office Automation', buttons: examplesButtons }),
+                            _e(Group, { title: 'Community', buttons: communityButtons })
                         )
                     )
                 );
@@ -448,7 +465,7 @@
 
                 const appendTextToEditor = (text) => {
                     const editor = editorRef.current;
-                    const position = editor.getPosition();
+                    const position = editor.getPosition() || { lineNumber: 1, column: 1 };
                     const range = new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column);
                     editor.executeEdits('', [{
                         range: range,
@@ -457,6 +474,79 @@
                     }]);
                     resizeEditor();
                 };
+
+                const insertExample = (fileName, source) => {
+                    const editor = editorRef.current;
+                    if (!editor)
+                        return;
+
+                    const position = editor.getPosition();
+                    const range = new monaco.Range(
+                        position.lineNumber,
+                        position.column,
+                        position.lineNumber,
+                        position.column
+                    );
+                    editor.executeEdits('insert-example', [{
+                        range: range,
+                        text: '\n\n' + source + '\n',
+                        forceMoveMarkers: true
+                    }]);
+                    fileNameRef.current = fileName;
+                };
+
+                const showExcelExample = () => insertExample('excel-example.js', [
+                    '// Excel automation example',
+                    'var Office = require("lib/msoffice");',
+                    '',
+                    'function main() {',
+                    '    var excel = new Office.Excel();',
+                    '    excel.open();',
+                    '    excel.getCellByPosition(1, 1).setValue("Hello from WelsonJS");',
+                    '}',
+                    '',
+                    'exports.main = main;'
+                ].join('\n'));
+
+                const showPowerPointExample = () => insertExample('powerpoint-example.js', [
+                    '// PowerPoint automation example',
+                    'var Office = require("lib/msoffice");',
+                    '',
+                    'function main() {',
+                    '    var powerpoint = new Office.PowerPoint();',
+                    '    powerpoint.open();',
+                    '    var slide = powerpoint.addSlide();',
+                    '    slide.setTitle("Hello from WelsonJS");',
+                    '}',
+                    '',
+                    'exports.main = main;'
+                ].join('\n'));
+
+                const showWordExample = () => insertExample('word-example.js', [
+                    '// Word automation example',
+                    'var Office = require("lib/msoffice");',
+                    '',
+                    'function main() {',
+                    '    var word = new Office.Word();',
+                    '    word.open();',
+                    '    word.setText("Hello from WelsonJS");',
+                    '}',
+                    '',
+                    'exports.main = main;'
+                ].join('\n'));
+
+                const showHwpExample = () => insertExample('hwp-example.js', [
+                    '// Hancom Hangul (HWP) automation example',
+                    'var HWP = require("lib/hwp");',
+                    '',
+                    'function main() {',
+                    '    var hwp = HWP.create({ visible: true });',
+                    '    hwp.getInstance();',
+                    '    hwp.insertText("WelsonJS 한글 문서 예제");',
+                    '}',
+                    '',
+                    'exports.main = main;'
+                ].join('\n'));
 
                 const runScript = () => {
                     const script = editorRef.current ? editorRef.current.getValue() : '';
@@ -789,6 +879,9 @@
                     setShowMap(v => !v);
                 }
 
+                const openDiscord = () => navigate('https://discord.gg/XKG5CjtXEj?utm_source=welsonjs');
+                const openKakao = () => navigate('https://pf.kakao.com/_mNxisj');
+
                 React.useEffect(() => {
                     window.addEventListener('resize', () => {
                         resizeEditor();
@@ -814,6 +907,12 @@
                         onQueryIpClick: queryIp,
                         onMapClick: toggleMap,
                         onRunScriptClick: runScript,
+                        onExcelExampleClick: showExcelExample,
+                        onPowerPointExampleClick: showPowerPointExample,
+                        onWordExampleClick: showWordExample,
+                        onHwpExampleClick: showHwpExample,
+                        onDiscordClick: openDiscord,
+                        onKakaoClick: openKakao,
                     }),
                     _e('div', { id: 'container' },
                         _e(Editor, { editorRef: editorRef, visible: !showMap }),
