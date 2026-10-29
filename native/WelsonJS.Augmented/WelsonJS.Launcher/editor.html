@@ -136,7 +136,7 @@
             function RibbonMenu({
                 onOpenFileClick, onSaveFileClick, onCopliotClick, onAzureCognitiveClick,
                 onSavePromptClick, onLoadPromptClick, onQueryWhoisClick, onQueryDnsClick,
-                onQueryIpClick, onMapClick, onRunScriptClick,
+                onQueryIpClick, onMapClick, onRunScriptClick, onTerminalClick,
                 onExcelExampleClick, onPowerPointExampleClick, onWordExampleClick, onHwpExampleClick,
                 onDiscordClick, onKakaoClick, onWorldTouristExampleClick
             }) {
@@ -158,6 +158,12 @@
                         icon: 'mif-play',
                         caption: 'Run File',
                         onClick: onRunScriptClick
+                    },
+                    {
+                        id: 'btnTerminal',
+                        icon: 'mif-prompt',
+                        caption: 'Terminal',
+                        onClick: onTerminalClick
                     }
                 ];
 
@@ -580,13 +586,30 @@
                         appendTextToEditor('\n// Script is empty.');
                         return;
                     }
-                    const terminalWindow = window.open('/terminal.html', 'WelsonJSInstanceTerminal', 'width=1000,height=700,resizable=yes,scrollbars=yes');
+                    // Open the window inside the click handler so popup blockers allow it,
+                    // then attach it to the interactive session once the instance starts.
+                    const terminalWindow = openTerminalWindow('wait=1');
+                    axios.post('/welsonjs-instance/run', { script: script })
+                        .then(response => {
+                            if (terminalWindow && response.data && response.data.sessionId) {
+                                terminalWindow.location.href = '/terminal.html?session=' + encodeURIComponent(response.data.sessionId);
+                            }
+                        })
+                        .catch(error => appendTextToEditor('\n// Script execution failed: ' + (error.message || error)));
+                };
+
+                const openTerminalWindow = (query) => {
+                    const terminalWindow = window.open('/terminal.html' + (query ? '?' + query : ''), 'WelsonJSInstanceTerminal', 'width=1100,height=720,resizable=yes,scrollbars=no');
                     if (!terminalWindow) {
                         appendTextToEditor('\n// Terminal window was blocked by the browser. Please allow popups for localhost.');
                     }
-                    axios.post('/welsonjs-instance/run', { script: script })
-                        .catch(error => appendTextToEditor('\n// Script execution failed: ' + (error.message || error)));
+                    return terminalWindow;
                 };
+
+                const openTerminal = () => openTerminalWindow('');
+
+                // Lets the terminal window deploy the current editor content into each new instance.
+                window.getWelsonJSEditorScript = () => editorRef.current ? editorRef.current.getValue() : '';
 
                 const openFile = () => {
                     const fileInput = document.createElement('input');
@@ -983,6 +1006,7 @@
                         onQueryIpClick: queryIp,
                         onMapClick: toggleMap,
                         onRunScriptClick: runScript,
+                        onTerminalClick: openTerminal,
                         onExcelExampleClick: showExcelExample,
                         onPowerPointExampleClick: showPowerPointExample,
                         onWordExampleClick: showWordExample,

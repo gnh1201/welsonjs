@@ -14,21 +14,22 @@ namespace WelsonJS.Launcher.ApiEndpoints
     {
         private const string Prefix = "welsonjs-instance";
         private const long MaxRequestBodyBytes = 1024 * 1024;
-        private readonly WelsonJsInstanceProcessManager _manager = new WelsonJsInstanceProcessManager();
+        private readonly WelsonJsInstanceProcessManager _manager;
         private readonly JavaScriptSerializer _serializer = new JavaScriptSerializer();
         private readonly ILogger _logger;
 
         public WelsonJsInstance(ResourceServer server, HttpClient httpClient, ILogger logger)
         {
+            _manager = new WelsonJsInstanceProcessManager(server.TerminalSessions);
             _logger = logger;
         }
 
         public bool CanHandle(System.Net.HttpListenerContext context, string path)
         {
             if (context == null || path == null || !path.StartsWith(Prefix + "/", StringComparison.OrdinalIgnoreCase)) return false;
-            bool output = path.Equals(Prefix + "/output", StringComparison.OrdinalIgnoreCase);
+            bool status = path.Equals(Prefix + "/status", StringComparison.OrdinalIgnoreCase);
             bool write = path.Equals(Prefix + "/run", StringComparison.OrdinalIgnoreCase);
-            return (output && context.Request.HttpMethod.Equals("GET", StringComparison.OrdinalIgnoreCase))
+            return (status && context.Request.HttpMethod.Equals("GET", StringComparison.OrdinalIgnoreCase))
                 || (write && context.Request.HttpMethod.Equals("POST", StringComparison.OrdinalIgnoreCase));
         }
 
@@ -36,13 +37,17 @@ namespace WelsonJS.Launcher.ApiEndpoints
         {
             try
             {
-                if (path.EndsWith("/output", StringComparison.OrdinalIgnoreCase))
+                // Running a script is equivalent to running code as the launcher user,
+                // so only accept requests from this server's own origin on localhost.
+                if (!ResourceServer.IsTrustedLocalRequest(context))
                 {
-                    int since = 0;
-                    int.TryParse(context.Request.QueryString["since"], out since);
-                    var result = _manager.Output(since);
-                    foreach (var pair in _manager.Status()) result[pair.Key] = pair.Value;
-                    await Write(context, result);
+                    await Write(context, new { error = "Script execution is only allowed from the launcher's own origin on localhost." }, 403);
+                    return;
+                }
+
+                if (path.EndsWith("/status", StringComparison.OrdinalIgnoreCase))
+                {
+                    await Write(context, _manager.Status());
                     return;
                 }
 
@@ -50,7 +55,10 @@ namespace WelsonJS.Launcher.ApiEndpoints
                 if (input == null || !input.ContainsKey("script"))
                     throw new ArgumentException("Request body must contain a script.");
 
-                await Write(context, _manager.Start(Convert.ToString(input["script"])));
+                await Write(context, _manager.Start(
+                    Convert.ToString(input["script"]),
+                    GetShort(input, "cols"),
+                    GetShort(input, "rows")));
             }
             catch (Exception ex)
             {
@@ -62,6 +70,14 @@ namespace WelsonJS.Launcher.ApiEndpoints
         public void Shutdown()
         {
             _manager.Stop();
+        }
+
+        private static short GetShort(Dictionary<string, object> input, string key)
+        {
+            object value;
+            if (!input.TryGetValue(key, out value) || value == null) return 0;
+            try { return (short)Math.Max(0, Math.Min(1000, Convert.ToInt32(value))); }
+            catch (FormatException) { return 0; }
         }
 
         private static async Task<string> ReadBody(System.Net.HttpListenerContext context)

@@ -2,59 +2,378 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>WelsonJS Instance Terminal</title>
-    <link rel="stylesheet" href="http://localhost:3000/ajax/libs/jquery.terminal/2.48.1/css/jquery.terminal.min.css">
+    <title>WelsonJS Terminal</title>
+    <link rel="stylesheet" href="http://localhost:3000/npm/@xterm/xterm@5.5.0/css/xterm.css" integrity="sha384-8Xk9wy/gzEDUKrXtrmCFa2bBuK3BpjpDuL/p0SeKQX19Khl/M+lHOgD/CyYf7efP" crossorigin="anonymous">
     <style>
-        html, body, #terminal { width: 100%; height: 100%; margin: 0; }
-        body { background: #111; }
-        #terminal { font-size: 14px; }
+        html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+        body { background: #1e1e1e; color: #ccc; font: 13px "Segoe UI", "Malgun Gothic", sans-serif; display: flex; flex-direction: column; }
+        #bar { display: flex; align-items: stretch; background: #252526; border-bottom: 1px solid #333; min-height: 34px; user-select: none; }
+        #tabs { display: flex; flex: 1; overflow-x: auto; }
+        .tab { display: flex; align-items: center; gap: 6px; padding: 0 10px; cursor: pointer; border-right: 1px solid #333; white-space: nowrap; color: #999; max-width: 260px; }
+        .tab .label { overflow: hidden; text-overflow: ellipsis; }
+        .tab.active { background: #1e1e1e; color: #fff; }
+        .tab.exited .label { color: #777; font-style: italic; }
+        .tab .close { border: 0; background: none; color: inherit; cursor: pointer; padding: 0 2px; font-size: 14px; line-height: 1; }
+        .tab .close:hover { color: #f48771; }
+        #instance { display: flex; align-items: center; padding: 0 10px; color: #888; border-left: 1px solid #333; white-space: nowrap; font-family: Consolas, monospace; font-size: 12px; }
+        #instance[hidden] { display: none; }
+        #new { display: flex; align-items: center; gap: 4px; padding: 0 8px; border-left: 1px solid #333; }
+        #new select, #new button { background: #3c3c3c; color: #ddd; border: 1px solid #555; padding: 3px 6px; font: inherit; }
+        #new button { cursor: pointer; }
+        #new button:hover { background: #505050; }
+        #panes { position: relative; flex: 1; min-height: 0; }
+        .pane { position: absolute; inset: 0; padding: 4px 0 0 6px; box-sizing: border-box; }
+        .pane[hidden] { display: none; }
+        #notice { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; color: #888; }
+        #notice[hidden] { display: none; }
     </style>
 </head>
 <body>
-    <div id="terminal"></div>
-    <script src="http://localhost:3000/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <script src="http://localhost:3000/ajax/libs/jquery.terminal/2.48.1/js/jquery.terminal.min.js"></script>
+    <div id="bar">
+        <div id="tabs"></div>
+        <div id="instance" hidden></div>
+        <div id="new">
+            <select id="profile" title="Shell profile"></select>
+            <button id="create" type="button" title="Open a new terminal (Ctrl+Shift+T)">+ New</button>
+        </div>
+    </div>
+    <div id="panes"><div id="notice">Starting...</div></div>
+
+    <script src="http://localhost:3000/npm/@xterm/xterm@5.5.0/lib/xterm.js" integrity="sha384-M169f14mRZOXm3hD/v2Ti0ThIT/RnAQagXA9nlE15yHAtrW19gdePJh/HaTzUOe/" crossorigin="anonymous"></script>
+    <script src="http://localhost:3000/npm/@xterm/addon-fit@0.10.0/lib/addon-fit.js" integrity="sha384-iF+jqbuti4XlB64clWgFWYEscb+UnSRv3VgVikGYZu+otNFnSHr7y7NcKfBnGizn" crossorigin="anonymous"></script>
+    <script src="http://localhost:3000/npm/@xterm/addon-unicode11@0.8.0/lib/addon-unicode11.js" integrity="sha384-7DkEj65mwuJpyTemyRshYB1TDCUcpXHiCcSt0agkXn8Zz8nOqajgB6EoeULHiS1O" crossorigin="anonymous"></script>
     <script>
         (function () {
-            var sequence = 0;
-            var instanceId = null;
-            var terminal = $('#terminal').terminal(function (command, term) {
-                if (command && command !== 'clear') {
-                    term.echo('This terminal displays the output of the editor Run command.');
-                }
-            }, {
-                greetings: 'WelsonJS instance terminal\nWaiting for Run...',
-                prompt: 'welsonjs> ',
-                name: 'welsonjs-instance-terminal',
-                history: false,
-                scrollOnEcho: true
-            });
+            'use strict';
 
-            function poll() {
-                $.getJSON('/welsonjs-instance/output?since=' + encodeURIComponent(sequence))
-                    .done(function (data) {
-                        if (data.instanceId && data.instanceId !== instanceId) {
-                            instanceId = data.instanceId;
-                            sequence = 0;
-                            terminal.echo('--- instance ' + instanceId + ' (PID: ' + (data.pid || 'unknown') + ') ---');
-                        }
-                        var lines = data.lines || [];
-                        lines.forEach(function (line) {
-                            sequence = Math.max(sequence, Number(line.sequence) || sequence);
-                            if (line.stream === 'stderr') {
-                                terminal.error(line.text || '');
-                            } else {
-                                terminal.echo(line.text || '');
-                            }
-                        });
-                        if (data.running === false && data.instanceId) {
-                            terminal.set_prompt('welsonjs (stopped)> ');
-                        }
-                    })
-                    .always(function () { window.setTimeout(poll, 75); });
+            var tabsEl = document.getElementById('tabs');
+            var panesEl = document.getElementById('panes');
+            var noticeEl = document.getElementById('notice');
+            var profileEl = document.getElementById('profile');
+            var instanceEl = document.getElementById('instance');
+            var tabs = [];
+            var active = null;
+
+            // Every tab in this window shares one WelsonJS instance. Remember it per
+            // window (sessionStorage survives reloads but not other windows).
+            var instanceKey = 'welsonjs-terminal-instance';
+            var instance = null;
+            try { instance = window.sessionStorage.getItem(instanceKey); } catch (e) { }
+
+            function setInstance(id, workingDirectory) {
+                if (!id) return;
+                instance = id;
+                try { window.sessionStorage.setItem(instanceKey, id); } catch (e) { }
+                instanceEl.textContent = 'Instance ' + id.substring(0, 8);
+                instanceEl.title = workingDirectory || id;
+                instanceEl.hidden = false;
             }
 
-            poll();
+            var theme = {
+                background: '#1e1e1e', foreground: '#cccccc', cursor: '#aeafad', selectionBackground: '#264f78',
+                black: '#000000', red: '#cd3131', green: '#0dbc79', yellow: '#e5e510', blue: '#2472c8', magenta: '#bc3fbc', cyan: '#11a8cd', white: '#e5e5e5',
+                brightBlack: '#666666', brightRed: '#f14c4c', brightGreen: '#23d18b', brightYellow: '#f5f543', brightBlue: '#3b8eea', brightMagenta: '#d670d6', brightCyan: '#29b8db', brightWhite: '#e5e5e5'
+            };
+
+            function api(method, url, body) {
+                return fetch(url, {
+                    method: method,
+                    headers: body ? { 'Content-Type': 'application/json' } : {},
+                    body: body ? JSON.stringify(body) : undefined
+                }).then(function (response) {
+                    return response.json().then(function (data) {
+                        if (!response.ok) throw new Error(data.error || ('HTTP ' + response.status));
+                        return data;
+                    });
+                });
+            }
+
+            function showNotice(text) {
+                noticeEl.textContent = text;
+                noticeEl.hidden = tabs.length > 0 && !text;
+            }
+
+            function createTerminal() {
+                var term = new Terminal({
+                    allowProposedApi: true,       // required by the unicode11 addon
+                    cursorBlink: true,
+                    fontFamily: '"Cascadia Mono", "Cascadia Code", Consolas, "D2Coding", "Malgun Gothic", monospace',
+                    fontSize: 14,
+                    scrollback: 10000,
+                    macOptionIsMeta: true,
+                    theme: theme
+                });
+                var fit = new FitAddon.FitAddon();
+                term.loadAddon(fit);
+                var unicode = new Unicode11Addon.Unicode11Addon();
+                term.loadAddon(unicode);
+                term.unicode.activeVersion = '11';
+                return { term: term, fit: fit };
+            }
+
+            function attach(session) {
+                var existing = findTab(session.sessionId);
+                if (existing) { activate(existing); return existing; }
+
+                var parts = createTerminal();
+                var tab = {
+                    id: session.sessionId,
+                    title: session.title || session.profile,
+                    term: parts.term,
+                    fit: parts.fit,
+                    socket: null,
+                    exited: false,
+                    pane: document.createElement('div'),
+                    tabEl: document.createElement('div')
+                };
+
+                tab.pane.className = 'pane';
+                tab.pane.hidden = true;
+                panesEl.appendChild(tab.pane);
+                tab.term.open(tab.pane);
+
+                tab.tabEl.className = 'tab';
+                tab.tabEl.innerHTML = '<span class="label"></span><button class="close" type="button" title="Close">&times;</button>';
+                tab.tabEl.querySelector('.label').textContent = tab.title;
+                tab.tabEl.addEventListener('mousedown', function (e) {
+                    if (e.button === 1) { e.preventDefault(); closeTab(tab); }
+                });
+                tab.tabEl.addEventListener('click', function (e) {
+                    if (e.target.classList.contains('close')) closeTab(tab);
+                    else activate(tab);
+                });
+                tabsEl.appendChild(tab.tabEl);
+
+                tab.term.attachCustomKeyEventHandler(function (e) { return handleKey(tab, e); });
+                tab.term.onData(function (data) { send(tab, { type: 'input', data: data }); });
+                tab.term.onBinary(function (data) { send(tab, { type: 'input', data: data }); });
+                tab.term.onResize(function (size) { send(tab, { type: 'resize', cols: size.cols, rows: size.rows }); });
+                tab.term.onTitleChange(function (title) {
+                    if (!title) return;
+                    tab.tabEl.querySelector('.label').textContent = title;
+                    if (tab === active) document.title = title + ' - WelsonJS Terminal';
+                });
+
+                tabs.push(tab);
+                activate(tab);
+                connect(tab);
+                showNotice('');
+                return tab;
+            }
+
+            function connect(tab) {
+                var url = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host
+                    + '/terminal/sessions/' + encodeURIComponent(tab.id) + '/socket';
+                var socket = new WebSocket(url);
+                socket.binaryType = 'arraybuffer';
+                tab.socket = socket;
+
+                socket.onopen = function () {
+                    if (tab === active) fitTab(tab);
+                    send(tab, { type: 'resize', cols: tab.term.cols, rows: tab.term.rows });
+                };
+                socket.onmessage = function (event) {
+                    if (typeof event.data !== 'string') {
+                        tab.term.write(new Uint8Array(event.data));
+                        return;
+                    }
+                    var message = JSON.parse(event.data);
+                    if (message.type === 'exit') markExited(tab, message.exitCode);
+                };
+                socket.onclose = function () {
+                    if (tab.socket !== socket) return;
+                    tab.socket = null;
+                    if (!tab.exited && !tab.closed) {
+                        tab.term.write('\r\n\x1b[90m[Disconnected from the launcher. Press Enter to reconnect.]\x1b[0m\r\n');
+                        tab.reconnectPending = true;
+                    }
+                };
+            }
+
+            function markExited(tab, exitCode) {
+                tab.exited = true;
+                tab.tabEl.classList.add('exited');
+                tab.term.write('\r\n\x1b[90m[Process exited with code ' + exitCode + ']\x1b[0m\r\n');
+            }
+
+            function send(tab, message) {
+                if (tab.reconnectPending && message.type === 'input') {
+                    if (message.data === '\r') { tab.reconnectPending = false; tab.term.reset(); connect(tab); }
+                    return;
+                }
+                if (tab.socket && tab.socket.readyState === WebSocket.OPEN) tab.socket.send(JSON.stringify(message));
+            }
+
+            function handleKey(tab, e) {
+                var ctrlOnly = e.ctrlKey && !e.altKey && !e.metaKey;
+                var key = (e.key || '').toLowerCase();
+
+                // Shift+Enter inserts a newline in agent CLIs such as Claude Code (sent as Meta+Enter).
+                if (e.key === 'Enter' && e.shiftKey && !e.ctrlKey && !e.altKey) {
+                    if (e.type === 'keydown') send(tab, { type: 'input', data: '\x1b\r' });
+                    e.preventDefault();
+                    return false;
+                }
+                if (e.type !== 'keydown') return true;
+
+                // Copy: Ctrl+Shift+C always, Ctrl+C only while text is selected (otherwise it interrupts).
+                if (ctrlOnly && key === 'c' && (e.shiftKey || tab.term.hasSelection())) {
+                    var text = tab.term.getSelection();
+                    if (text && navigator.clipboard) navigator.clipboard.writeText(text);
+                    tab.term.clearSelection();
+                    e.preventDefault();
+                    return false;
+                }
+                // Paste: let the browser raise a paste event, which xterm.js forwards
+                // with bracketed-paste markers when the program asked for them.
+                if (ctrlOnly && key === 'v') return false;
+
+                if (ctrlOnly && e.shiftKey && key === 't') { e.preventDefault(); createSession(profileEl.value); return false; }
+                if (ctrlOnly && e.shiftKey && key === 'w') { e.preventDefault(); closeTab(tab); return false; }
+                if (e.ctrlKey && key === 'tab') {
+                    e.preventDefault();
+                    var index = tabs.indexOf(tab) + (e.shiftKey ? -1 : 1);
+                    activate(tabs[(index + tabs.length) % tabs.length]);
+                    return false;
+                }
+                return true;
+            }
+
+            function activate(tab) {
+                if (!tab) return;
+                active = tab;
+                tabs.forEach(function (t) {
+                    t.pane.hidden = t !== tab;
+                    t.tabEl.classList.toggle('active', t === tab);
+                });
+                document.title = tab.tabEl.querySelector('.label').textContent + ' - WelsonJS Terminal';
+                fitTab(tab);
+                tab.term.focus();
+            }
+
+            function fitTab(tab) {
+                try { tab.fit.fit(); } catch (e) { }
+            }
+
+            function closeTab(tab) {
+                if (!tab.exited && !window.confirm('Terminate "' + tab.tabEl.querySelector('.label').textContent + '"?')) return;
+                tab.closed = true;
+                if (tab.socket) tab.socket.close();
+                api('DELETE', '/terminal/sessions/' + encodeURIComponent(tab.id)).catch(function () { });
+                tab.term.dispose();
+                tab.pane.remove();
+                tab.tabEl.remove();
+                var index = tabs.indexOf(tab);
+                tabs.splice(index, 1);
+                if (active === tab) activate(tabs[Math.min(index, tabs.length - 1)]);
+                if (!tabs.length) { active = null; showNotice('No terminals. Choose a profile and press "+ New".'); }
+            }
+
+            function findTab(id) {
+                for (var i = 0; i < tabs.length; i++) if (tabs[i].id === id) return tabs[i];
+                return null;
+            }
+
+            function measure() {
+                // Size the PTY to the pane before the shell draws its first prompt.
+                var probe = createTerminal();
+                var pane = document.createElement('div');
+                pane.className = 'pane';
+                pane.style.visibility = 'hidden';
+                panesEl.appendChild(pane);
+                probe.term.open(pane);
+                var size = probe.fit.proposeDimensions() || { cols: 120, rows: 30 };
+                probe.term.dispose();
+                pane.remove();
+                return size;
+            }
+
+            // Like Run File, each new instance includes what is currently being edited
+            // in the editor window that opened this terminal.
+            function getEditorScript() {
+                try {
+                    if (window.opener && !window.opener.closed && typeof window.opener.getWelsonJSEditorScript === 'function')
+                        return window.opener.getWelsonJSEditorScript() || '';
+                } catch (e) { }
+                return '';
+            }
+
+            function createSession(profile) {
+                var size = measure();
+                showNotice(tabs.length ? '' : 'Starting...');
+                return api('POST', '/terminal/sessions', { profile: profile, cols: size.cols, rows: size.rows, script: getEditorScript(), instanceId: instance })
+                    .then(function (session) {
+                        setInstance(session.instanceId, session.workingDirectory);
+                        return attach(session);
+                    })
+                    .catch(function (error) {
+                        if (active) active.term.write('\r\n\x1b[31m[Failed to start terminal: ' + error.message + ']\x1b[0m\r\n');
+                        else showNotice('Failed to start terminal: ' + error.message);
+                    });
+            }
+
+            function loadProfiles() {
+                return api('GET', '/terminal/profiles').then(function (data) {
+                    profileEl.innerHTML = '';
+                    data.profiles.forEach(function (profile) {
+                        var option = document.createElement('option');
+                        option.value = profile.id;
+                        option.textContent = profile.title + (profile.available ? '' : ' (not found)');
+                        profileEl.appendChild(option);
+                    });
+                });
+            }
+
+            document.getElementById('create').addEventListener('click', function () { createSession(profileEl.value); });
+
+            window.addEventListener('resize', function () { if (active) fitTab(active); });
+
+            var params = new URLSearchParams(location.search);
+            var requestedSession = params.get('session');
+            var requestedProfile = params.get('profile');
+
+            if (params.get('wait')) {
+                showNotice('Starting the WelsonJS instance...');
+                loadProfiles();
+                return;
+            }
+
+            Promise.all([loadProfiles(), api('GET', '/terminal/sessions')])
+                .then(function (results) {
+                    var sessions = results[1].sessions || [];
+                    var requested = sessions.filter(function (s) { return s.sessionId === requestedSession; })[0];
+
+                    if (requested && requested.instanceId) {
+                        // Opened for a specific session (e.g. Run File): join its instance.
+                        instance = requested.instanceId;
+                    } else if (!instance) {
+                        // A new window takes over sessions left behind by a closed window,
+                        // so they do not keep running unseen.
+                        var orphans = sessions.filter(function (s) { return s.running && s.instanceId && !s.attached; });
+                        if (orphans.length) instance = orphans[orphans.length - 1].instanceId;
+                    }
+
+                    sessions.forEach(function (session) {
+                        var mine = instance && session.instanceId === instance;
+                        if (mine) setInstance(session.instanceId, session.workingDirectory);
+                        if ((mine && session.running) || session.sessionId === requestedSession) attach(session);
+                    });
+
+                    if (requestedSession) {
+                        var tab = findTab(requestedSession);
+                        if (tab) activate(tab);
+                        else showNotice('Terminal session not found: ' + requestedSession);
+                    } else if (requestedProfile) {
+                        profileEl.value = requestedProfile;
+                        createSession(requestedProfile).then(function () {
+                            // Avoid starting another session when the page is reloaded.
+                            if (active) history.replaceState(null, '', '?session=' + encodeURIComponent(active.id));
+                        });
+                    } else if (!tabs.length) {
+                        createSession(profileEl.value || 'powershell');
+                    }
+                })
+                .catch(function (error) { showNotice('Could not reach the launcher: ' + error.message); });
         }());
     </script>
 </body>

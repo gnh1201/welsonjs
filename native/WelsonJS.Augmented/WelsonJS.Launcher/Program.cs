@@ -256,10 +256,11 @@ namespace WelsonJS.Launcher
             // get current time
             DateTime now = DateTime.Now;
 
-            // record to the metadata database
-            using (InstancesForm instancesForm = new InstancesForm())
+            // record to the metadata database (opening it can fail, e.g. while the
+            // database is locked by another launcher process)
+            try
             {
-                try
+                using (InstancesForm instancesForm = new InstancesForm())
                 {
                     instancesForm.GetDatabaseInstance().Insert(new Dictionary<string, object>
                     {
@@ -267,10 +268,10 @@ namespace WelsonJS.Launcher
                         ["FirstDeployTime"] = now
                     }, out _);
                 }
-                catch (Exception ex)
-                {
-                    _logger.Error($"Failed to record first deploy time: {ex.Message}");
-                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Failed to record first deploy time: {ex.Message}");
             }
 
             // record to the instance directory
