@@ -138,7 +138,7 @@
                 onSavePromptClick, onLoadPromptClick, onQueryWhoisClick, onQueryDnsClick,
                 onQueryIpClick, onMapClick, onRunScriptClick,
                 onExcelExampleClick, onPowerPointExampleClick, onWordExampleClick, onHwpExampleClick,
-                onDiscordClick, onKakaoClick
+                onDiscordClick, onKakaoClick, onWorldTouristExampleClick
             }) {
                 const fileButtons = [
                     {
@@ -179,7 +179,8 @@
                     { id: 'btnExcelExample', icon: 'mif-file-text', caption: 'Excel', onClick: onExcelExampleClick },
                     { id: 'btnPowerPointExample', icon: 'mif-file-text', caption: 'PowerPoint', onClick: onPowerPointExampleClick },
                     { id: 'btnWordExample', icon: 'mif-file-text', caption: 'Word', onClick: onWordExampleClick },
-                    { id: 'btnHwpExample', icon: 'mif-file-text', caption: 'HWP', onClick: onHwpExampleClick }
+                    { id: 'btnHwpExample', icon: 'mif-file-text', caption: 'HWP', onClick: onHwpExampleClick },
+                    { id: 'btnWorldTouristExample', icon: 'mif-map2', caption: 'Places', onClick: onWorldTouristExampleClick }
                 ];
 
                 const communityButtons = [
@@ -427,6 +428,7 @@
                 const fileNameRef = React.useRef('hello.js');
                 const promptMessagesRef = React.useRef([]);
                 const mapViewRef = React.useRef(null);
+                const coordinateMarkersRef = React.useRef([]);
                 const [showMap, setShowMap] = React.useState(false);
 
                 const fetchSettings = () => axios.get(`/settings`)
@@ -547,6 +549,30 @@
                     '',
                     'exports.main = main;'
                 ].join('\n'));
+
+                const showWorldTouristExample = () => {
+                    insertExample('world-tourist-coordinates.js', [
+                        '// Major tourist destinations in Korea and around the world',
+                        'var places = [',
+                        '    { name: "Gyeongbokgung Palace", coordinate: [37.5796, 126.9770] },',
+                        '    { name: "N Seoul Tower", coordinate: [37.5512, 126.9882] },',
+                        '    { name: "Eiffel Tower", coordinate: [48.8584, 2.2945] },',
+                        '    { name: "Statue of Liberty", coordinate: [40.6892, -74.0445] },',
+                        '    { name: "Big Ben", coordinate: [51.5007, -0.1246] },',
+                        '    { name: "Taj Mahal", coordinate: [27.1751, 78.0421] },',
+                        '    { name: "Sydney Opera House", coordinate: [-33.8568, 151.2153] },',
+                        '    { name: "Colosseum", coordinate: [41.8902, 12.4922] },',
+                        '    { name: "Machu Picchu", coordinate: [-13.1631, -72.5450] },',
+                        '    { name: "Great Wall of China", coordinate: [40.4319, 116.5704] }',
+                        '];',
+                        '',
+                        'function main() {',
+                        '    console.log("World tourist destination coordinates loaded:", places.length);',
+                        '}',
+                        '',
+                        'exports.main = main;'
+                    ].join('\n'));
+                };
 
                 const runScript = () => {
                     const script = editorRef.current ? editorRef.current.getValue() : '';
@@ -875,8 +901,58 @@
                     });
                 };
                 
+                const extractCoordinates = (source) => {
+                    const coordinates = [];
+                    const seen = {};
+                    const pattern = /(-?\d{1,3}(?:\.\d+)?)\s*[,;]\s*(-?\d{1,3}(?:\.\d+)?)/g;
+                    let match;
+
+                    while ((match = pattern.exec(source || '')) !== null) {
+                        const latitude = Number(match[1]);
+                        const longitude = Number(match[2]);
+                        if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180)
+                            continue;
+
+                        const key = latitude + ',' + longitude;
+                        if (!seen[key]) {
+                            seen[key] = true;
+                            coordinates.push({ latitude: latitude, longitude: longitude });
+                        }
+                    }
+
+                    return coordinates;
+                };
+
+                const plotEditorCoordinates = () => {
+                    const map = mapViewRef.current;
+                    if (!map || typeof L === 'undefined')
+                        return;
+
+                    coordinateMarkersRef.current.forEach(marker => map.removeLayer(marker));
+                    coordinateMarkersRef.current = [];
+
+                    const coordinates = extractCoordinates(editorRef.current ? editorRef.current.getValue() : '');
+                    const bounds = [];
+                    coordinates.forEach(coordinate => {
+                        const latlng = [coordinate.latitude, coordinate.longitude];
+                        const marker = L.marker(latlng)
+                            .addTo(map)
+                            .bindPopup('Coordinate: ' + coordinate.latitude + ', ' + coordinate.longitude);
+                        coordinateMarkersRef.current.push(marker);
+                        bounds.push(latlng);
+                    });
+
+                    if (bounds.length === 1)
+                        map.setView(bounds[0], 14);
+                    else if (bounds.length > 1)
+                        map.fitBounds(bounds, { padding: [30, 30] });
+                };
+
                 function toggleMap() {
-                    setShowMap(v => !v);
+                    const nextVisible = !showMap;
+                    setShowMap(nextVisible);
+                    if (nextVisible)
+                        setTimeout(plotEditorCoordinates, 100);
                 }
 
                 const openDiscord = () => navigate('https://discord.gg/XKG5CjtXEj?utm_source=welsonjs');
@@ -913,6 +989,7 @@
                         onHwpExampleClick: showHwpExample,
                         onDiscordClick: openDiscord,
                         onKakaoClick: openKakao,
+                        onWorldTouristExampleClick: showWorldTouristExample,
                     }),
                     _e('div', { id: 'container' },
                         _e(Editor, { editorRef: editorRef, visible: !showMap }),
