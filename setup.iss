@@ -84,6 +84,7 @@ Source: "*.md"; DestDir: "{app}";
 Source: "bootstrap.bat"; DestDir: "{app}";
 Source: "uriloader.js"; DestDir: "{app}";
 Source: "webloader.js"; DestDir: "{app}";
+Source: "mcploader.js"; DestDir: "{app}";
 Source: "testloader.js"; DestDir: "{app}";
 Source: "encryptor.js"; DestDir: "{app}";
 Source: "bootstrap.js"; DestDir: "{app}";

@@ -361,6 +361,18 @@ namespace WelsonJS.Launcher
                 isRequired: true
             );
 
+            CopyFile(
+                Path.Combine(appRoot, "mcploader.js"),
+                Path.Combine(workingDirectory, "mcploader.js"),
+                isRequired: false
+            );
+
+            CopyFile(
+                Path.Combine(appRoot, "webloader.js"),
+                Path.Combine(workingDirectory, "webloader.js"),
+                isRequired: false
+            );
+
             CopyDirectoryRecursive(
                 Path.Combine(appRoot, "app", "assets", "js"),
                 Path.Combine(workingDirectory, "app", "assets", "js"),
