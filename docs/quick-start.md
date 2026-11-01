@@ -46,11 +46,12 @@ bootstrap.bat
 
 `bootstrap.bat`은 다음 작업을 수행한다.
 
-- `app\assets\reg\Default_HTA.reg`를 가져와 HTA 파일 연결을 설정한다 (레지스트리 변경).
 - `WelsonJS.ManagedObject` 구성 요소를 `RegAsm.exe`로 등록한다. 로컬 `bin\x86\WelsonJS.ManagedObject.dll`이 없으면 인터넷에서 내려받는다.
-- 마지막으로 `cscript app.js bootstrap`을 실행한다.
+- 마지막으로 `cscript app.js bootstrap`을 실행한다. Windows 8.1 미만이거나 버전을 확인할 수 없으면 이 단계에서 `app\assets\reg\Default_HTA.reg`를 가져와 HTA 파일 연결을 설정한다 (레지스트리 변경).
 
 레지스트리와 COM 등록을 변경하므로 관리자 권한이 필요할 수 있다. 순수 JScript 모듈만 사용한다면 이 단계를 건너뛰어도 된다.
+
+`bootstrap.bat`은 `welsonjs://` URI 스킴을 등록하지 않는다. 설치 프로그램의 "Register the welsonjs:// URI scheme" 옵션(기본 선택)이 `postInstall.ps1`을 통해 등록한다. 등록된 스킴은 어떤 웹 페이지에서나 열 수 있으므로, 필요하지 않으면 이 옵션을 해제한다.
 
 ## 3. 첫 번째 스크립트 실행
 

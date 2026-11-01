@@ -1,5 +1,5 @@
 ; @created_on 2020-06-26
-; @updated_on 2026-10-24
+; @updated_on 2026-11-01
 ; @author Namhyeon Go <gnh1201@catswords.re.kr> and Catswords OSS contributors.
 
 [Setup]
@@ -29,6 +29,7 @@ ChangesAssociations=yes
 [Components]
 ; Add an optional component for the user to select during installation
 Name: "fileassoc"; Description: "Associate .js files to run with WelsonJS"; Types: full compact custom;
+Name: "urischeme"; Description: "Register the welsonjs:// URI scheme"; Types: full compact custom;
 Name: "artifacts"; Description: "WelsonJS Launcher and Windows Service"; Types: full compact custom;
 Name: "mcp"; Description: "Configure WelsonJS MCP server for supported AI CLIs"; Types: full compact custom;
 Name: "python"; Description: "Download Python Windows embeddable package"; Types: full;
@@ -103,9 +104,17 @@ Source: "bin\x86\curl-ca-bundle.crt"; DestDir: "{app}/bin/x86"; Flags: ignorever
 Source: "bin\x86\WelsonJS.Launcher.exe"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
 Source: "bin\x86\WelsonJS.Launcher.exe.config"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
 Source: "bin\x86\WelsonJS.Esent.dll"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
+Source: "bin\x86\Esent.Interop.dll"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
+Source: "bin\x86\integrity.config.xml"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
 Source: "bin\x86\WelsonJS.ManagedObject.dll"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
 Source: "bin\x86\Catswords.Phantomizer.dll"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
 Source: "bin\x86\ChakraCore.dll"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
+Source: "bin\x86\welsonjs-hta.exe"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
+Source: "bin\x86\welsonjs-hta-webview2.exe"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
+Source: "bin\x86\welsonjs-hta-edgehtml.exe"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
+Source: "bin\x86\welsonjs-hta-mshtml.exe"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
+Source: "bin\x86\WebView2Loader.dll"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
+Source: "bin\x86\webview.js"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
 Source: "data\*"; Excludes: "*-apikey.txt,.pipe_*"; DestDir: "{app}/data"; Flags: ignoreversion recursesubdirs;
 ; Source: "node_modules\*"; DestDir: "{app}/node_modules"; Flags: ignoreversion recursesubdirs;
 ; Source: "bower_components\*"; DestDir: "{app}/node_modules"; Flags: ignoreversion recursesubdirs;
@@ -118,9 +127,9 @@ Name: "{app}\tmp";
 ; Type: files; Name: "{app}\defaultService.js"
 
 [Icons]
-Name: "{group}\Start {cm:AppName} Launcher"; Filename: "{app}\bin\x86\WelsonJS.Launcher.exe"; Components: artifacts; AfterInstall: SetElevationBit('{group}\Start {cm:AppName} Launcher.lnk');
-Name: "{group}\Test {cm:AppName}"; Filename: "{app}\bootstrap.bat"; AfterInstall: SetElevationBit('{group}\Test {cm:AppName}.lnk');
-Name: "{group}\Uninstall {cm:AppName}"; Filename: "{uninstallexe}"; AfterInstall: SetElevationBit('{group}\Uninstall {cm:AppName}.lnk');
+Name: "{group}\Start {cm:AppName} Launcher"; Filename: "{app}\bin\x86\WelsonJS.Launcher.exe"; IconFilename: "{app}\app\favicon.ico"; Components: artifacts; AfterInstall: SetElevationBit('{group}\Start {cm:AppName} Launcher.lnk');
+Name: "{group}\Test {cm:AppName}"; Filename: "{app}\bootstrap.bat"; IconFilename: "{app}\app\favicon.ico"; AfterInstall: SetElevationBit('{group}\Test {cm:AppName}.lnk');
+Name: "{group}\Uninstall {cm:AppName}"; Filename: "{uninstallexe}"; IconFilename: "{app}\app\favicon.ico"; AfterInstall: SetElevationBit('{group}\Uninstall {cm:AppName}.lnk');
 
 [Run]
 Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -NoProfile -File ""{app}\postInstall.ps1"" -TelemetryProvider posthog -TelemetryApiKey ""{cm:PostHogApiKey}"" -Version ""{cm:AppVersion}"" -DistinctId ""{computername}"" -Components ""{code:GetSelectedComponents}"""; WorkingDir: "{app}"; Flags: waituntilterminated
@@ -392,7 +401,15 @@ procedure CurUninstallStepChanged(
   CurUninstallStep: TUninstallStep);
 var
   ErrorCode: Integer;
+  UriCommand: string;
 begin
+  // postInstall.ps1 registers the URI scheme, so Inno Setup has no record of it.
+  // Remove it only when it points at this installation.
+  if (CurUninstallStep = usUninstall) and
+     RegQueryStringValue(HKCR, 'welsonjs\shell\open\command', '', UriCommand) and
+     (Pos(Lowercase(ExpandConstant('{app}\app.js')), Lowercase(UriCommand)) > 0) then
+    RegDeleteKeyIncludingSubkeys(HKCR, 'welsonjs');
+
   if CurUninstallStep = usDone then
     ShellExec(
       'open',

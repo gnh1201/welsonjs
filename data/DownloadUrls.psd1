@@ -20,7 +20,7 @@
     curl = @{
         x64   = "https://curl.se/windows/latest.cgi?p=win64-mingw.zip"
         arm64 = "https://curl.se/windows/latest.cgi?p=win64a-mingw.zip"
-        x86   = "https://twds.dl.sourceforge.net/project/muldersoft/cURL/curl-8.17.0-win-x86-full.2026-05-02.zip?viasf=1"
+        x86   = "https://catswords.blob.core.windows.net/welsonjs/packages/native/curl/8.20.0-x86/curl-8.20.0-win-x86-full.2026-05-02.zip"
     }
 
     # ===========================

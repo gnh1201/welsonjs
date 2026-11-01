@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Catswords Research")]
 [assembly: AssemblyProduct("WelsonJS")]
-[assembly: AssemblyCopyright("2026 Namhyeon Go, Catswords OSS and WelsonJS contributors")]
+[assembly: AssemblyCopyright("2026 Namhyeon Go, Catswords OSS and WelsonJS Contributors")]
 [assembly: AssemblyTrademark("WelsonJS")]
 [assembly: AssemblyCulture("")]
 

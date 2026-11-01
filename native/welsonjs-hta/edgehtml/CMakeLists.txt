@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(welsonjs_hta_edgehtml LANGUAGES CXX)
+project(welsonjs_hta_edgehtml LANGUAGES CXX RC)
 
 set(WEBVIEW_USE_EDGE OFF CACHE BOOL "Use the WebView2 backend" FORCE)
 set(WEBVIEW_USE_MSHTML OFF CACHE BOOL "Use the MSHTML backend" FORCE)
@@ -16,7 +16,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${WELSONJS_HTA_RUNTIME_OUTPUT_DIRECTORY}")
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/../../yaww"
                  "${CMAKE_CURRENT_BINARY_DIR}/yaww")
 
-add_executable(welsonjs-hta-edgehtml WIN32 ../welsonjs_hta.cpp)
+add_executable(welsonjs-hta-edgehtml WIN32 ../welsonjs_hta.cpp ../welsonjs_hta.rc)
 target_compile_features(welsonjs-hta-edgehtml PRIVATE cxx_std_17)
 target_compile_definitions(welsonjs-hta-edgehtml PRIVATE
   UNICODE _UNICODE _SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS)

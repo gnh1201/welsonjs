@@ -4,18 +4,33 @@ image: Visual Studio 2019
 
 clone_folder: C:\projects\welsonjs
 
+init:
+  # The repository stores LF; the installer must ship CRLF batch files.
+  - git config --global core.autocrlf true
+
 environment:
   ORGANIZATION_ID: 8ee5ec82-36dc-4619-ac33-5bc1117428fe
   PROJECT_SLUG: welsonjs
   ARTIFACT_CONFIGURATION_SLUG: initial
+  INNOSETUP_VERSION: 6.7.1
+  CURL_GZ_URL: https://catswords.blob.core.windows.net/welsonjs/packages/native/curl/8.20.0-x86/curl.exe.gz
+  CURL_GZ_SHA256: 222fcf710a6426841ff11f01548e588aa478ea997fe49b5cd54926a5841cb660
+  CURL_CA_BUNDLE_GZ_URL: https://catswords.blob.core.windows.net/welsonjs/packages/native/curl/8.20.0-x86/curl-ca-bundle.crt.gz
+  CURL_CA_BUNDLE_GZ_SHA256: 84cf5b3ccb716914fba03bef16c0eaf5cbc00dfb7b7f41b8bab48754b5879859
+  SEVENZR_GZ_URL: https://catswords.blob.core.windows.net/welsonjs/packages/native/7zr/26.05-x86/7zr.exe.gz
+  SEVENZR_GZ_SHA256: c63c0233d08a49606626613f28e87879f223bc949d20cca9bcc9f3ea31921a43
   matrix:
     - CONFIGURATION: Debug
       SIGNING_POLICY_SLUG: test-signing
     - CONFIGURATION: Release
       SIGNING_POLICY_SLUG: release-signing
 
+install:
+  - choco install innosetup --version=%INNOSETUP_VERSION% -y --no-progress
+
 before_build:
   - git submodule update --init --recursive
+  - git -C native\ManagedEsent apply --ignore-whitespace ..\patches\ManagedEsent-no-system-memory.patch
   - ps: |
       function Set-TargetFramework {
           param (
@@ -40,7 +55,6 @@ before_build:
           }
           Set-Content $project $content
       }
-      Set-TargetFramework "native\ManagedEsent\EsentInterop\EsentInterop.csproj" "net472"
       Set-TargetFramework "native\WelsonJS.Augmented\WelsonJS.ManagedObject\WelsonJS.ManagedObject.csproj" "v2.0"
   - nuget restore native\WelsonJS.Augmented
 
@@ -59,7 +73,66 @@ after_build:
    - cmd: xcopy /s /y native\WelsonJS.Augmented\WelsonJS.Launcher\bin\x86\%CONFIGURATION%\* artifacts\
    - cmd: xcopy /s /y native\WelsonJS.Augmented\Catswords.Phantomizer\bin\%CONFIGURATION%\netstandard2.0\* artifacts\
    - cmd: nuget pack native\WelsonJS.Augmented\WelsonJS.ManagedObject\ -properties Configuration=%CONFIGURATION% -properties Platform=AnyCPU -OutputDirectory artifacts\
-   - ps: Start-BitsTransfer -Source "https://catswords.blob.core.windows.net/welsonjs/welsonjs_setup_unsigned.exe" -Destination "artifacts\welsonjs_setup.exe"
+   - ps: |
+       $ErrorActionPreference = "Stop"
+       $ProgressPreference = "SilentlyContinue"
+       [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+       function Get-VerifiedFile {
+           param ([string]$Url, [string]$Sha256, [string]$Destination)
+           Invoke-WebRequest -Uri $Url -OutFile $Destination -UseBasicParsing
+           $actual = (Get-FileHash $Destination -Algorithm SHA256).Hash
+           if ($actual -ne $Sha256) {
+               throw "SHA-256 mismatch for ${Url}: expected $Sha256, got $actual"
+           }
+       }
+
+       function Expand-GzipFile {
+           param ([string]$Source, [string]$Destination)
+           $sourceStream = [IO.File]::OpenRead($Source)
+           try {
+               $gzip = New-Object IO.Compression.GZipStream($sourceStream, [IO.Compression.CompressionMode]::Decompress)
+               $destinationStream = [IO.File]::Create($Destination)
+               try {
+                   $gzip.CopyTo($destinationStream)
+               } finally {
+                   $destinationStream.Dispose()
+               }
+           } finally {
+               $sourceStream.Dispose()
+           }
+       }
+
+       # Stage the files that setup.iss reads from the git-ignored bin\x86 folder.
+       $binDir = (New-Item -ItemType Directory -Force -Path "bin\x86").FullName
+       @(
+           "WelsonJS.Launcher.exe",
+           "WelsonJS.Launcher.exe.config",
+           "WelsonJS.Esent.dll",
+           "Esent.Interop.dll",
+           "integrity.config.xml",
+           "WelsonJS.ManagedObject.dll",
+           "Catswords.Phantomizer.dll",
+           "ChakraCore.dll",
+           "welsonjs-hta.exe",
+           "welsonjs-hta-webview2.exe",
+           "welsonjs-hta-edgehtml.exe",
+           "welsonjs-hta-mshtml.exe",
+           "WebView2Loader.dll",
+           "webview.js"
+       ) | ForEach-Object { Copy-Item "artifacts\$_" "bin\x86\" }
+
+       Get-VerifiedFile $env:SEVENZR_GZ_URL $env:SEVENZR_GZ_SHA256 "$env:TEMP\7zr.exe.gz"
+       Expand-GzipFile "$env:TEMP\7zr.exe.gz" "$binDir\7zr.exe"
+       Get-VerifiedFile $env:CURL_GZ_URL $env:CURL_GZ_SHA256 "$env:TEMP\curl.exe.gz"
+       Expand-GzipFile "$env:TEMP\curl.exe.gz" "$binDir\curl.exe"
+       Get-VerifiedFile $env:CURL_CA_BUNDLE_GZ_URL $env:CURL_CA_BUNDLE_GZ_SHA256 "$env:TEMP\curl-ca-bundle.crt.gz"
+       Expand-GzipFile "$env:TEMP\curl-ca-bundle.crt.gz" "$binDir\curl-ca-bundle.crt"
+
+       $iscc = (Resolve-Path "C:\Program Files*\Inno Setup 6\ISCC.exe" | Select-Object -First 1).Path
+       if (-not $iscc) { throw "ISCC.exe was not found" }
+       & $iscc "/O$((Resolve-Path artifacts).Path)" "/Fwelsonjs_setup" "setup.iss"
+       if ($LASTEXITCODE -ne 0) { throw "ISCC failed with exit code $LASTEXITCODE" }
    - cmd: 7z a artifacts.zip artifacts\*
 
 artifacts:

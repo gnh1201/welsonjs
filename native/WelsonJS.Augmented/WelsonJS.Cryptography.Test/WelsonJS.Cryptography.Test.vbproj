@@ -5,6 +5,7 @@
     <RootNamespace>WelsonJS.Cryptography.Test</RootNamespace>
     <TargetFramework>net5.0</TargetFramework>
     <Platforms>AnyCPU;x86</Platforms>
+    <Copyright>2026 Namhyeon Go, Catswords OSS and WelsonJS Contributors</Copyright>
   </PropertyGroup>
 
   <ItemGroup>

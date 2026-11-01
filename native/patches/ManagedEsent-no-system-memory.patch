@@ -1,0 +1,27 @@
+diff --git a/EsentInterop/EsentInterop.csproj b/EsentInterop/EsentInterop.csproj
+index 183480d..ed644f0 100644
+--- a/EsentInterop/EsentInterop.csproj
++++ b/EsentInterop/EsentInterop.csproj
+@@ -7,7 +7,7 @@
+     <AppDesignerFolder>Properties</AppDesignerFolder>
+     <RootNamespace>Esent.Interop</RootNamespace>
+     <AssemblyName>Esent.Interop</AssemblyName>
+-    <TargetFrameworks>net8.0;net472</TargetFrameworks>
++    <TargetFrameworks>net472</TargetFrameworks>
+     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+ 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+@@ -25,9 +25,10 @@
+     <Folder Include="Properties\" />
+   </ItemGroup>
+ 
+-  <ItemGroup>
+-	<PackageReference Include="System.Memory" />
+-  </ItemGroup>
++  <!-- The upstream ESENT switch excludes every Span API, so System.Memory is not needed on .NET Framework. -->
++  <PropertyGroup>
++    <DefineConstants>$(DefineConstants);ESENT</DefineConstants>
++  </PropertyGroup>
+   
+   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+        Other similar extension points exist, see Microsoft.Common.targets.
