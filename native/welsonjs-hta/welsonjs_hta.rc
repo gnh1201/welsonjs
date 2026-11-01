@@ -1,7 +1,7 @@
 #include <winver.h>
 
 // Windows uses the first icon resource as the executable's Explorer icon.
-1 ICON "favicon.ico"
+1 ICON "../../app/favicon.ico"
 
 1 VERSIONINFO
 FILEVERSION 0,2,7,62
