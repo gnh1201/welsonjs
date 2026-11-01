@@ -30,6 +30,7 @@ install:
 
 before_build:
   - git submodule update --init --recursive
+  - git -C native\ManagedEsent apply --ignore-whitespace ..\patches\ManagedEsent-no-system-memory.patch
   - ps: |
       function Set-TargetFramework {
           param (
@@ -54,7 +55,6 @@ before_build:
           }
           Set-Content $project $content
       }
-      Set-TargetFramework "native\ManagedEsent\EsentInterop\EsentInterop.csproj" "net472"
       Set-TargetFramework "native\WelsonJS.Augmented\WelsonJS.ManagedObject\WelsonJS.ManagedObject.csproj" "v2.0"
   - nuget restore native\WelsonJS.Augmented
 
@@ -109,6 +109,8 @@ after_build:
            "WelsonJS.Launcher.exe",
            "WelsonJS.Launcher.exe.config",
            "WelsonJS.Esent.dll",
+           "Esent.Interop.dll",
+           "integrity.config.xml",
            "WelsonJS.ManagedObject.dll",
            "Catswords.Phantomizer.dll",
            "ChakraCore.dll",
