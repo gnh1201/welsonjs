@@ -909,7 +909,8 @@ require._getCurrentScriptDirectory = function() {
         } else if (typeof document !== "undefined") {
             return (function(dirpath) {
                 if (dirpath.charAt(0) == '/') {
-                    return dirpath.substring(1).replace(/\//g, "\\");
+                    // A file: URL path is percent-encoded; mshta returns a plain path.
+                    return decodeURIComponent(dirpath.substring(1)).replace(/\//g, "\\");
                 }
                 return dirpath;
             })(require._getDirectoryName(document.location.pathname));
