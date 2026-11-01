@@ -111,7 +111,13 @@ after_build:
            "WelsonJS.Esent.dll",
            "WelsonJS.ManagedObject.dll",
            "Catswords.Phantomizer.dll",
-           "ChakraCore.dll"
+           "ChakraCore.dll",
+           "welsonjs-hta.exe",
+           "welsonjs-hta-webview2.exe",
+           "welsonjs-hta-edgehtml.exe",
+           "welsonjs-hta-mshtml.exe",
+           "WebView2Loader.dll",
+           "webview.js"
        ) | ForEach-Object { Copy-Item "artifacts\$_" "bin\x86\" }
 
        Get-VerifiedFile $env:SEVENZR_GZ_URL $env:SEVENZR_GZ_SHA256 "$env:TEMP\7zr.exe.gz"
