@@ -29,6 +29,7 @@ ChangesAssociations=yes
 [Components]
 ; Add an optional component for the user to select during installation
 Name: "fileassoc"; Description: "Associate .js files to run with WelsonJS"; Types: full compact custom;
+Name: "urischeme"; Description: "Register the welsonjs:// URI scheme"; Types: full compact custom;
 Name: "artifacts"; Description: "WelsonJS Launcher and Windows Service"; Types: full compact custom;
 Name: "mcp"; Description: "Configure WelsonJS MCP server for supported AI CLIs"; Types: full compact custom;
 Name: "python"; Description: "Download Python Windows embeddable package"; Types: full;
@@ -400,7 +401,15 @@ procedure CurUninstallStepChanged(
   CurUninstallStep: TUninstallStep);
 var
   ErrorCode: Integer;
+  UriCommand: string;
 begin
+  // postInstall.ps1 registers the URI scheme, so Inno Setup has no record of it.
+  // Remove it only when it points at this installation.
+  if (CurUninstallStep = usUninstall) and
+     RegQueryStringValue(HKCR, 'welsonjs\shell\open\command', '', UriCommand) and
+     (Pos(Lowercase(ExpandConstant('{app}\app.js')), Lowercase(UriCommand)) > 0) then
+    RegDeleteKeyIncludingSubkeys(HKCR, 'welsonjs');
+
   if CurUninstallStep = usDone then
     ShellExec(
       'open',

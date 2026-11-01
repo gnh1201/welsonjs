@@ -51,6 +51,8 @@ bootstrap.bat
 
 Because it changes the registry and COM registrations, it may require administrator privileges. You can skip this step if you only use pure JScript modules.
 
+`bootstrap.bat` does not register the `welsonjs://` URI scheme. The installer's "Register the welsonjs:// URI scheme" option (selected by default) does this through `postInstall.ps1`. Any web page can open a registered scheme, so clear the option if you do not need it.
+
 ## 3. Run your first script
 
 From the repository root, run:

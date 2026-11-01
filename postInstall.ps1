@@ -262,6 +262,73 @@ if ($AllComponentsSelected) {
 Write-Host ""
 
 # ================================
+# URI SCHEME REGISTRATION
+# ================================
+# Runs before the downloads so a network failure cannot skip it. Requires
+# administrator privileges because it writes to HKEY_CLASSES_ROOT.
+function Register-UriScheme {
+    $root = [Microsoft.Win32.Registry]::ClassesRoot
+    $key = $root.CreateSubKey($AppName)
+    try {
+        $key.SetValue("", "URL:$AppName")
+        $key.SetValue("URL Protocol", "")
+    }
+    finally {
+        $key.Dispose()
+    }
+
+    $iconKey = $root.CreateSubKey("$AppName\DefaultIcon")
+    try {
+        $iconKey.SetValue("", "$(Join-Path $ScriptRoot 'app\favicon.ico'),0")
+    }
+    finally {
+        $iconKey.Dispose()
+    }
+
+    # Start cscript directly: the URI comes from web pages and must not pass through cmd.exe.
+    $commandKey = $root.CreateSubKey("$AppName\shell\open\command")
+    try {
+        $commandKey.SetValue("", "`"$env:SystemRoot\System32\cscript.exe`" `"$(Join-Path $ScriptRoot 'app.js')`" uriloader `"%1`"")
+    }
+    finally {
+        $commandKey.Dispose()
+    }
+}
+
+# Removes the scheme only when it points at this installation.
+function Unregister-UriScheme {
+    $root = [Microsoft.Win32.Registry]::ClassesRoot
+    $commandKey = $root.OpenSubKey("$AppName\shell\open\command")
+    if (-not $commandKey) { return }
+    try {
+        $command = [string]$commandKey.GetValue("")
+    }
+    finally {
+        $commandKey.Dispose()
+    }
+
+    $appScript = Join-Path $ScriptRoot "app.js"
+    if ($command.IndexOf($appScript, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) {
+        $root.DeleteSubKeyTree($AppName)
+        Write-Host "[*] Removed the ${AppName}:// URI scheme."
+    }
+}
+
+try {
+    if (Test-ComponentSelected -Name "urischeme") {
+        Write-Host "[*] Registering the ${AppName}:// URI scheme..."
+        Register-UriScheme
+    }
+    else {
+        Write-Host "[*] URI scheme component not selected."
+        Unregister-UriScheme
+    }
+}
+catch {
+    Write-Host "[WARN] Failed to update the URI scheme: $($_.Exception.Message)"
+}
+
+# ================================
 # MCP CLIENT CONFIGURATION
 # ================================
 # These settings register the local stdio server only. They do not start it.
@@ -614,10 +681,7 @@ function Download-File {
 function Invoke-7zr {
     param(
         [Parameter(Mandatory = $true)]
-        [string[]]$Arguments,
-
-        [Parameter(Mandatory = $false)]
-        [string[]]$PipeToArguments
+        [string[]]$Arguments
     )
 
     $sevenZip = Join-Path $ScriptRoot "bin\x86\7zr.exe"
@@ -630,15 +694,7 @@ function Invoke-7zr {
     Write-Host "[DEBUG] 7zr args:"
     Write-Host "        $($Arguments -join ' ')"
 
-    if ($PipeToArguments) {
-        Write-Host "[DEBUG] 7zr pipe-to args:"
-        Write-Host "        $($PipeToArguments -join ' ')"
-
-        & $sevenZip @Arguments | & $sevenZip @PipeToArguments
-    }
-    else {
-        & $sevenZip @Arguments
-    }
+    & $sevenZip @Arguments
 
     if ($LASTEXITCODE -ne 0) {
         throw "7zr exited with code $LASTEXITCODE."
@@ -712,6 +768,93 @@ function Extract-CompressedFile {
     Remove-Item -Path $tmpExtractDir -Recurse -Force
 }
 
+function Expand-TarFile {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$TarPath,
+
+        [Parameter(Mandatory = $true)]
+        [string]$DestinationDirectory
+    )
+
+    function Read-TarBytes([System.IO.Stream]$Stream, [long]$Size) {
+        $buffer = New-Object byte[] $Size
+        $offset = 0
+        while ($offset -lt $Size) {
+            $count = $Stream.Read($buffer, $offset, $Size - $offset)
+            if ($count -le 0) { throw "Unexpected end of TAR archive: $TarPath" }
+            $offset += $count
+        }
+        return ,$buffer
+    }
+
+    function Get-TarText([byte[]]$Bytes, [int]$Offset, [int]$Length) {
+        $text = [System.Text.Encoding]::UTF8.GetString($Bytes, $Offset, $Length)
+        $end = $text.IndexOf([char]0)
+        if ($end -ge 0) { return $text.Substring(0, $end) }
+        return $text
+    }
+
+    $root = [System.IO.Path]::GetFullPath($DestinationDirectory).TrimEnd('\') + '\'
+    $stream = [System.IO.File]::OpenRead($TarPath)
+    try {
+        $overrideName = $null
+        while ($stream.Position -lt $stream.Length) {
+            $header = Read-TarBytes $stream 512
+            if ([Array]::TrueForAll($header, [Predicate[byte]]{ param($b) $b -eq 0 })) { break }
+
+            $size = [Convert]::ToInt64((Get-TarText $header 124 12).Trim(), 8)
+            $type = [char]$header[156]
+            $name = Get-TarText $header 0 100
+            if ((Get-TarText $header 257 5) -eq "ustar") {
+                $prefix = Get-TarText $header 345 155
+                if ($prefix) { $name = "$prefix/$name" }
+            }
+            if ($overrideName) {
+                $name = $overrideName
+                $overrideName = $null
+            }
+
+            $content = $null
+            if (@('L', 'x', '0', [char]0) -contains $type) {
+                $content = Read-TarBytes $stream $size
+            }
+            else {
+                [void]$stream.Seek($size, [System.IO.SeekOrigin]::Current)
+            }
+            [void]$stream.Seek((512 - ($size % 512)) % 512, [System.IO.SeekOrigin]::Current)
+
+            if ($type -ceq 'L') {
+                $overrideName = Get-TarText $content 0 $content.Length
+                continue
+            }
+            if ($type -ceq 'x') {
+                $pax = [System.Text.Encoding]::UTF8.GetString($content)
+                if ($pax -match '(?m)^\d+ path=(.+)$') { $overrideName = $Matches[1] }
+                continue
+            }
+            if (@('0', '5', [char]0) -notcontains $type) {
+                Write-Host "[WARN] Skipping unsupported TAR entry type '$type': $name"
+                continue
+            }
+
+            $target = [System.IO.Path]::GetFullPath((Join-Path $root ($name -replace '/', '\')))
+            if (-not ($target + '\').StartsWith($root, [System.StringComparison]::OrdinalIgnoreCase)) {
+                throw "TAR entry escapes the destination directory: $name"
+            }
+            if ($type -eq '5') {
+                [void][System.IO.Directory]::CreateDirectory($target)
+                continue
+            }
+            [void][System.IO.Directory]::CreateDirectory([System.IO.Path]::GetDirectoryName($target))
+            [System.IO.File]::WriteAllBytes($target, $content)
+        }
+    }
+    finally {
+        $stream.Dispose()
+    }
+}
+
 function Extract-TarGzArchive {
     param(
         [Parameter(Mandatory = $true)]
@@ -740,11 +883,17 @@ function Extract-TarGzArchive {
         return
     }
 
-    Write-Host "[WARN] 'tar' not found. Falling back to 7zr.exe."
+    # 7zr.exe only supports the 7z format, so expand the archive with .NET instead.
+    Write-Host "[WARN] 'tar' not found. Falling back to the built-in TAR reader."
 
-    Invoke-7zr `
-        -Arguments @("x", $ArchivePath, "-so") `
-        -PipeToArguments @("x", "-ttar", "-si", "-o$DestinationDirectory", "-y")
+    $tarPath = Join-Path $DestinationDirectory "_tmp_archive.tar"
+    try {
+        Extract-GZipFile -CompressedPath $ArchivePath -DestinationPath $tarPath
+        Expand-TarFile -TarPath $tarPath -DestinationDirectory $DestinationDirectory
+    }
+    finally {
+        if (Test-Path $tarPath) { Remove-Item -Path $tarPath -Force }
+    }
 }
 
 function Extract-GZipFile {
@@ -770,34 +919,14 @@ function Extract-GZipFile {
         )
 
         $gzipStream.CopyTo($outputStream)
-
-        return
     }
     catch {
-        Write-Host "[!] Native GZIP extraction failed. Falling back to 7-Zip..."
+        throw "GZIP extraction failed for ${CompressedPath}: $($_.Exception.Message)"
     }
     finally {
         if ($gzipStream) { $gzipStream.Dispose() }
         if ($outputStream) { $outputStream.Dispose() }
         if ($inputStream) { $inputStream.Dispose() }
-    }
-
-    $destinationDirectory = Split-Path -Parent $DestinationPath
-
-    Invoke-7zr -Arguments @(
-        "e",
-        "`"$CompressedPath`"",
-        "-o`"$destinationDirectory`"",
-        "-y"
-    )
-
-    # 7-Zip extracts foo.gz as foo
-    $extractedPath = Join-Path `
-        $destinationDirectory `
-        ([System.IO.Path]::GetFileNameWithoutExtension($CompressedPath))
-
-    if ($extractedPath -ne $DestinationPath) {
-        Move-Item -Force $extractedPath $DestinationPath
     }
 }
 

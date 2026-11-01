@@ -4,7 +4,6 @@
 // https://github.com/gnh1201/welsonjs
 // 
 var STD = require("lib/std");
-var FILE = require("lib/file");
 var PS = require("lib/powershell");
 var REG = require("lib/registry");
 var SYS = require("lib/system");
@@ -12,7 +11,6 @@ var SHELL = require("lib/shell");
 var WMI = require("lib/wmi");
 
 var appName = "welsonjs";
-var isDisabledRegisterURIScheme = false;
 
 // Windows versions before 8.1 (NT 6.3) are legacy.
 function isLegacyWindows() {
@@ -30,27 +28,44 @@ function isLegacyWindows() {
     }
 }
 
-function main(args) {
-    //console.trace();
-    
-    // unlock file
-    console.log("Starting unlock files...");
-    PS.execCommand("dir | Unblock-File");
-
-    // Register URI scheme
-    if (!isDisabledRegisterURIScheme) {
-        console.log("Registering URI scheme...");
-        REG.write(REG.HKCR, appName, "", "URL:" + appName, REG.STRING);
-        REG.write(REG.HKCR, appName, "URL Protocol", "", REG.STRING);
-        REG.write(REG.HKCR, appName + "\\DefaultIcon", "", SYS.getCurrentScriptDirectory() + "\\app\\favicon.ico,0", REG.STRING);
-        REG.write(REG.HKCR, appName + "\\shell\\open\\command", "", "cmd.exe /c cscript " + SYS.getCurrentScriptDirectory() + "\\app.js uriloader \"%1\"", REG.STRING);
-    } else {
-        console.log("Skipped register URI scheme");
+// Serializes the running-app check and launch across bootstrap processes.
+// Returns null while another bootstrap holds the lock. The owner keeps the file
+// open, so only a file left behind by a crashed owner can be deleted.
+function acquireStartupLock() {
+    var fso = CreateObject("Scripting.FileSystemObject");
+    var path = fso.BuildPath(fso.GetSpecialFolder(2).Path, appName + "-bootstrap.lock");
+    var stream;
+    try {
+        if (fso.FileExists(path)) {
+            fso.DeleteFile(path, true);
+        }
+        stream = fso.CreateTextFile(path, false);
+    } catch (e) {
+        var code = e.number & 0xFFFF;
+        if (code == 58 || code == 70) { // file already exists, permission denied
+            return null;
+        }
+        console.warn("Could not create the startup lock:", e.message);
+        return {
+            release: function() {}
+        };
     }
+    return {
+        release: function() {
+            stream.Close();
+            fso.DeleteFile(path, true);
+        }
+    };
+}
 
-    // open web application
-    console.log("Trying open GUI...");
+// SHELL.run returns before the forked process appears in the process list.
+function waitForProcess(name) {
+    for (var i = 0; i < 20 && SYS.getProcessListByName(name).length == 0; i++) {
+        sleep(250);
+    }
+}
 
+function openApplication(args) {
     // detect old process
     var processList = SYS.getProcessList();
     for (var i = 0; i < processList.length; i++) {
@@ -66,7 +81,7 @@ function main(args) {
                 //SYS.killProcess(process.ProcessID);
                 //sleep(1000);
                 STD.alert("Please close the running application (PID: " + process.processID + ")");
-                return 0;
+                return false;
             }
         } catch (e) {
             console.warn(e.message);
@@ -74,19 +89,43 @@ function main(args) {
     }
 
     // Opening HTML application
-    // Use mshta on legacy Windows and on source checkouts without the launcher.
-    var legacyWindows = isLegacyWindows();
-    if (legacyWindows) {
+    // app.hta needs the mshta host: the bundled welsonjs-hta viewers render it as
+    // a plain page without WELSONJS_WINDOW or HTA privileges.
+    if (isLegacyWindows()) {
         console.log("Registering HTA file association...");
         REG.execFile("app\\assets\\reg\\Default_HTA.reg");
     }
-    var yawwExecutablesPath = "bin\\x86\\welsonjs-hta.exe";
-    var command = (!legacyWindows && FILE.fileExists(yawwExecutablesPath)) ?
-        [yawwExecutablesPath, "app.hta"] : ["mshta.exe", "app.hta"];
+    var command = ["mshta.exe", "app.hta"];
     if (typeof args !== "undefined") {
         SHELL.run(command.concat(args));
     } else {
         SHELL.run(command);
+    }
+    waitForProcess("mshta.exe");
+    return true;
+}
+
+function main(args) {
+    //console.trace();
+    
+    // unlock file
+    console.log("Starting unlock files...");
+    PS.execCommand("dir | Unblock-File");
+
+    // open web application
+    console.log("Trying open GUI...");
+
+    var startupLock = acquireStartupLock();
+    if (startupLock === null) {
+        console.warn("Another bootstrap is already starting the application.");
+        return 0;
+    }
+    try {
+        if (!openApplication(args)) {
+            return 0;
+        }
+    } finally {
+        startupLock.release();
     }
 
     // print welcome
