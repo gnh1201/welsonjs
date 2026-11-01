@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.15)
-project(welsonjs_hta LANGUAGES CXX)
+project(welsonjs_hta LANGUAGES CXX RC)
 
 if(NOT WIN32)
   message(FATAL_ERROR "The WelsonJS YAWW app is available only on Windows.")
@@ -9,7 +9,7 @@ include(ExternalProject)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 
-add_executable(welsonjs-hta WIN32 dispatcher.cpp)
+add_executable(welsonjs-hta WIN32 dispatcher.cpp welsonjs_hta.rc)
 set_target_properties(welsonjs-hta PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 target_compile_features(welsonjs-hta PRIVATE cxx_std_17)

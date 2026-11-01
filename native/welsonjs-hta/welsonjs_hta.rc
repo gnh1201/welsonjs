@@ -1,0 +1,2 @@
+// Windows uses the first icon resource as the executable's Explorer icon.
+1 ICON "favicon.ico"
