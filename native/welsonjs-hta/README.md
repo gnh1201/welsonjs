@@ -13,8 +13,8 @@ document's page JavaScript engine.
 
 For MSHTML, `.hta` input is copied to a temporary `.html` file beside the
 source so URLMON renders it as page content. This does not reproduce the
-standalone `mshta.exe` host or its HTA privilege and ActiveX behavior, so
-`bootstrap.js` keeps opening the WelsonJS `app.hta` with `mshta.exe`.
+standalone `mshta.exe` host or its HTA privilege and ActiveX behavior.
+`bootstrap.js` opens the WelsonJS `app.hta` with `bin\x86\welsonjs-hta.exe`.
 
 The build uses YAWW from the `native/yaww` submodule and builds a dispatcher
 plus separate WebView2, EdgeHTML, and MSHTML viewers. ChakraCore's

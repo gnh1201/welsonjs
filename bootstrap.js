@@ -42,7 +42,12 @@ function main(args) {
     for (var i = 0; i < processList.length; i++) {
         try {
             var process = processList[i];
-            if (process.Caption == "mshta.exe") {
+            // welsonjs-hta.exe exits after starting one of these viewers
+            if ([
+                "welsonjs-hta-mshtml.exe",
+                "welsonjs-hta-webview2.exe",
+                "welsonjs-hta-edgehtml.exe"
+            ].indexOf(process.Caption) > -1) {
                 //console.warn("Will be kill process ID:", process.ProcessID);
                 //SYS.killProcess(process.ProcessID);
                 //sleep(1000);
@@ -55,10 +60,11 @@ function main(args) {
     }
 
     // Opening HTML application
+    var command = ["bin\\x86\\welsonjs-hta.exe", "app.hta"];
     if (typeof args !== "undefined") {
-        SHELL.run(["app.hta"].concat(args));
+        SHELL.run(command.concat(args));
     } else {
-        SHELL.run("app.hta");
+        SHELL.run(command);
     }
 
     // print welcome
