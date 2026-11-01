@@ -46,9 +46,8 @@ bootstrap.bat
 
 `bootstrap.bat` does the following:
 
-- Imports `app\assets\reg\Default_HTA.reg` to configure the HTA file association (registry change).
 - Registers the `WelsonJS.ManagedObject` component with `RegAsm.exe`. If the local `bin\x86\WelsonJS.ManagedObject.dll` is missing, it downloads the component from the internet.
-- Finally runs `cscript app.js bootstrap`.
+- Finally runs `cscript app.js bootstrap`. On Windows versions earlier than 8.1, or if the version cannot be detected, this step imports `app\assets\reg\Default_HTA.reg` to configure the HTA file association (registry change).
 
 Because it changes the registry and COM registrations, it may require administrator privileges. You can skip this step if you only use pure JScript modules.
 

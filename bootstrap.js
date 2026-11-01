@@ -4,13 +4,31 @@
 // https://github.com/gnh1201/welsonjs
 // 
 var STD = require("lib/std");
+var FILE = require("lib/file");
 var PS = require("lib/powershell");
 var REG = require("lib/registry");
 var SYS = require("lib/system");
 var SHELL = require("lib/shell");
+var WMI = require("lib/wmi");
 
 var appName = "welsonjs";
 var isDisabledRegisterURIScheme = false;
+
+// Windows versions before 8.1 (NT 6.3) are legacy.
+function isLegacyWindows() {
+    try {
+        var version = String(WMI.execQuery("SELECT Version FROM Win32_OperatingSystem").fetch().get("Version")).split(".");
+        var major = parseInt(version[0], 10);
+        var minor = parseInt(version[1], 10);
+        if (isNaN(major) || isNaN(minor)) {
+            throw new Error("Unexpected version: " + version.join("."));
+        }
+        return major < 6 || (major == 6 && minor < 3);
+    } catch (e) {
+        console.warn("Could not detect the Windows version:", e.message);
+        return true;
+    }
+}
 
 function main(args) {
     //console.trace();
@@ -18,10 +36,6 @@ function main(args) {
     // unlock file
     console.log("Starting unlock files...");
     PS.execCommand("dir | Unblock-File");
-
-    // Register HTA file association
-    console.log("Registering HTA file association...");
-    REG.execFile("app\\assets\\reg\\Default_HTA.reg");
 
     // Register URI scheme
     if (!isDisabledRegisterURIScheme) {
@@ -42,7 +56,12 @@ function main(args) {
     for (var i = 0; i < processList.length; i++) {
         try {
             var process = processList[i];
-            if (process.Caption == "mshta.exe") {
+            if ([
+                "mshta.exe",
+                "welsonjs-hta-mshtml.exe",
+                "welsonjs-hta-webview2.exe",
+                "welsonjs-hta-edgehtml.exe"
+            ].indexOf(process.Caption) > -1) {
                 //console.warn("Will be kill process ID:", process.ProcessID);
                 //SYS.killProcess(process.ProcessID);
                 //sleep(1000);
@@ -55,10 +74,19 @@ function main(args) {
     }
 
     // Opening HTML application
+    // Use mshta on legacy Windows and on source checkouts without the launcher.
+    var legacyWindows = isLegacyWindows();
+    if (legacyWindows) {
+        console.log("Registering HTA file association...");
+        REG.execFile("app\\assets\\reg\\Default_HTA.reg");
+    }
+    var yawwExecutablesPath = "bin\\x86\\welsonjs-hta.exe";
+    var command = (!legacyWindows && FILE.fileExists(yawwExecutablesPath)) ?
+        [yawwExecutablesPath, "app.hta"] : ["mshta.exe", "app.hta"];
     if (typeof args !== "undefined") {
-        SHELL.run(["app.hta"].concat(args));
+        SHELL.run(command.concat(args));
     } else {
-        SHELL.run("app.hta");
+        SHELL.run(command);
     }
 
     // print welcome

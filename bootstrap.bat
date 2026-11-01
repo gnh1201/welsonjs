@@ -18,10 +18,6 @@ if not exist "%APPDATA%\welsonjs" mkdir "%APPDATA%\welsonjs"
 
 echo [*] Initializing WelsonJS pre-configuration...
 
-:: Register HTA file association
-echo [*] Configuring HTA file association...
-reg import app\assets\reg\Default_HTA.reg
-
 :: Determine which managed object to use
 if exist "%LOCAL_MANAGEDOBJECT_DLL%" (
     echo [*] Local managed object found. Using "%LOCAL_MANAGEDOBJECT_DLL%" for registration.

@@ -124,10 +124,9 @@ Name: "{app}\tmp";
 ; Type: files; Name: "{app}\defaultService.js"
 
 [Icons]
-Name: "{group}\Start {cm:AppName} Launcher"; Filename: "{app}\bin\x86\WelsonJS.Launcher.exe"; Components: artifacts; AfterInstall: SetElevationBit('{group}\Start {cm:AppName} Launcher.lnk');
-Name: "{group}\Test {cm:AppName}"; Filename: "{app}\bootstrap.bat"; AfterInstall: SetElevationBit('{group}\Test {cm:AppName}.lnk');
-Name: "{group}\{cm:AppName} HTA (WebView)"; Filename: "{app}\bin\x86\welsonjs-hta.exe"; AfterInstall: SetElevationBit('{group}\{cm:AppName} HTA (WebView).lnk');
-Name: "{group}\Uninstall {cm:AppName}"; Filename: "{uninstallexe}"; AfterInstall: SetElevationBit('{group}\Uninstall {cm:AppName}.lnk');
+Name: "{group}\Start {cm:AppName} Launcher"; Filename: "{app}\bin\x86\WelsonJS.Launcher.exe"; IconFilename: "{app}\app\favicon.ico"; Components: artifacts; AfterInstall: SetElevationBit('{group}\Start {cm:AppName} Launcher.lnk');
+Name: "{group}\Test {cm:AppName}"; Filename: "{app}\bootstrap.bat"; IconFilename: "{app}\app\favicon.ico"; AfterInstall: SetElevationBit('{group}\Test {cm:AppName}.lnk');
+Name: "{group}\Uninstall {cm:AppName}"; Filename: "{uninstallexe}"; IconFilename: "{app}\app\favicon.ico"; AfterInstall: SetElevationBit('{group}\Uninstall {cm:AppName}.lnk');
 
 [Run]
 Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -NoProfile -File ""{app}\postInstall.ps1"" -TelemetryProvider posthog -TelemetryApiKey ""{cm:PostHogApiKey}"" -Version ""{cm:AppVersion}"" -DistinctId ""{computername}"" -Components ""{code:GetSelectedComponents}"""; WorkingDir: "{app}"; Flags: waituntilterminated

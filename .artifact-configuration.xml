@@ -13,6 +13,10 @@
       <include path="artifacts/ChakraCore.dll" />
       <include path="artifacts/welsonjs_setup.exe" />
       <include path="artifacts/Catswords.Phantomizer.dll" />
+      <include path="artifacts/welsonjs-hta.exe" />
+      <include path="artifacts/welsonjs-hta-webview2.exe" />
+      <include path="artifacts/welsonjs-hta-edgehtml.exe" />
+      <include path="artifacts/welsonjs-hta-mshtml.exe" />
       <for-each>
         <authenticode-sign />
       </for-each>
