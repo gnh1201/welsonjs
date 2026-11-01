@@ -1,2 +1,31 @@
+#include <winver.h>
+
 // Windows uses the first icon resource as the executable's Explorer icon.
 1 ICON "favicon.ico"
+
+1 VERSIONINFO
+FILEVERSION 0,2,7,62
+PRODUCTVERSION 0,2,7,62
+FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+FILEFLAGS 0
+FILEOS VOS_NT_WINDOWS32
+FILETYPE VFT_APP
+FILESUBTYPE VFT2_UNKNOWN
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "CompanyName", "Catswords Research"
+            VALUE "FileDescription", "WelsonJS HTA"
+            VALUE "FileVersion", "0.2.7.62"
+            VALUE "LegalCopyright", "2026 Namhyeon Go, Catswords OSS and WelsonJS Contributors"
+            VALUE "ProductName", "WelsonJS"
+            VALUE "ProductVersion", "0.2.7.62"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0409, 1200
+    END
+END
