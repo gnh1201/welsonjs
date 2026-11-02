@@ -599,7 +599,7 @@
                     // Open the window inside the click handler so popup blockers allow it,
                     // then attach it to the interactive session once the instance starts.
                     const terminalWindow = openTerminalWindow('wait=1');
-                    axios.post('/welsonjs-instance/run', { script: script })
+                    axios.post('/jsrt-instance/run', { script: script })
                         .then(response => {
                             if (terminalWindow && response.data && response.data.sessionId) {
                                 terminalWindow.location.href = '/terminal.html?session=' + encodeURIComponent(response.data.sessionId);
@@ -609,7 +609,7 @@
                 };
 
                 const openTerminalWindow = (query) => {
-                    const terminalWindow = window.open('/terminal.html' + (query ? '?' + query : ''), 'WelsonJSInstanceTerminal', 'width=1100,height=720,resizable=yes,scrollbars=no');
+                    const terminalWindow = window.open('/terminal.html' + (query ? '?' + query : ''), 'JsrtInstanceTerminal', 'width=1100,height=720,resizable=yes,scrollbars=no');
                     if (!terminalWindow) {
                         appendTextToEditor('\n// Terminal window was blocked by the browser. Please allow popups for localhost.');
                     }

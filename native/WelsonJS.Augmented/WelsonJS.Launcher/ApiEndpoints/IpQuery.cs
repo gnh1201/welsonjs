@@ -105,9 +105,8 @@ namespace WelsonJS.Launcher.ApiEndpoints
                 try
                 {
                     using (HttpResponseMessage resp = await _httpClient.SendAsync(req))
-                    using (JsSerializer ser = new JsSerializer())
                     {
-                        string body = ser.Pretty(await resp.Content.ReadAsStringAsync(), 4);
+                        string body = JsonCodec.Format(await resp.Content.ReadAsStringAsync(), 4);
                         node.Add(new XAttribute("status", (int)resp.StatusCode));
                         node.Add(new XElement("text", body));
                         return node;

@@ -1,4 +1,4 @@
-// WelsonJsInstanceProcessManager.cs
+// JsrtInstanceProcessManager.cs
 // SPDX-License-Identifier: GPL-3.0-or-later
 using System;
 using System.Collections.Generic;
@@ -11,7 +11,7 @@ namespace WelsonJS.Launcher
     /// terminal can both display its output and send keyboard input (e.g. WScript.StdIn).
     /// This deliberately does not use a resident stdio or JSON-RPC process.
     /// </summary>
-    public sealed class WelsonJsInstanceProcessManager
+    public sealed class JsrtInstanceProcessManager
     {
         private readonly object _sync = new object();
         private readonly TerminalSessionManager _sessions;
@@ -19,7 +19,7 @@ namespace WelsonJS.Launcher
         private string _instanceId;
         private string _workingDirectory;
 
-        public WelsonJsInstanceProcessManager(TerminalSessionManager sessions)
+        public JsrtInstanceProcessManager(TerminalSessionManager sessions)
         {
             _sessions = sessions ?? throw new ArgumentNullException(nameof(sessions));
         }

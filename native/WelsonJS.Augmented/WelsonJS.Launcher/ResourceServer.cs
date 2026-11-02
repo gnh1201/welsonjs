@@ -30,7 +30,8 @@ namespace WelsonJS.Launcher
         private readonly List<IApiEndpoint> _apis = new List<IApiEndpoint>();
         private readonly SemaphoreSlim _requestSlots = new SemaphoreSlim(32, 32);
         private readonly ApiEndpoints.LlamaCpp _llamaCppEndpoint;
-        private readonly ApiEndpoints.WelsonJsInstance _welsonJsInstanceEndpoint;
+        private readonly ApiEndpoints.LlmGuard _llmGuardEndpoint;
+        private readonly ApiEndpoints.JsrtInstance _jsrtInstanceEndpoint;
         private readonly ApiEndpoints.Terminal _terminalEndpoint;
         private readonly TerminalSessionManager _terminalSessions = new TerminalSessionManager();
         private BlobConfig _blobConfig;
@@ -76,11 +77,12 @@ namespace WelsonJS.Launcher
             _apis.Add(new ApiEndpoints.Tfa(this, _httpClient, _logger));
             _apis.Add(new ApiEndpoints.Whois(this, _httpClient, _logger));
             _apis.Add(new ApiEndpoints.ImageColorPicker(this, _httpClient, _logger));
-            _apis.Add(new ApiEndpoints.JsonRpc2(this, _httpClient, _logger));
             _llamaCppEndpoint = new ApiEndpoints.LlamaCpp(this, _httpClient, _logger);
             _apis.Add(_llamaCppEndpoint);
-            _welsonJsInstanceEndpoint = new ApiEndpoints.WelsonJsInstance(this, _httpClient, _logger);
-            _apis.Add(_welsonJsInstanceEndpoint);
+            _llmGuardEndpoint = new ApiEndpoints.LlmGuard(this, _httpClient, _logger);
+            _apis.Add(_llmGuardEndpoint);
+            _jsrtInstanceEndpoint = new ApiEndpoints.JsrtInstance(this, _httpClient, _logger);
+            _apis.Add(_jsrtInstanceEndpoint);
             _terminalEndpoint = new ApiEndpoints.Terminal(this, _httpClient, _logger);
             _apis.Add(_terminalEndpoint);
 
@@ -120,12 +122,22 @@ namespace WelsonJS.Launcher
         {
             _isRunning = false;
             if (_cts != null) _cts.Cancel();
-            _llamaCppEndpoint.Shutdown();
-            _welsonJsInstanceEndpoint.Shutdown();
-            _terminalEndpoint.Shutdown();
+            ShutdownChildProcesses();
             _listener.Stop();
 
             MessageBox.Show("Server stopped.");
+        }
+
+        /// <summary>
+        /// Stops the processes the endpoints started (llama.cpp servers, including the
+        /// LLM guard, JSRT instances and terminal sessions). Called when the launcher exits.
+        /// </summary>
+        public void ShutdownChildProcesses()
+        {
+            _llamaCppEndpoint.Shutdown();
+            _llmGuardEndpoint.Shutdown();
+            _jsrtInstanceEndpoint.Shutdown();
+            _terminalEndpoint.Shutdown();
         }
 
         public bool IsRunning()

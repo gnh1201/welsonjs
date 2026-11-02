@@ -22,6 +22,11 @@ using System.Runtime.InteropServices;
 // 이 프로젝트가 COM에 노출되는 경우 다음 GUID는 typelib의 ID를 나타냅니다.
 [assembly: Guid("4074d413-195c-45e9-9e63-0d07914187b8")]
 
+// P/Invoke는 System32에서만 DLL을 찾습니다. 기본값처럼 실행 파일 폴더를 먼저 찾으면
+// AssemblyLoader가 검증해 로드한 ChakraCore.dll 대신 옆에 놓인 ChakraCore.dll이 바인딩됩니다.
+// (이미 로드된 모듈은 이름으로 재사용되므로 검증된 사본이 사용됩니다.)
+[assembly: DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
+
 // 어셈블리의 버전 정보는 다음 네 가지 값으로 구성됩니다.
 //
 //      주 버전

@@ -26,6 +26,8 @@ The server is a stdio JSON-RPC server exposed by `mcploader.js`. It advertises p
 
 Both evaluation tools declare a `timeout` argument with a 180,000–900,000 ms schema range and a 900,000 ms default. The current `mcploader.js` implementation does not read or enforce that argument, so do not rely on it to interrupt a long-running script.
 
+Every `tools/call` result passes the LLM guard built into WelsonJS.Launcher before it is returned (see `docs/llm-guard-flow.en.md`). A result classified as unsafe, or one that cannot be classified because the launcher is not running or the guard model is missing, comes back as an error starting with `Error: The tool result was withheld by the LLM guard.` The script itself has already run in that case, so do not rerun it to recover the output; report the block to the user, and do not try to work around the guard. In particular, never turn the guard off from a script (`require("lib/llm-guard").setEnabled(false)`, or changing `ALLOW_UNSAFE_OUTBOUND`); whether it is on is the user's setting in `app.js`.
+
 Do not imply that unsafe evaluation has been enabled by the skill or by the MCP tool description. If execution is rejected, explain that the host's unsafe-eval setting or explicit call argument is required; do not try to change host configuration to bypass it.
 
 When writing an `evaluate_js` script:

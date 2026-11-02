@@ -1,4 +1,4 @@
-// WelsonJsInstance.cs
+// JsrtInstance.cs
 // SPDX-License-Identifier: GPL-3.0-or-later
 using System;
 using System.Collections.Generic;
@@ -6,21 +6,19 @@ using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using System.Web.Script.Serialization;
 
 namespace WelsonJS.Launcher.ApiEndpoints
 {
-    public sealed class WelsonJsInstance : IApiEndpoint
+    public sealed class JsrtInstance : IApiEndpoint
     {
-        private const string Prefix = "welsonjs-instance";
+        private const string Prefix = "jsrt-instance";
         private const long MaxRequestBodyBytes = 1024 * 1024;
-        private readonly WelsonJsInstanceProcessManager _manager;
-        private readonly JavaScriptSerializer _serializer = new JavaScriptSerializer();
+        private readonly JsrtInstanceProcessManager _manager;
         private readonly ILogger _logger;
 
-        public WelsonJsInstance(ResourceServer server, HttpClient httpClient, ILogger logger)
+        public JsrtInstance(ResourceServer server, HttpClient httpClient, ILogger logger)
         {
-            _manager = new WelsonJsInstanceProcessManager(server.TerminalSessions);
+            _manager = new JsrtInstanceProcessManager(server.TerminalSessions);
             _logger = logger;
         }
 
@@ -51,7 +49,7 @@ namespace WelsonJS.Launcher.ApiEndpoints
                     return;
                 }
 
-                var input = _serializer.DeserializeObject(await ReadBody(context)) as Dictionary<string, object>;
+                var input = JsonCodec.Deserialize(await ReadBody(context)) as Dictionary<string, object>;
                 if (input == null || !input.ContainsKey("script"))
                     throw new ArgumentException("Request body must contain a script.");
 
@@ -62,7 +60,7 @@ namespace WelsonJS.Launcher.ApiEndpoints
             }
             catch (Exception ex)
             {
-                _logger.Error("[WelsonJsInstance] Request failed", ex);
+                _logger.Error("[JsrtInstance] Request failed", ex);
                 await Write(context, new { error = ex.Message }, 400);
             }
         }
@@ -93,7 +91,7 @@ namespace WelsonJS.Launcher.ApiEndpoints
 
         private async Task Write(System.Net.HttpListenerContext context, object value, int status = 200)
         {
-            byte[] bytes = Encoding.UTF8.GetBytes(_serializer.Serialize(value));
+            byte[] bytes = Encoding.UTF8.GetBytes(JsonCodec.Serialize(value));
             context.Response.StatusCode = status;
             context.Response.ContentType = "application/json; charset=utf-8";
             context.Response.ContentLength64 = bytes.Length;

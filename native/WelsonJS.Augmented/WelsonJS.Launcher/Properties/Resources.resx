@@ -241,4 +241,7 @@
   <data name="AppSignalApiKey" xml:space="preserve">
     <value>ls-9e36eee5-ba13-45cd-a7d1-b19f39329173</value>
   </data>
+  <data name="LlmGuardModelPath" xml:space="preserve">
+    <value>qwen3guard_06b\Qwen3Guard-Gen-0.6B.Q4_K_M.gguf</value>
+  </data>
 </root>

@@ -377,7 +377,16 @@ namespace WelsonJS.Launcher.Properties {
                 return ResourceManager.GetString("IpQueryApiPrefix2", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   qwen3guard_06b\Qwen3Guard-Gen-0.6B.Q4_K_M.gguf과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string LlmGuardModelPath {
+            get {
+                return ResourceManager.GetString("LlmGuardModelPath", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   https://github.com/gnh1201/welsonjs과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>

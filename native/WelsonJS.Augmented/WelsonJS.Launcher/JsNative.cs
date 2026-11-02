@@ -26,6 +26,24 @@ namespace WelsonJS.Launcher
         public struct JsRuntime { public IntPtr Handle; }
         public struct JsContext { public IntPtr Handle; }
         public struct JsValue { public IntPtr Handle; }
+        public struct JsPropertyId { public IntPtr Handle; }
+
+        public enum JsValueType
+        {
+            JsUndefined = 0,
+            JsNull = 1,
+            JsNumber = 2,
+            JsString = 3,
+            JsBoolean = 4,
+            JsObject = 5,
+            JsFunction = 6,
+            JsError = 7,
+            JsArray = 8,
+            JsSymbol = 9,
+            JsArrayBuffer = 10,
+            JsTypedArray = 11,
+            JsDataView = 12,
+        }
 
         // JsErrorCode (essential subset; expand as needed)
         public enum JsErrorCode
@@ -94,5 +112,72 @@ namespace WelsonJS.Launcher
         // Unset by passing "invalid" context (JS_INVALID_REFERENCE is typically null)
         [DllImport("ChakraCore.dll", CallingConvention = CallingConvention.StdCall)]
         public static extern JsErrorCode JsDisposeRuntime(JsRuntime runtime);
+
+        // === Values (used by JsonCodec to pass data without building script text) ===
+
+        [DllImport("ChakraCore.dll", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public static extern JsErrorCode JsPointerToString(string value, UIntPtr length, out JsValue result);
+
+        [DllImport("ChakraCore.dll", CallingConvention = CallingConvention.StdCall)]
+        public static extern JsErrorCode JsGetValueType(JsValue value, out JsValueType type);
+
+        [DllImport("ChakraCore.dll", CallingConvention = CallingConvention.StdCall)]
+        public static extern JsErrorCode JsGetNullValue(out JsValue result);
+
+        [DllImport("ChakraCore.dll", CallingConvention = CallingConvention.StdCall)]
+        public static extern JsErrorCode JsBoolToBoolean([MarshalAs(UnmanagedType.U1)] bool value, out JsValue result);
+
+        [DllImport("ChakraCore.dll", CallingConvention = CallingConvention.StdCall)]
+        public static extern JsErrorCode JsBooleanToBool(JsValue value, [MarshalAs(UnmanagedType.U1)] out bool result);
+
+        [DllImport("ChakraCore.dll", CallingConvention = CallingConvention.StdCall)]
+        public static extern JsErrorCode JsDoubleToNumber(double value, out JsValue result);
+
+        [DllImport("ChakraCore.dll", CallingConvention = CallingConvention.StdCall)]
+        public static extern JsErrorCode JsNumberToDouble(JsValue value, out double result);
+
+        [DllImport("ChakraCore.dll", CallingConvention = CallingConvention.StdCall)]
+        public static extern JsErrorCode JsIntToNumber(int value, out JsValue result);
+
+        [DllImport("ChakraCore.dll", CallingConvention = CallingConvention.StdCall)]
+        public static extern JsErrorCode JsCreateObject(out JsValue result);
+
+        [DllImport("ChakraCore.dll", CallingConvention = CallingConvention.StdCall)]
+        public static extern JsErrorCode JsCreateArray(uint length, out JsValue result);
+
+        [DllImport("ChakraCore.dll", CallingConvention = CallingConvention.StdCall)]
+        public static extern JsErrorCode JsGetGlobalObject(out JsValue result);
+
+        [DllImport("ChakraCore.dll", CallingConvention = CallingConvention.StdCall, CharSet = CharSet.Unicode)]
+        public static extern JsErrorCode JsGetPropertyIdFromName(string name, out JsPropertyId propertyId);
+
+        [DllImport("ChakraCore.dll", CallingConvention = CallingConvention.StdCall)]
+        public static extern JsErrorCode JsGetProperty(JsValue obj, JsPropertyId propertyId, out JsValue value);
+
+        [DllImport("ChakraCore.dll", CallingConvention = CallingConvention.StdCall)]
+        public static extern JsErrorCode JsSetProperty(JsValue obj, JsPropertyId propertyId, JsValue value, [MarshalAs(UnmanagedType.U1)] bool useStrictRules);
+
+        [DllImport("ChakraCore.dll", CallingConvention = CallingConvention.StdCall)]
+        public static extern JsErrorCode JsGetIndexedProperty(JsValue obj, JsValue index, out JsValue value);
+
+        [DllImport("ChakraCore.dll", CallingConvention = CallingConvention.StdCall)]
+        public static extern JsErrorCode JsSetIndexedProperty(JsValue obj, JsValue index, JsValue value);
+
+        [DllImport("ChakraCore.dll", CallingConvention = CallingConvention.StdCall)]
+        public static extern JsErrorCode JsGetOwnPropertyNames(JsValue obj, out JsValue propertyNames);
+
+        // arguments[0] is the "this" value
+        [DllImport("ChakraCore.dll", CallingConvention = CallingConvention.StdCall)]
+        public static extern JsErrorCode JsCallFunction(JsValue function, JsValue[] arguments, ushort argumentCount, out JsValue result);
+
+        [DllImport("ChakraCore.dll", CallingConvention = CallingConvention.StdCall)]
+        public static extern JsErrorCode JsGetAndClearException(out JsValue exception);
+
+        // Roots a value for the engine GC while only managed code references it
+        [DllImport("ChakraCore.dll", CallingConvention = CallingConvention.StdCall)]
+        public static extern JsErrorCode JsAddRef(JsValue value, out uint count);
+
+        [DllImport("ChakraCore.dll", CallingConvention = CallingConvention.StdCall)]
+        public static extern JsErrorCode JsRelease(JsValue value, out uint count);
     }
 }

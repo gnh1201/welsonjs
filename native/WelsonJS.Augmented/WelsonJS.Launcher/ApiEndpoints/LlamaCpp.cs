@@ -7,7 +7,6 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web.Script.Serialization;
 
 namespace WelsonJS.Launcher.ApiEndpoints
 {
@@ -19,7 +18,6 @@ namespace WelsonJS.Launcher.ApiEndpoints
         private readonly ResourceServer _server;
         private readonly ILogger _logger;
         private readonly LlamaCppProcessManager _manager;
-        private readonly JavaScriptSerializer _serializer = new JavaScriptSerializer();
 
         public LlamaCpp(ResourceServer server, System.Net.Http.HttpClient httpClient, ILogger logger)
         {
@@ -45,7 +43,7 @@ namespace WelsonJS.Launcher.ApiEndpoints
                     return;
                 }
                 var body = await ReadBody(context);
-                var input = string.IsNullOrEmpty(body) ? new Dictionary<string, object>() : _serializer.DeserializeObject(body) as Dictionary<string, object>;
+                var input = string.IsNullOrEmpty(body) ? new Dictionary<string, object>() : JsonCodec.Deserialize(body) as Dictionary<string, object>;
                 if (input == null) throw new ArgumentException("Request body must be a JSON object.");
                 if (path.EndsWith("/start", StringComparison.OrdinalIgnoreCase))
                 {
@@ -104,7 +102,7 @@ namespace WelsonJS.Launcher.ApiEndpoints
         }
         private async Task Write(HttpListenerContext context, object value, int status = 200)
         {
-            byte[] bytes = Encoding.UTF8.GetBytes(_serializer.Serialize(value));
+            byte[] bytes = Encoding.UTF8.GetBytes(JsonCodec.Serialize(value));
             context.Response.StatusCode = status; context.Response.ContentType = "application/json; charset=utf-8";
             context.Response.ContentLength64 = bytes.Length;
             await context.Response.OutputStream.WriteAsync(bytes, 0, bytes.Length); context.Response.Close();
