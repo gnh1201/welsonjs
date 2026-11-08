@@ -41,13 +41,14 @@ namespace WelsonJS.ManagedObject
         /// </summary>
         public static int Threshold
         {
-            get { return Volatile.Read(ref _threshold); }
+            // Interlocked instead of Volatile, which needs .NET Framework 4.5.
+            get { return Interlocked.CompareExchange(ref _threshold, 0, 0); }
             set
             {
                 if (value < 0)
                     throw new ArgumentOutOfRangeException(nameof(value), "The threshold must be 0 (disabled) or greater.");
 
-                Volatile.Write(ref _threshold, value);
+                Interlocked.Exchange(ref _threshold, value);
             }
         }
 

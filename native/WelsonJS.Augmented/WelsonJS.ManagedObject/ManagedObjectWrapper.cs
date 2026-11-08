@@ -268,7 +268,7 @@ namespace WelsonJS.ManagedObject
 
         private static void ValidateMemberName(string name)
         {
-            if (string.IsNullOrWhiteSpace(name))
+            if (name == null || name.Trim().Length == 0)
                 throw new ArgumentException("A member name is required.", nameof(name));
         }
     }

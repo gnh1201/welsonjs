@@ -4,8 +4,8 @@
 // https://github.com/gnh1201/welsonjs
 //
 using System;
+using System.Collections.Generic;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace WelsonJS.ManagedObject
@@ -24,9 +24,14 @@ namespace WelsonJS.ManagedObject
         // managed objects listed here, because late-bound reflection over an
         // arbitrary .NET object would expose members a script cannot otherwise
         // reach. While a script holds a managed object, its CCW keeps it alive,
-        // so a weak table is sufficient and never extends object lifetimes.
-        private readonly ConditionalWeakTable<object, object> _createdManagedObjects =
-            new ConditionalWeakTable<object, object>();
+        // so weak references are sufficient and never extend object lifetimes.
+        //
+        // This project is also built for .NET Framework 2.0 (see .appveyor.yml),
+        // where ConditionalWeakTable is not available. Only managed objects are
+        // listed (COM objects are not), so a short list is scanned linearly and
+        // dead entries are removed when new objects are added.
+        private readonly List<WeakReference> _createdManagedObjects =
+            new List<WeakReference>();
 
         private readonly object _syncRoot = new object();
 
@@ -35,7 +40,7 @@ namespace WelsonJS.ManagedObject
         // arguments, so a single method with an optional parameter is used.
         public object CreateObject(string progId, [Optional] object serverName)
         {
-            if (string.IsNullOrWhiteSpace(progId))
+            if (progId == null || progId.Trim().Length == 0)
                 throw new ArgumentException("A ProgID is required.", nameof(progId));
 
             progId = progId.Trim();
@@ -65,9 +70,10 @@ namespace WelsonJS.ManagedObject
 
                 // Preserve the original HRESULT so scripts can still inspect
                 // e.number while getting a message that names the ProgID.
+                // Exception.HResult is not public before .NET Framework 4.5.
                 throw new COMException(
                     BuildCreateErrorMessage(progId, server, cause),
-                    cause.HResult
+                    Marshal.GetHRForException(cause)
                 );
             }
 
@@ -143,19 +149,30 @@ namespace WelsonJS.ManagedObject
 
             lock (_syncRoot)
             {
-                object unused;
-                if (!_createdManagedObjects.TryGetValue(obj, out unused))
-                    _createdManagedObjects.Add(obj, null);
+                // Remove entries whose objects have been collected.
+                _createdManagedObjects.RemoveAll(delegate (WeakReference entry) { return !entry.IsAlive; });
+
+                if (FindCreatedManagedObject(obj) < 0)
+                    _createdManagedObjects.Add(new WeakReference(obj));
             }
         }
 
         private bool IsCreatedManagedObject(object obj)
         {
             lock (_syncRoot)
+                return FindCreatedManagedObject(obj) >= 0;
+        }
+
+        // Caller must hold _syncRoot.
+        private int FindCreatedManagedObject(object obj)
+        {
+            for (int i = 0; i < _createdManagedObjects.Count; i++)
             {
-                object unused;
-                return _createdManagedObjects.TryGetValue(obj, out unused);
+                if (Object.ReferenceEquals(_createdManagedObjects[i].Target, obj))
+                    return i;
             }
+
+            return -1;
         }
 
         private static object CreateFromClsid(Guid clsid, string server)
