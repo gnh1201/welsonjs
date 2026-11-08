@@ -549,6 +549,8 @@ data/.pipe_*
 data/python3*.zip
 app/assets/img/_templates
 app/assets/img/_captured
+# Vendor JavaScript files are restored by restoreVendorScripts.ps1 (app/assets/integrity.json)
+app/assets/js/**/*.js
 settings.ini
 defaultService.js
 lib/*.private.js

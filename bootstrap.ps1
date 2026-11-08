@@ -86,6 +86,18 @@ try {
     Expand-Archive -Path $zipPath -DestinationPath $tempDir
     Write-Ok "Extraction completed"
 
+    # Step 3B: Restore the vendor JavaScript files (app\assets\js) that app.js needs.
+    # Branches published before restoreVendorScripts.ps1 still bundle these files.
+    $restore = Get-ChildItem -Path $tempDir -Recurse -Filter "restoreVendorScripts.ps1" | Select-Object -First 1
+    if ($restore) {
+        Write-Step "Restoring vendor scripts..."
+        & $restore.FullName -Root $restore.DirectoryName
+        if ($LASTEXITCODE -ne 0) {
+            throw "restoreVendorScripts.ps1 failed with exit code $LASTEXITCODE"
+        }
+        Write-Ok "Vendor scripts restored"
+    }
+
     if ($fileArg) {
         # Step 4A: Run cscript via cmd (with visible console)
         Write-Step "Locating app.js..."

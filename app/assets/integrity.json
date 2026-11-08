@@ -1,0 +1,363 @@
+{
+  "$comment": "WelsonJS app assets integrity index. Maps the integrity digest of each WelsonJS application asset to the URL it can be downloaded from, so that an asset identified by its digest can be restored and verified.",
+  "name": "WelsonJS app assets integrity index",
+  "version": 1,
+  "description": [
+    "WelsonJS runs the scripts under app/assets with the privileges of the Windows Script Host, so their content must be exactly the content published by the WelsonJS project.",
+    "Every asset file under app/assets/js has a sidecar file named \"<file name>.integrity\" next to it (for example, app/assets/js/json2.js.integrity). The sidecar contains a single Subresource Integrity digest that identifies the exact content of the asset.",
+    "This index maps each digest in \"hashes\" to the URL that serves that exact content. To restore an asset, read the digest from its sidecar, look the digest up here, download the URL, and use the file only if its digest matches.",
+    "Because entries are keyed by content rather than by path, a digest always leads to the same content wherever the file is located or however it is named.",
+    "If a digest does not match, do not execute the file. Restore it from the WelsonJS repository or installer, or download it again and verify it again. If the mismatch persists, report it at the support link.",
+    "All URLs point to the WelsonJS snapshot server (\"server\"), which serves the files of the WelsonJS repository at the commit in \"source\". The snapshot path includes the full commit hash, so the content behind each URL does not change.",
+    "The index and the sidecar files protect assets only as long as they are authentic. Obtain them from the WelsonJS repository or an official WelsonJS installer, and regenerate them whenever the assets change."
+  ],
+  "project": {
+    "name": "WelsonJS",
+    "repository": "https://github.com/gnh1201/welsonjs",
+    "support": "https://github.com/gnh1201/welsonjs/issues",
+    "license": "(GPL-3.0 or MS-RL)"
+  },
+  "server": {
+    "name": "WelsonJS snapshot server (Catswords)",
+    "baseUrl": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/"
+  },
+  "source": {
+    "repository": "https://github.com/gnh1201/welsonjs",
+    "commit": "2ce70a3ae00a333edcba2b9e69665b137bd9a218",
+    "tree": "https://github.com/gnh1201/welsonjs/tree/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js"
+  },
+  "integrity": {
+    "format": "Subresource Integrity: \"<algorithm>-<base64 digest>\"",
+    "eol": "Digests are computed over the repository bytes, which equal the bytes served by \"url\". Git may check the text assets out with CRLF line endings (core.autocrlf); normalize CRLF to LF before verifying a local copy."
+  },
+  "hashes": {
+    "sha384-nqtJqMs0Nj+FwjJs6luVic+bszKGZzUzhqA/sbs8JKOjyPvC6CpCqYJXXI90qO2A": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/babel-standalone-7.20.6.min.js",
+      "size": 2772513
+    },
+    "sha384-xitybFHcS7FkuR6RRzYxvxi1tZpjHTIahjcOAo6vMbSWbGtOT4c6O6nJMLmLEAws": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/coffeescript-legacy-2.7.0.min.js",
+      "size": 530111
+    },
+    "sha384-eorDqpkMJo3GBc8kLnMcmAw2ZB9e3Rs1lgcgRxfyTgg2a6+x3fLGdpC90wYSUsxo": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/coffeescript-modern-2.7.0.min.js",
+      "size": 528880
+    },
+    "sha384-toV2pW0Oa3qcR4TcjWjMh9rK7Q+1C/vX0ztiJG9tUw2FoHDHTPb1rlNhTSa6JzRn": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/core-js-3.38.0.minified.js",
+      "size": 251659
+    },
+    "sha384-SWIxRtXqindIMoY61U+G2EKpAG91r2ZGGCj/FBV6AYdx7JlRA8oHXSptOSpoPW0B": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/core-js-3.49.0.wsh.js",
+      "size": 889100
+    },
+    "sha384-mGrVoMusGfDA0H2WR9lOvw2o/eY1bLBL7PoLLZSQE7u1iAPMRAkIHvHWm22X+gi4": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/aes.min.js",
+      "size": 2406
+    },
+    "sha384-KcRY7mUbq/6HFUo6puf9Y+ZYW0G2sqHEuUKADOL8/qk2fXmI/yfEMl7vLxjr9DVy": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/cipher-core.min.js",
+      "size": 4236
+    },
+    "sha384-8yODdL2Po1a93VgpbyHLS7gwhhlcPX9r9fZxSq9J94+3q8PdPCuDWZP6eTM2+odT": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/core.min.js",
+      "size": 3581
+    },
+    "sha384-JO0k6Q+ba8zh7a92Odh3brEDo5DHWklq3Yu/uX6K2oMTFVNyganZHrEjaaciCDAJ": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/crypto-js.min.js",
+      "size": 47576
+    },
+    "sha384-iNdYuZI2cZKOU3uG/0wSBq2sdL+oxXHEpfRIJTOHPKYPVrK6ji1x+UPfzzOzVPOq": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/enc-base64.min.js",
+      "size": 1021
+    },
+    "sha384-KMPj22KAF+fGlt+I91ud9E+DdRn4qYLakpsfuTew4Wood8aXzbk1mgFkr5XOMGM4": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/enc-hex.min.js",
+      "size": 194
+    },
+    "sha384-nImnb5ohiaR1L5CacdYpABx1Fe0PX03kEZGH3qQ7gCyZvwqpdxVUgcCbtdjlEcQz": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/enc-latin1.min.js",
+      "size": 197
+    },
+    "sha384-5djBuZj/TUiYpNaHa6s1XL+BAgYKV+/eJ4qIpHFWqoHgCXUSUShwFDqpgwWLrzZF": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/enc-utf16.min.js",
+      "size": 868
+    },
+    "sha384-FH4Ka9emFmYEBcFR52bDRNprET3oZkV7zU5FSIz/4afO7R9/uK3DIkD1xn4JPDOz": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/enc-utf8.min.js",
+      "size": 195
+    },
+    "sha384-SqphniXb6nhoY4iId3r0mG4gQBBmJvp1Qr7y/eVmGS0szSwzESPibycLo3xmL/8Q": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/evpkdf.min.js",
+      "size": 754
+    },
+    "sha384-h10aVI1CcK7FIybpsK9+6/VDLakW055eC/JzMFamwWGFhgFzK0J7oFIIQhJxfirp": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/format-hex.min.js",
+      "size": 417
+    },
+    "sha384-JZn9uVRN72YW96c0r9ytgS5RlBAh3L9I8J1iicuoABSgGe2zk5ktAb1INskyuT/Z": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/format-openssl.min.js",
+      "size": 242
+    },
+    "sha384-1nNaagYLBnCDhWWWXSrOQqWDa3MK0RWfjVC/R/dEGEFmIPAnLlEtbqVQQG5+hdQT": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/hmac-md5.min.js",
+      "size": 246
+    },
+    "sha384-T7Tnj4cauLYgQFLC7jrN8bp5Rkrva4U704cgem67R7iwzJ9Hbe80tnp2AMfsK2Ws": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/hmac-ripemd160.min.js",
+      "size": 264
+    },
+    "sha384-aXdiYG0jvt+EMxAq0jiu4Kn3OjqcxYspNWb/jKhU2TBwdy5loRoiD2kdavF1yAbh": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/hmac-sha1.min.js",
+      "size": 249
+    },
+    "sha384-KsqrGKPIBWYQFFjuJBNFMcQSQpGqmEzrspK4oVk/0JCuYEI3z6m90l7MdAmGxiNL": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/hmac-sha224.min.js",
+      "size": 286
+    },
+    "sha384-1goaB1IMTQ1H76N7KUyyk/wtuQJBcc7AsOLVXot4zvizia4kTS0oGdj/CjBa6hpx": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/hmac-sha256.min.js",
+      "size": 255
+    },
+    "sha384-zM4fM8ZzhkUlp17UgLp2ZyIZXrAI7tI20Ig8Wfjx3NI5B5yzdSgTvkSfSMvYf4NA": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/hmac-sha3.min.js",
+      "size": 284
+    },
+    "sha384-9YQkI68PWktGDIdGUhtj5adrVPH/pessbg3g2MNYFvGnjGvwbrABCdFmb05M+w6R": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/hmac-sha384.min.js",
+      "size": 321
+    },
+    "sha384-s+uYBaqZsuD5OjUc9WuCJa6uZLFSOuRMgcXvzkm8RkDtHBgSl4ZW3/lJ6b6wWsHS": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/hmac-sha512.min.js",
+      "size": 290
+    },
+    "sha384-Wst8jhnc8ZPOhsajwKyfwr+QLNBBwNBJgJO7vYxD1YfXNb7Xe/121yRHXEzjDDJX": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/hmac.min.js",
+      "size": 776
+    },
+    "sha384-aYJk63mQFZUSO9KUTd3myiFs70aqS1xv9ywclgPRS5gaPRfDCiqGG2BF/YxIQ1ba": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/index.min.js",
+      "size": 1343
+    },
+    "sha384-qETjceoflNVwUT/LtWMmX3/Su164pW3YxbOk/0tSTCioBuB45+yssrowb5hfdEzK": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/lib-typedarrays.min.js",
+      "size": 810
+    },
+    "sha384-8grjJYqm7LKLYU+wyJNSF5VuUdBkO2nhlP5uc1Yucc9Q1UfngglfeZonVNCLIoCR": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/md5.min.js",
+      "size": 3192
+    },
+    "sha384-sgunda285mRpfub9qv4ajzQYXFnfJNYXTzki/azKbqpRC6HXTj9tVTjYK9AU+CFl": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/mode-cfb.min.js",
+      "size": 718
+    },
+    "sha384-Mb+bFkyScYQyyHKxo9gftNkNRUZCd1piSrE91Fsvba+4X/mdwxyJdY8YkAhbK70S": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/mode-ctr-gladman.min.js",
+      "size": 764
+    },
+    "sha384-vzTZCtFA7kAur15sHpwVA5+6S4Da2L41BaQLyR4j0ligNfC6zVtccwb+Vj83dVSB": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/mode-ctr.min.js",
+      "size": 556
+    },
+    "sha384-FRxcvMs8WStbW1MBXwFxRpb7HumJHCIYgtmvnfxdSuGtA+Qws4ynILPLlu03vIQv": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/mode-ecb.min.js",
+      "size": 456
+    },
+    "sha384-+Hxz3eryWt8tfBEeJUy4urbCIRRYZHnTOOzU4siADKeQ+10RP5FbsboDQ7D0yY+R": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/mode-ofb.min.js",
+      "size": 525
+    },
+    "sha384-XykbomeShHuT/1avkTxNKtbwg4Zbb8TjcGNizgFMSXz2tDl0AcF15s+CMmyvnkiS": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/pad-ansix923.min.js",
+      "size": 436
+    },
+    "sha384-9EovKA/Xb5LMalAqcTqCVOKCJn5uz14rxLWgrxAgoirGcaR2f6SuLnjwJGZ4sANm": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/pad-iso10126.min.js",
+      "size": 452
+    },
+    "sha384-toaUYqiFZDZok/GPfQGXEx64gEHTcFoNzNOhFccZCTeU7x/IZz1eNsGwtNk+vE7S": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/pad-iso97971.min.js",
+      "size": 411
+    },
+    "sha384-FfPL/wZ1rO8Pm5vPr8V5UFY9OAMxQYTM8wuiO2AVAruCz+dSaHkYahtS2Dav72Dh": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/pad-nopadding.min.js",
+      "size": 295
+    },
+    "sha384-S1E0/CwRojYnBqe3Et3CKRU22eUmL9U2HzK+7fJ153ITMopjTGWEPG1QZYhRySi7": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/pad-pkcs7.min.js",
+      "size": 237
+    },
+    "sha384-4WMg0OhVUHA5izJXgkfW3pNd9ZJQvETN66Cljg3JPujjUazgc0Iu54fYm3LMbuYH": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/pad-zeropadding.min.js",
+      "size": 433
+    },
+    "sha384-0NkBhR3cltT+rKnc10mgf9dWZE/UmuS9qoCmsPvPU6BLUTJ9Pb5W5L4odTSaV6fD": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/pbkdf2.min.js",
+      "size": 854
+    },
+    "sha384-/xJfBnOPH2bwVLrN6ETvNflpwervt1XmoG+VU9qMlkZc0/JXUr7oopAf1DwwynZR": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/rabbit-legacy.min.js",
+      "size": 2396
+    },
+    "sha384-cfKLmX8+aRHY4vormmgQ9ML6HYlKktIAosk5CeniCCtP3vCWzZm6kBRszEowipY/": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/rabbit.min.js",
+      "size": 2463
+    },
+    "sha384-8a+/nnl7LqiHLKERy2zstLKqiRAy+GmmlW8zrSoaYQleCwN5VItIbJQz7xKLmw7s": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/rc4.min.js",
+      "size": 1070
+    },
+    "sha384-znLEYFR94zN5lC3LsG/9CQLUtkRGc98f3P09WpsvK0SFZCFcgsnUq+CIB/sUQvE3": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/ripemd160.min.js",
+      "size": 2735
+    },
+    "sha384-/43RbBiZC+XZjZhmino5RyH5ew1Pz2e6GNTPyr1gSTQwNAt2AHN7aKYrjiVkFDuz": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/sha1.min.js",
+      "size": 1169
+    },
+    "sha384-+/g41YvyohxKj22Bkhvyb2BQs/QqO/QbdBoRD1o2013RGPMUJW9C6LGJSnXMqgiE": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/sha224.min.js",
+      "size": 577
+    },
+    "sha384-cfibk4Z8tEs/vVhYZ3IUkyWC+TEffSqd2ntZGgU+YQPBqcovU50E5jt2OpQy+ZRA": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/sha256.min.js",
+      "size": 1518
+    },
+    "sha384-wmQ0fixriZqVd4fuPSNaZtMIzMfb56+IAaDsaNIK0+77R3+GakmpYHjSP5cvoaPP": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/sha3.min.js",
+      "size": 2424
+    },
+    "sha384-jyJhO95qcPx6eAu454CM8GNXUQ4850Aa3YzXYRgYEhNuDQ7UTybRUMycEMCK7Fo8": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/sha384.min.js",
+      "size": 813
+    },
+    "sha384-xvNn2l8DASHuPBBRHf3we37k+GMZJWZyxrIOhZA86XnZlH/5NCWzXF2cCgXLtMw1": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/sha512.min.js",
+      "size": 4825
+    },
+    "sha384-3YfilGZbsqYwwCPDzjyFHJCv1gVFAytGK+s0EF6d4GmKSmjETdu/pOCAlEVefOwm": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/tripledes.min.js",
+      "size": 10327
+    },
+    "sha384-X9RH4+Ptb8KpKAW/GpnO6ryvoZJn108tB8ABuzmvLOlTOc4qLXJNF4jrGvYtkUtr": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/crypto-js-3.3.0/x64-core.min.js",
+      "size": 668
+    },
+    "sha384-eNQG9P9VJEnOzDC+/6/aERcc63bOEG6gxs12plftl+ItDM/wh39IUP9NYxMv288P": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/excanvas.arv-565afad.js",
+      "size": 41141
+    },
+    "sha384-2IfGXhCabVzSQNd/tF1wNjfAxyKMsLbinyb+RlGdBTvA/715X5c5AsdPydwhdPw+": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/goldenlayout-1.5.9.js",
+      "size": 147402
+    },
+    "sha384-4kjqvkTDP1w9CEAfIN4b9nCf9JO8LshEB2GaLsyd/JFG/aINZYHvQguGejUiIudi": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/goldenlayout-1.5.9.min.js",
+      "size": 67923
+    },
+    "sha384-302VbqujSMfxaP68VZlkyj8Lm6BMyRG6g9to0rxGPCwJg1/roloFqMP9twkd1m8+": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/html5shiv-printshiv-3.7.3.min.js",
+      "size": 4366
+    },
+    "sha384-iaQefDYm+dFX4SK8yPucCjaqO+zSs9hNg1JkKqU3IsGf5Yqltw+FZWqLhS8E2VZc": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/ie8-0.8.1.min.js",
+      "size": 14829
+    },
+    "sha384-e1lt4X6hLqRXTdehI1Y/Rhc+BFcFvuPh7cKQbL+5zf9Nj8Yb5NkHOu4TIKb/iKi5": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/Intl-1.2.5-e93b114.min.js",
+      "size": 58272
+    },
+    "sha384-NhZg4YN4HVHVUpCBq8ZMfrLSbCtBu54QdaTUJngKIJg6k9oMGInjVnnNr78rLfA7": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/is-0.9.0.js",
+      "size": 33345
+    },
+    "sha384-XohXzyQkafo1U2Tzk9bcYpI1BdBARUMNWTKxJTIevpHTSlGHE8z2Y2Osu64sZXsm": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/is-0.9.0.min.js",
+      "size": 13181
+    },
+    "sha384-+54fLHoW8AHu3nHtUxs9fW2XKOZ2ZwKHB5olRtKSDTKJIb1Na1EceFZMS8E72mzW": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/jquery-1.11.3.min.js",
+      "size": 95957
+    },
+    "sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/jquery-3.5.1.min.js",
+      "size": 89476
+    },
+    "sha384-PtTRqvDhycIBU6x1wwIqnbDo8adeWIWP3AHmnrvccafo35E7oIvW7HPXn2YimvWu": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/jquery-ui-1.21.1.min.js",
+      "size": 253669
+    },
+    "sha384-+MH/JJ/f/MpqUtleUQmbvWeijy4xwPHS7BTjaTaBYGhAvgLxeSQqxDYkainJGDee": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/jquery.form-4.3.0.min.js",
+      "size": 15248
+    },
+    "sha384-/CnR90nFWh5c7j820kx/QbW41Mi1iXoTBzxI0JMfHU2LtKx1C0+mtyAm/YhrRAQx": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/jquery.html5-placeholder-shim-5a87f05.js",
+      "size": 3745
+    },
+    "sha384-Y0HJZYgyXFtR2JeeBfEFYo7+uF9C+Bgn1yr/EtGnl/uc9vJjNN9yi3AX0ZY9tpN4": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/jquery.toast-1.3.2.min.js",
+      "size": 6335
+    },
+    "sha384-zLTdEoKiSdbGNeeLOZuHuBp4A7s/KbDaoc75TtwAx2Byo7wgGlY5/x+UEl8b2iGH": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/js-yaml-4.1.0.wsh.js",
+      "size": 114403
+    },
+    "sha384-/0dEBZKhFmROgwjfXkBqx1VNMqETgf7YTpaQldstZWkwpXW2XxmpCol6ehCKD8AD": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/json2.js",
+      "size": 18876
+    },
+    "sha384-nSw4MzowLFA79yA376aYHGTxfkiovifOpSDYPFLTarS00Q8hawXB2aPwoBmK9JFe": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/jsrender-1.0.8.min.js",
+      "size": 27411
+    },
+    "sha384-02OkPhqOr7H7xbKX69p4TxBkBODyzvelEEFRCQiKBAINOcFt4FwF+mTCf77BOsOG": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/linq-4.0.2.wsh.js",
+      "size": 96745
+    },
+    "sha384-8PsuhI5EB7s7k/Avm/KzlCguhCLs1YUDwBkbXb9MIHZ+oflBO4wOnxea+C+pWBsI": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/livescript-1.6.1.min.js",
+      "size": 335999
+    },
+    "sha384-bPV3mA2eo3edoq56VzcPBmG1N1QVUfjYMxVIJPPzyFJyFZ8GFfN7Npt06Zr23qts": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/modernizr-2.8.3.min.js",
+      "size": 11084
+    },
+    "sha384-+ckgeX4fJjfI7OWjdck+xOO7gr2uHem5IoG+eR9sxINeVQsAv0Y/JwzkZCvARqhS": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/numbers-0.7.0.wsh.js",
+      "size": 79616
+    },
+    "sha384-sr5QFlRiCuVS+Zqn1y90flhr3QL/e+G5aNKW7qr68s0PMttRFHUkbOynU7Lwi4aQ": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/peg-0.10.0.js",
+      "size": 249217
+    },
+    "sha384-yHC1Ol0dFCG/C+IS2r8wQJMelmA37IekwkzXZ4RgK80Hs41+FatPttdXKbhCfBVF": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/rescript-compiler-10.1.2.js",
+      "size": 7119541
+    },
+    "sha384-gCMJzyHFmITcFM+TmQmZ99MbuP9/JgPwp8JfJRaLgZ5V8TE7pwUAwVH/bFlLwu5E": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/respond-1.4.2.wsh.js",
+      "size": 11489
+    },
+    "sha384-tQBNXBK45ZYZH8bDeJpTDpOMihfNAYGKgP/POiMW+/BkyVTkW/MarWzr7a+v530G": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/selectivizr-1.0.2.wsh.js",
+      "size": 22753
+    },
+    "sha384-sLP9Rsn1S5ZnUO3VUtqmS/eQUFQUKaHJF3vd/4rcS6GIToVTrx3G+/SNfcJdX+YT": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/squel-basic-5.13.0-afa1cb5.wsh.js",
+      "size": 96201
+    },
+    "sha384-6cg1z1HnOVMklasHXiTE86+hMmciTzRHcyCuIYVudpxwYn6QDNsWj7yNrIA4A42N": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/summernote-0.8.20.min.js",
+      "size": 152731
+    },
+    "sha384-EEIjzSoHHJu/A8K/FbFBgBBmHZwkk3wbmgKVv9yfhl+4gUHBSajW2pfvSD1VoeD9": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/summernote-ko-KR-0.8.20.min.js",
+      "size": 4190
+    },
+    "sha384-Q1Pz1KDPaRtDWEzcppLn8S2R4vtqDVIUa+3bJUE612GMst7Q++txUkb3XBiAPkEk": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/typescript-4.9.4.js",
+      "size": 10945202
+    }
+  }
+}
