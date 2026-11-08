@@ -83,6 +83,7 @@
     <Compile Include="NamedSharedMemory.cs" />
     <Compile Include="ProcessControl.cs" />
     <Compile Include="ProfileStringFile.cs" />
+    <Compile Include="RcwCollector.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

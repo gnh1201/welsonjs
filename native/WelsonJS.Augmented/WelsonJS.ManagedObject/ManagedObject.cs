@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // SPDX-FileCopyrightText: 2026 Namhyeon Go, Catswords OSS and WelsonJS Contributors
 // https://github.com/gnh1201/welsonjs
-// 
+//
 using System;
-using System.Collections.Generic;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace WelsonJS.ManagedObject
@@ -15,78 +16,181 @@ namespace WelsonJS.ManagedObject
     [ClassInterface(ClassInterfaceType.AutoDual)]
     public class ManagedObject
     {
-        private readonly List<object> _createdObjects =
-            new List<object>();
+        // CLSID of the MSHTML document object ("htmlfile").
+        private static readonly Guid HtmlDocumentClsid =
+            new Guid("3050F55F-98B5-11CF-BB82-00AA00BDCE0B");
 
-        private bool IsManagedObject(object obj)
+        // Managed (.NET) objects created by this instance. Wrap() only accepts
+        // managed objects listed here, because late-bound reflection over an
+        // arbitrary .NET object would expose members a script cannot otherwise
+        // reach. While a script holds a managed object, its CCW keeps it alive,
+        // so a weak table is sufficient and never extends object lifetimes.
+        private readonly ConditionalWeakTable<object, object> _createdManagedObjects =
+            new ConditionalWeakTable<object, object>();
+
+        private readonly object _syncRoot = new object();
+
+        // COM does not support method overloading (overloads are exported as
+        // CreateObject, CreateObject_2, ...). app.js calls CreateObject with two
+        // arguments, so a single method with an optional parameter is used.
+        public object CreateObject(string progId, [Optional] object serverName)
         {
-            if (obj == null)
-                return false;
+            if (string.IsNullOrWhiteSpace(progId))
+                throw new ArgumentException("A ProgID is required.", nameof(progId));
 
-            for (int i = 0; i < _createdObjects.Count; i++)
+            progId = progId.Trim();
+            string server = NormalizeServerName(serverName);
+
+            object obj;
+            try
             {
-                if (Object.ReferenceEquals(_createdObjects[i], obj))
-                    return true;
+                if (string.Equals(progId, "htmlfile", StringComparison.OrdinalIgnoreCase))
+                {
+                    obj = CreateFromClsid(HtmlDocumentClsid, server);
+                }
+                else
+                {
+                    if (string.Equals(progId, "welsonjs.toolkit", StringComparison.OrdinalIgnoreCase))
+                        progId = "WelsonJS.Legacy.Toolkit";
+
+                    Type type = Type.GetTypeFromProgID(progId, server, true);
+                    obj = Activator.CreateInstance(type);
+                }
+            }
+            catch (Exception ex)
+            {
+                Exception cause = (ex is TargetInvocationException && ex.InnerException != null)
+                    ? ex.InnerException
+                    : ex;
+
+                // Preserve the original HRESULT so scripts can still inspect
+                // e.number while getting a message that names the ProgID.
+                throw new COMException(
+                    BuildCreateErrorMessage(progId, server, cause),
+                    cause.HResult
+                );
             }
 
-            return false;
-        }
-
-        public object CreateObject(string progId)
-        {
-            var obj = CreateObject(progId, null);
-            _createdObjects.Add(obj);
+            Track(obj);
+            RcwCollector.Observe(obj);
 
             return obj;
         }
 
-        public object CreateObject(string progId, string serverName)
-        {
-            if (string.Equals(progId, "htmlfile", StringComparison.OrdinalIgnoreCase))
-            {
-                return CreateHtmlDocument(serverName);
-            }
-
-            if (string.Equals(progId, "welsonjs.toolkit", StringComparison.OrdinalIgnoreCase))
-            {
-                progId = "WelsonJS.Legacy.Toolkit";
-            }
-
-            Type type = Type.GetTypeFromProgID(progId, serverName, true);
-
-            return Activator.CreateInstance(type);
-        }
-
-        private object CreateHtmlDocument(string serverName)
-        {
-            Guid clsid = new Guid("3050F55F-98B5-11CF-BB82-00AA00BDCE0B");
-            Type type = Type.GetTypeFromCLSID(clsid, serverName, true);
-
-            return Activator.CreateInstance(type);
-        }
-
+        // Returns a late-binding wrapper that supports ByRef arguments (#429).
+        //
+        // Any COM object is accepted, regardless of how the script obtained it:
+        // WScript.CreateObject (ADO, Scripting, WScript), GetObject, or the
+        // return value of another call (WMI services, Office collections,
+        // Shell folders). A script can already call these objects directly, so
+        // the wrapper only adds ByRef support.
+        //
+        // Managed objects are accepted only if this instance created them.
         public object Wrap(object obj)
         {
-            if (!IsManagedObject(obj))
+            obj = NormalizeOptional(obj);
+            if (obj == null)
+                throw new ArgumentNullException(nameof(obj));
+
+            if (obj is ManagedObjectWrapper)
+                return obj;
+
+            if (!Marshal.IsComObject(obj) && !IsCreatedManagedObject(obj))
                 throw new ArgumentException(
-                    "The object was not created by ManagedObject.",
+                    "Only COM objects, or managed objects created by ManagedObject, can be wrapped. " +
+                    "Received: " + obj.GetType().FullName,
                     nameof(obj)
                 );
+
+            RcwCollector.Observe(obj);
 
             return new ManagedObjectWrapper(obj);
         }
 
-        public object ByRef()
+        public object ByRef([Optional] object value)
         {
-            return new ByRefArgument();
+            return new ByRefArgument(NormalizeOptional(value));
         }
 
-        public object ByRef(object value)
+        // Releases COM objects that scripts no longer reference. COM objects
+        // that pass through managed code are held by RCWs until the GC runs;
+        // collection also runs automatically every CollectThreshold objects.
+        // Call this after releasing large COM objects (for example, after
+        // Excel.Application.Quit()) to release them immediately.
+        public void Collect()
         {
-            return new ByRefArgument
+            RcwCollector.Collect();
+        }
+
+        // Number of COM objects passing through ManagedObject after which a
+        // collection runs automatically (process-wide). 0 disables it.
+        public int CollectThreshold
+        {
+            get { return RcwCollector.Threshold; }
+            set { RcwCollector.Threshold = value; }
+        }
+
+        public bool IsByRef([Optional] object value)
+        {
+            return value is ByRefArgument;
+        }
+
+        private void Track(object obj)
+        {
+            // COM objects need no tracking; see Wrap().
+            if (obj == null || Marshal.IsComObject(obj))
+                return;
+
+            lock (_syncRoot)
             {
-                Value = value
-            };
+                object unused;
+                if (!_createdManagedObjects.TryGetValue(obj, out unused))
+                    _createdManagedObjects.Add(obj, null);
+            }
+        }
+
+        private bool IsCreatedManagedObject(object obj)
+        {
+            lock (_syncRoot)
+            {
+                object unused;
+                return _createdManagedObjects.TryGetValue(obj, out unused);
+            }
+        }
+
+        private static object CreateFromClsid(Guid clsid, string server)
+        {
+            Type type = Type.GetTypeFromCLSID(clsid, server, true);
+            return Activator.CreateInstance(type);
+        }
+
+        private static string NormalizeServerName(object serverName)
+        {
+            object value = NormalizeOptional(serverName);
+            if (value == null)
+                return null;
+
+            string server = Convert.ToString(value).Trim();
+            return server.Length == 0 ? null : server;
+        }
+
+        // Script engines pass omitted or undefined arguments as
+        // Missing, DBNull, or VT_EMPTY (null).
+        private static object NormalizeOptional(object value)
+        {
+            if (value == null || value is Missing || value is DBNull)
+                return null;
+
+            return value;
+        }
+
+        private static string BuildCreateErrorMessage(string progId, string server, Exception ex)
+        {
+            string target = server == null
+                ? "\"" + progId + "\""
+                : "\"" + progId + "\" on server \"" + server + "\"";
+
+            return "Failed to create the COM object " + target + ": " + ex.Message;
         }
     }
 }
