@@ -68,17 +68,19 @@ The following are not part of the build ID:
 
 ## CI (AppVeyor)
 
-`.appveyor.yml` adds a separate matrix job, `JOB: llamacpp`, configured in the `for:` section.
+llama.cpp is built in the **Release** job, so its files are packaged and signed with the other artifacts. No separate job is used, because AppVeyor jobs do not share artifacts: a separate job's files would not reach `artifacts.zip` or the SignPath signing request.
 
-- **Only llama.cpp.** The job does not build the managed solution or the installer, and it does not deploy. A job has 60 minutes, and AppVeyor saves the cache only for successful jobs. So nothing else in this job can fail and prevent the cache from being saved.
-- **Visual Studio 2022 image.** The other jobs stay on Visual Studio 2019.
+- **First step.** The build is the first `before_build` step of the Release job (the Debug job skips it). A job has 60 minutes, and building first lets the llama.cpp build finish as early as possible.
+- **Output: `artifacts\llamacpp\x64`.** The `7z a artifacts.zip artifacts\*` step adds it to `artifacts.zip`, which the deployment sends to SignPath. The SignPath artifact configuration decides which of these files are signed.
 - **Cache: `artifacts\llamacpp`.** It is invalidated when `commit.txt`, `version.txt`, the script, or the patch file changes.
-  - AppVeyor keeps a separate cache for each job and re-uploads the cache only when the folder contents change.
+  - AppVeyor keeps a separate cache for each job; only the Release job writes this folder.
+  - AppVeyor re-uploads the cache only when the folder contents change.
   - A patch file that is added later is not in the cache dependency list. The script's build ID still covers it.
-- **Artifacts.** The files are uploaded individually with `artifacts\llamacpp\**\*`. A folder path would be uploaded as one zip.
-- **`allow_failures`.** A failed or timed-out llama.cpp job does not fail the build, because the package is not part of the installer yet.
+- **`APPVEYOR_SAVE_CACHE_ON_ERROR=true` (Release).** AppVeyor normally saves the cache only for successful jobs. With this setting, a llama.cpp build is kept even if a later step fails (for example, ISCC or the deployment). A partly written output is never reused: `SHA256SUMS.txt` is written last, and the script checks it.
+- **Existing folder.** The cache restores `artifacts\llamacpp` before the build, so the later `mkdir artifacts` step creates the folder only if it does not exist.
+- **Image.** The Release job runs on the Visual Studio 2019 image (MSVC 19.29). The build has been verified locally with MSVC 19.44 and 19.50 only.
 
-The first build on the hosted VM is expected to take much longer than on a developer PC; the documentation lists 2-core VMs. If it does not finish within 60 minutes, reduce the CPU variants or build the package elsewhere.
+The first build on the hosted VM is expected to take much longer than on a developer PC; the documentation lists 2-core VMs. If the Release job does not finish within 60 minutes, reduce the CPU variants or build the package elsewhere.
 
 The installer does not use this build yet. `postInstall.ps1` still downloads the official package listed in `data\DownloadUrls.psd1`.
 
