@@ -1,0 +1,4 @@
+# Fallback source for build-llamacpp.ps1 when git cannot fetch the pinned commit (commit.txt).
+# The archive must contain the pinned commit; it is used only if its SHA-256 matches.
+url=https://catswords.blob.core.windows.net/welsonjs/packages/archive/llama.cpp-956591f4570aa6636895d90439892fef7c075b17.zip
+sha256=7ca8415c78cdf67a5e2aafd3c164a3d39bc396ba394a5f6ef723a5e131e4a2f8

@@ -3,21 +3,27 @@
 # SPDX-FileCopyrightText: Namhyeon Go <gnh1201@catswords.re.kr>, and Catswords OSS contributors.
 # https://github.com/gnh1201/welsonjs
 #
-# Builds llama.cpp (the version in version.txt) with the patches in patches\
-# and packages a Windows CPU build that can replace the official
-# llama-<version>-bin-win-cpu-<arch>.zip package:
+# Builds llama.cpp at the commit in commit.txt (version.txt is its release tag,
+# used for the package name) with the patches in patches\
+# and places a Windows CPU build, with the same files as the official
+# llama-<version>-bin-win-cpu-<arch>.zip package, in <OutDir>\<arch>:
 #   llama-server, llama-cli, llama-quantize and the ggml backends, with every
-#   CPU variant loaded at run time (GGML_BACKEND_DL, GGML_CPU_ALL_VARIANTS).
+#   CPU variant loaded at run time (GGML_BACKEND_DL, GGML_CPU_ALL_VARIANTS),
+#   plus BUILDINFO.txt and SHA256SUMS.txt.
 #
-# A build is skipped when -OutDir already holds a package built from the same
-# inputs (version, patches and this script), so the output folder can be kept
-# in a CI cache.
+# A build is skipped when <OutDir>\<arch> was built from the same inputs
+# (version, commit, patches and this script; the "Build ID" in BUILDINFO.txt)
+# and its files match SHA256SUMS.txt, so the folder can be kept in a CI cache.
+#
+# Source: the pinned commit is fetched with git. If that fails (-Source auto),
+# or with -Source archive, the source archive in source-archive.txt is
+# downloaded instead; it is used only if its SHA-256 matches.
 #
 # Usage:
-#   powershell -ExecutionPolicy Bypass -NoProfile -File build-llamacpp.ps1 [-OutDir <dir>] [-WorkDir <dir>] [-Force]
+#   powershell -ExecutionPolicy Bypass -NoProfile -File build-llamacpp.ps1 [-OutDir <dir>] [-WorkDir <dir>] [-Source auto|git|archive] [-Force]
 #
 # Requirements: git, CMake and Visual Studio (MSVC) with the C++ workload.
-# Output: <OutDir>\llama-<version>-welsonjs-bin-win-cpu-<arch>.zip (+ .sha256)
+# Output: <OutDir>\<arch>\* (for example, artifacts\llamacpp\x64 in CI)
 
 param(
     [string]$OutDir    = (Join-Path $PSScriptRoot "..\..\out\llamacpp"),
@@ -25,12 +31,17 @@ param(
     [string]$Arch      = "x64",
     [string]$Generator = "",          # empty: the CMake default (Visual Studio)
     [int]$Jobs         = [Environment]::ProcessorCount,
+    [ValidateSet("auto", "git", "archive")]
+    [string]$Source    = "auto",
+    [string]$RepositoryUrl = "https://github.com/ggml-org/llama.cpp.git",
     [switch]$Force
 )
 
 $ErrorActionPreference = "Stop"
-$RepositoryUrl = "https://github.com/ggml-org/llama.cpp.git"
 $Targets = @("llama-server", "llama-cli", "llama-quantize")
+
+# Windows PowerShell 5.1 may default to older TLS versions.
+[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 
 function Invoke-Checked {
     param([string]$File, [string[]]$Arguments)
@@ -46,16 +57,121 @@ function Get-Sha256 {
     finally { $sha.Dispose() }
 }
 
+# Relative paths are resolved against the current PowerShell location (not the
+# process working directory, which can differ in PowerShell).
+function Resolve-FullPath {
+    param([string]$Path)
+    if (-not [IO.Path]::IsPathRooted($Path)) { $Path = Join-Path (Get-Location).ProviderPath $Path }
+    return [IO.Path]::GetFullPath($Path)
+}
+
+# True when the folder holds exactly the files listed in SHA256SUMS.txt (plus
+# that file) and every hash matches.
+function Test-Checksums {
+    param([string]$Folder, [string]$ChecksumsFile)
+    if (-not (Test-Path -LiteralPath $ChecksumsFile)) { return $false }
+    $listed = @{}
+    foreach ($line in Get-Content -LiteralPath $ChecksumsFile) {
+        if ($line -notmatch '^([0-9a-f]{64})  (.+)$') { return $false }
+        $listed[$Matches[2]] = $Matches[1]
+    }
+    $present = @(Get-ChildItem -LiteralPath $Folder -File | Where-Object { $_.Name -ne [IO.Path]::GetFileName($ChecksumsFile) })
+    if ($present.Count -ne $listed.Count -or $listed.Count -eq 0) { return $false }
+    foreach ($file in $present) {
+        if (-not $listed.ContainsKey($file.Name) -or $listed[$file.Name] -ne (Get-FileSha256 $file.FullName)) { return $false }
+    }
+    return $true
+}
+
+function Get-FileSha256 {
+    param([string]$Path)
+    $sha = [Security.Cryptography.SHA256]::Create()
+    $stream = [IO.File]::OpenRead($Path)
+    try { return ([BitConverter]::ToString($sha.ComputeHash($stream)) -replace "-", "").ToLowerInvariant() }
+    finally { $stream.Dispose(); $sha.Dispose() }
+}
+
+# Fetches exactly the pinned commit (not a tag). The patches are LF; keep the
+# checkout LF even where core.autocrlf is true (AppVeyor).
+function Get-SourceFromGit {
+    param([string]$Destination)
+    Invoke-Checked "git" @("init", "--quiet", $Destination)
+    Invoke-Checked "git" @("-C", $Destination, "config", "core.autocrlf", "false")
+    Invoke-Checked "git" @("-C", $Destination, "config", "advice.detachedHead", "false")
+    Invoke-Checked "git" @("-C", $Destination, "remote", "add", "origin", $RepositoryUrl)
+    Invoke-Checked "git" @("-C", $Destination, "fetch", "--quiet", "--depth", "1", "origin", $commit)
+    Invoke-Checked "git" @("-C", $Destination, "checkout", "--quiet", "FETCH_HEAD")
+    $checkedOut = (& git -C $Destination rev-parse HEAD).Trim().ToLowerInvariant()
+    if ($checkedOut -ne $commit) { throw "Checked out $checkedOut, but commit.txt pins $commit" }
+    return "git $RepositoryUrl"
+}
+
+# Downloads the source archive from source-archive.txt (a "git archive" of the
+# pinned commit, with one top-level folder "llama.cpp-<commit>"), verifies its
+# SHA-256 and extracts it with the top-level folder stripped, which keeps the
+# deepest paths well under the Windows MAX_PATH limit.
+function Get-SourceFromArchive {
+    param([string]$Destination)
+
+    $settings = @{}
+    foreach ($line in Get-Content -LiteralPath (Join-Path $PSScriptRoot "source-archive.txt")) {
+        if ($line -match '^\s*([a-z0-9]+)\s*=\s*(\S+)\s*$') { $settings[$Matches[1]] = $Matches[2] }
+    }
+    $url = $settings["url"]; $expected = ("" + $settings["sha256"]).ToLowerInvariant()
+    if ($url -notmatch '^https://') { throw "source-archive.txt must contain an HTTPS url" }
+    if ($expected -notmatch '^[0-9a-f]{64}$') { throw "source-archive.txt must contain a sha256" }
+    if ($url -notlike "*$commit*") { throw "The source archive does not match the pinned commit $commit`: $url" }
+
+    $archivePath = Join-Path $WorkDir "llama.cpp-$commit.zip"
+    for ($attempt = 1; ; $attempt++) {
+        Write-Host "[*] Downloading the source archive (attempt $attempt): $url"
+        $client = New-Object Net.WebClient
+        try { $client.DownloadFile($url, $archivePath); break }
+        catch { if ($attempt -ge 3) { throw "Could not download the source archive: $($_.Exception.Message)" }; Start-Sleep -Seconds 5 }
+        finally { $client.Dispose() }
+    }
+
+    $actual = Get-FileSha256 $archivePath
+    if ($actual -ne $expected) { throw "The source archive SHA-256 does not match (expected $expected, got $actual): $url" }
+    Write-Host "[*] Source archive SHA-256 verified: $actual"
+
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $root = "llama.cpp-$commit/"
+    $destinationFull = [IO.Path]::GetFullPath($Destination).TrimEnd('\') + '\'
+    $zip = [IO.Compression.ZipFile]::OpenRead($archivePath)
+    try {
+        foreach ($entry in $zip.Entries) {
+            $name = $entry.FullName.Replace('\', '/')
+            if (-not $name.StartsWith($root, [StringComparison]::Ordinal)) { throw "Unexpected entry outside $root in the source archive: $name" }
+            $relative = $name.Substring($root.Length)
+            if ($relative.Length -eq 0) { continue }
+
+            $target = [IO.Path]::GetFullPath((Join-Path $Destination $relative.Replace('/', '\')))
+            if (-not $target.StartsWith($destinationFull, [StringComparison]::OrdinalIgnoreCase)) { throw "Unsafe path in the source archive: $name" }
+
+            if ($name.EndsWith('/')) { New-Item -ItemType Directory -Path $target -Force | Out-Null; continue }
+            New-Item -ItemType Directory -Path ([IO.Path]::GetDirectoryName($target)) -Force | Out-Null
+            [IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $target, $true)
+        }
+    }
+    finally { $zip.Dispose() }
+    Remove-Item -LiteralPath $archivePath -Force
+    return "archive $url (sha256 $actual)"
+}
+
 # ================================
 # INPUTS
 # ================================
 $version = (Get-Content -LiteralPath (Join-Path $PSScriptRoot "version.txt") -Raw).Trim()
 if ($version -notmatch '^[A-Za-z0-9._-]+$') { throw "Invalid llama.cpp version: $version" }
+# The source is pinned to a full commit SHA: a tag can be moved upstream, a commit cannot.
+$commit = (Get-Content -LiteralPath (Join-Path $PSScriptRoot "commit.txt") -Raw).Trim().ToLowerInvariant()
+if ($commit -notmatch '^[0-9a-f]{40}$') { throw "commit.txt must contain a full 40-character commit SHA: $commit" }
 $patches = @(Get-ChildItem -LiteralPath (Join-Path $PSScriptRoot "patches") -Filter "*.patch" | Sort-Object Name)
 
 # The build ID covers every input, so a change to any of them rebuilds.
 $inputs = New-Object IO.MemoryStream
-foreach ($item in @(@{ Name = "version"; Bytes = [Text.Encoding]::UTF8.GetBytes("$version|$Arch") }) +
+foreach ($item in @(@{ Name = "version"; Bytes = [Text.Encoding]::UTF8.GetBytes("$version|$commit|$Arch") }) +
                   @($patches | ForEach-Object { @{ Name = $_.Name; Bytes = [IO.File]::ReadAllBytes($_.FullName) } }) +
                   @(@{ Name = "script"; Bytes = [IO.File]::ReadAllBytes($PSCommandPath) })) {
     $name = [Text.Encoding]::UTF8.GetBytes($item.Name + "`n")
@@ -64,26 +180,31 @@ foreach ($item in @(@{ Name = "version"; Bytes = [Text.Encoding]::UTF8.GetBytes(
 }
 $buildId = Get-Sha256 $inputs.ToArray()
 
-$OutDir = [IO.Path]::GetFullPath($OutDir)
-$packageName = "llama-$version-welsonjs-bin-win-cpu-$Arch"
-$packagePath = Join-Path $OutDir "$packageName.zip"
-$buildIdPath = Join-Path $OutDir "BUILD_ID.txt"
+$OutDir = Resolve-FullPath $OutDir
+$archDir = Join-Path $OutDir $Arch
+$buildInfoPath = Join-Path $archDir "BUILDINFO.txt"
+$checksumsPath = Join-Path $archDir "SHA256SUMS.txt"
 
-Write-Host "[*] llama.cpp version: $version ($Arch)"
+Write-Host "[*] llama.cpp version: $version, commit $commit ($Arch)"
 Write-Host "[*] Patches          : $(if ($patches.Count) { ($patches | ForEach-Object Name) -join ', ' } else { '(none)' })"
 Write-Host "[*] Build ID         : $buildId"
-Write-Host "[*] Output           : $packagePath"
+Write-Host "[*] Output           : $archDir"
 
-if (-not $Force -and (Test-Path -LiteralPath $packagePath) -and (Test-Path -LiteralPath $buildIdPath) -and
-    ((Get-Content -LiteralPath $buildIdPath -Raw).Trim() -eq $buildId)) {
-    Write-Host "[*] A package built from the same inputs already exists. Skipping the build."
-    exit 0
+# Skip the build when the output folder (for example, restored from a CI cache)
+# was built from the same inputs and every file still matches SHA256SUMS.txt.
+if (-not $Force -and (Test-Path -LiteralPath $buildInfoPath) -and
+    (Select-String -LiteralPath $buildInfoPath -SimpleMatch "Build ID: $buildId" -Quiet)) {
+    if (Test-Checksums $archDir $checksumsPath) {
+        Write-Host "[*] The output was built from the same inputs and its files are intact. Skipping the build."
+        exit 0
+    }
+    Write-Host "[WARN] The output does not match SHA256SUMS.txt. Building again."
 }
 
 # ================================
 # SOURCE
 # ================================
-$WorkDir = [IO.Path]::GetFullPath($WorkDir)
+$WorkDir = Resolve-FullPath $WorkDir
 $sourceDir = Join-Path $WorkDir "llama.cpp"
 $buildDir = Join-Path $WorkDir "build-$Arch"
 if (Test-Path -LiteralPath $WorkDir) { Remove-Item -LiteralPath $WorkDir -Recurse -Force }
@@ -91,9 +212,24 @@ New-Item -ItemType Directory -Path $WorkDir -Force | Out-Null
 
 $stopwatch = [Diagnostics.Stopwatch]::StartNew()
 
-# The patches are LF; keep the checkout LF even where core.autocrlf is true (AppVeyor).
-Invoke-Checked "git" @("-c", "core.autocrlf=false", "-c", "advice.detachedHead=false", "clone", "--quiet", "--depth", "1", "--branch", $version, $RepositoryUrl, $sourceDir)
-Invoke-Checked "git" @("-C", $sourceDir, "config", "core.autocrlf", "false")
+$sourceOrigin = $null
+if ($Source -ne "archive") {
+    try {
+        $sourceOrigin = Get-SourceFromGit $sourceDir
+    }
+    catch {
+        if ($Source -eq "git") { throw }
+        Write-Host "[WARN] Could not fetch the source with git: $($_.Exception.Message)"
+        Write-Host "[WARN] Falling back to the source archive."
+        if (Test-Path -LiteralPath $sourceDir) { Remove-Item -LiteralPath $sourceDir -Recurse -Force }
+    }
+}
+if (-not $sourceOrigin) {
+    $sourceOrigin = Get-SourceFromArchive $sourceDir
+}
+Write-Host "[*] Source: $sourceOrigin"
+
+# git apply also works outside a repository (archive source).
 foreach ($patch in $patches) {
     Invoke-Checked "git" @("-C", $sourceDir, "apply", "--whitespace=nowarn", $patch.FullName)
 }
@@ -119,7 +255,9 @@ $configure += @(
     # and llama-connect is a prebuilt binary.
     "-DLLAMA_BUILD_UI=OFF",
     "-DLLAMA_USE_PREBUILT_UI=OFF",
-    "-DLLAMA_CONNECT=OFF"
+    "-DLLAMA_CONNECT=OFF",
+    # Without a .git folder (archive source) the build cannot read the commit.
+    "-DLLAMA_BUILD_COMMIT=$($commit.Substring(0, 7))"
 )
 Invoke-Checked "cmake" $configure
 
@@ -140,31 +278,26 @@ foreach ($target in $Targets) {
     if (-not (Test-Path -LiteralPath (Join-Path $binDir "$target.exe"))) { throw "$target.exe was not built (looked in $binDir)" }
 }
 
-$stageDir = Join-Path $WorkDir $packageName
-New-Item -ItemType Directory -Path $stageDir -Force | Out-Null
+# The files are placed directly in <OutDir>\<arch> (no archive).
+if (Test-Path -LiteralPath $archDir) { Remove-Item -LiteralPath $archDir -Recurse -Force }
+New-Item -ItemType Directory -Path $archDir -Force | Out-Null
 Get-ChildItem -LiteralPath $binDir -File | Where-Object { $_.Extension -in @(".dll") -or ($Targets -contains $_.BaseName -and $_.Extension -eq ".exe") } |
-    Copy-Item -Destination $stageDir
-Copy-Item -LiteralPath (Join-Path $sourceDir "LICENSE") -Destination (Join-Path $stageDir "LICENSE-llama.cpp.txt")
+    Copy-Item -Destination $archDir
+Copy-Item -LiteralPath (Join-Path $sourceDir "LICENSE") -Destination (Join-Path $archDir "LICENSE-llama.cpp.txt")
 
-$commit = (& git -C $sourceDir rev-parse HEAD).Trim()
 @(
     "llama.cpp $version ($commit) built for WelsonJS",
+    "Source: $sourceOrigin",
     "Architecture: $Arch (CPU backends: $($backendTargets -join ', '))",
     "Patches: $(if ($patches.Count) { ($patches | ForEach-Object Name) -join ', ' } else { '(none)' })",
     "Build ID: $buildId",
     "Built: $([DateTime]::UtcNow.ToString('u'))"
-) | Set-Content -LiteralPath (Join-Path $stageDir "BUILDINFO.txt") -Encoding ASCII
+) | Set-Content -LiteralPath $buildInfoPath -Encoding ASCII
 
-New-Item -ItemType Directory -Path $OutDir -Force | Out-Null
-if (Test-Path -LiteralPath $packagePath) { Remove-Item -LiteralPath $packagePath -Force }
-Add-Type -AssemblyName System.IO.Compression.FileSystem
-[IO.Compression.ZipFile]::CreateFromDirectory($stageDir, $packagePath, [IO.Compression.CompressionLevel]::Optimal, $false)
+# One "<sha256>  <file name>" line per file, written last.
+Get-ChildItem -LiteralPath $archDir -File | Sort-Object Name | ForEach-Object { "$(Get-FileSha256 $_.FullName)  $($_.Name)" } |
+    Set-Content -LiteralPath $checksumsPath -Encoding ASCII
 
-$packageHash = Get-Sha256 ([IO.File]::ReadAllBytes($packagePath))
-Set-Content -LiteralPath "$packagePath.sha256" -Value "$packageHash  $packageName.zip" -Encoding ASCII
-Set-Content -LiteralPath $buildIdPath -Value $buildId -Encoding ASCII
-
-Write-Host ("[*] Built {0} in {1:N1} min" -f "$packageName.zip", $stopwatch.Elapsed.TotalMinutes)
-Write-Host "[*] Files  : $((Get-ChildItem -LiteralPath $stageDir -File | ForEach-Object Name) -join ', ')"
-Write-Host "[*] SHA-256: $packageHash"
+Write-Host ("[*] Built llama.cpp into {0} in {1:N1} min" -f $archDir, $stopwatch.Elapsed.TotalMinutes)
+Write-Host "[*] Files: $((Get-ChildItem -LiteralPath $archDir -File | ForEach-Object Name) -join ', ')"
 exit 0

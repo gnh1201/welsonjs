@@ -24,14 +24,18 @@ environment:
       SIGNING_POLICY_SLUG: test-signing
     - CONFIGURATION: Release
       SIGNING_POLICY_SLUG: release-signing
+    # Builds only llama.cpp (see the "for:" section below).
+    - JOB: llamacpp
+      APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2022
+
+matrix:
+  # The llama.cpp package is not part of the installer yet; a failed or timed-out
+  # llama.cpp job does not fail the build.
+  allow_failures:
+    - JOB: llamacpp
 
 install:
   - choco install innosetup --version=%INNOSETUP_VERSION% -y --no-progress
-
-cache:
-  # llama.cpp build (native\llamacpp\build-llamacpp.ps1). Invalidated when the
-  # version, the patches or the script change; the script also checks its inputs.
-  - C:\projects\llamacpp-cache -> native\llamacpp\version.txt, native\llamacpp\build-llamacpp.ps1, native\llamacpp\patches\0001-ggml-cpu-add-STQ1_0-pr22836.patch
 
 before_build:
   - git submodule update --init --recursive
@@ -142,15 +146,6 @@ after_build:
        if (-not $iscc) { throw "ISCC.exe was not found" }
        & $iscc "/O$((Resolve-Path artifacts).Path)" "/Fwelsonjs_setup" "setup.iss"
        if ($LASTEXITCODE -ne 0) { throw "ISCC failed with exit code $LASTEXITCODE" }
-   - ps: |
-       # llama.cpp with the patches in native\llamacpp\patches (STQ1_0, PR #22836).
-       # Built in the Release job only; the package is kept in the AppVeyor cache
-       # and rebuilt only when its inputs change.
-       if ($env:CONFIGURATION -eq "Release") {
-           & .\native\llamacpp\build-llamacpp.ps1 -OutDir "C:\projects\llamacpp-cache" -WorkDir "C:\llamacpp-build"
-           if ($LASTEXITCODE -ne 0) { throw "build-llamacpp.ps1 failed with exit code $LASTEXITCODE" }
-           Copy-Item "C:\projects\llamacpp-cache\llama-*-welsonjs-bin-win-cpu-*.zip*" "artifacts\"
-       }
    - cmd: 7z a artifacts.zip artifacts\*
 
 artifacts:
@@ -170,3 +165,34 @@ notifications:
     subject: "Build {{status}}: {{projectName}} {{buildVersion}}"
     on_build_success: false
     on_build_failure: true
+
+for:
+  # llama.cpp job: builds only native\llamacpp (build-llamacpp.ps1) with its own
+  # 60-minute budget, on Visual Studio 2022. AppVeyor keeps a separate cache per
+  # job and saves it only when the job succeeds, so this job does nothing else
+  # that could fail: no managed solution, installer or deployment. The package
+  # is rebuilt only when its inputs change (the AppVeyor cache dependencies
+  # below, and the build ID that the script checks, which also covers every
+  # patch file).
+  - matrix:
+      only:
+        - JOB: llamacpp
+    install:
+      - cmd: echo llama.cpp job - no installer tools are needed
+    cache:
+      # The build output itself (artifacts\llamacpp\<arch>), relative to the build folder.
+      - artifacts\llamacpp -> native\llamacpp\commit.txt, native\llamacpp\version.txt, native\llamacpp\build-llamacpp.ps1, native\llamacpp\patches\0001-ggml-cpu-add-STQ1_0-pr22836.patch
+    before_build:
+      - cmd: echo llama.cpp job - the managed solution is built by the other jobs
+    build_script:
+      - ps: |
+          $ErrorActionPreference = "Stop"
+          # Places the files in artifacts\llamacpp\x64 (kept in the cache above).
+          & .\native\llamacpp\build-llamacpp.ps1 -OutDir "artifacts\llamacpp" -WorkDir "C:\llamacpp-build"
+          if ($LASTEXITCODE -ne 0) { throw "build-llamacpp.ps1 failed with exit code $LASTEXITCODE" }
+    after_build:
+      - cmd: echo llama.cpp job - nothing to package
+    artifacts:
+      # Individual files (a folder path would be uploaded as one zip archive).
+      - path: artifacts\llamacpp\**\*
+    deploy: off

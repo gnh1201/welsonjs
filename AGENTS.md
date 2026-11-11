@@ -81,6 +81,7 @@ The cryptography validation project is separate from the JavaScript profile runn
 | `data/` | Configuration, data files, and JSON test profiles. |
 | `native/WelsonJS.Augmented/` | WelsonJS managed solution and projects. |
 | `native/ManagedEsent/` | Vendored ManagedEsent source, samples, and tests. |
+| `native/llamacpp/` | Patched llama.cpp build (pinned commit, patches, build script, AppVeyor cache); see its `README.md`. |
 | `examples/` | Application and integration examples. |
 
 When updating this guide, verify project names, entry-point behavior, and profile paths against the checked-in repository rather than carrying forward outdated architecture descriptions.
