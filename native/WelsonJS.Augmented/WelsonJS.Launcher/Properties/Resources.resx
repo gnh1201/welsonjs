@@ -160,12 +160,6 @@
   <data name="ChromiumDevToolsPrefix" xml:space="preserve">
     <value>http://localhost:9222/</value>
   </data>
-  <data name="AzureCognitiveApiKey" xml:space="preserve">
-    <value />
-  </data>
-  <data name="AzureCognitivePrefix" xml:space="preserve">
-    <value>https://catswords-ai-resource.services.ai.azure.com/</value>
-  </data>
   <data name="DnsServerAddress" xml:space="preserve">
     <value>1.1.1.1</value>
   </data>
@@ -180,9 +174,6 @@
   </data>
   <data name="BlobStoragePrefix" xml:space="preserve">
     <value>https://catswords.blob.core.windows.net/welsonjs/</value>
-  </data>
-  <data name="AzureCognitiveApiVersion" xml:space="preserve">
-    <value>2024-05-01-preview</value>
   </data>
   <data name="BlobConfigUrl" xml:space="preserve">
     <value>https://catswords.blob.core.windows.net/welsonjs/blob.config.xml</value>
@@ -243,5 +234,8 @@
   </data>
   <data name="LlmGuardModelPath" xml:space="preserve">
     <value>qwen3guard_06b\Qwen3Guard-Gen-0.6B.Q4_K_M.gguf</value>
+  </data>
+  <data name="LlamaCppModelPath" xml:space="preserve">
+    <value>hy_mt2_1_8b\Hy-MT2-1.8B-Q4_K_M.gguf</value>
   </data>
 </root>

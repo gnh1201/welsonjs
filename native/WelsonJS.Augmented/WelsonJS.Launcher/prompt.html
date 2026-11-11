@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>WelsonJS Prompt Editor</title>
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="author" content="2025 Catswords OSS and WelsonJS Contributors (GPL-3.0-or-later)">
+    <link rel="stylesheet" href="http://localhost:3000/ajax/libs/jsoneditor/10.1.3/jsoneditor.min.css" integrity="sha384-cj1rYBc4/dVYAknZMTkVCDRL6Knzugf32igVqsuFW0iRWFHKH8Ci8+ekC8gNsFZ+" crossorigin="anonymous">
+    <style>
+        html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+        body { display: flex; flex-direction: column; font: 13px "Segoe UI", "Malgun Gothic", sans-serif; }
+        #promptEditor { flex: 1 1 auto; min-height: 0; }
+        #notice { padding: 8px 10px; background: #fff4ce; border-bottom: 1px solid #e0c060; }
+        #notice[hidden] { display: none; }
+    </style>
+</head>
+<body>
+    <div id="notice" hidden></div>
+    <div id="promptEditor"></div>
+    <script src="http://localhost:3000/ajax/libs/jsoneditor/10.1.3/jsoneditor.min.js" integrity="sha384-NdVVc20Tze856ZAWEoJNCk0mL4zJrGztRwULc5Hz25HUXQQgYtmjFtgVAxR4p5dD" crossorigin="anonymous"></script>
+    <script>
+        // Prompt messages editor opened from the WelsonJS Editor (editor.html).
+        //
+        // The messages live in the editor window; this window edits them through
+        // window.opener.welsonJSPrompt. Data is exchanged as JSON text so that no
+        // objects are shared between the two windows.
+        (function () {
+            var notice = document.getElementById('notice');
+
+            function showNotice(text) {
+                notice.textContent = text;
+                notice.hidden = false;
+            }
+
+            function getBridge() {
+                try {
+                    var opener = window.opener;
+                    if (opener && !opener.closed && opener.welsonJSPrompt)
+                        return opener.welsonJSPrompt;
+                } catch (e) {}
+                return null;
+            }
+
+            // Sends at most one update per interval, always including the latest change.
+            function throttle(fn, wait) {
+                var timer = null, pending = false;
+                function run() {
+                    timer = null;
+                    if (pending) {
+                        pending = false;
+                        fn();
+                        timer = setTimeout(run, wait);
+                    }
+                }
+                var throttled = function () {
+                    pending = true;
+                    if (!timer) run();
+                };
+                throttled.flush = function () {
+                    if (timer) clearTimeout(timer);
+                    timer = null;
+                    if (pending) {
+                        pending = false;
+                        fn();
+                    }
+                };
+                return throttled;
+            }
+
+            var bridge = getBridge();
+            var editor;
+
+            var sendChanges = throttle(function () {
+                var current = getBridge();
+                if (!current) {
+                    showNotice('The WelsonJS Editor window was closed. Changes made here are no longer saved.');
+                    return;
+                }
+
+                try {
+                    current.setJSON(JSON.stringify(editor.get()), window);
+                } catch (e) {
+                    console.error('Invalid JSON structure', e);
+                }
+            }, 300);
+
+            editor = new JSONEditor(document.getElementById('promptEditor'), {
+                onChange: sendChanges
+            });
+
+            if (!bridge) {
+                editor.set([]);
+                showNotice('Open this window from the Prompt button of the WelsonJS Editor.');
+                return;
+            }
+
+            editor.set(JSON.parse(bridge.getJSON()));
+
+            // Reflect messages added in the editor window (prompt, Load, network tools).
+            var unsubscribe = bridge.subscribe(window, function (json) {
+                try {
+                    editor.update(JSON.parse(json));
+                } catch (e) {
+                    console.error('Failed to update the prompt messages', e);
+                }
+            });
+
+            window.addEventListener('beforeunload', function () {
+                sendChanges.flush();
+                try {
+                    unsubscribe();
+                } catch (e) {}
+            });
+        })();
+    </script>
+</body>
+</html>

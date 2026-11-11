@@ -33,22 +33,18 @@
         }
 
         /* min-width/min-height: 0 let the panes shrink below their content size when the
-           window gets smaller; otherwise Monaco's fixed-size content pushes the prompt
-           editor out of view. */
-        #editor, #mapView, #promptEditor {
+           window gets smaller. The prompt messages editor opens in its own window
+           (prompt.html). */
+        #editor, #mapView {
             min-width: 0;
             min-height: 0;
         }
 
         #editor {
-            flex: 3;
+            flex: 1;
         }
 
         #mapView {
-            flex: 3;
-        }
-
-        #promptEditor {
             flex: 1;
         }
 
@@ -80,8 +76,6 @@
         };
     </script>
     <script src="http://localhost:3000/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha384-NElt3Op+9NBMCYaef5HxeJmU4Xeard/Lku8ek6hoPTvYkQPh3zLIrJP7KiRocsxO" crossorigin="anonymous"></script>
-    <script src="http://localhost:3000/ajax/libs/lodash/4.17.21/lodash.min.js" integrity="sha384-H6KKS1H1WwuERMSm+54dYLzjg0fKqRK5ZRyASdbrI/lwrCc6bXEmtGYr5SwvP1pZ" crossorigin="anonymous"></script>
-    <script src="http://localhost:3000/ajax/libs/jsoneditor/10.1.3/jsoneditor.min.js" integrity="sha384-NdVVc20Tze856ZAWEoJNCk0mL4zJrGztRwULc5Hz25HUXQQgYtmjFtgVAxR4p5dD" crossorigin="anonymous"></script>
     <script src="http://localhost:3000/ajax/libs/react/18.3.1/umd/react.production.min.js" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
     <script src="http://localhost:3000/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js" integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
     <script src="http://localhost:3000/ajax/libs/axios/1.8.4/axios.min.js" integrity="sha384-06w+raHvkSL3+E7mbQ2X6DZwI5A3veU8Ba+NLrAPxxRGw4Xy78sihHDHQMustMM4" crossorigin="anonymous"></script>
@@ -123,7 +117,6 @@
             loadResource("http://localhost:3000/ajax/libs/metroui/dev/lib/metro.css", "text/css", "sha384-4XgOiXH2ZMaWt5s5B35yKi7EAOabhZvx7wO8Jr71q2vZ+uONdRza/6CsK2kpyocd"),
             loadResource("http://localhost:3000/ajax/libs/metroui/dev/lib/icons.css", "text/css", "sha384-FuLND994etg+RtnpPSPMyNBvL+fEz+xGhbN61WUWuDEeZ+wJzcQ8SGqAMuI5hWrt"),
             loadResource("http://localhost:3000/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.css", "text/css", "sha384-06yHXpYRlHEPaR4AS0fB/W+lMN09Zh5e1XMtfkNQdHV38OlhfkOEW5M+pCj3QskC"),
-            loadResource("http://localhost:3000/ajax/libs/jsoneditor/10.1.3/jsoneditor.min.css", "text/css", "sha384-cj1rYBc4/dVYAknZMTkVCDRL6Knzugf32igVqsuFW0iRWFHKH8Ci8+ekC8gNsFZ+"),
             loadResource("http://localhost:3000/ajax/libs/leaflet/1.9.4/leaflet.min.css", "text/css", "sha384-c6Rcwz4e4CITMbu/NBmnNS8yN2sC3cUElMEMfP3vqqKFp7GOYaaBBCqmaWBjmkjb")
         ]).then(() => {
             const _e = React.createElement;
@@ -149,7 +142,7 @@
             }
 
             function RibbonMenu({
-                onOpenFileClick, onSaveFileClick, onAzureCognitiveClick,
+                onOpenFileClick, onSaveFileClick, onLlamaCppClick, onPromptEditorClick,
                 onSavePromptClick, onLoadPromptClick, onQueryWhoisClick, onQueryDnsClick,
                 onQueryIpClick, onMapClick, onRunScriptClick, onTerminalClick,
                 onExcelExampleClick, onPowerPointExampleClick, onWordExampleClick, onHwpExampleClick,
@@ -183,7 +176,8 @@
                 ];
 
                 const cognitiveToolsButtons = [
-                    { id: 'btnAzureCognitive', icon: 'mif-rocket', caption: 'Azure', onClick: onAzureCognitiveClick },
+                    { id: 'btnLlamaCpp', icon: 'mif-rocket', caption: 'llama.cpp', onClick: onLlamaCppClick },
+                    { id: 'btnPromptEditor', icon: 'mif-pencil', caption: 'Prompt', onClick: onPromptEditorClick },
                     { id: 'btnSavePrompt', icon: 'mif-floppy-disks', caption: 'Save', onClick: onSavePromptClick },
                     { id: 'btnLoadPrompt', icon: 'mif-file-upload', caption: 'Load', onClick: onLoadPromptClick }
                 ];
@@ -227,7 +221,7 @@
                 );
             }
 
-            function Editor({ editorRef, visible }) {
+            function Editor({ editorRef, visible, onReady }) {
                 const containerRef = React.useRef(null);
 
                 const getSuggestions = (word, range) => axios.get(`/completion/${encodeURIComponent(word)}`)
@@ -297,6 +291,7 @@
                         });
 
                         editorRef.current = instance;
+                        if (onReady) onReady(instance);
                     });
                 }, []);
                 
@@ -308,52 +303,6 @@
                 return _e('div', { id: 'editor', ref: containerRef });
             }
 
-            function PromptEditor({ promptEditorRef, promptMessagesRef }) {
-                const containerRef = React.useRef(null);
-
-                React.useEffect(() => {
-                    if (!containerRef.current)
-                        return;
-
-                    const invoke = () => {
-                        try {
-                            if (promptEditorRef.current) {
-                                const updated = promptEditorRef.current.get();
-                                promptMessagesRef.current = updated;
-                            } else {
-                                throw new Error("promptEditorRef.current is null");
-                            }
-                        } catch (e) {
-                            console.error("Invalid JSON structure", e);
-                        }
-                    };
-
-                    const throttledInvoke = _.throttle(invoke, 300, {
-                        leading: true,
-                        trailing: true
-                    });
-
-                    const options = {
-                        onChange: throttledInvoke
-                    };
-
-                    const instance = new JSONEditor(containerRef.current, options);
-                    instance.set(promptMessagesRef.current);
-
-                    promptEditorRef.current = instance;
-
-                    return () => {
-                        if (instance) {
-                            throttledInvoke.flush();
-                            throttledInvoke.cancel();
-                            instance.destroy();
-                        }
-                    };
-                }, []);
-
-                return _e('div', { id: 'promptEditor', ref: containerRef });
-            }
-            
             function useLocationMarker(mapViewRef) {
                 const markerRef = React.useRef(null);
 
@@ -445,24 +394,50 @@
 
             function App() {
                 const editorRef = React.useRef(null);
-                const promptEditorRef = React.useRef(null);
-                const settingsRef = React.useRef({});
+                const promptListenersRef = React.useRef([]);
                 const fileNameRef = React.useRef('hello.js');
                 const promptMessagesRef = React.useRef([]);
                 const mapViewRef = React.useRef(null);
                 const coordinateMarkersRef = React.useRef([]);
                 const [showMap, setShowMap] = React.useState(false);
 
-                const fetchSettings = () => axios.get(`/settings`)
-                    .then(response => {
-                        const parser = new XMLParser();
-                        const result = parser.parse(response.data);
-                        settingsRef.current = result.settings;
-                    });
-
                 // The panes are sized by the flex layout; Monaco only needs to re-measure.
                 const resizeEditor = () => {
                     if (editorRef.current) editorRef.current.layout();
+                };
+
+                // Sends the prompt messages to the open prompt editor windows (prompt.html),
+                // except the window the change came from. Closed windows are dropped.
+                const notifyPromptMessages = (source) => {
+                    const json = JSON.stringify(promptMessagesRef.current);
+                    promptListenersRef.current = promptListenersRef.current.filter(listener => {
+                        try {
+                            if (!listener.win || listener.win.closed)
+                                return false;
+                            if (listener.win !== source)
+                                listener.callback(json);
+                            return true;
+                        } catch (e) {
+                            return false;
+                        }
+                    });
+                };
+
+                // Lets the prompt editor window read and edit the prompt messages. Data is
+                // exchanged as JSON text so that no objects are shared between windows.
+                window.welsonJSPrompt = {
+                    getJSON: () => JSON.stringify(promptMessagesRef.current),
+                    setJSON: (json, source) => {
+                        promptMessagesRef.current = JSON.parse(json);
+                        notifyPromptMessages(source);
+                    },
+                    subscribe: (win, callback) => {
+                        const listener = { win: win, callback: callback };
+                        promptListenersRef.current.push(listener);
+                        return () => {
+                            promptListenersRef.current = promptListenersRef.current.filter(x => x !== listener);
+                        };
+                    }
                 };
 
                 const pushPromptMessage = (role, content) => {
@@ -470,7 +445,17 @@
                         role: role,
                         content: content
                     });
-                    promptEditorRef.current.set(promptMessagesRef.current);
+                    notifyPromptMessages(null);
+                };
+
+                const openPromptEditor = () => {
+                    // Reuses (and focuses) the window if it is already open.
+                    const promptWindow = window.open('/prompt.html', 'WelsonJSPromptEditor', 'width=900,height=700,resizable=yes,scrollbars=no');
+                    if (!promptWindow) {
+                        appendTextToEditor('\n// Prompt editor window was blocked by the browser. Please allow popups for localhost.');
+                        return;
+                    }
+                    promptWindow.focus();
                 };
 
                 const navigate = (href) => {
@@ -668,23 +653,63 @@
                     document.body.removeChild(a);
                 };
 
-                const sendMessageToAzureCognitive = () => {
-                    const promptMessage = prompt("Enter a prompt message:", '');
-                    if (!promptMessage || promptMessage.trim() == '') {
-                        alert("A prompt message is required.");
-                        return;
-                    }
+                // Inserts a one-line status comment below lineNumber and returns a function
+                // that later replaces that line. The line is tracked with a decoration, so
+                // the result lands in the right place even if the user keeps editing while
+                // the model is generating.
+                const insertPlaceholder = (lineNumber, text) => {
+                    const editor = editorRef.current;
+                    const model = editor.getModel();
+                    lineNumber = Math.min(Math.max(lineNumber, 1), model.getLineCount());
 
-                    appendTextToEditor(`\n// ${promptMessage}... Generating text with Azure Cognitive...`);
+                    const column = model.getLineMaxColumn(lineNumber);
+                    editor.executeEdits('llamacpp', [{
+                        range: new monaco.Range(lineNumber, column, lineNumber, column),
+                        text: '\n' + text,
+                        forceMoveMarkers: true
+                    }]);
+
+                    const line = lineNumber + 1;
+                    const ids = model.deltaDecorations([], [{
+                        range: new monaco.Range(line, 1, line, model.getLineMaxColumn(line)),
+                        options: { stickiness: monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges }
+                    }]);
+
+                    return (replacement) => {
+                        const range = model.isDisposed() ? null : model.getDecorationRange(ids[0]);
+                        if (!model.isDisposed()) model.deltaDecorations(ids, []);
+
+                        if (!range || editorRef.current.getModel() !== model) {
+                            // The content was replaced (for example, a file was opened) while
+                            // waiting. Do not change the new content; the answer is kept in
+                            // the prompt messages (Prompt window).
+                            console.info('llama.cpp answer not inserted because the editor content was replaced:', replacement);
+                            return;
+                        }
+
+                        if (range.isEmpty()) {
+                            // The status line was deleted; insert at the cursor instead.
+                            appendTextToEditor(replacement);
+                            return;
+                        }
+
+                        editorRef.current.executeEdits('llamacpp', [{ range: range, text: replacement, forceMoveMarkers: true }]);
+                    };
+                };
+
+                // One line of the prompt for the status comment.
+                const summarize = (text) => {
+                    const firstLine = String(text).split(/\r?\n/).find(x => x.trim() !== '') || '';
+                    return firstLine.length > 80 ? firstLine.substring(0, 80) + '...' : firstLine;
+                };
+
+                // Generates text with the local llama.cpp model through the launcher
+                // (/llamacpp/chat), which starts llama-server on the first request. The
+                // answer replaces a status comment inserted below lineNumber.
+                const askLlamaCpp = (promptMessage, lineNumber, summary) => {
+                    const replace = insertPlaceholder(lineNumber,
+                        `// ${summarize(summary)}... Generating text with llama.cpp (the first request may take a while to load the model)...`);
                     pushPromptMessage("user", promptMessage);
-
-                    const apiKey = settingsRef.current.AzureCognitiveApiKey;
-                    if (!apiKey || apiKey.trim() == '') {
-                        alert("Azure Cognitive API key is not set.");
-                        return;
-                    }
-
-                    const url = `${settingsRef.current.AzureCognitivePrefix}models/chat/completions?api-version=${settingsRef.current.AzureCognitiveApiVersion}`;
 
                     const data = {
                         messages: promptMessagesRef.current,
@@ -693,26 +718,126 @@
                         top_p: 0.1,
                         presence_penalty: 0,
                         frequency_penalty: 0,
-                        model: 'Phi-4'
+                        // For reasoning models (for example, FrogNano): without this they spend
+                        // the token budget on reasoning_content (minutes on a CPU) before
+                        // writing the answer. Templates without the option ignore it.
+                        chat_template_kwargs: { enable_thinking: false }
                     };
 
-                    axios.post(url, data, {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'api-key': apiKey
-                        }
+                    axios.post('/llamacpp/chat', data, {
+                        headers: { 'Content-Type': 'application/json' }
                     }).then(response => {
-                        response.data.choices.forEach(x => {
-                            const responseContent = x.message.content;
+                        const choices = (response.data && response.data.choices) || [];
+                        if (choices.length === 0) {
+                            replace('// llama.cpp returned no response.');
+                            return;
+                        }
+
+                        const blocks = choices.map(x => {
+                            const message = x.message || {};
+                            let responseContent = message.content || '';
+                            let note = '';
+                            if (!responseContent && message.reasoning_content) {
+                                // The model ran out of tokens while reasoning.
+                                note = `// llama.cpp returned only reasoning (finish_reason: ${x.finish_reason}).\n`;
+                                responseContent = message.reasoning_content;
+                            }
                             pushPromptMessage("assistant", responseContent);
 
-                            const responseText = DOMPurify.sanitize(responseContent, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
-                            appendTextToEditor(`/*\n${responseText}\n*/`);
+                            // Keep the text inside the comment block.
+                            const responseText = DOMPurify.sanitize(responseContent, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] }).replace(/\*\//g, '* /');
+                            return `${note}/*\n${responseText}\n*/`;
                         });
-                    })
-                        .catch(error => {
-                            console.error('Error:', error.response?.data || error.message);
+                        replace(blocks.join('\n'));
+                    }).catch(error => {
+                        // Launcher errors are {error: "..."}; llama-server errors are {error: {message}}.
+                        const body = error.response && error.response.data;
+                        const detail = body && body.error
+                            ? (typeof body.error === 'string' ? body.error : (body.error.message || JSON.stringify(body.error)))
+                            : error.message;
+                        console.error('Error:', body || error.message);
+                        replace(`// llama.cpp request failed: ${detail}`);
+                    });
+                };
+
+                // Ribbon button: asks for a prompt; the answer goes below the cursor line.
+                const sendMessageToLlamaCpp = () => {
+                    const promptMessage = prompt("Enter a prompt message:", '');
+                    if (!promptMessage || promptMessage.trim() == '') {
+                        alert("A prompt message is required.");
+                        return;
+                    }
+
+                    const editor = editorRef.current;
+                    if (!editor)
+                        return;
+
+                    const position = editor.getPosition() || { lineNumber: 1 };
+                    askLlamaCpp(promptMessage, position.lineNumber, promptMessage);
+                };
+
+                // Editor context menu: send the selected text to llama.cpp. The answer goes
+                // below the selection.
+                const registerLlamaCppActions = (editor) => {
+                    const getSelection = () => {
+                        const selection = editor.getSelection();
+                        if (!selection || selection.isEmpty())
+                            return null;
+
+                        const model = editor.getModel();
+                        // A selection of whole lines ends at column 1 of the next line.
+                        const endLine = (selection.endColumn === 1 && selection.endLineNumber > selection.startLineNumber)
+                            ? selection.endLineNumber - 1
+                            : selection.endLineNumber;
+                        return { text: model.getValueInRange(selection), endLine: endLine, language: model.getLanguageId() };
+                    };
+
+                    const fence = (selection) => '```' + selection.language + '\n' + selection.text + '\n```';
+
+                    const actions = [
+                        {
+                            id: 'welsonjs.llamacpp.sendSelection',
+                            label: 'llama.cpp: Send Selection',
+                            build: selection => ({ message: selection.text, summary: selection.text })
+                        },
+                        {
+                            id: 'welsonjs.llamacpp.explainSelection',
+                            label: 'llama.cpp: Explain Selection',
+                            build: selection => ({
+                                message: 'Explain what the following code does.\n\n' + fence(selection),
+                                summary: 'Explain the selection'
+                            })
+                        },
+                        {
+                            id: 'welsonjs.llamacpp.askAboutSelection',
+                            label: 'llama.cpp: Ask About Selection...',
+                            build: selection => {
+                                const question = prompt("Ask llama.cpp about the selection:", '');
+                                if (!question || question.trim() === '')
+                                    return null;
+                                return { message: question + '\n\n' + fence(selection), summary: question };
+                            }
+                        }
+                    ];
+
+                    actions.forEach((action, index) => {
+                        editor.addAction({
+                            id: action.id,
+                            label: action.label,
+                            precondition: 'editorHasSelection',
+                            contextMenuGroupId: '1_llamacpp',
+                            contextMenuOrder: index + 1,
+                            run: () => {
+                                const selection = getSelection();
+                                if (!selection)
+                                    return;
+
+                                const request = action.build(selection);
+                                if (request)
+                                    askLlamaCpp(request.message, selection.endLine, request.summary);
+                            }
                         });
+                    });
                 };
 
                 const savePromptMessages = () => {
@@ -739,7 +864,7 @@
                         let reader = new FileReader();
                         reader.onload = function (e) {
                             promptMessagesRef.current = JSON.parse(e.target.result);
-                            promptEditorRef.current.set(promptMessagesRef.current);
+                            notifyPromptMessages(null);
                             appendTextToEditor("\n//Prompt loaded successfully.");
                         };
                         reader.readAsText(file);
@@ -911,13 +1036,12 @@
                 React.useEffect(() => {
                 }, []);
 
-                fetchSettings();
-
                 return _e('div', { className: 'app' },
                     _e(RibbonMenu, {
                         onOpenFileClick: openFile,
                         onSaveFileClick: saveFile,
-                        onAzureCognitiveClick: sendMessageToAzureCognitive,
+                        onLlamaCppClick: sendMessageToLlamaCpp,
+                        onPromptEditorClick: openPromptEditor,
                         onSavePromptClick: savePromptMessages,
                         onLoadPromptClick: loadPromptMessages,
                         onQueryWhoisClick: queryWhois,
@@ -935,9 +1059,8 @@
                         onWorldTouristExampleClick: showWorldTouristExample,
                     }),
                     _e('div', { id: 'container' },
-                        _e(Editor, { editorRef: editorRef, visible: !showMap }),
-                        _e(MapView, { mapViewRef: mapViewRef, visible: showMap }),
-                        _e(PromptEditor, { promptEditorRef, promptMessagesRef })
+                        _e(Editor, { editorRef: editorRef, visible: !showMap, onReady: registerLlamaCppActions }),
+                        _e(MapView, { mapViewRef: mapViewRef, visible: showMap })
                     ),
                     _e('div', { className: 'banner' }, _e('a', { href: 'https://github.com/gnh1201/welsonjs' }, '❤️ Contribute this project')),
                 );

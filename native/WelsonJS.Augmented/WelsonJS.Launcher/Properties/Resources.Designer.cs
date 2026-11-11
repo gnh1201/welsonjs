@@ -97,33 +97,6 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
-        ///   과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string AzureCognitiveApiKey {
-            get {
-                return ResourceManager.GetString("AzureCognitiveApiKey", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   2024-05-01-preview과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string AzureCognitiveApiVersion {
-            get {
-                return ResourceManager.GetString("AzureCognitiveApiVersion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   https://catswords-ai-resource.services.ai.azure.com/과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string AzureCognitivePrefix {
-            get {
-                return ResourceManager.GetString("AzureCognitivePrefix", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   https://catswords.blob.core.windows.net/welsonjs/blob.config.xml과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string BlobConfigUrl {
@@ -384,6 +357,15 @@ namespace WelsonJS.Launcher.Properties {
         internal static string LlmGuardModelPath {
             get {
                 return ResourceManager.GetString("LlmGuardModelPath", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   hy_mt2_1_8b\Hy-MT2-1.8B-Q4_K_M.gguf과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string LlamaCppModelPath {
+            get {
+                return ResourceManager.GetString("LlamaCppModelPath", resourceCulture);
             }
         }
 

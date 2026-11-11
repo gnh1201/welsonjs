@@ -142,6 +142,7 @@
     <Compile Include="TraceLogger.cs" />
     <Compile Include="WebSocketManager.cs" />
     <Compile Include="LogFileTraceListener.cs" />
+    <Compile Include="LlamaCppChatService.cs" />
     <Compile Include="LlamaCppProcessManager.cs" />
     <Compile Include="LlmGuardService.cs" />
     <Compile Include="JsrtInstanceProcessManager.cs" />
@@ -206,6 +207,7 @@
   <ItemGroup>
     <EmbeddedResource Include="editor.html" />
     <EmbeddedResource Include="terminal.html" />
+    <EmbeddedResource Include="prompt.html" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ManagedEsent\EsentInterop\EsentInterop.csproj">
