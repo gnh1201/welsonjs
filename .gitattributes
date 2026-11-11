@@ -1,0 +1,2 @@
+# Patches for third-party sources are applied with "git apply"; keep their bytes (LF) on checkout.
+native/llamacpp/patches/*.patch -text

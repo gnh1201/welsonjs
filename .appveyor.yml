@@ -28,6 +28,11 @@ environment:
 install:
   - choco install innosetup --version=%INNOSETUP_VERSION% -y --no-progress
 
+cache:
+  # llama.cpp build (native\llamacpp\build-llamacpp.ps1). Invalidated when the
+  # version, the patches or the script change; the script also checks its inputs.
+  - C:\projects\llamacpp-cache -> native\llamacpp\version.txt, native\llamacpp\build-llamacpp.ps1, native\llamacpp\patches\0001-ggml-cpu-add-STQ1_0-pr22836.patch
+
 before_build:
   - git submodule update --init --recursive
   - git -C native\ManagedEsent apply --ignore-whitespace ..\patches\ManagedEsent-no-system-memory.patch
@@ -137,6 +142,15 @@ after_build:
        if (-not $iscc) { throw "ISCC.exe was not found" }
        & $iscc "/O$((Resolve-Path artifacts).Path)" "/Fwelsonjs_setup" "setup.iss"
        if ($LASTEXITCODE -ne 0) { throw "ISCC failed with exit code $LASTEXITCODE" }
+   - ps: |
+       # llama.cpp with the patches in native\llamacpp\patches (STQ1_0, PR #22836).
+       # Built in the Release job only; the package is kept in the AppVeyor cache
+       # and rebuilt only when its inputs change.
+       if ($env:CONFIGURATION -eq "Release") {
+           & .\native\llamacpp\build-llamacpp.ps1 -OutDir "C:\projects\llamacpp-cache" -WorkDir "C:\llamacpp-build"
+           if ($LASTEXITCODE -ne 0) { throw "build-llamacpp.ps1 failed with exit code $LASTEXITCODE" }
+           Copy-Item "C:\projects\llamacpp-cache\llama-*-welsonjs-bin-win-cpu-*.zip*" "artifacts\"
+       }
    - cmd: 7z a artifacts.zip artifacts\*
 
 artifacts:

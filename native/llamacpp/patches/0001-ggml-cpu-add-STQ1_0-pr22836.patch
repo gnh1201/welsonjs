@@ -1,0 +1,774 @@
+From: STQ1_0 ternary quantization (ggml-org/llama.cpp pull request #22836)
+Subject: [PATCH] ggml-cpu : add STQ1_0 ternary quantization with ARM NEON vec_dot kernel
+
+Source: https://github.com/ggml-org/llama.cpp/pull/22836
+PR head: 1e411d8f5a1e23525fa3265dfb4bd76265465397 (open, not merged upstream)
+Rebased onto: b11808 (4912ac2). Two hunks were adjusted for b11808:
+  - ggml/include/ggml.h: the context after GGML_TYPE_COUNT changed upstream.
+  - ggml/src/ggml-cpu/arch-fallback.h: the x86 section has no quants.c block,
+    so the STQ1_0 generic mapping starts a new one.
+
+Apply with: git -c core.autocrlf=false apply <this file>
+
+diff --git a/ggml/include/ggml.h b/ggml/include/ggml.h
+index 3c2e673..c2a78ee 100644
+--- a/ggml/include/ggml.h
++++ b/ggml/include/ggml.h
+@@ -430,7 +430,8 @@ extern "C" {
+         GGML_TYPE_NVFP4   = 40, // NVFP4 (4 blocks, E4M3 scale)
+         GGML_TYPE_Q1_0    = 41,
+         GGML_TYPE_Q2_0    = 42,
+-        GGML_TYPE_COUNT   = 43,
++        GGML_TYPE_STQ1_0  = 43,
++        GGML_TYPE_COUNT   = 44,
+     };
+ 
+     // [TAG_GGML_PREC]
+diff --git a/ggml/src/ggml-common.h b/ggml/src/ggml-common.h
+index 1dbbe32..edbac52 100644
+--- a/ggml/src/ggml-common.h
++++ b/ggml/src/ggml-common.h
+@@ -287,6 +287,14 @@ typedef struct {
+ } block_tq2_0;
+ static_assert(sizeof(block_tq2_0) == sizeof(ggml_half) + QK_K / 4, "wrong tq2_0 block size/padding");
+ 
++// 1.3125 bpw
++typedef struct {
++    uint8_t qs[QK_K/8];    // 4-bit code per group of 4
++    uint8_t sign[QK_K/32]; // 1-bit table select per group of 4
++    ggml_half d;           // scale
++} block_stq1_0;
++static_assert(sizeof(block_stq1_0) == sizeof(ggml_half) + QK_K / 8 + QK_K / 32, "wrong stq1_0 block size/padding");
++
+ //
+ // Super-block quantization structures
+ //
+@@ -506,6 +514,79 @@ static_assert(sizeof(block_iq4_xs) == sizeof(ggml_half) + sizeof(uint16_t) + QK_
+ 
+ #if defined(GGML_COMMON_IMPL)
+ 
++// STQ1_0 codebook: index = (sign << 4) | slot -> packed 4-lane ternary pattern.
++//
++// Each STQ1_0 group has 4 lanes with exactly one 0 and three non-zero (+1/-1) of
++// equal magnitude — 4 zero-positions × 2^3 signs = 32 patterns. They are split
++// into 4-bit slot + 1-bit sign.
++//
++// Per-lane encoding (2 bits): -1 -> 0b00, 0 -> 0b01, +1 -> 0b10. A pattern
++// byte is qpack = lane3<<6 | lane2<<4 | lane1<<2 | lane0.
++//
++// Slot (low nibble): pattern with the first non-zero lane fixed to +1.
++//   slot = (zero_pos << 2) | tail_bits
++//     zero_pos    -- index of the zero lane (0..3)
++//     tail_bits.0 -- sign of 2nd non-zero lane (0 => +1, 1 => -1)
++//     tail_bits.1 -- sign of 3rd non-zero lane (0 => +1, 1 => -1)
++// Sign bit (bit 4): global flip of every non-zero lane (0 unchanged).
++//
++// Worked example, slot 0 (zero_pos=0, tail=0b00), sign=0:
++//   lanes = (0, +1, +1, +1) -> qpack = 10_10_10_01 = 0xA9
++// Sign=1 of the same slot flips all non-zero lanes:
++//   lanes = (0, -1, -1, -1) -> qpack = 00_00_00_01 = 0x01
++//
++// The sign=1 half is precomputed so decode is a single load:
++//   qpack = stq1_0_codebook[(sign << 4) | slot]
++GGML_TABLE_BEGIN(uint8_t, stq1_0_codebook, 32)
++    // sign = 0 (first non-zero lane is +1)
++    0xA9, 0x89, 0x29, 0x09, 0xA6, 0x86, 0x26, 0x06,
++    0x9A, 0x92, 0x1A, 0x12, 0x6A, 0x62, 0x4A, 0x42,
++    // sign = 1 (every non-zero lane negated)
++    0x01, 0x21, 0x81, 0xA1, 0x04, 0x24, 0x84, 0xA4,
++    0x10, 0x18, 0x90, 0x98, 0x40, 0x48, 0x60, 0x68,
++GGML_TABLE_END()
++
++// Reverse maps for the encoder: qpack byte -> (slot, sign). Derived from
++// stq1_0_codebook above; entries for non-codebook qpack values are 0xFF (slot)
++// / 0 (sign), which the encoder asserts against.
++GGML_TABLE_BEGIN(uint8_t, stq1_0_qpack_to_slot, 256)
++    0xFF, 0x00, 0xFF, 0xFF, 0x04, 0xFF, 0x07, 0xFF, 0xFF, 0x03, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
++    0x08, 0xFF, 0x0B, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x09, 0xFF, 0x0A, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
++    0xFF, 0x01, 0xFF, 0xFF, 0x05, 0xFF, 0x06, 0xFF, 0xFF, 0x02, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
++    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
++    0x0C, 0xFF, 0x0F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x0D, 0xFF, 0x0E, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
++    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
++    0x0E, 0xFF, 0x0D, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x0F, 0xFF, 0x0C, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
++    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
++    0xFF, 0x02, 0xFF, 0xFF, 0x06, 0xFF, 0x05, 0xFF, 0xFF, 0x01, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
++    0x0A, 0xFF, 0x09, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x0B, 0xFF, 0x08, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
++    0xFF, 0x03, 0xFF, 0xFF, 0x07, 0xFF, 0x04, 0xFF, 0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
++    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
++    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
++    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
++    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
++    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
++GGML_TABLE_END()
++
++GGML_TABLE_BEGIN(uint8_t, stq1_0_qpack_to_sign, 256)
++    0x00, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++    0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++    0x00, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++    0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++    0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++    0x00, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++    0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++    0x00, 0x01, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++GGML_TABLE_END()
++
+ GGML_TABLE_BEGIN(uint8_t, kmask_iq2xs, 8)
+     1, 2, 4, 8, 16, 32, 64, 128
+ GGML_TABLE_END()
+diff --git a/ggml/src/ggml-cpu/arch-fallback.h b/ggml/src/ggml-cpu/arch-fallback.h
+index 4e59d0a..1426733 100644
+--- a/ggml/src/ggml-cpu/arch-fallback.h
++++ b/ggml/src/ggml-cpu/arch-fallback.h
+@@ -20,6 +20,7 @@
+ #define ggml_vec_dot_q2_0_q8_0_generic ggml_vec_dot_q2_0_q8_0
+ #define ggml_vec_dot_tq1_0_q8_K_generic ggml_vec_dot_tq1_0_q8_K
+ #define ggml_vec_dot_tq2_0_q8_K_generic ggml_vec_dot_tq2_0_q8_K
++#define ggml_vec_dot_stq1_0_q8_K_generic ggml_vec_dot_stq1_0_q8_K
+ #define ggml_vec_dot_q2_K_q8_K_generic ggml_vec_dot_q2_K_q8_K
+ #define ggml_vec_dot_q3_K_q8_K_generic ggml_vec_dot_q3_K_q8_K
+ #define ggml_vec_dot_q4_K_q8_K_generic ggml_vec_dot_q4_K_q8_K
+@@ -86,6 +87,8 @@
+ #define ggml_gemm_mxfp4_8x8_q8_0_generic ggml_gemm_mxfp4_8x8_q8_0
+ #define ggml_gemm_q2_K_8x8_q8_K_generic ggml_gemm_q2_K_8x8_q8_K
+ #elif defined(__x86_64__) || defined(__i386__) || defined(_M_IX86) || defined(_M_X64)
++// quants.c
++#define ggml_vec_dot_stq1_0_q8_K_generic ggml_vec_dot_stq1_0_q8_K
+ // repack.cpp
+ #define ggml_quantize_mat_q8_0_4x4_generic ggml_quantize_mat_q8_0_4x4
+ #define ggml_quantize_mat_q8_K_4x4_generic ggml_quantize_mat_q8_K_4x4
+@@ -124,6 +127,7 @@
+ #define ggml_vec_dot_q2_0_q8_0_generic ggml_vec_dot_q2_0_q8_0
+ #define ggml_vec_dot_tq1_0_q8_K_generic ggml_vec_dot_tq1_0_q8_K
+ #define ggml_vec_dot_tq2_0_q8_K_generic ggml_vec_dot_tq2_0_q8_K
++#define ggml_vec_dot_stq1_0_q8_K_generic ggml_vec_dot_stq1_0_q8_K
+ #define ggml_vec_dot_iq1_m_q8_K_generic ggml_vec_dot_iq1_m_q8_K
+ // repack.cpp
+ #define ggml_quantize_mat_q8_0_4x4_generic ggml_quantize_mat_q8_0_4x4
+@@ -171,6 +175,7 @@
+ #define quantize_row_q8_K_generic quantize_row_q8_K
+ #define ggml_vec_dot_tq1_0_q8_K_generic ggml_vec_dot_tq1_0_q8_K
+ #define ggml_vec_dot_tq2_0_q8_K_generic ggml_vec_dot_tq2_0_q8_K
++#define ggml_vec_dot_stq1_0_q8_K_generic ggml_vec_dot_stq1_0_q8_K
+ #define ggml_vec_dot_iq1_m_q8_K_generic ggml_vec_dot_iq1_m_q8_K
+ #define ggml_vec_dot_mxfp4_q8_0_generic ggml_vec_dot_mxfp4_q8_0
+ #define ggml_vec_dot_nvfp4_q8_0_generic ggml_vec_dot_nvfp4_q8_0
+@@ -221,6 +226,7 @@
+ // quants.c
+ #define ggml_vec_dot_nvfp4_q8_0_generic ggml_vec_dot_nvfp4_q8_0
+ #define ggml_vec_dot_q2_0_q8_0_generic ggml_vec_dot_q2_0_q8_0
++#define ggml_vec_dot_stq1_0_q8_K_generic ggml_vec_dot_stq1_0_q8_K
+ // repack.cpp
+ #define ggml_quantize_mat_q8_0_4x1_generic ggml_quantize_mat_q8_0_4x1
+ #define ggml_quantize_mat_q8_0_4x4_generic ggml_quantize_mat_q8_0_4x4
+@@ -268,6 +274,7 @@
+ #define ggml_vec_dot_q2_0_q8_0_generic ggml_vec_dot_q2_0_q8_0
+ #define ggml_vec_dot_tq1_0_q8_K_generic ggml_vec_dot_tq1_0_q8_K
+ #define ggml_vec_dot_tq2_0_q8_K_generic ggml_vec_dot_tq2_0_q8_K
++#define ggml_vec_dot_stq1_0_q8_K_generic ggml_vec_dot_stq1_0_q8_K
+ #define ggml_vec_dot_q2_K_q8_K_generic ggml_vec_dot_q2_K_q8_K
+ #define ggml_vec_dot_iq2_xxs_q8_K_generic ggml_vec_dot_iq2_xxs_q8_K
+ #define ggml_vec_dot_iq2_xs_q8_K_generic ggml_vec_dot_iq2_xs_q8_K
+@@ -318,6 +325,7 @@
+ // quants.c
+ #define ggml_vec_dot_tq1_0_q8_K_generic ggml_vec_dot_tq1_0_q8_K
+ #define ggml_vec_dot_tq2_0_q8_K_generic ggml_vec_dot_tq2_0_q8_K
++#define ggml_vec_dot_stq1_0_q8_K_generic ggml_vec_dot_stq1_0_q8_K
+ #define ggml_vec_dot_iq2_xxs_q8_K_generic ggml_vec_dot_iq2_xxs_q8_K
+ #define ggml_vec_dot_iq2_xs_q8_K_generic ggml_vec_dot_iq2_xs_q8_K
+ #define ggml_vec_dot_iq2_s_q8_K_generic ggml_vec_dot_iq2_s_q8_K
+diff --git a/ggml/src/ggml-cpu/arch/arm/quants.c b/ggml/src/ggml-cpu/arch/arm/quants.c
+index cfbbf66..3324e14 100644
+--- a/ggml/src/ggml-cpu/arch/arm/quants.c
++++ b/ggml/src/ggml-cpu/arch/arm/quants.c
+@@ -1682,6 +1682,113 @@ void ggml_vec_dot_tq2_0_q8_K(int n, float * GGML_RESTRICT s, size_t bs, const vo
+ #endif
+ }
+ 
++void ggml_vec_dot_stq1_0_q8_K(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
++    assert(nrc == 1);
++    UNUSED(nrc);
++    UNUSED(bx);
++    UNUSED(by);
++    UNUSED(bs);
++
++    const block_stq1_0 * GGML_RESTRICT x = vx;
++    const block_q8_K  * GGML_RESTRICT y = vy;
++
++    const int nb = n / QK_K;
++
++#if defined(__ARM_NEON)
++    float sumf = 0.0f;
++
++    const uint8x16_t m3 = vdupq_n_u8(3);
++    const uint8x16_t mask_0f = vdupq_n_u8(0x0F);
++    const uint8_t * sign_lut_16 = (const uint8_t *)(const void *) table_b2b_0;
++
++#if defined(__ARM_FEATURE_DOTPROD)
++    // dotprod path: single 32-byte tbl lookup + native vdotq.
++    const uint8x16x2_t codebook2 = { { vld1q_u8(stq1_0_codebook), vld1q_u8(stq1_0_codebook + 16) } };
++    #define STQ1_0_DOT(acc, sx, sy)  vdotq_s32((acc), (sx), (sy))
++    #define STQ1_0_LOOKUP(idx)       vqtbl2q_u8(codebook2, (idx))
++#else
++    // ARMv8.0 NEON without dotprod: emulate vdotq_s32 (vmull_s8 + vpaddlq_s16)
++    // and split the 32-byte codebook lookup into two vqtbl1q_u8 calls. vqtbl1q_u8
++    // returns 0 for out-of-range indices, so OR-ing the low and high halves
++    // (the high half is indexed by idx-16, which underflows to >=240 for idx<16)
++    // reproduces vqtbl2q_u8 byte-for-byte.
++    const uint8x16_t cb_lo = vld1q_u8(stq1_0_codebook);
++    const uint8x16_t cb_hi = vld1q_u8(stq1_0_codebook + 16);
++    const uint8x16_t v16   = vdupq_n_u8(16);
++    #define STQ1_0_DOT(acc, sx, sy)  ggml_vdotq_s32((acc), (sx), (sy))
++    #define STQ1_0_LOOKUP(idx)       vorrq_u8(vqtbl1q_u8(cb_lo, (idx)), \
++                                            vqtbl1q_u8(cb_hi, vsubq_u8((idx), v16)))
++#endif
++
++    // Each half processes 16 bytes of x.qs (32 codes), 4 bytes of x.sign,
++    // and 128 bytes of y.qs (2 chunks of 64 B). Stride-16 grouping lets each
++    // lane plane be a contiguous 16-byte slice of y (offsets 0/16/32/48 within
++    // a chunk), so we read it with plain vld1q_s8 — no deinterleave needed.
++#define STQ1_0_DOT_HALF(QS_PTR, SIGN_PTR, YP_PTR) do {                                \
++    const uint8x16_t packed = vld1q_u8(QS_PTR);                                     \
++    const uint8x16_t lo     = vandq_u8(packed, mask_0f);                            \
++    const uint8x16_t hi     = vshrq_n_u8(packed, 4);                                \
++    const uint8x16_t idx0   = vzip1q_u8(lo, hi);                                    \
++    const uint8x16_t idx1   = vzip2q_u8(lo, hi);                                    \
++    const uint8_t * sp      = (SIGN_PTR);                                           \
++    const uint8x16_t s0 = vcombine_u8(vld1_u8(sign_lut_16 + 8*sp[0]),               \
++                                      vld1_u8(sign_lut_16 + 8*sp[1]));              \
++    const uint8x16_t s1 = vcombine_u8(vld1_u8(sign_lut_16 + 8*sp[2]),               \
++                                      vld1_u8(sign_lut_16 + 8*sp[3]));              \
++    const uint8x16_t sel_0 = STQ1_0_LOOKUP(vorrq_u8(idx0, s0));                       \
++    const uint8x16_t sel_1 = STQ1_0_LOOKUP(vorrq_u8(idx1, s1));                       \
++    const int8x16_t sqx0 = vreinterpretq_s8_u8(vandq_u8(sel_0, m3));                \
++    const int8x16_t sqx1 = vreinterpretq_s8_u8(vandq_u8(vshrq_n_u8(sel_0, 2), m3)); \
++    const int8x16_t sqx2 = vreinterpretq_s8_u8(vandq_u8(vshrq_n_u8(sel_0, 4), m3)); \
++    const int8x16_t sqx3 = vreinterpretq_s8_u8(vshrq_n_u8(sel_0, 6));               \
++    const int8x16_t sqx4 = vreinterpretq_s8_u8(vandq_u8(sel_1, m3));                \
++    const int8x16_t sqx5 = vreinterpretq_s8_u8(vandq_u8(vshrq_n_u8(sel_1, 2), m3)); \
++    const int8x16_t sqx6 = vreinterpretq_s8_u8(vandq_u8(vshrq_n_u8(sel_1, 4), m3)); \
++    const int8x16_t sqx7 = vreinterpretq_s8_u8(vshrq_n_u8(sel_1, 6));               \
++    const int8_t * yp = (YP_PTR);                                                   \
++    sumi0 = STQ1_0_DOT(sumi0, sqx0, vld1q_s8(yp +   0));                            \
++    sumi1 = STQ1_0_DOT(sumi1, sqx1, vld1q_s8(yp +  16));                            \
++    sumi2 = STQ1_0_DOT(sumi2, sqx2, vld1q_s8(yp +  32));                            \
++    sumi3 = STQ1_0_DOT(sumi3, sqx3, vld1q_s8(yp +  48));                            \
++    sumi0 = STQ1_0_DOT(sumi0, sqx4, vld1q_s8(yp +  64));                            \
++    sumi1 = STQ1_0_DOT(sumi1, sqx5, vld1q_s8(yp +  80));                            \
++    sumi2 = STQ1_0_DOT(sumi2, sqx6, vld1q_s8(yp +  96));                            \
++    sumi3 = STQ1_0_DOT(sumi3, sqx7, vld1q_s8(yp + 112));                            \
++} while (0)
++
++    for (int i = 0; i < nb; ++i) {
++        // 4 accumulators
++        int32x4_t sumi0 = vdupq_n_s32(0);
++        int32x4_t sumi1 = vdupq_n_s32(0);
++        int32x4_t sumi2 = vdupq_n_s32(0);
++        int32x4_t sumi3 = vdupq_n_s32(0);
++
++        STQ1_0_DOT_HALF(x[i].qs,      x[i].sign,     y[i].qs);
++        STQ1_0_DOT_HALF(x[i].qs + 16, x[i].sign + 4, y[i].qs + 128);
++
++        const int16x8_t ysum0 = vld1q_s16(y[i].bsums);
++        const int16x8_t ysum1 = vld1q_s16(y[i].bsums + 8);
++        const float d = GGML_CPU_FP16_TO_FP32(x[i].d) * y[i].d;
++
++        sumi0 = vaddq_s32(vaddq_s32(sumi0, sumi1), vaddq_s32(sumi2, sumi3));
++        sumi0 = vsubq_s32(sumi0, vpaddlq_s16(vaddq_s16(ysum0, ysum1)));
++
++        sumf += d * (float) vaddvq_s32(sumi0);
++    }
++
++#undef STQ1_0_DOT
++#undef STQ1_0_LOOKUP
++#undef STQ1_0_DOT_HALF
++
++    *s = sumf;
++#else
++    UNUSED(x);
++    UNUSED(y);
++    UNUSED(nb);
++    ggml_vec_dot_stq1_0_q8_K_generic(n, s, bs, vx, bx, vy, by, nrc);
++#endif
++}
++
+ void ggml_vec_dot_q2_K_q8_K(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+     assert(nrc == 1);
+     UNUSED(nrc);
+diff --git a/ggml/src/ggml-cpu/ggml-cpu.c b/ggml/src/ggml-cpu/ggml-cpu.c
+index 4c33369..c6af8b7 100644
+--- a/ggml/src/ggml-cpu/ggml-cpu.c
++++ b/ggml/src/ggml-cpu/ggml-cpu.c
+@@ -410,6 +410,12 @@ static const struct ggml_type_traits_cpu type_traits_cpu[GGML_TYPE_COUNT] = {
+         .vec_dot_type             = GGML_TYPE_Q8_K,
+         .nrows                    = 1,
+     },
++    [GGML_TYPE_STQ1_0] = {
++        .from_float               = quantize_row_stq1_0,
++        .vec_dot                  = ggml_vec_dot_stq1_0_q8_K,
++        .vec_dot_type             = GGML_TYPE_Q8_K,
++        .nrows                    = 1,
++    },
+     [GGML_TYPE_I32] = {
+         .from_float               = (ggml_from_float_t) ggml_cpu_fp32_to_i32,
+     },
+diff --git a/ggml/src/ggml-cpu/ops.cpp b/ggml/src/ggml-cpu/ops.cpp
+index 02d5eff..7c2eac5 100644
+--- a/ggml/src/ggml-cpu/ops.cpp
++++ b/ggml/src/ggml-cpu/ops.cpp
+@@ -680,6 +680,7 @@ void ggml_compute_forward_add(
+         case GGML_TYPE_Q6_K:
+         case GGML_TYPE_TQ1_0:
+         case GGML_TYPE_TQ2_0:
++        case GGML_TYPE_STQ1_0:
+         case GGML_TYPE_IQ2_XXS:
+         case GGML_TYPE_IQ2_XS:
+         case GGML_TYPE_IQ3_XXS:
+@@ -1132,6 +1133,7 @@ void ggml_compute_forward_add1(
+         case GGML_TYPE_Q6_K:
+         case GGML_TYPE_TQ1_0:
+         case GGML_TYPE_TQ2_0:
++        case GGML_TYPE_STQ1_0:
+         case GGML_TYPE_IQ2_XXS:
+         case GGML_TYPE_IQ2_XS:
+         case GGML_TYPE_IQ3_XXS:
+@@ -1263,6 +1265,7 @@ void ggml_compute_forward_acc(
+         case GGML_TYPE_Q6_K:
+         case GGML_TYPE_TQ1_0:
+         case GGML_TYPE_TQ2_0:
++        case GGML_TYPE_STQ1_0:
+         case GGML_TYPE_IQ2_XXS:
+         case GGML_TYPE_IQ2_XS:
+         case GGML_TYPE_IQ3_XXS:
+@@ -4932,6 +4935,7 @@ void ggml_compute_forward_out_prod(
+         case GGML_TYPE_Q6_K:
+         case GGML_TYPE_TQ1_0:
+         case GGML_TYPE_TQ2_0:
++        case GGML_TYPE_STQ1_0:
+         case GGML_TYPE_IQ2_XXS:
+         case GGML_TYPE_IQ2_XS:
+         case GGML_TYPE_IQ3_XXS:
+@@ -5251,6 +5255,7 @@ void ggml_compute_forward_set(
+         case GGML_TYPE_Q6_K:
+         case GGML_TYPE_TQ1_0:
+         case GGML_TYPE_TQ2_0:
++        case GGML_TYPE_STQ1_0:
+         case GGML_TYPE_IQ2_XXS:
+         case GGML_TYPE_IQ2_XS:
+         case GGML_TYPE_IQ3_XXS:
+@@ -5476,6 +5481,7 @@ void ggml_compute_forward_get_rows(
+         case GGML_TYPE_Q6_K:
+         case GGML_TYPE_TQ1_0:
+         case GGML_TYPE_TQ2_0:
++        case GGML_TYPE_STQ1_0:
+         case GGML_TYPE_IQ2_XXS:
+         case GGML_TYPE_IQ2_XS:
+         case GGML_TYPE_IQ3_XXS:
+@@ -6236,6 +6242,7 @@ void ggml_compute_forward_clamp(
+         case GGML_TYPE_Q6_K:
+         case GGML_TYPE_TQ1_0:
+         case GGML_TYPE_TQ2_0:
++        case GGML_TYPE_STQ1_0:
+         case GGML_TYPE_IQ2_XXS:
+         case GGML_TYPE_IQ2_XS:
+         case GGML_TYPE_IQ3_XXS:
+diff --git a/ggml/src/ggml-cpu/quants.c b/ggml/src/ggml-cpu/quants.c
+index 5e36459..e4b7e53 100644
+--- a/ggml/src/ggml-cpu/quants.c
++++ b/ggml/src/ggml-cpu/quants.c
+@@ -116,6 +116,12 @@ void quantize_row_tq2_0(const float * GGML_RESTRICT x, void * GGML_RESTRICT vy,
+     quantize_row_tq2_0_ref(x, y, k);
+ }
+ 
++void quantize_row_stq1_0(const float * GGML_RESTRICT x, void * GGML_RESTRICT vy, int64_t k) {
++    assert(k % QK_K == 0);
++    block_stq1_0 * GGML_RESTRICT y = vy;
++    quantize_row_stq1_0_ref(x, y, k);
++}
++
+ //===================================== Q8_K ==============================================
+ 
+ void quantize_row_q8_K_generic(const float * GGML_RESTRICT x, void * GGML_RESTRICT y, int64_t k) {
+@@ -562,6 +568,42 @@ void ggml_vec_dot_tq2_0_q8_K_generic(int n, float * GGML_RESTRICT s, size_t bs,
+     *s = sumf;
+ }
+ 
++void ggml_vec_dot_stq1_0_q8_K_generic(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
++    assert(nrc == 1);
++    UNUSED(nrc);
++    UNUSED(bx);
++    UNUSED(by);
++    UNUSED(bs);
++
++    const block_stq1_0 * GGML_RESTRICT x = vx;
++    const block_q8_K  * GGML_RESTRICT y = vy;
++
++    const int nb = n / QK_K;
++    float sumf = 0.0f;
++    for (int i = 0; i < nb; ++i) {
++        int32_t sumi = 0;
++
++        // Groups are stride-16 within each 64-byte chunk: group g (chunk-local
++        // in 0..15) pairs with {y[c*64 + g + p*16] : p in 0..3}.
++        for (int g = 0; g < QK_K/4; ++g) {
++            const uint8_t code = (x[i].qs[g/2] >> (4 * (g & 1))) & 0x0F;
++            const uint8_t sign = (x[i].sign[g/8] >> (g % 8)) & 0x01;
++            const uint8_t qpack = stq1_0_codebook[((uint32_t) sign << 4) | code];
++
++            const int chunk = g / 16;
++            const int gloc  = g % 16;
++            for (int p = 0; p < 4; ++p) {
++                const int q = (qpack >> (2*p)) & 0x3;
++                sumi += (q - 1) * y[i].qs[chunk*64 + gloc + p*16];
++            }
++        }
++
++        sumf += (float) sumi * (GGML_CPU_FP16_TO_FP32(x[i].d) * y[i].d);
++    }
++
++    *s = sumf;
++}
++
+ void ggml_vec_dot_q2_K_q8_K_generic(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc) {
+     assert(nrc == 1);
+     UNUSED(nrc);
+diff --git a/ggml/src/ggml-cpu/quants.h b/ggml/src/ggml-cpu/quants.h
+index 93ea7ee..412da24 100644
+--- a/ggml/src/ggml-cpu/quants.h
++++ b/ggml/src/ggml-cpu/quants.h
+@@ -33,6 +33,7 @@ void quantize_row_q8_K(const float * GGML_RESTRICT x, void * GGML_RESTRICT y, in
+ 
+ void quantize_row_tq1_0(const float * GGML_RESTRICT x, void * GGML_RESTRICT y, int64_t k);
+ void quantize_row_tq2_0(const float * GGML_RESTRICT x, void * GGML_RESTRICT y, int64_t k);
++void quantize_row_stq1_0(const float * GGML_RESTRICT x, void * GGML_RESTRICT y, int64_t k);
+ 
+ void quantize_row_iq4_nl (const float * GGML_RESTRICT x, void * GGML_RESTRICT y, int64_t k);
+ void quantize_row_iq4_xs (const float * GGML_RESTRICT x, void * GGML_RESTRICT y, int64_t k);
+@@ -57,6 +58,7 @@ void ggml_vec_dot_q6_K_q8_K(int n, float * GGML_RESTRICT s, size_t bs, const voi
+ 
+ void ggml_vec_dot_tq1_0_q8_K(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc);
+ void ggml_vec_dot_tq2_0_q8_K(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc);
++void ggml_vec_dot_stq1_0_q8_K(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc);
+ 
+ void ggml_vec_dot_iq2_xxs_q8_K(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc);
+ void ggml_vec_dot_iq2_xs_q8_K (int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc);
+@@ -85,6 +87,7 @@ void ggml_vec_dot_nvfp4_q8_0_generic(int n, float * GGML_RESTRICT s, size_t bs,
+ 
+ void ggml_vec_dot_tq1_0_q8_K_generic(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc);
+ void ggml_vec_dot_tq2_0_q8_K_generic(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc);
++void ggml_vec_dot_stq1_0_q8_K_generic(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc);
+ 
+ void ggml_vec_dot_q2_K_q8_K_generic(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc);
+ void ggml_vec_dot_q3_K_q8_K_generic(int n, float * GGML_RESTRICT s, size_t bs, const void * GGML_RESTRICT vx, size_t bx, const void * GGML_RESTRICT vy, size_t by, int nrc);
+diff --git a/ggml/src/ggml-quants.c b/ggml/src/ggml-quants.c
+index 7750a72..53f275d 100644
+--- a/ggml/src/ggml-quants.c
++++ b/ggml/src/ggml-quants.c
+@@ -2412,6 +2412,61 @@ void quantize_row_tq2_0_ref(const float * GGML_RESTRICT x, block_tq2_0 * GGML_RE
+     }
+ }
+ 
++void quantize_row_stq1_0_ref(const float * GGML_RESTRICT x, block_stq1_0 * GGML_RESTRICT y, int64_t k) {
++    assert(k % QK_K == 0);
++    const int64_t nb = k / QK_K;
++
++    for (int64_t i = 0; i < nb; ++i) {
++        memset(y[i].qs,   0, sizeof(y[i].qs));
++        memset(y[i].sign, 0, sizeof(y[i].sign));
++
++        float amax = 0.0f;
++        for (int j = 0; j < QK_K; ++j) {
++            const float a = fabsf(x[j]);
++            if (a > amax) amax = a;
++        }
++        y[i].d = GGML_FP32_TO_FP16(amax);
++
++        // STQ1_0 forces exactly one zero per group of 4. Groups are stride-16
++        // within each 64-weight chunk: group g (chunk-local in 0..15) covers
++        // {x[c*64 + g + p*16] : p in 0..3}. Pick the smallest-|x| lane as zero;
++        // project the other 3 onto {-d, +d} via sign.
++        for (int g = 0; g < QK_K/4; ++g) {
++            const int chunk = g / 16;
++            const int gloc  = g % 16;
++            const float * base = x + chunk*64 + gloc;
++
++            int   zero_pos = 0;
++            float min_abs  = fabsf(base[0]);
++            for (int p = 1; p < 4; ++p) {
++                const float a = fabsf(base[p*16]);
++                if (a < min_abs) { min_abs = a; zero_pos = p; }
++            }
++
++            // Per-lane bits: -1 -> 0b00, 0 -> 0b01, +1 -> 0b10
++            uint8_t qpack = 0;
++            for (int p = 0; p < 4; ++p) {
++                uint8_t lane;
++                if (p == zero_pos) {
++                    lane = 0x1;
++                } else {
++                    lane = (base[p*16] < 0.0f) ? 0x0 : 0x2;
++                }
++                qpack |= (uint8_t)(lane << (2*p));
++            }
++
++            const uint8_t code = stq1_0_qpack_to_slot[qpack];
++            const uint8_t sign = stq1_0_qpack_to_sign[qpack];
++            assert(code != 0xFF);
++
++            y[i].qs  [g/2] |= (uint8_t)((code & 0x0F) << (4 * (g & 1)));
++            y[i].sign[g/8] |= (uint8_t)(sign << (g % 8));
++        }
++
++        x += QK_K;
++    }
++}
++
+ size_t quantize_tq1_0(const float * GGML_RESTRICT src, void * GGML_RESTRICT dst, int64_t nrow, int64_t n_per_row, const float * quant_weights) {
+     (void)quant_weights; // not used
+     const size_t row_size = ggml_row_size(GGML_TYPE_TQ1_0, n_per_row);
+@@ -2426,6 +2481,13 @@ size_t quantize_tq2_0(const float * GGML_RESTRICT src, void * GGML_RESTRICT dst,
+     return nrow * row_size;
+ }
+ 
++size_t quantize_stq1_0(const float * GGML_RESTRICT src, void * GGML_RESTRICT dst, int64_t nrow, int64_t n_per_row, const float * quant_weights) {
++    (void)quant_weights; // not used
++    const size_t row_size = ggml_row_size(GGML_TYPE_STQ1_0, n_per_row);
++    quantize_row_stq1_0_ref(src, dst, (int64_t)nrow*n_per_row);
++    return nrow * row_size;
++}
++
+ void dequantize_row_tq1_0(const block_tq1_0 * GGML_RESTRICT x, float * GGML_RESTRICT y, int64_t k) {
+     assert(k % QK_K == 0);
+     const int64_t nb = k / QK_K;
+@@ -2484,6 +2546,32 @@ void dequantize_row_tq2_0(const block_tq2_0 * GGML_RESTRICT x, float * GGML_REST
+     }
+ }
+ 
++void dequantize_row_stq1_0(const block_stq1_0 * GGML_RESTRICT x, float * GGML_RESTRICT y, int64_t k) {
++    assert(k % QK_K == 0);
++    const int64_t nb = k / QK_K;
++
++    for (int64_t i = 0; i < nb; ++i) {
++        const float d = GGML_FP16_TO_FP32(x[i].d);
++
++        // Groups are stride-16 within each 64-weight chunk: group g (chunk-local
++        // in 0..15) writes to {y[c*64 + g + p*16] : p in 0..3}.
++        for (int g = 0; g < QK_K/4; ++g) {
++            const uint8_t code = (x[i].qs[g/2] >> (4 * (g & 1))) & 0x0F;
++            const uint8_t sign = (x[i].sign[g/8] >> (g % 8)) & 0x01;
++            const uint8_t qpack = stq1_0_codebook[((uint32_t) sign << 4) | code];
++
++            const int chunk = g / 16;
++            const int gloc  = g % 16;
++            for (int p = 0; p < 4; ++p) {
++                const int q = (qpack >> (2*p)) & 0x3;
++                y[chunk*64 + gloc + p*16] = (float) (q - 1) * d;
++            }
++        }
++
++        y += QK_K;
++    }
++}
++
+ // ====================== "True" 2-bit (de)-quantization
+ 
+ void dequantize_row_iq2_xxs(const block_iq2_xxs * GGML_RESTRICT x, float * GGML_RESTRICT y, int64_t k) {
+@@ -5576,6 +5664,10 @@ bool ggml_validate_row_data(enum ggml_type type, const void * data, size_t nbyte
+             {
+                 VALIDATE_ROW_DATA_D_F16_IMPL(block_tq2_0, data, nb);
+             } break;
++        case GGML_TYPE_STQ1_0:
++            {
++                VALIDATE_ROW_DATA_D_F16_IMPL(block_stq1_0, data, nb);
++            } break;
+         case GGML_TYPE_IQ1_S:
+             {
+                 VALIDATE_ROW_DATA_D_F16_IMPL(block_iq1_s, data, nb);
+diff --git a/ggml/src/ggml-quants.h b/ggml/src/ggml-quants.h
+index 75188f1..ffccff3 100644
+--- a/ggml/src/ggml-quants.h
++++ b/ggml/src/ggml-quants.h
+@@ -35,6 +35,7 @@ GGML_API void quantize_row_q8_K_ref(const float * GGML_RESTRICT x, block_q8_K *
+ 
+ GGML_API void quantize_row_tq1_0_ref(const float * GGML_RESTRICT x, block_tq1_0 * GGML_RESTRICT y, int64_t k);
+ GGML_API void quantize_row_tq2_0_ref(const float * GGML_RESTRICT x, block_tq2_0 * GGML_RESTRICT y, int64_t k);
++GGML_API void quantize_row_stq1_0_ref(const float * GGML_RESTRICT x, block_stq1_0 * GGML_RESTRICT y, int64_t k);
+ 
+ GGML_API void quantize_row_iq3_xxs_ref(const float * GGML_RESTRICT x, block_iq3_xxs * GGML_RESTRICT y, int64_t k);
+ GGML_API void quantize_row_iq4_nl_ref (const float * GGML_RESTRICT x, block_iq4_nl  * GGML_RESTRICT y, int64_t k);
+@@ -64,6 +65,7 @@ GGML_API void dequantize_row_q8_K(const block_q8_K * GGML_RESTRICT x, float * GG
+ 
+ GGML_API void dequantize_row_tq1_0(const block_tq1_0 * GGML_RESTRICT x, float * GGML_RESTRICT y, int64_t k);
+ GGML_API void dequantize_row_tq2_0(const block_tq2_0 * GGML_RESTRICT x, float * GGML_RESTRICT y, int64_t k);
++GGML_API void dequantize_row_stq1_0(const block_stq1_0 * GGML_RESTRICT x, float * GGML_RESTRICT y, int64_t k);
+ 
+ GGML_API void dequantize_row_iq2_xxs(const block_iq2_xxs * GGML_RESTRICT x, float * GGML_RESTRICT y, int64_t k);
+ GGML_API void dequantize_row_iq2_xs (const block_iq2_xs  * GGML_RESTRICT x, float * GGML_RESTRICT y, int64_t k);
+@@ -88,6 +90,7 @@ GGML_API size_t quantize_iq3_s  (const float * GGML_RESTRICT src, void * GGML_RE
+ 
+ GGML_API size_t quantize_tq1_0(const float * GGML_RESTRICT src, void * GGML_RESTRICT dst, int64_t nrows, int64_t n_per_row, const float * imatrix);
+ GGML_API size_t quantize_tq2_0(const float * GGML_RESTRICT src, void * GGML_RESTRICT dst, int64_t nrows, int64_t n_per_row, const float * imatrix);
++GGML_API size_t quantize_stq1_0(const float * GGML_RESTRICT src, void * GGML_RESTRICT dst, int64_t nrows, int64_t n_per_row, const float * imatrix);
+ 
+ GGML_API size_t quantize_q2_K(const float * GGML_RESTRICT src, void * GGML_RESTRICT dst, int64_t nrows, int64_t n_per_row, const float * imatrix);
+ GGML_API size_t quantize_q3_K(const float * GGML_RESTRICT src, void * GGML_RESTRICT dst, int64_t nrows, int64_t n_per_row, const float * imatrix);
+diff --git a/ggml/src/ggml.c b/ggml/src/ggml.c
+index 004970d..dd2769d 100644
+--- a/ggml/src/ggml.c
++++ b/ggml/src/ggml.c
+@@ -954,6 +954,14 @@ static const struct ggml_type_traits type_traits[GGML_TYPE_COUNT] = {
+         .type_size                = 0,
+         .is_quantized             = false,
+     },
++    [GGML_TYPE_STQ1_0] = {
++        .type_name                = "stq1_0",
++        .blck_size                = QK_K,
++        .type_size                = sizeof(block_stq1_0),
++        .is_quantized             = true,
++        .to_float                 = (ggml_to_float_t) dequantize_row_stq1_0,
++        .from_float_ref           = (ggml_from_float_t) quantize_row_stq1_0_ref,
++    },
+ };
+ 
+ const struct ggml_type_traits * ggml_get_type_traits(enum ggml_type type) {
+@@ -8162,6 +8170,7 @@ size_t ggml_quantize_chunk(
+         case GGML_TYPE_Q6_K:    result = quantize_q6_K   (src + start, (char *) dst + start_row * row_size, nrows, n_per_row, imatrix); break;
+         case GGML_TYPE_TQ1_0:   result = quantize_tq1_0  (src + start, (char *) dst + start_row * row_size, nrows, n_per_row, imatrix); break;
+         case GGML_TYPE_TQ2_0:   result = quantize_tq2_0  (src + start, (char *) dst + start_row * row_size, nrows, n_per_row, imatrix); break;
++        case GGML_TYPE_STQ1_0:  result = quantize_stq1_0 (src + start, (char *) dst + start_row * row_size, nrows, n_per_row, imatrix); break;
+         case GGML_TYPE_IQ2_XXS: result = quantize_iq2_xxs(src + start, (char *) dst + start_row * row_size, nrows, n_per_row, imatrix); break;
+         case GGML_TYPE_IQ2_XS:  result = quantize_iq2_xs (src + start, (char *) dst + start_row * row_size, nrows, n_per_row, imatrix); break;
+         case GGML_TYPE_IQ3_XXS: result = quantize_iq3_xxs(src + start, (char *) dst + start_row * row_size, nrows, n_per_row, imatrix); break;
+diff --git a/gguf-py/gguf/constants.py b/gguf-py/gguf/constants.py
+index 51a16ef..5aa8837 100644
+--- a/gguf-py/gguf/constants.py
++++ b/gguf-py/gguf/constants.py
+@@ -6280,6 +6280,7 @@ class GGMLQuantizationType(IntEnum):
+     NVFP4   = 40
+     Q1_0    = 41
+     Q2_0    = 42
++    STQ1_0  = 43
+ 
+ 
+ class ExpertGatingFuncType(IntEnum):
+@@ -6336,6 +6337,7 @@ class LlamaFileType(IntEnum):
+     MOSTLY_NVFP4         = 39  # except 1d tensors
+     MOSTLY_Q1_0          = 40  # except 1d tensors
+     MOSTLY_Q2_0          = 41  # except 1d tensors
++    MOSTLY_STQ1_0        = 42  # except 1d tensors
+ 
+     GUESSED              = 1024  # not specified in the model file
+ 
+@@ -6498,6 +6500,7 @@ GGML_QUANT_SIZES: dict[GGMLQuantizationType, tuple[int, int]] = {
+     GGMLQuantizationType.NVFP4:   (64, 4 + 32),
+     GGMLQuantizationType.Q1_0:    (128, 2 + 16),
+     GGMLQuantizationType.Q2_0:    (64, 2 + 16),
++    GGMLQuantizationType.STQ1_0:  (256, 42),
+ }
+ 
+ 
+diff --git a/include/llama.h b/include/llama.h
+index 3af6e22..7519764 100644
+--- a/include/llama.h
++++ b/include/llama.h
+@@ -158,6 +158,7 @@ extern "C" {
+         LLAMA_FTYPE_MOSTLY_NVFP4         = 39, // except 1d tensors
+         LLAMA_FTYPE_MOSTLY_Q1_0          = 40, // except 1d tensors
+         LLAMA_FTYPE_MOSTLY_Q2_0          = 41, // except 1d tensors
++        LLAMA_FTYPE_MOSTLY_STQ1_0        = 42, // except 1d tensors
+ 
+         LLAMA_FTYPE_GUESSED = 1024, // not specified in the model file
+     };
+diff --git a/src/llama-model-loader.cpp b/src/llama-model-loader.cpp
+index 066e69e..0529571 100644
+--- a/src/llama-model-loader.cpp
++++ b/src/llama-model-loader.cpp
+@@ -59,6 +59,7 @@ const char * llama_ftype_name(llama_ftype ftype) {
+         case LLAMA_FTYPE_MOSTLY_Q6_K:      name = LLAMA_FTYPE_PREFIX "Q6_K"; break;
+         case LLAMA_FTYPE_MOSTLY_TQ1_0:     name = LLAMA_FTYPE_PREFIX "TQ1_0 - 1.69 bpw ternary"; break;
+         case LLAMA_FTYPE_MOSTLY_TQ2_0:     name = LLAMA_FTYPE_PREFIX "TQ2_0 - 2.06 bpw ternary"; break;
++        case LLAMA_FTYPE_MOSTLY_STQ1_0:    name = LLAMA_FTYPE_PREFIX "STQ1_0 - 1.31 bpw ternary"; break;
+         case LLAMA_FTYPE_MOSTLY_IQ2_XXS:   name = LLAMA_FTYPE_PREFIX "IQ2_XXS - 2.0625 bpw"; break;
+         case LLAMA_FTYPE_MOSTLY_IQ2_XS:    name = LLAMA_FTYPE_PREFIX "IQ2_XS - 2.3125 bpw"; break;
+         case LLAMA_FTYPE_MOSTLY_IQ2_S:     name = LLAMA_FTYPE_PREFIX "IQ2_S - 2.5 bpw"; break;
+@@ -768,6 +769,7 @@ llama_model_loader::llama_model_loader(
+             case GGML_TYPE_Q6_K:    ftype = LLAMA_FTYPE_MOSTLY_Q6_K;    break;
+             case GGML_TYPE_TQ1_0:   ftype = LLAMA_FTYPE_MOSTLY_TQ1_0;   break;
+             case GGML_TYPE_TQ2_0:   ftype = LLAMA_FTYPE_MOSTLY_TQ2_0;   break;
++            case GGML_TYPE_STQ1_0:  ftype = LLAMA_FTYPE_MOSTLY_STQ1_0;  break;
+             case GGML_TYPE_IQ2_XXS: ftype = LLAMA_FTYPE_MOSTLY_IQ2_XXS; break;
+             case GGML_TYPE_IQ2_XS:  ftype = LLAMA_FTYPE_MOSTLY_IQ2_XS;  break;
+             case GGML_TYPE_IQ2_S:   ftype = LLAMA_FTYPE_MOSTLY_IQ2_S;   break;
+diff --git a/src/llama-quant.cpp b/src/llama-quant.cpp
+index b8f96bc..45a6bfe 100644
+--- a/src/llama-quant.cpp
++++ b/src/llama-quant.cpp
+@@ -425,7 +425,8 @@ static ggml_type tensor_type_fallback(quantize_state_impl & qs, const ggml_tenso
+             case GGML_TYPE_Q2_K:
+             case GGML_TYPE_Q3_K:
+             case GGML_TYPE_TQ1_0:
+-            case GGML_TYPE_TQ2_0:   return_type = GGML_TYPE_Q4_0;   break;
++            case GGML_TYPE_TQ2_0:
++            case GGML_TYPE_STQ1_0:  return_type = GGML_TYPE_Q4_0;   break;
+             case GGML_TYPE_Q4_K:    return_type = GGML_TYPE_Q5_0;   break;
+             case GGML_TYPE_Q5_K:    return_type = GGML_TYPE_Q5_1;   break;
+             case GGML_TYPE_Q6_K:    return_type = GGML_TYPE_Q8_0;   break;
+@@ -562,7 +563,8 @@ static ggml_type llama_tensor_get_type_impl(quantize_state_impl & qs, ggml_type
+             else if (ftype == LLAMA_FTYPE_MOSTLY_IQ3_XXS) {
+                 new_type = GGML_TYPE_IQ3_S;
+             }
+-            else if (ftype == LLAMA_FTYPE_MOSTLY_TQ1_0 || ftype == LLAMA_FTYPE_MOSTLY_TQ2_0 || ftype == LLAMA_FTYPE_MOSTLY_Q2_0) {
++            else if (ftype == LLAMA_FTYPE_MOSTLY_TQ1_0 || ftype == LLAMA_FTYPE_MOSTLY_TQ2_0 ||
++                     ftype == LLAMA_FTYPE_MOSTLY_Q2_0  || ftype == LLAMA_FTYPE_MOSTLY_STQ1_0) {
+                 new_type = GGML_TYPE_Q4_K;
+             }
+         }
+@@ -933,6 +935,7 @@ ggml_type llama_ftype_get_default_type(llama_ftype ftype) {
+         case LLAMA_FTYPE_MOSTLY_Q6_K:    return GGML_TYPE_Q6_K;
+         case LLAMA_FTYPE_MOSTLY_TQ1_0:   return GGML_TYPE_TQ1_0;
+         case LLAMA_FTYPE_MOSTLY_TQ2_0:   return GGML_TYPE_TQ2_0;
++        case LLAMA_FTYPE_MOSTLY_STQ1_0:  return GGML_TYPE_STQ1_0;
+         case LLAMA_FTYPE_MOSTLY_IQ2_XXS: return GGML_TYPE_IQ2_XXS;
+         case LLAMA_FTYPE_MOSTLY_IQ2_XS:  return GGML_TYPE_IQ2_XS;
+         case LLAMA_FTYPE_MOSTLY_IQ2_S:   return GGML_TYPE_IQ2_XS;
+diff --git a/tests/test-quantize-fns.cpp b/tests/test-quantize-fns.cpp
+index 1930a09..fb5b9f5 100644
+--- a/tests/test-quantize-fns.cpp
++++ b/tests/test-quantize-fns.cpp
+@@ -189,6 +189,8 @@ static int test_vec_dot_q(bool verbose) {
+             const float total_error = total_quantization_error(qfns, qfns_cpu, test_size, test_data.data());
+             const float max_quantization_error =
+                 type == GGML_TYPE_Q1_0    ? MAX_QUANTIZATION_TOTAL_ERROR_BINARY :
++                // STQ1_0 is QAT-based: inputs sit on a {-a, 0, +a} grid; binary bound fits.
++                type == GGML_TYPE_STQ1_0  ? MAX_QUANTIZATION_TOTAL_ERROR_BINARY :
+                 type == GGML_TYPE_TQ1_0   ? MAX_QUANTIZATION_TOTAL_ERROR_TERNARY :
+                 type == GGML_TYPE_TQ2_0   ? MAX_QUANTIZATION_TOTAL_ERROR_TERNARY :
+                 type == GGML_TYPE_Q2_0    ? MAX_QUANTIZATION_TOTAL_ERROR_TERNARY :
+@@ -215,7 +217,7 @@ static int test_vec_dot_q(bool verbose) {
+             const float max_allowed_error = type == GGML_TYPE_Q2_K || type == GGML_TYPE_IQ2_XS || type == GGML_TYPE_IQ2_XXS ||
+                 type == GGML_TYPE_IQ3_XXS || type == GGML_TYPE_IQ3_S || type == GGML_TYPE_IQ2_S
+                 ? MAX_DOT_PRODUCT_ERROR_LOWBIT
+-                : type == GGML_TYPE_Q1_0
++                : type == GGML_TYPE_Q1_0 || type == GGML_TYPE_STQ1_0
+                 ? MAX_DOT_PRODUCT_ERROR_BINARY
+                 : type == GGML_TYPE_TQ1_0 || type == GGML_TYPE_TQ2_0 || type == GGML_TYPE_Q2_0
+                 ? MAX_DOT_PRODUCT_ERROR_TERNARY
+diff --git a/tools/quantize/quantize.cpp b/tools/quantize/quantize.cpp
+index 3895003..e704f0e 100644
+--- a/tools/quantize/quantize.cpp
++++ b/tools/quantize/quantize.cpp
+@@ -47,6 +47,7 @@ static const std::vector<quant_option> QUANT_OPTIONS = {
+     { "IQ1_M",    LLAMA_FTYPE_MOSTLY_IQ1_M,    " 1.75 bpw quantization",            },
+     { "TQ1_0",    LLAMA_FTYPE_MOSTLY_TQ1_0,    " 1.69 bpw ternarization",           },
+     { "TQ2_0",    LLAMA_FTYPE_MOSTLY_TQ2_0,    " 2.06 bpw ternarization",           },
++    { "STQ1_0",   LLAMA_FTYPE_MOSTLY_STQ1_0,   " 1.31 bpw ternarization",           },
+     { "Q2_K",     LLAMA_FTYPE_MOSTLY_Q2_K,     " 2.96G, +3.5199 ppl @ Llama-3-8B",  },
+     { "Q2_K_S",   LLAMA_FTYPE_MOSTLY_Q2_K_S,   " 2.96G, +3.1836 ppl @ Llama-3-8B",  },
+     { "IQ3_XXS",  LLAMA_FTYPE_MOSTLY_IQ3_XXS,  " 3.06 bpw quantization",            },
