@@ -151,15 +151,6 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
-        ///   https://copilot.microsoft.com/과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string CopilotUrl {
-            get {
-                return ResourceManager.GetString("CopilotUrl", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   yyyy-MM-dd HH:mm:ss과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string DateTimeFormat {
