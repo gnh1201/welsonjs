@@ -705,6 +705,20 @@
                     return firstLine.length > 80 ? firstLine.substring(0, 80) + '...' : firstLine;
                 };
 
+                // The user's system language (the browser's UI language, which follows the
+                // Windows display language), sent with the prompt so that the model can reply
+                // in it, for example: "Korean (South Korea) [ko-KR]".
+                const getSystemLanguage = () => {
+                    const tag = (navigator.languages && navigator.languages[0]) || navigator.language || 'en-US';
+                    let name = '';
+                    try {
+                        name = new Intl.DisplayNames(['en'], { type: 'language' }).of(tag) || '';
+                    } catch (e) {}
+                    return name && name !== tag ? `${name} [${tag}]` : tag;
+                };
+                const buildSystemLanguageNote = () =>
+                    `The user's system language is ${getSystemLanguage()}. Reply in that language unless the conversation asks for another.`;
+
                 // Generates text with the local llama.cpp model through the launcher
                 // (/llamacpp/chat), which starts llama-server on the first request. The
                 // answer replaces a status comment inserted below lineNumber.
@@ -713,8 +727,17 @@
                         `// ${summarize(summary)}... Generating text with llama.cpp (the first request may take a while to load the model)...`);
                     pushPromptMessage("user", promptMessage);
 
+                    // The system language goes in the system message (added to the first one
+                    // when the prompt has it: chat templates expect a single system message
+                    // at the start). It is not stored in the prompt messages.
+                    const messages = promptMessagesRef.current.slice();
+                    if (messages.length && messages[0] && messages[0].role === 'system')
+                        messages[0] = Object.assign({}, messages[0], { content: `${messages[0].content}\n\n${buildSystemLanguageNote()}` });
+                    else
+                        messages.unshift({ role: 'system', content: buildSystemLanguageNote() });
+
                     const data = {
-                        messages: promptMessagesRef.current,
+                        messages: messages,
                         max_tokens: 2048,
                         temperature: 0.8,
                         top_p: 0.1,
@@ -899,13 +922,31 @@
                         const source = options.codeAttribute
                             ? (block.hasAttribute(options.codeAttribute) ? block : block.querySelector('[' + options.codeAttribute + ']'))
                             : null;
+                        // options.monaco: a read-only Monaco editor ([data-uri] of its model);
+                        // the page's monaco global, when it has one, holds the whole code.
+                        let monacoCode = null;
+                        if (options.monaco && window.monaco && window.monaco.editor) {
+                            const host = block.querySelector('[data-uri]');
+                            try {
+                                const model = host && window.monaco.editor.getModel(window.monaco.Uri.parse(host.getAttribute('data-uri')));
+                                if (model) monacoCode = model.getValue();
+                            } catch (e) {}
+                        }
                         // options.lines: a code viewer that shows each line as its own element
-                        // (empty lines hold a no-break space).
-                        const lines = options.lines ? block.querySelectorAll(options.lines) : [];
+                        // (empty lines hold a no-break space), in the order of their position
+                        // (Monaco places its lines with style.top).
+                        const lines = options.lines
+                            ? Array.prototype.slice.call(block.querySelectorAll(options.lines))
+                                .map((l, i) => ({ l: l, i: i, top: parseFloat(l.style.top) }))
+                                .sort((a, b) => (isNaN(a.top) || isNaN(b.top) ? 0 : a.top - b.top) || a.i - b.i)
+                                .map(x => x.l)
+                            : [];
                         const codeElement = options.code ? block.querySelector(options.code) : null;
                         let code;
                         if (source) {
                             code = source.getAttribute(options.codeAttribute);
+                        } else if (monacoCode !== null) {
+                            code = monacoCode;
                         } else if (lines.length) {
                             code = Array.prototype.map.call(lines, l => l.textContent.replace(/\\u00a0/g, ' ').replace(/^\\s+$/, '')).join('\\n');
                         } else if (codeElement) {
@@ -1296,6 +1337,167 @@
                                 done: !!(answer && answer.getAttribute('data-is-streaming') === 'false')
                             };
                         })()`
+                    },
+
+                    // Mistral Le Chat (chat.mistral.ai):
+                    // - message box: a ProseMirror contenteditable (div.rich-text-editor) in a
+                    //   form. Enter sends; the send button is the visible
+                    //   button[type=submit] of the form (a hidden one is also there).
+                    // - messages: [data-message-author-role=user|assistant]. An answer has
+                    //   reasoning parts ([data-message-part-type=reasoning], left out) and
+                    //   answer parts ([data-message-part-type=answer]); its action buttons
+                    //   (like, rewrite, copy, ...) appear below them when it is finished.
+                    // - code blocks: div[data-testid=code-block]: a header (language and copy
+                    //   button), then a pre. Inline code is code[data-testid=code-block], kept
+                    //   as text.
+                    // Text is typed rather than pasted (unless the box is a Tiptap editor), so
+                    // that long text is not turned into an attachment and empty lines are kept.
+                    mistral: {
+                        name: 'Mistral',
+                        url: 'https://chat.mistral.ai/chat',
+                        windowName: 'WelsonJSMistral',
+                        hosts: ['chat.mistral.ai'],
+                        preferredPath: null,
+                        inputSelector: 'div.rich-text-editor[contenteditable="true"], form [contenteditable="true"].ProseMirror',
+                        submitSelector: 'button[type="submit"]:not([hidden])',
+                        setText: (inputSelector, text) => buildSetTiptapTextScript(inputSelector, text, false),
+                        stateScript: `(() => {
+                            const toText = ${buildAnswerToTextFunction({ block: 'div[data-testid="code-block"]', label: ':scope > div > div:first-child', code: 'pre' })};
+                            const questions = document.querySelectorAll('[data-message-author-role="user"]');
+                            const answers = document.querySelectorAll('[data-message-author-role="assistant"]');
+                            const question = questions.length ? questions[questions.length - 1] : null;
+                            let answer = answers.length ? answers[answers.length - 1] : null;
+                            // Only an answer after the last question belongs to it.
+                            if (answer && question && !(question.compareDocumentPosition(answer) & Node.DOCUMENT_POSITION_FOLLOWING))
+                                answer = null;
+                            const parts = answer ? Array.prototype.map.call(answer.querySelectorAll('[data-message-part-type="answer"]'), toText).filter(t => t) : [];
+                            // The action buttons: outside the message parts, and not the triggers
+                            // of the collapsible reasoning steps.
+                            const actions = answer ? Array.prototype.filter.call(answer.querySelectorAll('button'), b => !b.closest('[data-message-part-type]') && !b.hasAttribute('aria-expanded')) : [];
+                            return {
+                                count: questions.length,
+                                text: parts.join('\\n\\n'),
+                                done: actions.length > 0
+                            };
+                        })()`
+                    },
+
+                    // Qwen Chat (chat.qwen.ai):
+                    // - message box: textarea.message-input-textarea ("Ask Qwen"). Enter sends;
+                    //   the send button is button.send-button (aria-label "Send"), disabled
+                    //   while the box is empty.
+                    // - messages: .qwen-chat-message-user and .qwen-chat-message-assistant. An
+                    //   answer has a thinking status card (left out) and its text in
+                    //   .response-message-content.phase-answer; its footer actions
+                    //   (.response-message-footer-actions) appear when it is finished.
+                    // - code blocks: pre.qwen-markdown-code: a header (.qwen-markdown-code-header:
+                    //   language, copy, download and collapse buttons), then a read-only Monaco
+                    //   editor; the code is read from Monaco's model when the page exposes it,
+                    //   otherwise from its rendered lines (.view-line).
+                    qwen: {
+                        name: 'Qwen',
+                        url: 'https://chat.qwen.ai/',
+                        windowName: 'WelsonJSQwen',
+                        hosts: ['chat.qwen.ai'],
+                        preferredPath: null,
+                        inputSelector: 'textarea.message-input-textarea, #message-input-container textarea, textarea[placeholder="Ask Qwen"]',
+                        submitSelector: 'button.send-button, button[aria-label="Send"]',
+                        setText: buildPasteTextScript,   // not used: a textarea is typed into
+                        stateScript: `(() => {
+                            const toText = ${buildAnswerToTextFunction({ block: 'pre.qwen-markdown-code', label: '.qwen-markdown-code-header', monaco: true, lines: '.view-line', code: '.qwen-markdown-code-body' })};
+                            const questions = document.querySelectorAll('.qwen-chat-message-user');
+                            const answers = document.querySelectorAll('.qwen-chat-message-assistant');
+                            const question = questions.length ? questions[questions.length - 1] : null;
+                            let answer = answers.length ? answers[answers.length - 1] : null;
+                            // Only an answer after the last question belongs to it.
+                            if (answer && question && !(question.compareDocumentPosition(answer) & Node.DOCUMENT_POSITION_FOLLOWING))
+                                answer = null;
+                            const parts = answer ? Array.prototype.map.call(answer.querySelectorAll('.response-message-content.phase-answer'), toText).filter(t => t) : [];
+                            return {
+                                count: questions.length,
+                                text: parts.join('\\n\\n'),
+                                done: !!(answer && answer.querySelector('.response-message-footer-actions'))
+                            };
+                        })()`
+                    },
+
+                    // Kimi (www.kimi.ai):
+                    // - message box: a Lexical contenteditable (.chat-input-editor). Enter
+                    //   sends; the send button is div.send-button-container, with the class
+                    //   "disabled" while the box is empty.
+                    // - messages: .chat-content-item-user and .chat-content-item-assistant. An
+                    //   answer is a .toolcall-rollup: the thinking and tool calls in
+                    //   .toolcall-flow (left out), then the text in .toolcall-rollup__tail
+                    //   .markdown; its actions (.segment-assistant-actions: read aloud, copy,
+                    //   ...) appear when it is finished.
+                    // - code blocks: .segment-code: a header with the language
+                    //   (.segment-code-lang) and a copy button, then a pre.
+                    kimi: {
+                        name: 'Kimi',
+                        // Opens the global site; the other domains have the same page and are
+                        // recognized when one of them is already open.
+                        url: 'https://www.kimi.ai/',
+                        windowName: 'WelsonJSKimi',
+                        hosts: ['www.kimi.ai', 'kimi.ai', 'www.kimi.com', 'kimi.com', 'kimi.moonshot.cn'],
+                        preferredPath: null,
+                        inputSelector: '.chat-input-editor[contenteditable="true"], [data-testid="chat-editor"] [contenteditable="true"]',
+                        submitSelector: '.send-button-container',
+                        setText: buildSetLexicalTextScript,
+                        stateScript: `(() => {
+                            const toText = ${buildAnswerToTextFunction({ block: '.segment-code', label: '.segment-code-lang', code: 'pre' })};
+                            const questions = document.querySelectorAll('.chat-content-item-user');
+                            const answers = document.querySelectorAll('.chat-content-item-assistant');
+                            const question = questions.length ? questions[questions.length - 1] : null;
+                            let answer = answers.length ? answers[answers.length - 1] : null;
+                            // Only an answer after the last question belongs to it.
+                            if (answer && question && !(question.compareDocumentPosition(answer) & Node.DOCUMENT_POSITION_FOLLOWING))
+                                answer = null;
+                            const texts = answer ? Array.prototype.filter.call(answer.querySelectorAll('.markdown'), m => !m.closest('.toolcall-flow') && !m.parentElement.closest('.markdown')) : [];
+                            const parts = texts.map(toText).filter(t => t);
+                            return {
+                                count: questions.length,
+                                text: parts.join('\\n\\n'),
+                                done: !!(answer && answer.querySelector('.segment-assistant-actions-content .icon-button, .segment-assistant-actions-content button'))
+                            };
+                        })()`
+                    },
+
+                    // Z.ai (chat.z.ai):
+                    // - message box: textarea#chat-input. Enter sends; the send button is
+                    //   #send-message-button (button[type=submit]), disabled while the box is
+                    //   empty.
+                    // - messages: [id^=message-] items with .chat-user or .chat-assistant. An
+                    //   answer has its thinking in .thinking-chain-container (left out) and its
+                    //   text in .chat-markdown; its copy/regenerate buttons
+                    //   (.copy-response-button) appear below it when it is finished.
+                    // - code blocks: div[dir=ltr] around .app-code: the language and a copy
+                    //   button (.copy-code-button), then the code (pre.app-code-pre).
+                    zai: {
+                        name: 'Z.ai',
+                        url: 'https://chat.z.ai/',
+                        windowName: 'WelsonJSZai',
+                        hosts: ['chat.z.ai'],
+                        preferredPath: null,
+                        inputSelector: 'textarea#chat-input',
+                        submitSelector: '#send-message-button, button[type="submit"]',
+                        setText: buildPasteTextScript,   // not used: a textarea is typed into
+                        stateScript: `(() => {
+                            const toText = ${buildAnswerToTextFunction({ block: 'div[dir="ltr"]:has(> div > .app-code)', label: ':scope > div:first-child', code: 'pre' })};
+                            const questions = document.querySelectorAll('.chat-user');
+                            const answers = document.querySelectorAll('.chat-assistant');
+                            const question = questions.length ? questions[questions.length - 1] : null;
+                            let answer = answers.length ? answers[answers.length - 1] : null;
+                            // Only an answer after the last question belongs to it.
+                            if (answer && question && !(question.compareDocumentPosition(answer) & Node.DOCUMENT_POSITION_FOLLOWING))
+                                answer = null;
+                            const parts = answer ? Array.prototype.map.call(answer.querySelectorAll('.chat-markdown'), toText).filter(t => t) : [];
+                            const message = answer ? (answer.closest('[id^="message-"]') || answer.parentElement) : null;
+                            return {
+                                count: questions.length,
+                                text: parts.join('\\n\\n'),
+                                done: !!(message && message.querySelector('.copy-response-button, .regenerate-response-button'))
+                            };
+                        })()`
                     }
                 };
 
@@ -1306,6 +1508,7 @@
                     const lines = [
                         'Below is the whole conversation so far, including tool results, in order.',
                         'Reply to the last [user] message.',
+                        buildSystemLanguageNote(),
                         ''
                     ];
                     messages.forEach(m => {
@@ -1376,8 +1579,9 @@
                         for (let node = form || el.parentElement; node; node = form ? null : node.parentElement) {
                             const button = node.querySelector(${JSON.stringify(service.submitSelector)});
                             if (!button) continue;
-                            // Some send buttons are divs disabled by a class (ds-button--disabled).
-                            if (button.disabled || button.getAttribute('aria-disabled') === 'true' || button.matches('[class*="--disabled"]')) return 'disabled';
+                            // Some send buttons are divs disabled by a class (ds-button--disabled,
+                            // disabled).
+                            if (button.disabled || button.getAttribute('aria-disabled') === 'true' || button.matches('[class*="--disabled"], .disabled')) return 'disabled';
                             button.click();
                             return 'clicked';
                         }

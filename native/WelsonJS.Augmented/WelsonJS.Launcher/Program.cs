@@ -538,7 +538,9 @@ namespace WelsonJS.Launcher
                 isAppMode ? $"\"--app={url}\"" : $"\"{url}\"",
                 $"--remote-debugging-port={remoteDebuggingPort}",
                 $"--remote-allow-origins={remoteAllowOrigins}",
-                $"--user-data-dir=\"{userDataDir}\""
+                $"--user-data-dir=\"{userDataDir}\"",
+                // Do not offer to translate pages (the editor and the chat pages it opens).
+                "--disable-features=Translate,TranslateUI"
             };
 
             Process.Start(new ProcessStartInfo
