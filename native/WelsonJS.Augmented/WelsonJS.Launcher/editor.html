@@ -142,7 +142,7 @@
             }
 
             function RibbonMenu({
-                onOpenFileClick, onSaveFileClick, onLlamaCppClick, onPromptEditorClick,
+                onOpenFileClick, onSaveFileClick, onPromptEditorClick,
                 onSavePromptClick, onLoadPromptClick, onQueryWhoisClick, onQueryDnsClick,
                 onQueryIpClick, onMapClick, onRunScriptClick, onTerminalClick,
                 onExcelExampleClick, onPowerPointExampleClick, onWordExampleClick, onHwpExampleClick,
@@ -176,7 +176,6 @@
                 ];
 
                 const cognitiveToolsButtons = [
-                    { id: 'btnLlamaCpp', icon: 'mif-rocket', caption: 'llama.cpp', onClick: onLlamaCppClick },
                     { id: 'btnPromptEditor', icon: 'mif-pencil', caption: 'Prompt', onClick: onPromptEditorClick },
                     { id: 'btnSavePrompt', icon: 'mif-floppy-disks', caption: 'Save', onClick: onSavePromptClick },
                     { id: 'btnLoadPrompt', icon: 'mif-file-upload', caption: 'Load', onClick: onLoadPromptClick }
@@ -760,31 +759,321 @@
                     });
                 };
 
-                // Ribbon button: asks for a prompt; the answer goes below the cursor line.
-                const sendMessageToLlamaCpp = () => {
-                    const promptMessage = prompt("Enter a prompt message:", '');
-                    if (!promptMessage || promptMessage.trim() == '') {
-                        alert("A prompt message is required.");
-                        return;
+                // ---- Microsoft 365 Copilot (web) through the browser's DevTools protocol ----
+                //
+                // The launcher starts the browser with --remote-debugging-port and allows
+                // this page's origin (--remote-allow-origins), so the editor can drive the
+                // Copilot chat tab: type the message, press Enter, and read the answer from
+                // the page. If no Copilot tab is open, one is opened and used once its
+                // message box is ready (sign in there if asked).
+                //
+                // Page structure (Microsoft 365 Copilot chat, m365.cloud.microsoft/chat):
+                // - message box: span#m365-chat-editor-target-element, a Lexical
+                //   contenteditable. Enter sends; Shift+Enter inserts a line break.
+                // - each turn: [data-testid=m365-chat-llm-web-ui-chat-message], holding the
+                //   question ([data-testid=chatQuestion]) and the answer
+                //   ([data-testid=copilot-message-div] > ... [data-testid=markdown-reply]).
+                // - a finished answer shows its copy/feedback bar
+                //   ([data-testid=CopyButtonContainerTestId]).
+                // The Copilot web UI may change; these selectors are the only page-specific
+                // parts. The consumer site (copilot.microsoft.com: textarea and
+                // [data-content=ai-message]) is still recognized as a fallback.
+                const COPILOT_URL = 'https://m365.cloud.microsoft/chat';
+                const COPILOT_HOSTS = ['m365.cloud.microsoft', 'copilot.cloud.microsoft', 'copilot.microsoft.com'];
+                const COPILOT_INPUT_SELECTOR = '#m365-chat-editor-target-element, textarea, [contenteditable="true"][role="textbox"]';
+                const COPILOT_OPEN_WAIT_MS = 30000;   // wait for a newly opened tab to appear
+                const COPILOT_READY_WAIT_MS = 180000; // wait for the message box (page load, sign-in)
+                const COPILOT_MAX_WAIT_MS = 300000;   // wait for the answer
+                const COPILOT_POLL_MS = 1500;
+                const COPILOT_STABLE_POLLS = 4;       // unchanged for ~6 s without the copy bar = finished
+                const COPILOT_CONFIRM_CHARS = 10000;
+
+                // Evaluated in the Copilot tab: the number of turns and the last answer.
+                const COPILOT_STATE_SCRIPT = `(() => {
+                    const turns = document.querySelectorAll('[data-testid="m365-chat-llm-web-ui-chat-message"]');
+                    if (turns.length || document.getElementById('m365-chat-editor-target-element')) {
+                        const turn = turns.length ? turns[turns.length - 1] : null;
+                        const reply = turn ? turn.querySelector('[data-testid="copilot-message-div"]') : null;
+                        const parts = reply ? Array.prototype.map.call(reply.querySelectorAll('[data-testid="markdown-reply"]'), e => e.innerText.trim()).filter(t => t) : [];
+                        return {
+                            count: turns.length,
+                            text: parts.join('\\n\\n'),
+                            done: !!(reply && reply.querySelector('[data-testid="CopyButtonContainerTestId"], [data-testid="FeedbackContainerTestId"]'))
+                        };
                     }
+                    const answers = document.querySelectorAll('[data-content=ai-message]');
+                    return { count: answers.length, text: answers.length ? answers[answers.length - 1].innerText.trim() : '', done: false };
+                })()`;
 
-                    const editor = editorRef.current;
-                    if (!editor)
-                        return;
-
-                    const position = editor.getPosition() || { lineNumber: 1 };
-                    askLlamaCpp(promptMessage, position.lineNumber, promptMessage);
+                // Copilot receives one text message per turn and does not know this
+                // editor's conversation, so every turn sends all accumulated prompt
+                // messages (including tool results such as Whois/DNS/IP) as one message.
+                const buildCopilotMessage = (messages) => {
+                    const lines = [
+                        'Below is the whole conversation so far, including tool results, in order.',
+                        'Reply to the last [user] message.',
+                        ''
+                    ];
+                    messages.forEach(m => {
+                        lines.push(`[${m && m.role ? m.role : 'user'}]`);
+                        lines.push(String(m && m.content != null ? m.content : ''));
+                        lines.push('');
+                    });
+                    return lines.join('\n').trim();
                 };
 
-                // Editor context menu: send the selected text to llama.cpp. The answer goes
-                // below the selection.
-                const registerLlamaCppActions = (editor) => {
-                    const getSelection = () => {
-                        const selection = editor.getSelection();
-                        if (!selection || selection.isEmpty())
-                            return null;
+                const delay = (ms) => new Promise(r => setTimeout(r, ms));
 
+                // Minimal DevTools protocol client: send(method, params) resolves with the
+                // result of the matching response.
+                const openDevToolsSession = (wsUrl) => new Promise((resolve, reject) => {
+                    const socket = new WebSocket(wsUrl);
+                    const pending = {};
+                    let nextId = 1;
+                    socket.onmessage = (event) => {
+                        const message = JSON.parse(event.data);
+                        const handler = message.id && pending[message.id];
+                        if (!handler) return;
+                        delete pending[message.id];
+                        if (message.error) handler.reject(new Error(message.error.message || JSON.stringify(message.error)));
+                        else handler.resolve(message.result);
+                    };
+                    socket.onerror = () => reject(new Error('Could not connect to the Copilot tab (DevTools).'));
+                    socket.onclose = () => Object.keys(pending).forEach(id => pending[id].reject(new Error('The DevTools connection was closed.')));
+                    socket.onopen = () => resolve({
+                        send: (method, params) => new Promise((res, rej) => {
+                            const id = nextId++;
+                            pending[id] = { resolve: res, reject: rej };
+                            socket.send(JSON.stringify({ id: id, method: method, params: params || {} }));
+                        }),
+                        evaluate: function (expression) {
+                            return this.send('Runtime.evaluate', { expression: expression, returnByValue: true })
+                                .then(r => r && r.result ? r.result.value : undefined);
+                        },
+                        // text: the character the key produces ('\r' for Enter), so that the
+                        // page also receives keypress/beforeinput like a real key press.
+                        key: function (key, code, keyCode, modifiers, text) {
+                            const base = { key: key, code: code, windowsVirtualKeyCode: keyCode, modifiers: modifiers || 0 };
+                            const down = text
+                                ? Object.assign({ type: 'keyDown', text: text, unmodifiedText: text }, base)
+                                : Object.assign({ type: 'rawKeyDown' }, base);
+                            return this.send('Input.dispatchKeyEvent', down)
+                                .then(() => this.send('Input.dispatchKeyEvent', Object.assign({ type: 'keyUp' }, base)));
+                        },
+                        close: () => socket.close()
+                    });
+                });
+
+                // Evaluated in the Copilot tab: replaces the content of the Lexical message
+                // box with the text, one paragraph per line, through the editor instance
+                // that Lexical attaches to its root element. Returns false when that is not
+                // possible (not a Lexical editor, or the state was rejected).
+                const buildSetLexicalTextScript = (text) => `(() => {
+                    const el = document.querySelector(${JSON.stringify(COPILOT_INPUT_SELECTOR)});
+                    const editor = el && el.__lexicalEditor;
+                    if (!editor || typeof editor.parseEditorState !== 'function') return false;
+                    const paragraph = line => ({
+                        type: 'paragraph', version: 1, direction: line ? 'ltr' : null, format: '', indent: 0, textFormat: 0, textStyle: '',
+                        children: line ? [{ type: 'text', version: 1, text: line, detail: 0, format: 0, mode: 'normal', style: '' }] : []
+                    });
+                    const lines = ${JSON.stringify(text)}.split('\\n');
+                    try {
+                        editor.setEditorState(editor.parseEditorState(JSON.stringify({
+                            root: { type: 'root', version: 1, direction: 'ltr', format: '', indent: 0, children: lines.map(paragraph) }
+                        })));
+                    } catch (e) {
+                        return false;
+                    }
+                    el.focus();
+                    return true;
+                })()`;
+
+                // Evaluated in the Copilot tab: clicks the send button nearest to the
+                // message box (there is no form; the button is button[type=submit]).
+                const COPILOT_SUBMIT_SCRIPT = `(() => {
+                    const el = document.querySelector(${JSON.stringify(COPILOT_INPUT_SELECTOR)});
+                    if (!el) return 'no-input';
+                    for (let node = el.parentElement; node; node = node.parentElement) {
+                        const button = node.querySelector('button[type="submit"]');
+                        if (!button) continue;
+                        if (button.disabled || button.getAttribute('aria-disabled') === 'true') return 'disabled';
+                        button.click();
+                        return 'clicked';
+                    }
+                    return 'no-button';
+                })()`;
+
+                // Types the message into the Copilot tab, sends it, and waits for a new
+                // answer. Resolves with the answer text.
+                const runCopilotTurn = async (wsUrl, text) => {
+                    const session = await openDevToolsSession(wsUrl);
+                    const SHIFT = 8, CTRL = 2;
+                    // Focuses the message box; returns its tag ('TEXTAREA' or 'SPAN'/...) or null.
+                    const focusInput = `(() => { const el = document.querySelector(${JSON.stringify(COPILOT_INPUT_SELECTOR)}); if (!el) return null; el.focus(); return el.tagName; })()`;
+                    const inputText = `(() => { const el = document.querySelector(${JSON.stringify(COPILOT_INPUT_SELECTOR)}); return el ? (el.value !== undefined ? el.value : el.innerText) : ''; })()`;
+                    const pressEnter = async () => {
+                        await session.evaluate(focusInput);
+                        await session.key('Enter', 'Enter', 13, 0, '\r');
+                    };
+                    try {
+                        // A tab that was just opened may still be loading or waiting for sign-in.
+                        const readyDeadline = Date.now() + COPILOT_READY_WAIT_MS;
+                        let tag;
+                        while (!(tag = await session.evaluate(focusInput))) {
+                            if (Date.now() >= readyDeadline)
+                                throw new Error('Could not find the Copilot message box. Sign in to Copilot in its window, then try again.');
+                            await delay(COPILOT_POLL_MS);
+                        }
+
+                        const before = await session.evaluate(COPILOT_STATE_SCRIPT);
+
+                        // Lexical (Microsoft 365 Copilot): set the editor content directly,
+                        // which replaces any draft and keeps every line break. Pasting is
+                        // avoided because Copilot may turn long pasted text into an attachment.
+                        if (!(tag !== 'TEXTAREA' && await session.evaluate(buildSetLexicalTextScript(text)))) {
+                            // Fallback: clear a draft, then type (line by line with Shift+Enter
+                            // in a contenteditable box).
+                            if (String(await session.evaluate(inputText)).trim() !== '') {
+                                await session.key('a', 'KeyA', 65, CTRL);
+                                await session.key('Backspace', 'Backspace', 8);
+                            }
+                            if (tag === 'TEXTAREA') {
+                                await session.send('Input.insertText', { text: text });
+                            } else {
+                                const lines = text.split('\n');
+                                for (let i = 0; i < lines.length; i++) {
+                                    if (i > 0) {
+                                        await session.key('Enter', 'Enter', 13, SHIFT, '\r');
+                                        await delay(20);
+                                    }
+                                    if (lines[i])
+                                        await session.send('Input.insertText', { text: lines[i] });
+                                }
+                            }
+                        }
+                        if (String(await session.evaluate(inputText)).trim() === '')
+                            throw new Error('The message could not be typed into the Copilot message box.');
+
+                        // Send: click the send button once it is enabled; without one, press
+                        // Enter. Then make sure the message left the box or a new turn started.
+                        let result = 'disabled';
+                        for (let i = 0; i < 10 && result === 'disabled'; i++) {
+                            await delay(300);
+                            result = await session.evaluate(COPILOT_SUBMIT_SCRIPT);
+                        }
+                        if (result !== 'clicked')
+                            await pressEnter();
+
+                        const isSent = async () => {
+                            const state = await session.evaluate(COPILOT_STATE_SCRIPT);
+                            return (state && state.count > before.count) || String(await session.evaluate(inputText)).trim() === '';
+                        };
+                        let sent = false;
+                        for (let i = 0; i < 2 && !sent; i++) {
+                            if (i > 0)
+                                await pressEnter();   // the click (or key) had no effect; try Enter once more
+                            for (let w = 0; w < 10 && !(sent = await isSent()); w++)
+                                await delay(500);
+                        }
+                        if (!sent)
+                            throw new Error('The message was typed but Copilot did not send it (the send button and Enter had no effect).');
+
+                        const deadline = Date.now() + COPILOT_MAX_WAIT_MS;
+                        let last = '', stable = 0;
+                        while (Date.now() < deadline) {
+                            await delay(COPILOT_POLL_MS);
+                            const state = await session.evaluate(COPILOT_STATE_SCRIPT);
+                            if (!state || state.count <= before.count || !state.text) {
+                                stable = 0;
+                                continue;
+                            }
+                            stable = (state.text === last) ? stable + 1 : 0;
+                            last = state.text;
+                            // Finished: the copy/feedback bar is shown and the text has stopped
+                            // changing, or the text has not changed for a while.
+                            if ((state.done && stable >= 1) || stable >= COPILOT_STABLE_POLLS)
+                                return last;
+                        }
+                        throw new Error(`Copilot did not finish answering within ${COPILOT_MAX_WAIT_MS / 1000} seconds.` +
+                            (last ? ` Partial answer:\n${last}` : ''));
+                    } finally {
+                        session.close();
+                    }
+                };
+
+                // Prefers a chat page (".../chat") over other pages of the same hosts.
+                const findCopilotTarget = async () => {
+                    const response = await fetch('/devtools/json');
+                    if (!response.ok)
+                        throw new Error(`The launcher could not reach the browser's DevTools (HTTP ${response.status}).`);
+                    const pages = ((await response.json()) || []).filter(t => {
+                        if (t.type !== 'page') return false;
+                        try { return COPILOT_HOSTS.indexOf(new URL(t.url).hostname) >= 0; } catch (e) { return false; }
+                    });
+                    return pages.find(t => /\/chat\b/.test(new URL(t.url).pathname)) || pages[0];
+                };
+
+                // Returns the Copilot tab, opening it (in the launcher's browser) when none
+                // is open. Like the prompt editor and the terminal, it opens as a popup
+                // window (window features) instead of a tab. window.open runs within the
+                // context menu click's user activation, so popup blockers allow it.
+                const getOrOpenCopilotTarget = async () => {
+                    let target = await findCopilotTarget();
+                    if (target)
+                        return target;
+
+                    if (!window.open(COPILOT_URL, 'WelsonJSCopilot', 'width=1000,height=800,resizable=yes,scrollbars=yes'))
+                        throw new Error('The browser blocked opening Copilot. Allow popups for this page, or open ' + COPILOT_URL + ' and try again.');
+
+                    const deadline = Date.now() + COPILOT_OPEN_WAIT_MS;
+                    while (Date.now() < deadline) {
+                        await delay(1000);
+                        target = await findCopilotTarget();
+                        if (target)
+                            return target;
+                    }
+                    throw new Error('The Copilot window did not open. Make sure the editor runs in the browser started by the launcher (remote debugging).');
+                };
+
+                // Sends the whole accumulated prompt plus promptMessage to Copilot. The
+                // answer replaces a status comment inserted below lineNumber.
+                const askCopilot = (promptMessage, lineNumber, summary) => {
+                    const count = promptMessagesRef.current.length + 1;
+                    const text = buildCopilotMessage(promptMessagesRef.current.concat([{ role: 'user', content: promptMessage }]));
+                    if (text.length > COPILOT_CONFIRM_CHARS &&
+                        !confirm(`The accumulated prompt is ${text.length} characters (${count} messages). Copilot may reject long messages. Send it anyway?`))
+                        return;
+
+                    const status = `// ${summarize(summary)}... Sending the whole prompt (${count} messages) to Copilot`;
+                    const replace = insertPlaceholder(lineNumber, status + '...');
+                    pushPromptMessage("user", promptMessage);
+
+                    (async () => {
+                        try {
+                            const target = await getOrOpenCopilotTarget();
+                            const answer = await runCopilotTurn(target.webSocketDebuggerUrl, text);
+                            pushPromptMessage("assistant", answer);
+                            // Keep the text inside the comment block.
+                            replace(`/*\n${DOMPurify.sanitize(answer, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] }).replace(/\*\//g, '* /')}\n*/`);
+                        } catch (e) {
+                            console.error('Copilot error:', e);
+                            replace(`// Copilot request failed: ${String(e && e.message ? e.message : e).replace(/\r?\n/g, ' ')}`);
+                        }
+                    })();
+                };
+
+                // Editor context menu for both providers. "Send" and "Explain" need a
+                // selection; "Ask..." asks for a message and includes the selection, if
+                // any. The answer goes below the selection (or the cursor line).
+                const registerAiActions = (editor) => {
+                    const getContext = () => {
                         const model = editor.getModel();
+                        const selection = editor.getSelection();
+                        if (!selection || selection.isEmpty()) {
+                            const position = editor.getPosition() || { lineNumber: 1 };
+                            return { text: '', endLine: position.lineNumber, language: model.getLanguageId() };
+                        }
+
                         // A selection of whole lines ends at column 1 of the next line.
                         const endLine = (selection.endColumn === 1 && selection.endLineNumber > selection.startLineNumber)
                             ? selection.endLineNumber - 1
@@ -792,50 +1081,65 @@
                         return { text: model.getValueInRange(selection), endLine: endLine, language: model.getLanguageId() };
                     };
 
-                    const fence = (selection) => '```' + selection.language + '\n' + selection.text + '\n```';
+                    const fence = (context) => '```' + context.language + '\n' + context.text + '\n```';
 
-                    const actions = [
-                        {
-                            id: 'welsonjs.llamacpp.sendSelection',
-                            label: 'llama.cpp: Send Selection',
-                            build: selection => ({ message: selection.text, summary: selection.text })
-                        },
-                        {
-                            id: 'welsonjs.llamacpp.explainSelection',
-                            label: 'llama.cpp: Explain Selection',
-                            build: selection => ({
-                                message: 'Explain what the following code does.\n\n' + fence(selection),
-                                summary: 'Explain the selection'
-                            })
-                        },
-                        {
-                            id: 'welsonjs.llamacpp.askAboutSelection',
-                            label: 'llama.cpp: Ask About Selection...',
-                            build: selection => {
-                                const question = prompt("Ask llama.cpp about the selection:", '');
-                                if (!question || question.trim() === '')
-                                    return null;
-                                return { message: question + '\n\n' + fence(selection), summary: question };
-                            }
-                        }
+                    const providers = [
+                        { key: 'llamacpp', name: 'llama.cpp', group: '1_llamacpp', ask: askLlamaCpp },
+                        { key: 'copilot', name: 'Copilot', group: '2_copilot', ask: askCopilot }
                     ];
 
-                    actions.forEach((action, index) => {
-                        editor.addAction({
-                            id: action.id,
-                            label: action.label,
-                            precondition: 'editorHasSelection',
-                            contextMenuGroupId: '1_llamacpp',
-                            contextMenuOrder: index + 1,
-                            run: () => {
-                                const selection = getSelection();
-                                if (!selection)
-                                    return;
-
-                                const request = action.build(selection);
-                                if (request)
-                                    askLlamaCpp(request.message, selection.endLine, request.summary);
+                    providers.forEach(provider => {
+                        const actions = [
+                            {
+                                id: 'sendSelection',
+                                label: 'Send Selection',
+                                precondition: 'editorHasSelection',
+                                build: context => ({ message: context.text, summary: context.text })
+                            },
+                            {
+                                id: 'explainSelection',
+                                label: 'Explain Selection',
+                                precondition: 'editorHasSelection',
+                                build: context => ({
+                                    message: 'Explain what the following code does.\n\n' + fence(context),
+                                    summary: 'Explain the selection'
+                                })
+                            },
+                            {
+                                id: 'ask',
+                                label: 'Ask...',
+                                precondition: undefined,
+                                build: context => {
+                                    const question = prompt(context.text
+                                        ? `Ask ${provider.name} about the selection:`
+                                        : `Ask ${provider.name}:`, '');
+                                    if (!question || question.trim() === '')
+                                        return null;
+                                    return {
+                                        message: context.text ? question + '\n\n' + fence(context) : question,
+                                        summary: question
+                                    };
+                                }
                             }
+                        ];
+
+                        actions.forEach((action, index) => {
+                            editor.addAction({
+                                id: `welsonjs.${provider.key}.${action.id}`,
+                                label: `${provider.name}: ${action.label}`,
+                                precondition: action.precondition,
+                                contextMenuGroupId: provider.group,
+                                contextMenuOrder: index + 1,
+                                run: () => {
+                                    const context = getContext();
+                                    if (action.precondition && !context.text)
+                                        return;
+
+                                    const request = action.build(context);
+                                    if (request)
+                                        provider.ask(request.message, context.endLine, request.summary);
+                                }
+                            });
                         });
                     });
                 };
@@ -1040,7 +1344,6 @@
                     _e(RibbonMenu, {
                         onOpenFileClick: openFile,
                         onSaveFileClick: saveFile,
-                        onLlamaCppClick: sendMessageToLlamaCpp,
                         onPromptEditorClick: openPromptEditor,
                         onSavePromptClick: savePromptMessages,
                         onLoadPromptClick: loadPromptMessages,
@@ -1059,7 +1362,7 @@
                         onWorldTouristExampleClick: showWorldTouristExample,
                     }),
                     _e('div', { id: 'container' },
-                        _e(Editor, { editorRef: editorRef, visible: !showMap, onReady: registerLlamaCppActions }),
+                        _e(Editor, { editorRef: editorRef, visible: !showMap, onReady: registerAiActions }),
                         _e(MapView, { mapViewRef: mapViewRef, visible: showMap })
                     ),
                     _e('div', { className: 'banner' }, _e('a', { href: 'https://github.com/gnh1201/welsonjs' }, '❤️ Contribute this project')),
