@@ -1871,7 +1871,9 @@
                     registerWebChatActions(webChatKey);
                 };
 
-                // Ribbon toggle: switches to the next web chat service and says how to use it.
+                // Ribbon toggle: switches to the next web chat service. When there are prompt
+                // messages, asks whether to keep them for the new service (every turn sends
+                // all of them) or to start over with an empty prompt.
                 const toggleWebChat = () => {
                     const keys = Object.keys(WEB_CHATS);
                     const key = keys[(keys.indexOf(webChatKey) + 1) % keys.length];
@@ -1883,9 +1885,13 @@
                     } catch (e) {}
                     registerWebChatActions(key);
 
-                    alert(`The web chat service is now ${name}.\n\n` +
-                        `Right-click in the editor and choose "${name}: Send Selection", ` +
-                        `"${name}: Explain Selection" or "${name}: Ask..." to use it.`);
+                    const count = promptMessagesRef.current.length;
+                    if (count > 0 && !confirm(`The web chat service is now ${name}.\n\n` +
+                        `Keep the current prompt (${count} message${count === 1 ? '' : 's'}) and send it to ${name}?\n\n` +
+                        `OK: keep the prompt.\nCancel: clear the prompt and start over.`)) {
+                        promptMessagesRef.current = [];
+                        notifyPromptMessages(null);
+                    }
                 };
 
                 const savePromptMessages = () => {
