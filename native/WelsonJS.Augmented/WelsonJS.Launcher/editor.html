@@ -142,6 +142,7 @@
             }
 
             function RibbonMenu({
+                webChatName, onWebChatToggleClick,
                 onOpenFileClick, onSaveFileClick, onPromptEditorClick,
                 onSavePromptClick, onLoadPromptClick, onQueryWhoisClick, onQueryDnsClick,
                 onQueryIpClick, onMapClick, onRunScriptClick, onTerminalClick,
@@ -175,10 +176,12 @@
                     }
                 ];
 
-                const cognitiveToolsButtons = [
+                const inferenceButtons = [
                     { id: 'btnPromptEditor', icon: 'mif-pencil', caption: 'Prompt', onClick: onPromptEditorClick },
                     { id: 'btnSavePrompt', icon: 'mif-floppy-disks', caption: 'Save', onClick: onSavePromptClick },
-                    { id: 'btnLoadPrompt', icon: 'mif-file-upload', caption: 'Load', onClick: onLoadPromptClick }
+                    { id: 'btnLoadPrompt', icon: 'mif-file-upload', caption: 'Load', onClick: onLoadPromptClick },
+                    // Switches the web chat service that the editor's context menu sends to.
+                    { id: 'btnWebChat', icon: 'mif-loop2', caption: webChatName, onClick: onWebChatToggleClick }
                 ];
 
                 const networkToolsButtons = [
@@ -211,7 +214,7 @@
                     _e('div', { className: 'content-holder' },
                         _e('div', { className: 'section active', id: 'editor-tab' },
                             _e(Group, { title: 'File', buttons: fileButtons }),
-                            _e(Group, { title: 'Cognitive Tools (AI)', buttons: cognitiveToolsButtons }),
+                            _e(Group, { title: 'Inference (AI)', buttons: inferenceButtons }),
                             _e(Group, { title: 'Network Tools', buttons: networkToolsButtons }),
                             _e(Group, { title: 'Office Automation', buttons: examplesButtons }),
                             _e(Group, { title: 'Community', buttons: communityButtons })
@@ -818,6 +821,113 @@
                     return true;
                 })()`;
 
+                // Evaluated in the chat page: replaces the content of a Tiptap message box
+                // with the text, one paragraph per line (empty lines kept), through the
+                // editor instance that Tiptap attaches to its root element (el.editor).
+                // Without such an instance it pastes the text, or, with pasteFallback false,
+                // returns false so that the text is typed instead.
+                const buildSetTiptapTextScript = (inputSelector, text, pasteFallback = true) => `(() => {
+                    const el = document.querySelector(${JSON.stringify(inputSelector)});
+                    const editor = el && el.editor;
+                    if (!editor || !editor.commands || typeof editor.commands.setContent !== 'function')
+                        return ${pasteFallback ? buildPasteTextScript(inputSelector, text) : 'false'};
+                    const lines = ${JSON.stringify(text)}.split('\\n');
+                    try {
+                        editor.commands.setContent({
+                            type: 'doc',
+                            content: lines.map(line => line ? { type: 'paragraph', content: [{ type: 'text', text: line }] } : { type: 'paragraph' })
+                        }, true);
+                        editor.commands.focus('end');
+                    } catch (e) {
+                        return false;
+                    }
+                    return true;
+                })()`;
+
+                // Evaluated in the chat page: replaces the content of a Quill message box
+                // (.ql-editor) with the text. Uses the Quill instance that Quill 1.x attaches
+                // to its container (__quill); otherwise inserts the text as typed input
+                // (execCommand insertText), which Quill picks up from the DOM. Text is not
+                // pasted, because a long paste may be turned into an attachment.
+                const buildSetQuillTextScript = (inputSelector, text) => `(() => {
+                    const el = document.querySelector(${JSON.stringify(inputSelector)});
+                    if (!el || !el.isContentEditable) return false;
+                    const text = ${JSON.stringify(text)};
+                    const container = el.closest('.ql-container') || el.parentElement;
+                    const quill = container && container.__quill;
+                    try {
+                        if (quill && typeof quill.setText === 'function') {
+                            quill.setText(text, 'user');
+                            quill.setSelection(quill.getLength(), 0, 'user');
+                            return true;
+                        }
+                        el.focus();
+                        document.execCommand('selectAll', false, null);
+                        return document.execCommand('insertText', false, text);
+                    } catch (e) {
+                        return false;
+                    }
+                })()`;
+
+                // Source of a function, evaluated in the chat page, that returns an answer
+                // element as text: each code block (options.block) becomes a Markdown fence
+                // with the language from its header (options.label, without its buttons)
+                // and the code (the options.codeAttribute attribute on the block or inside
+                // it, when the page keeps the exact code there; otherwise the line elements
+                // options.lines, or the text of options.code); the elements matched by options.remove
+                // (citations and the like) and all buttons are left out. A copy is measured
+                // off-screen so that innerText keeps the line breaks of the rendered answer.
+                const buildAnswerToTextFunction = (options) => `((root) => {
+                    const options = ${JSON.stringify(options)};
+                    const each = (node, selector, fn) => Array.prototype.forEach.call(node.querySelectorAll(selector), fn);
+                    const clone = root.cloneNode(true);
+                    if (options.remove) each(clone, options.remove, e => e.remove());
+                    if (options.block) each(clone, options.block, block => {
+                        const header = options.label ? block.querySelector(options.label) : null;
+                        let language = '';
+                        if (header) {
+                            const label = header.cloneNode(true);
+                            each(label, '[role="button"], button', b => b.remove());
+                            language = (label.textContent.trim().split(/\\s+/)[0] || '').toLowerCase();
+                            // A label that is not a language name (such as "일반", plain text in
+                            // the page's language) is left out.
+                            if (!/^[a-z0-9+#._-]+$/.test(language)) language = '';
+                            header.remove();
+                        }
+                        // The code is read before buttons are removed: some pages wrap a collapsed
+                        // code block in a role=button element ("See all 13 lines").
+                        const source = options.codeAttribute
+                            ? (block.hasAttribute(options.codeAttribute) ? block : block.querySelector('[' + options.codeAttribute + ']'))
+                            : null;
+                        // options.lines: a code viewer that shows each line as its own element
+                        // (empty lines hold a no-break space).
+                        const lines = options.lines ? block.querySelectorAll(options.lines) : [];
+                        const codeElement = options.code ? block.querySelector(options.code) : null;
+                        let code;
+                        if (source) {
+                            code = source.getAttribute(options.codeAttribute);
+                        } else if (lines.length) {
+                            code = Array.prototype.map.call(lines, l => l.textContent.replace(/\\u00a0/g, ' ').replace(/^\\s+$/, '')).join('\\n');
+                        } else if (codeElement) {
+                            code = codeElement.textContent;
+                        } else {
+                            each(block, '[role="button"], button', b => b.remove());
+                            code = block.textContent;
+                        }
+                        const fence = document.createElement('pre');
+                        fence.textContent = '\`\`\`' + language + '\\n' + code.replace(/\\n$/, '') + '\\n\`\`\`';
+                        block.parentNode.replaceChild(fence, block);
+                    });
+                    each(clone, '[role="button"], button', b => b.remove());
+                    const holder = document.createElement('div');
+                    holder.style.cssText = 'position:fixed;left:-100000px;top:0;width:800px;';
+                    holder.appendChild(clone);
+                    document.body.appendChild(holder);
+                    const text = clone.innerText;
+                    document.body.removeChild(holder);
+                    return text.trim();
+                })`;
+
                 const WEB_CHATS = {
                     // Microsoft 365 Copilot chat (m365.cloud.microsoft/chat):
                     // - message box: span#m365-chat-editor-target-element, a Lexical
@@ -846,7 +956,11 @@
                             if (turns.length || document.getElementById('m365-chat-editor-target-element')) {
                                 const turn = turns.length ? turns[turns.length - 1] : null;
                                 const reply = turn ? turn.querySelector('[data-testid="copilot-message-div"]') : null;
-                                const parts = reply ? Array.prototype.map.call(reply.querySelectorAll('[data-testid="markdown-reply"]'), e => e.innerText.trim()).filter(t => t) : [];
+                                // A code block (#code-block-host-...) has a header with the language
+                                // ([data-testid=one-copilot-code-identity]) and buttons, then a code
+                                // viewer with one element per line ([data-line-index]).
+                                const toText = ${buildAnswerToTextFunction({ block: '[id^="code-block-host-"]', label: '[data-testid="one-copilot-code-identity"]', lines: '[data-line-index]' })};
+                                const parts = reply ? Array.prototype.map.call(reply.querySelectorAll('[data-testid="markdown-reply"]'), toText).filter(t => t) : [];
                                 return {
                                     count: turns.length,
                                     text: parts.join('\\n\\n'),
@@ -877,14 +991,309 @@
                         submitSelector: 'button[type="submit"], #composer-submit-button, [data-testid="send-button"]',
                         setText: buildPasteTextScript,
                         stateScript: `(() => {
+                            // A code block ([data-client-defined-widget=code_block]) has a header
+                            // with the language and buttons ([data-markdown-copy=exclude]) and keeps
+                            // the exact code in data-chatgpt-copy-code.
+                            const toText = ${buildAnswerToTextFunction({ block: '[data-client-defined-widget="code_block"]', label: '[data-markdown-copy="exclude"]', code: 'pre', codeAttribute: 'data-chatgpt-copy-code' })};
                             const turns = document.querySelectorAll('[data-turn-key]');
                             const turn = turns.length ? turns[turns.length - 1] : null;
-                            const parts = turn ? Array.prototype.map.call(turn.querySelectorAll('[data-markdown-text-style="assistant-message"]'), e => e.innerText.trim()).filter(t => t) : [];
+                            const parts = turn ? Array.prototype.map.call(turn.querySelectorAll('[data-markdown-text-style="assistant-message"]'), toText).filter(t => t) : [];
                             const state = turn ? turn.querySelector('[data-talvt-turn-state]') : null;
                             return {
                                 count: turns.length,
                                 text: parts.join('\\n\\n'),
                                 done: !!(state && state.getAttribute('data-talvt-turn-state') === 'complete')
+                            };
+                        })()`
+                    },
+
+                    // Grok (grok.com):
+                    // - message box: a Tiptap (ProseMirror) contenteditable (role=textbox)
+                    //   inside form[data-composer]. Enter sends; the send button is
+                    //   button[type=submit][data-composer-action=send] in the form.
+                    // - each question: [data-testid=user-message] (in [data-user-message-row]);
+                    //   each answer: [data-testid=assistant-message], text in [data-markdown-row].
+                    // - a finished answer shows its action bar,
+                    //   [data-testid=response-footer-actions], next to the answer.
+                    // Text is set through Tiptap rather than pasted, so that long text is not
+                    // turned into an attachment and empty lines are kept.
+                    grok: {
+                        name: 'Grok',
+                        url: 'https://grok.com/',
+                        windowName: 'WelsonJSGrok',
+                        hosts: ['grok.com'],
+                        preferredPath: null,
+                        inputSelector: 'form[data-composer] [contenteditable="true"], form [contenteditable="true"][role="textbox"], form textarea:not([aria-hidden="true"])',
+                        submitSelector: 'button[data-composer-action="send"], button[type="submit"]',
+                        setText: buildSetTiptapTextScript,
+                        stateScript: `(() => {
+                            const questions = document.querySelectorAll('[data-testid="user-message"]');
+                            const answers = document.querySelectorAll('[data-testid="assistant-message"]');
+                            const question = questions.length ? questions[questions.length - 1] : null;
+                            let answer = answers.length ? answers[answers.length - 1] : null;
+                            // Only an answer after the last question belongs to it.
+                            if (answer && question && !(question.compareDocumentPosition(answer) & Node.DOCUMENT_POSITION_FOLLOWING))
+                                answer = null;
+                            // A code block ([data-markdown-code]) has a header (language and copy
+                            // button) as its first child, then a pre.
+                            const toText = ${buildAnswerToTextFunction({ block: '[data-markdown-code]', label: ':scope > div:first-child', code: 'pre' })};
+                            const parts = answer ? Array.prototype.map.call(answer.querySelectorAll('[data-markdown-row]'), toText).filter(t => t) : [];
+                            return {
+                                count: questions.length,
+                                text: parts.join('\\n\\n'),
+                                done: !!(answer && answer.parentElement && answer.parentElement.querySelector('[data-testid="response-footer-actions"]'))
+                            };
+                        })()`
+                    },
+
+                    // Gemini (gemini.google.com/app):
+                    // - message box: a Quill editor, div.ql-editor (role=textbox) in
+                    //   rich-textarea, inside input-area-v2 (there is no form). Enter sends;
+                    //   the send button is in [data-test-id=send-button-container]
+                    //   (gem-icon-button.send-button), shown once the box has text.
+                    // - each question: user-query; each answer: model-response, text in
+                    //   message-content.
+                    // - a finished answer has .response-footer.complete (and its
+                    //   message-actions bar).
+                    gemini: {
+                        name: 'Gemini',
+                        url: 'https://gemini.google.com/app',
+                        windowName: 'WelsonJSGemini',
+                        hosts: ['gemini.google.com'],
+                        preferredPath: /^\/app\b/,
+                        inputSelector: 'rich-textarea .ql-editor[contenteditable="true"], .ql-editor[contenteditable="true"][role="textbox"]',
+                        submitSelector: '[data-test-id="send-button-container"] button, .send-button button, button.send-button',
+                        setText: buildSetQuillTextScript,
+                        stateScript: `(() => {
+                            const questions = document.querySelectorAll('user-query');
+                            const answers = document.querySelectorAll('model-response');
+                            const question = questions.length ? questions[questions.length - 1] : null;
+                            let answer = answers.length ? answers[answers.length - 1] : null;
+                            // Only an answer after the last question belongs to it.
+                            if (answer && question && !(question.compareDocumentPosition(answer) & Node.DOCUMENT_POSITION_FOLLOWING))
+                                answer = null;
+                            // A code block (code-block) has a header with the language and
+                            // download/copy buttons (.code-block-decoration), then the code.
+                            const toText = ${buildAnswerToTextFunction({ block: 'code-block', label: '.code-block-decoration', code: 'code[data-test-id="code-content"], pre' })};
+                            const parts = answer ? Array.prototype.map.call(answer.querySelectorAll('message-content'), toText).filter(t => t) : [];
+                            return {
+                                count: questions.length,
+                                text: parts.join('\\n\\n'),
+                                done: !!(answer && answer.querySelector('.response-footer.complete, message-actions'))
+                            };
+                        })()`
+                    },
+
+                    // DeepSeek (chat.deepseek.com):
+                    // - message box: textarea[name=search]. Enter sends; the send button is a
+                    //   div[role=button].ds-button--primary.ds-button--circle, disabled with
+                    //   the ds-button--disabled class while the box is empty.
+                    // - options: .ds-toggle-button (aria-pressed) under the box: DeepThink
+                    //   ("깊은 생각" in Korean) and Search ("검색").
+                    // - messages: a virtual list of [data-virtual-list-item-key] items, each
+                    //   with a .ds-message. The key of a question is -N and of its answer N,
+                    //   increasing with each turn (older items may be removed from the DOM, so
+                    //   the largest key counts the turns). An answer has
+                    //   .ds-assistant-message-main-content (the DeepThink reasoning is
+                    //   outside it); its copy/regenerate buttons appear next to the message
+                    //   when it is finished.
+                    deepseek: {
+                        name: 'DeepSeek',
+                        url: 'https://chat.deepseek.com/',
+                        windowName: 'WelsonJSDeepSeek',
+                        hosts: ['chat.deepseek.com'],
+                        preferredPath: null,
+                        inputSelector: 'textarea[name="search"], textarea#chat-input, textarea:not([aria-hidden="true"])',
+                        submitSelector: '[role="button"].ds-button--primary.ds-button--circle',
+                        setText: buildPasteTextScript,   // not used: a textarea is typed into
+                        // DeepThink can take minutes before the answer starts.
+                        maxWaitMs: 600000,
+                        // Turns on DeepThink when it is available and off. It is found by its
+                        // label (English, Chinese, Korean), so that another option such as
+                        // Search is never switched by mistake. Returns true when it was clicked.
+                        prepareScript: `(() => {
+                            const toggles = Array.prototype.slice.call(document.querySelectorAll('.ds-toggle-button'));
+                            const deepThink = toggles.find(t => /deep\\s*think|深度思考|깊은\\s*생각/i.test(t.innerText || ''));
+                            if (!deepThink || deepThink.getAttribute('aria-pressed') === 'true' || deepThink.getAttribute('aria-disabled') === 'true')
+                                return false;
+                            deepThink.click();
+                            return true;
+                        })()`,
+                        stateScript: `(() => {
+                            const items = Array.prototype.slice.call(document.querySelectorAll('[data-virtual-list-item-key]'));
+                            const keys = items.map(i => Math.abs(parseInt(i.getAttribute('data-virtual-list-item-key'), 10))).filter(k => !isNaN(k));
+                            const messages = Array.prototype.slice.call(document.querySelectorAll('.ds-message'));
+                            const isAnswer = m => !!m.querySelector('.ds-assistant-message-main-content');
+                            const questions = messages.filter(m => !isAnswer(m));
+                            const answers = messages.filter(isAnswer);
+                            const question = questions.length ? questions[questions.length - 1] : null;
+                            let answer = answers.length ? answers[answers.length - 1] : null;
+                            // Only an answer after the last question belongs to it.
+                            if (answer && question && !(question.compareDocumentPosition(answer) & Node.DOCUMENT_POSITION_FOLLOWING))
+                                answer = null;
+                            const content = answer ? answer.querySelector('.ds-assistant-message-main-content') : null;
+                            const item = answer ? (answer.closest('[data-virtual-list-item-key]') || answer.parentElement) : null;
+                            const actions = item ? Array.prototype.filter.call(item.querySelectorAll('[role="button"]'), b => !answer.contains(b)) : [];
+                            // A code block (.md-code-block) is a banner with the language and
+                            // copy/download buttons, then a pre.
+                            const toText = ${buildAnswerToTextFunction({ block: '.md-code-block', label: '.md-code-block-banner', code: 'pre' })};
+                            return {
+                                count: keys.length ? Math.max.apply(null, keys) : questions.length,
+                                text: content ? toText(content) : '',
+                                done: actions.length > 0
+                            };
+                        })()`
+                    },
+
+                    // Perplexity (www.perplexity.ai):
+                    // - message box: a Lexical contenteditable ([data-lexical-editor=true],
+                    //   role=textbox). Enter sends; the send button is labelled "Submit"
+                    //   ("제출" in Korean) and is disabled while the box is empty.
+                    // - each question: [data-workflow-entry=N] with [data-message-bubble=right].
+                    // - each answer: [data-workflow-final-text] with the text in
+                    //   [data-renderer=lm]; [data-workflow-text-footer] (copy, share, ...)
+                    //   appears when it is finished.
+                    // - citations: [data-pplx-citation] chips inside the text, left out.
+                    // - code blocks: pre > figure > figcaption (language, wrap and copy
+                    //   buttons) and the code.
+                    perplexity: {
+                        name: 'Perplexity',
+                        url: 'https://www.perplexity.ai/',
+                        windowName: 'WelsonJSPerplexity',
+                        hosts: ['www.perplexity.ai', 'perplexity.ai'],
+                        preferredPath: null,
+                        inputSelector: '#ask-input, [data-lexical-editor="true"][contenteditable="true"]',
+                        submitSelector: 'button[data-testid="submit-button"], button[aria-label="Submit"], button[aria-label="제출"]',
+                        setText: buildSetLexicalTextScript,
+                        stateScript: `(() => {
+                            const toText = ${buildAnswerToTextFunction({ remove: '[data-pplx-citation], .citation-nbsp', block: 'pre', label: 'figcaption', code: 'code' })};
+                            const questions = document.querySelectorAll('[data-message-bubble="right"]');
+                            const entries = Array.prototype.map.call(document.querySelectorAll('[data-workflow-entry]'), e => parseInt(e.getAttribute('data-workflow-entry'), 10)).filter(n => !isNaN(n));
+                            const question = questions.length ? questions[questions.length - 1] : null;
+                            // The final text of the answer; without one yet, the last rendered
+                            // text that is not a question.
+                            const finals = document.querySelectorAll('[data-workflow-final-text] [data-renderer="lm"]');
+                            const texts = finals.length ? finals : Array.prototype.filter.call(document.querySelectorAll('[data-renderer="lm"]'), e => !e.closest('[data-message-bubble]'));
+                            let answer = texts.length ? texts[texts.length - 1] : null;
+                            // Only an answer after the last question belongs to it.
+                            if (answer && question && !(question.compareDocumentPosition(answer) & Node.DOCUMENT_POSITION_FOLLOWING))
+                                answer = null;
+                            const container = answer ? answer.closest('[data-workflow-final-text]') : null;
+                            return {
+                                count: Math.max(questions.length, entries.length ? Math.max.apply(null, entries) + 1 : 0),
+                                text: answer ? toText(answer) : '',
+                                done: !!(container && container.querySelector('[data-workflow-text-footer] button'))
+                            };
+                        })()`
+                    },
+
+                    // Meta AI (www.meta.ai):
+                    // - message box: a Lexical contenteditable,
+                    //   div[data-testid=composer-input][data-lexical-editor=true] (a textarea
+                    //   with the same test id stands in for it until the page is hydrated).
+                    //   Enter sends; the send button is [data-testid=composer-send-button].
+                    // - messages: [data-message-role=user|assistant] in the feed; an answer's
+                    //   [data-testid=assistant-message] has data-streaming-complete=true when
+                    //   it is finished. Its "Show thinking" status is left out.
+                    // - code blocks: [data-server-code-block]: a header (language, copy and
+                    //   download buttons), then a pre; a long one is collapsed ("See all N
+                    //   lines", button[aria-expanded=false]) and has only its first lines in
+                    //   the DOM until it is expanded.
+                    // - sometimes it offers two responses side by side ("Which response do you
+                    //   prefer?"), each in a column with a [data-scroll-container=true] and an
+                    //   "I prefer this response" button. The first response is read, and
+                    //   chosen once it is taken, so that the conversation goes on with it.
+                    metaai: {
+                        name: 'Meta AI',
+                        url: 'https://www.meta.ai/',
+                        windowName: 'WelsonJSMetaAI',
+                        hosts: ['www.meta.ai', 'meta.ai'],
+                        preferredPath: null,
+                        // Not the stand-in textarea: it comes first in the page, and text typed
+                        // into it is not sent.
+                        inputSelector: 'div[data-testid="composer-input"][contenteditable="true"]',
+                        submitSelector: '[data-testid="composer-send-button"]',
+                        setText: buildSetLexicalTextScript,
+                        stateScript: `(() => {
+                            const toText = ${buildAnswerToTextFunction({
+                                remove: '[data-testid="thinking-status"], [data-testid="subagent-cot-list"], [data-testid^="sbs-response-actions"], img',
+                                block: '[data-server-code-block]', label: ':scope > div > div:first-child', code: 'pre'
+                            })};
+                            const questions = document.querySelectorAll('[data-message-role="user"]');
+                            const answers = document.querySelectorAll('[data-message-role="assistant"]');
+                            const question = questions.length ? questions[questions.length - 1] : null;
+                            let answer = answers.length ? answers[answers.length - 1] : null;
+                            // Only an answer after the last question belongs to it.
+                            if (answer && question && !(question.compareDocumentPosition(answer) & Node.DOCUMENT_POSITION_FOLLOWING))
+                                answer = null;
+                            const message = answer ? (answer.querySelector('[data-testid="assistant-message"]') || answer) : null;
+                            // Two responses side by side: the first (visible) one.
+                            const columns = message ? Array.prototype.slice.call(message.querySelectorAll('[data-scroll-container="true"]')) : [];
+                            const column = columns.find(c => c.offsetParent !== null) || columns[0];
+                            const done = !!(message && message.getAttribute('data-streaming-complete') === 'true');
+                            // A finished answer: expand its collapsed code blocks ("See all N
+                            // lines"), which hold only their first lines until then. The text then
+                            // changes, so it is read again on the next poll.
+                            let expanded = 0;
+                            if (done)
+                                Array.prototype.forEach.call(message.querySelectorAll('[data-server-code-block] button[aria-expanded="false"]'), b => { b.click(); expanded++; });
+                            return {
+                                count: questions.length,
+                                text: message ? toText(column || message) : '',
+                                done: done && expanded === 0
+                            };
+                        })()`,
+                        finishScript: `(() => {
+                            const answers = document.querySelectorAll('[data-message-role="assistant"]');
+                            const answer = answers.length ? answers[answers.length - 1] : null;
+                            const columns = answer ? Array.prototype.slice.call(answer.querySelectorAll('[data-scroll-container="true"]')) : [];
+                            const column = columns.find(c => c.offsetParent !== null) || columns[0];
+                            // The "I prefer this response" button is a text button next to the
+                            // column (the icon buttons have an aria-label).
+                            const choose = column && column.parentElement && column.parentElement.querySelector('button[data-slot="button"]:not([aria-label])');
+                            if (!choose) return false;
+                            choose.click();
+                            return true;
+                        })()`
+                    },
+
+                    // Claude (claude.ai):
+                    // - message box: a contenteditable, [data-testid=chat-input]. Enter sends;
+                    //   the send button is [data-testid=chat-input-send], disabled while the box
+                    //   is empty.
+                    // - messages: a virtual list of [data-testid=transcript-row] items
+                    //   (data-index counts the messages; older rows may be removed from the
+                    //   DOM). A question is [data-testid=user-message]; an answer is
+                    //   [data-testid=assistant-message], with data-is-streaming=false when it
+                    //   is finished and its text in [data-perf-reply-text].
+                    // - code blocks: [data-not-prose] > div[role=group]: a copy button, the
+                    //   language ([data-find-omitted]), then a pre.
+                    // Text is typed rather than pasted (unless the box is a Tiptap editor),
+                    // because Claude turns long pasted text into an attachment.
+                    claude: {
+                        name: 'Claude',
+                        url: 'https://claude.ai/new',
+                        windowName: 'WelsonJSClaude',
+                        hosts: ['claude.ai'],
+                        preferredPath: null,
+                        inputSelector: '[data-testid="chat-input"][contenteditable="true"], div.ProseMirror[contenteditable="true"]',
+                        submitSelector: '[data-testid="chat-input-send"], button[aria-label="Send message"]',
+                        setText: (inputSelector, text) => buildSetTiptapTextScript(inputSelector, text, false),
+                        stateScript: `(() => {
+                            const toText = ${buildAnswerToTextFunction({ block: '[data-not-prose]:has(pre)', label: '[data-find-omitted]', code: 'pre' })};
+                            const rows = Array.prototype.map.call(document.querySelectorAll('[data-testid="transcript-row"][data-index]'), r => parseInt(r.getAttribute('data-index'), 10)).filter(n => !isNaN(n));
+                            const questions = document.querySelectorAll('[data-testid="user-message"]');
+                            const answers = document.querySelectorAll('[data-testid="assistant-message"]');
+                            const question = questions.length ? questions[questions.length - 1] : null;
+                            let answer = answers.length ? answers[answers.length - 1] : null;
+                            // Only an answer after the last question belongs to it.
+                            if (answer && question && !(question.compareDocumentPosition(answer) & Node.DOCUMENT_POSITION_FOLLOWING))
+                                answer = null;
+                            const parts = answer ? Array.prototype.map.call(answer.querySelectorAll('[data-perf-reply-text]'), toText).filter(t => t) : [];
+                            return {
+                                count: Math.max(questions.length, rows.length ? Math.max.apply(null, rows) + 1 : 0),
+                                text: parts.join('\\n\\n'),
+                                done: !!(answer && answer.getAttribute('data-is-streaming') === 'false')
                             };
                         })()`
                     }
@@ -967,7 +1376,8 @@
                         for (let node = form || el.parentElement; node; node = form ? null : node.parentElement) {
                             const button = node.querySelector(${JSON.stringify(service.submitSelector)});
                             if (!button) continue;
-                            if (button.disabled || button.getAttribute('aria-disabled') === 'true') return 'disabled';
+                            // Some send buttons are divs disabled by a class (ds-button--disabled).
+                            if (button.disabled || button.getAttribute('aria-disabled') === 'true' || button.matches('[class*="--disabled"]')) return 'disabled';
                             button.click();
                             return 'clicked';
                         }
@@ -987,6 +1397,10 @@
                                 throw new Error(`Could not find the ${service.name} message box. Sign in to ${service.name} in its window, then try again.`);
                             await delay(WEB_CHAT_POLL_MS);
                         }
+
+                        // Service options to set before sending (DeepSeek: turn on DeepThink).
+                        if (service.prepareScript && await session.evaluate(service.prepareScript))
+                            await delay(500);
 
                         const before = await session.evaluate(service.stateScript);
 
@@ -1052,7 +1466,8 @@
                         if (!sent)
                             throw new Error(`The message was typed but ${service.name} did not send it (the send button and Enter had no effect).`);
 
-                        const deadline = Date.now() + WEB_CHAT_MAX_WAIT_MS;
+                        const maxWait = service.maxWaitMs || WEB_CHAT_MAX_WAIT_MS;
+                        const deadline = Date.now() + maxWait;
                         let last = '', stable = 0;
                         while (Date.now() < deadline) {
                             await delay(WEB_CHAT_POLL_MS);
@@ -1065,10 +1480,15 @@
                             last = state.text;
                             // Finished: the page marks the answer as finished and the text has
                             // stopped changing, or the text has not changed for a while.
-                            if ((state.done && stable >= 1) || stable >= WEB_CHAT_STABLE_POLLS)
+                            if ((state.done && stable >= 1) || stable >= WEB_CHAT_STABLE_POLLS) {
+                                // Something to do on the page once the answer is taken (Meta AI:
+                                // choose the response that was read when it offers two).
+                                if (service.finishScript)
+                                    await session.evaluate(service.finishScript);
                                 return last;
+                            }
                         }
-                        throw new Error(`${service.name} did not finish answering within ${WEB_CHAT_MAX_WAIT_MS / 1000} seconds.` +
+                        throw new Error(`${service.name} did not finish answering within ${maxWait / 1000} seconds.` +
                             (last ? ` Partial answer:\n${last}` : ''));
                     } finally {
                         session.close();
@@ -1136,10 +1556,25 @@
                     })();
                 };
 
-                // Editor context menu for every provider. "Send" and "Explain" need a
-                // selection; "Ask..." asks for a message and includes the selection, if
-                // any. The answer goes below the selection (or the cursor line).
-                const registerAiActions = (editor) => {
+                // The web chat service chosen in the ribbon (WEB_CHATS key), remembered
+                // across sessions.
+                const WEB_CHAT_STORAGE_KEY = 'welsonjs.editor.webChat';
+                const [webChatKey, setWebChatKey] = React.useState(() => {
+                    try {
+                        const saved = localStorage.getItem(WEB_CHAT_STORAGE_KEY);
+                        if (saved && WEB_CHATS[saved])
+                            return saved;
+                    } catch (e) {}
+                    return 'copilot';
+                });
+                const webChatEditorRef = React.useRef(null);
+                const webChatActionsRef = React.useRef([]);
+
+                // Editor context menu: llama.cpp, and the web chat service chosen in the
+                // ribbon. "Send" and "Explain" need a selection; "Ask..." asks for a
+                // message and includes the selection, if any. The answer goes below the
+                // selection (or the cursor line). Returns the added actions (disposables).
+                const addProviderActions = (editor, provider) => {
                     const getContext = () => {
                         const model = editor.getModel();
                         const selection = editor.getSelection();
@@ -1157,66 +1592,96 @@
 
                     const fence = (context) => '```' + context.language + '\n' + context.text + '\n```';
 
-                    const providers = [
-                        { key: 'llamacpp', name: 'llama.cpp', group: '1_llamacpp', ask: askLlamaCpp },
-                        { key: 'copilot', name: 'Copilot', group: '2_copilot', ask: (m, l, s) => askWebChat(WEB_CHATS.copilot, m, l, s) },
-                        { key: 'chatgpt', name: 'ChatGPT', group: '3_chatgpt', ask: (m, l, s) => askWebChat(WEB_CHATS.chatgpt, m, l, s) }
+                    const actions = [
+                        {
+                            id: 'sendSelection',
+                            label: 'Send Selection',
+                            precondition: 'editorHasSelection',
+                            build: context => ({ message: context.text, summary: context.text })
+                        },
+                        {
+                            id: 'explainSelection',
+                            label: 'Explain Selection',
+                            precondition: 'editorHasSelection',
+                            build: context => ({
+                                message: 'Explain what the following code does.\n\n' + fence(context),
+                                summary: 'Explain the selection'
+                            })
+                        },
+                        {
+                            id: 'ask',
+                            label: 'Ask...',
+                            precondition: undefined,
+                            build: context => {
+                                const question = prompt(context.text
+                                    ? `Ask ${provider.name} about the selection:`
+                                    : `Ask ${provider.name}:`, '');
+                                if (!question || question.trim() === '')
+                                    return null;
+                                return {
+                                    message: context.text ? question + '\n\n' + fence(context) : question,
+                                    summary: question
+                                };
+                            }
+                        }
                     ];
 
-                    providers.forEach(provider => {
-                        const actions = [
-                            {
-                                id: 'sendSelection',
-                                label: 'Send Selection',
-                                precondition: 'editorHasSelection',
-                                build: context => ({ message: context.text, summary: context.text })
-                            },
-                            {
-                                id: 'explainSelection',
-                                label: 'Explain Selection',
-                                precondition: 'editorHasSelection',
-                                build: context => ({
-                                    message: 'Explain what the following code does.\n\n' + fence(context),
-                                    summary: 'Explain the selection'
-                                })
-                            },
-                            {
-                                id: 'ask',
-                                label: 'Ask...',
-                                precondition: undefined,
-                                build: context => {
-                                    const question = prompt(context.text
-                                        ? `Ask ${provider.name} about the selection:`
-                                        : `Ask ${provider.name}:`, '');
-                                    if (!question || question.trim() === '')
-                                        return null;
-                                    return {
-                                        message: context.text ? question + '\n\n' + fence(context) : question,
-                                        summary: question
-                                    };
-                                }
-                            }
-                        ];
+                    return actions.map((action, index) => editor.addAction({
+                        id: `welsonjs.${provider.key}.${action.id}`,
+                        label: `${provider.name}: ${action.label}`,
+                        precondition: action.precondition,
+                        contextMenuGroupId: provider.group,
+                        contextMenuOrder: index + 1,
+                        run: () => {
+                            const context = getContext();
+                            if (action.precondition && !context.text)
+                                return;
 
-                        actions.forEach((action, index) => {
-                            editor.addAction({
-                                id: `welsonjs.${provider.key}.${action.id}`,
-                                label: `${provider.name}: ${action.label}`,
-                                precondition: action.precondition,
-                                contextMenuGroupId: provider.group,
-                                contextMenuOrder: index + 1,
-                                run: () => {
-                                    const context = getContext();
-                                    if (action.precondition && !context.text)
-                                        return;
+                            const request = action.build(context);
+                            if (request)
+                                provider.ask(request.message, context.endLine, request.summary);
+                        }
+                    }));
+                };
 
-                                    const request = action.build(context);
-                                    if (request)
-                                        provider.ask(request.message, context.endLine, request.summary);
-                                }
-                            });
-                        });
+                // Replaces the web chat actions with the ones for the chosen service, so
+                // the menu shows its name ("Copilot: Ask...", "ChatGPT: Ask...").
+                const registerWebChatActions = (key) => {
+                    const editor = webChatEditorRef.current;
+                    if (!editor)
+                        return;
+
+                    webChatActionsRef.current.forEach(action => action.dispose());
+                    const service = WEB_CHATS[key];
+                    webChatActionsRef.current = addProviderActions(editor, {
+                        key: 'webchat',
+                        name: service.name,
+                        group: '2_webchat',
+                        ask: (m, l, s) => askWebChat(service, m, l, s)
                     });
+                };
+
+                const registerAiActions = (editor) => {
+                    addProviderActions(editor, { key: 'llamacpp', name: 'llama.cpp', group: '1_llamacpp', ask: askLlamaCpp });
+                    webChatEditorRef.current = editor;
+                    registerWebChatActions(webChatKey);
+                };
+
+                // Ribbon toggle: switches to the next web chat service and says how to use it.
+                const toggleWebChat = () => {
+                    const keys = Object.keys(WEB_CHATS);
+                    const key = keys[(keys.indexOf(webChatKey) + 1) % keys.length];
+                    const name = WEB_CHATS[key].name;
+
+                    setWebChatKey(key);
+                    try {
+                        localStorage.setItem(WEB_CHAT_STORAGE_KEY, key);
+                    } catch (e) {}
+                    registerWebChatActions(key);
+
+                    alert(`The web chat service is now ${name}.\n\n` +
+                        `Right-click in the editor and choose "${name}: Send Selection", ` +
+                        `"${name}: Explain Selection" or "${name}: Ask..." to use it.`);
                 };
 
                 const savePromptMessages = () => {
@@ -1417,6 +1882,8 @@
 
                 return _e('div', { className: 'app' },
                     _e(RibbonMenu, {
+                        webChatName: WEB_CHATS[webChatKey].name,
+                        onWebChatToggleClick: toggleWebChat,
                         onOpenFileClick: openFile,
                         onSaveFileClick: saveFile,
                         onPromptEditorClick: openPromptEditor,
