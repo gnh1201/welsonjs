@@ -86,16 +86,25 @@ try {
     Expand-Archive -Path $zipPath -DestinationPath $tempDir
     Write-Ok "Extraction completed"
 
-    # Step 3B: Restore the vendor JavaScript files (app\assets\js) that app.js needs.
-    # Branches published before restoreVendorScripts.ps1 still bundle these files.
-    $restore = Get-ChildItem -Path $tempDir -Recurse -Filter "restoreVendorScripts.ps1" | Select-Object -First 1
+    # Step 3B: Restore the application assets (app\assets) that app.js needs.
+    # Branches published before the restore script still bundle these files; some
+    # branches still have it under its earlier name, restoreVendorScripts.ps1.
+    # It runs in a separate powershell.exe with -ExecutionPolicy Bypass: this script is
+    # usually started with "irm ... | iex", which is not subject to the execution
+    # policy, but running a downloaded .ps1 file is (the default policy, Restricted,
+    # refuses it).
+    $restore = $null
+    foreach ($name in @("restoreAppAssets.ps1", "restoreVendorScripts.ps1")) {
+        $restore = Get-ChildItem -Path $tempDir -Recurse -Filter $name | Select-Object -First 1
+        if ($restore) { break }
+    }
     if ($restore) {
-        Write-Step "Restoring vendor scripts..."
-        & $restore.FullName -Root $restore.DirectoryName
+        Write-Step "Restoring application assets..."
+        & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $restore.FullName -Root $restore.DirectoryName
         if ($LASTEXITCODE -ne 0) {
-            throw "restoreVendorScripts.ps1 failed with exit code $LASTEXITCODE"
+            throw "$($restore.Name) failed with exit code $LASTEXITCODE"
         }
-        Write-Ok "Vendor scripts restored"
+        Write-Ok "Application assets restored"
     }
 
     if ($fileArg) {

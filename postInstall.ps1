@@ -262,28 +262,29 @@ if ($AllComponentsSelected) {
 Write-Host ""
 
 # ================================
-# VENDOR SCRIPTS
+# APPLICATION ASSETS
 # ================================
-# app.js needs the vendor JavaScript files under app\assets\js to start. The
-# installer normally ships them, so this verifies them and downloads only the
-# files that are missing or do not match app\assets\integrity.json.
+# app.js needs the application assets under app\assets (currently the vendor
+# JavaScript files under app\assets\js) to start. The installer normally ships
+# them, so this verifies them and downloads only the files that are missing or
+# do not match app\assets\integrity.json.
 # Runs regardless of the component selection.
-$restoreVendorScripts = Join-Path $ScriptRoot "restoreVendorScripts.ps1"
-if (Test-Path -LiteralPath $restoreVendorScripts -PathType Leaf) {
-    Write-Host "[*] Restoring vendor scripts..."
+$restoreAppAssets = Join-Path $ScriptRoot "restoreAppAssets.ps1"
+if (Test-Path -LiteralPath $restoreAppAssets -PathType Leaf) {
+    Write-Host "[*] Restoring application assets..."
     try {
-        & $restoreVendorScripts -Root $ScriptRoot
+        & $restoreAppAssets -Root $ScriptRoot
         if ($LASTEXITCODE -ne 0) {
-            throw "restoreVendorScripts.ps1 failed with exit code $LASTEXITCODE"
+            throw "restoreAppAssets.ps1 failed with exit code $LASTEXITCODE"
         }
     }
     catch {
-        Write-Host "[WARN] Failed to restore the vendor scripts: $($_.Exception.Message)"
-        Write-Host "[WARN] app.js cannot start until they are restored. Run: powershell -ExecutionPolicy Bypass -NoProfile -File `"$restoreVendorScripts`""
+        Write-Host "[WARN] Failed to restore the application assets: $($_.Exception.Message)"
+        Write-Host "[WARN] app.js cannot start until they are restored. Run: powershell -ExecutionPolicy Bypass -NoProfile -File `"$restoreAppAssets`""
     }
 }
 else {
-    Write-Host "[WARN] restoreVendorScripts.ps1 not found at: $restoreVendorScripts"
+    Write-Host "[WARN] restoreAppAssets.ps1 not found at: $restoreAppAssets"
 }
 Write-Host ""
 

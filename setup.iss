@@ -94,7 +94,7 @@ Source: "defaultService.example.js"; DestDir: "{app}";
 Source: "installService.bat"; DestDir: "{app}";
 Source: "uninstallService.bat"; DestDir: "{app}";
 Source: "postInstall.ps1"; DestDir: "{app}";
-Source: "restoreVendorScripts.ps1"; DestDir: "{app}";
+Source: "restoreAppAssets.ps1"; DestDir: "{app}";
 Source: "helloworld.*"; DestDir: "{app}";
 Source: "app\*"; DestDir: "{app}/app"; Flags: ignoreversion recursesubdirs;
 Source: "lib\*"; DestDir: "{app}/lib"; Flags: ignoreversion recursesubdirs;

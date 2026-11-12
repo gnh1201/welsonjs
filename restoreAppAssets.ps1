@@ -1,9 +1,11 @@
-# WelsonJS vendor script restore script
+# WelsonJS application asset restore script
 # SPDX-License-Identifier: GPL-3.0-or-later
 # SPDX-FileCopyrightText: Namhyeon Go <gnh1201@catswords.re.kr>, and Catswords OSS contributors.
 # https://github.com/gnh1201/welsonjs
 #
-# Restores the third-party (vendor) JavaScript files under app/assets/js.
+# Restores the application assets under app/assets that are not stored in the
+# repository. Currently these are the third-party (vendor) JavaScript files under
+# app/assets/js.
 #
 # Every asset has a sidecar file "<file name>.integrity" that holds its
 # Subresource Integrity digest (for example, "sha384-..."). The digest is looked
@@ -11,8 +13,8 @@
 # only if its digest matches; an existing file is kept if it already matches.
 #
 # Usage:
-#   powershell -ExecutionPolicy Bypass -NoProfile -File restoreVendorScripts.ps1
-#   powershell -ExecutionPolicy Bypass -NoProfile -File restoreVendorScripts.ps1 -Force
+#   powershell -ExecutionPolicy Bypass -NoProfile -File restoreAppAssets.ps1
+#   powershell -ExecutionPolicy Bypass -NoProfile -File restoreAppAssets.ps1 -Force
 #
 # Requirements: Windows PowerShell 5.1 or later, and HTTPS access to the asset URLs.
 # Exit code: 0 on success, 1 if any asset could not be downloaded or verified.

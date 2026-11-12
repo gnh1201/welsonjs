@@ -149,9 +149,9 @@ after_build:
        Get-VerifiedFile $env:CURL_CA_BUNDLE_GZ_URL $env:CURL_CA_BUNDLE_GZ_SHA256 "$env:TEMP\curl-ca-bundle.crt.gz"
        Expand-GzipFile "$env:TEMP\curl-ca-bundle.crt.gz" "$binDir\curl-ca-bundle.crt"
 
-       # Restore the vendor JavaScript files (app\assets\js) that setup.iss packages.
-       & .\restoreVendorScripts.ps1 -Root (Get-Location).Path
-       if ($LASTEXITCODE -ne 0) { throw "restoreVendorScripts.ps1 failed with exit code $LASTEXITCODE" }
+       # Restore the application assets (app\assets) that setup.iss packages.
+       & .\restoreAppAssets.ps1 -Root (Get-Location).Path
+       if ($LASTEXITCODE -ne 0) { throw "restoreAppAssets.ps1 failed with exit code $LASTEXITCODE" }
 
        $iscc = (Resolve-Path "C:\Program Files*\Inno Setup 6\ISCC.exe" | Select-Object -First 1).Path
        if (-not $iscc) { throw "ISCC.exe was not found" }
