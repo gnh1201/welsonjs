@@ -6,6 +6,8 @@
 
 포크는 BitNet의 `I2_S` 타입과 커널을 추가합니다. 그래서 이 빌드는 일반 GGUF 파일 외에도 [microsoft/BitNet-b1.58-2B-4T-gguf](https://huggingface.co/microsoft/BitNet-b1.58-2B-4T-gguf) 같은 1.58비트 BitNet 모델을 불러옵니다. 업스트림 llama.cpp는 이런 모델을 불러오지 못합니다.
 
+이 빌드는 포크 위에 Tencent의 [AngelSlim](https://github.com/Tencent/AngelSlim) 양자화 기술인 STQ1_0 삼진(ternary) 타입과 커널을 추가합니다([ggml-org/llama.cpp#22836](https://github.com/ggml-org/llama.cpp/pull/22836), 업스트림에 병합되지 않음. [0001-stq1_0.patch](#0001-stq1_0patch) 참고). 그래서 [tencent/Hy-MT2-1.8B-1.25Bit-GGUF](https://huggingface.co/tencent/Hy-MT2-1.8B-1.25Bit-GGUF)처럼 AngelSlim으로 만든 1.25비트 모델을 불러옵니다. 포크도 업스트림 llama.cpp도 이런 모델을 불러오지 못합니다.
+
 런처는 `llama-server`를 OpenAI 호환 HTTP API(`/llamacpp/chat`, `lib/llamacpp.js`)로만 사용합니다.
 
 ## 파일
@@ -258,7 +260,7 @@ Hy-MT2(번역)는 모델 README의 기본 프롬프트("Translate the following 
 
 ### 파트 1: STQ1_0(PR #22836)
 
-이 파트는 ARM NEON `vec_dot` 커널과 함께 STQ1_0 삼진(ternary) 양자화 타입(가중치당 1.3125비트)을 추가합니다. [ggml-org/llama.cpp#22836](https://github.com/ggml-org/llama.cpp/pull/22836)의 PR head `1e411d8f5a1e23525fa3265dfb4bd76265465397`에서 가져왔습니다. 이 PR은 열려 있고 업스트림에 병합되지 않았습니다.
+이 파트는 ARM NEON `vec_dot` 커널과 함께 STQ1_0 삼진(ternary) 양자화 타입(가중치당 1.3125비트)을 추가합니다. [ggml-org/llama.cpp#22836](https://github.com/ggml-org/llama.cpp/pull/22836)의 PR head `1e411d8f5a1e23525fa3265dfb4bd76265465397`에서 가져왔습니다. 이 PR은 열려 있고 업스트림에 병합되지 않았습니다. STQ1_0은 Tencent AngelSlim의 1.25비트 양자화를 llama.cpp에서 쓰는 형식이며, Hy-MT2 1.25비트 모델 카드도 필요한 커널로 이 PR을 안내합니다.
 
 PR은 업스트림 llama.cpp 기준으로 작성되었으므로 포크로 리베이스했습니다. PR과의 차이는 다음과 같습니다:
 

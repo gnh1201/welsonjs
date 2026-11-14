@@ -6,6 +6,8 @@ This folder builds llama.cpp for Windows from the fork that [bitnet.cpp](https:/
 
 The fork adds BitNet's `I2_S` type and kernels, so besides the usual GGUF files the build loads 1.58-bit BitNet models such as [microsoft/BitNet-b1.58-2B-4T-gguf](https://huggingface.co/microsoft/BitNet-b1.58-2B-4T-gguf), which upstream llama.cpp cannot load.
 
+On top of the fork, this build adds the STQ1_0 ternary type and kernels from Tencent's [AngelSlim](https://github.com/Tencent/AngelSlim) quantization ([ggml-org/llama.cpp#22836](https://github.com/ggml-org/llama.cpp/pull/22836), not merged upstream; see [0001-stq1_0.patch](#0001-stq1_0patch)). It loads 1.25-bit models produced by AngelSlim, such as [tencent/Hy-MT2-1.8B-1.25Bit-GGUF](https://huggingface.co/tencent/Hy-MT2-1.8B-1.25Bit-GGUF), which neither the fork nor upstream llama.cpp can load.
+
 The launcher uses `llama-server` only through its OpenAI-compatible HTTP API (`/llamacpp/chat`, `lib/llamacpp.js`).
 
 ## Files
@@ -258,7 +260,7 @@ The patches are applied in name order. Each one groups related changes as number
 
 ### Part 1: STQ1_0 (PR #22836)
 
-This part adds the STQ1_0 ternary quantization type (1.3125 bits per weight) with an ARM NEON `vec_dot` kernel. It comes from [ggml-org/llama.cpp#22836](https://github.com/ggml-org/llama.cpp/pull/22836), PR head `1e411d8f5a1e23525fa3265dfb4bd76265465397`. The PR is open and not merged upstream.
+This part adds the STQ1_0 ternary quantization type (1.3125 bits per weight) with an ARM NEON `vec_dot` kernel. It comes from [ggml-org/llama.cpp#22836](https://github.com/ggml-org/llama.cpp/pull/22836), PR head `1e411d8f5a1e23525fa3265dfb4bd76265465397`. The PR is open and not merged upstream. STQ1_0 is the llama.cpp format of Tencent's AngelSlim 1.25-bit quantization; the Hy-MT2 1.25-bit model card names this PR as the kernel it needs.
 
 The PR was written against upstream llama.cpp, so it was rebased onto the fork. The differences from the PR are:
 
