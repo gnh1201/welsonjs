@@ -2,7 +2,7 @@
 
 [English version](README.md)
 
-이 폴더는 WelsonJS가 쓰는 Windows용 llama.cpp를 빌드합니다. 소스는 [bitnet.cpp](https://github.com/microsoft/BitNet)가 `3rdparty/llama.cpp` 서브모듈로 포함하는 llama.cpp 포크이고, 여기에 WelsonJS용 패치를 적용합니다. 출력물에는 공식 `llama-<version>-bin-win-cpu-<arch>.zip` 패키지와 같은 파일, 즉 `llama-server`, `llama-cli`, `llama-quantize`와 ggml 백엔드가 들어 있습니다. x64 빌드에는 모든 x86-64 CPU 변형이 들어 있고 실행 시 하나가 선택됩니다. arm64 빌드에는 CPU 백엔드가 하나입니다.
+이 폴더는 WelsonJS가 쓰는 Windows용 llama.cpp를 WelsonJS용 패치를 적용해 빌드합니다. 기본 소스는 Microsoft가 [bitnet.cpp](https://github.com/microsoft/BitNet)와 함께 `3rdparty/llama.cpp` 서브모듈로 배포하는 llama.cpp 포크이며, 이 포크는 bitnet.cpp의 양자화 기술을 지원하기 위해 만들어졌습니다. (저장소 자체는 기여자 계정인 `isHuangXin/llama.cpp`에 있습니다. [파일](#파일) 참고.) 출력물에는 공식 `llama-<version>-bin-win-cpu-<arch>.zip` 패키지와 같은 파일, 즉 `llama-server`, `llama-cli`, `llama-quantize`와 ggml 백엔드가 들어 있습니다. x64 빌드에는 모든 x86-64 CPU 변형이 들어 있고 실행 시 하나가 선택됩니다. arm64 빌드에는 CPU 백엔드가 하나입니다.
 
 포크는 BitNet의 `I2_S` 타입과 커널을 추가합니다. 그래서 이 빌드는 일반 GGUF 파일 외에도 [microsoft/BitNet-b1.58-2B-4T-gguf](https://huggingface.co/microsoft/BitNet-b1.58-2B-4T-gguf) 같은 1.58비트 BitNet 모델을 불러옵니다. 업스트림 llama.cpp는 이런 모델을 불러오지 못합니다.
 

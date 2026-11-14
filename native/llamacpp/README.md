@@ -2,7 +2,7 @@
 
 [한국어 문서](README_KO.md)
 
-This folder builds the Windows llama.cpp that WelsonJS uses. The source is the llama.cpp fork that [bitnet.cpp](https://github.com/microsoft/BitNet) includes as its `3rdparty/llama.cpp` submodule, with WelsonJS's patches applied. The output contains the same files as the official `llama-<version>-bin-win-cpu-<arch>.zip` package: `llama-server`, `llama-cli`, `llama-quantize`, and the ggml backends. The x64 build has every x86-64 CPU variant, chosen at run time; the arm64 build has one CPU backend.
+This folder builds the Windows llama.cpp that WelsonJS uses, with WelsonJS's patches applied. The base source is the llama.cpp fork that Microsoft distributes with [bitnet.cpp](https://github.com/microsoft/BitNet) as its `3rdparty/llama.cpp` submodule. The fork was created to support bitnet.cpp's quantization. (The repository itself is hosted on a contributor's account, `isHuangXin/llama.cpp`; see [Files](#files).) The output contains the same files as the official `llama-<version>-bin-win-cpu-<arch>.zip` package: `llama-server`, `llama-cli`, `llama-quantize`, and the ggml backends. The x64 build has every x86-64 CPU variant, chosen at run time; the arm64 build has one CPU backend.
 
 The fork adds BitNet's `I2_S` type and kernels, so besides the usual GGUF files the build loads 1.58-bit BitNet models such as [microsoft/BitNet-b1.58-2B-4T-gguf](https://huggingface.co/microsoft/BitNet-b1.58-2B-4T-gguf), which upstream llama.cpp cannot load.
 
