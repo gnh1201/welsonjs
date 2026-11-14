@@ -3,18 +3,25 @@
 # SPDX-FileCopyrightText: Namhyeon Go <gnh1201@catswords.re.kr>, and Catswords OSS contributors.
 # https://github.com/gnh1201/welsonjs
 #
-# Builds llama.cpp at the commit in commit.txt (version.txt is its release tag,
-# used for the package name) with the patches in patches\
-# and places a Windows CPU build, with the same files as the official
+# Builds llama.cpp from the fork that bitnet.cpp (https://github.com/microsoft/BitNet)
+# uses as its 3rdparty/llama.cpp submodule, at the commit in commit.txt
+# (version.txt is a label only), with the patches in patches\, and places a
+# Windows CPU build, with the same files as the official
 # llama-<version>-bin-win-cpu-<arch>.zip package, in <OutDir>\<arch>:
 #   llama-server, llama-cli, llama-quantize and the ggml backends, with every
 #   CPU variant loaded at run time (GGML_BACKEND_DL, GGML_CPU_ALL_VARIANTS),
 #   plus BUILDINFO.txt and SHA256SUMS.txt. The executables carry the WelsonJS
 #   icon (app\favicon.ico, passed to LLAMA_WIN_ICON, which a patch adds).
 #
+# Besides the usual GGUF types, the fork loads BitNet's I2_S GGUF files (for
+# example microsoft/BitNet-b1.58-2B-4T-gguf) with its I2_S kernels. The BitNet
+# repository itself is not needed: it only holds the TL1/TL2 kernels, which
+# are off (patches\0003-ggml-build-without-bitnet-repository.patch).
+#
 # A build is skipped when <OutDir>\<arch> was built from the same inputs
-# (version, commit, patches, the icon and this script; the "Build ID" in BUILDINFO.txt)
-# and its files match SHA256SUMS.txt, so the folder can be kept in a CI cache.
+# (version, commit, patches, the icon and this script; the "Build ID" in
+# BUILDINFO.txt) and its files match SHA256SUMS.txt, so the folder can be kept
+# in a CI cache.
 #
 # Source: the pinned commit is fetched with git. If that fails (-Source auto),
 # or with -Source archive, the source archive in source-archive.txt is
@@ -34,7 +41,7 @@ param(
     [int]$Jobs         = [Environment]::ProcessorCount,
     [ValidateSet("auto", "git", "archive")]
     [string]$Source    = "auto",
-    [string]$RepositoryUrl = "https://github.com/ggml-org/llama.cpp.git",
+    [string]$RepositoryUrl = "https://github.com/isHuangXin/llama.cpp.git",
     [switch]$Force
 )
 
@@ -92,12 +99,27 @@ function Get-FileSha256 {
     finally { $stream.Dispose(); $sha.Dispose() }
 }
 
+# Deletes a folder tree. The "\\?\" prefix lifts the MAX_PATH limit, which
+# Remove-Item hits on the deepest llama.cpp Web UI paths.
+function Remove-Tree {
+    param([string]$Path)
+    $long = "\\?\" + [IO.Path]::GetFullPath($Path)
+    if (-not [IO.Directory]::Exists($long)) { return }
+    # git keeps its object files read-only, which Directory.Delete refuses.
+    foreach ($file in [IO.Directory]::EnumerateFiles($long, "*", [IO.SearchOption]::AllDirectories)) {
+        [IO.File]::SetAttributes($file, [IO.FileAttributes]::Normal)
+    }
+    [IO.Directory]::Delete($long, $true)
+}
+
 # Fetches exactly the pinned commit (not a tag). The patches are LF; keep the
-# checkout LF even where core.autocrlf is true (AppVeyor).
+# checkout LF even where core.autocrlf is true (AppVeyor). The Web UI sources
+# have paths longer than MAX_PATH.
 function Get-SourceFromGit {
     param([string]$Destination)
     Invoke-Checked "git" @("init", "--quiet", $Destination)
     Invoke-Checked "git" @("-C", $Destination, "config", "core.autocrlf", "false")
+    Invoke-Checked "git" @("-C", $Destination, "config", "core.longpaths", "true")
     Invoke-Checked "git" @("-C", $Destination, "config", "advice.detachedHead", "false")
     Invoke-Checked "git" @("-C", $Destination, "remote", "add", "origin", $RepositoryUrl)
     Invoke-Checked "git" @("-C", $Destination, "fetch", "--quiet", "--depth", "1", "origin", $commit)
@@ -109,8 +131,7 @@ function Get-SourceFromGit {
 
 # Downloads the source archive from source-archive.txt (a "git archive" of the
 # pinned commit, with one top-level folder "llama.cpp-<commit>"), verifies its
-# SHA-256 and extracts it with the top-level folder stripped, which keeps the
-# deepest paths well under the Windows MAX_PATH limit.
+# SHA-256 and extracts it with the top-level folder stripped.
 function Get-SourceFromArchive {
     param([string]$Destination)
 
@@ -150,9 +171,14 @@ function Get-SourceFromArchive {
             $target = [IO.Path]::GetFullPath((Join-Path $Destination $relative.Replace('/', '\')))
             if (-not $target.StartsWith($destinationFull, [StringComparison]::OrdinalIgnoreCase)) { throw "Unsafe path in the source archive: $name" }
 
-            if ($name.EndsWith('/')) { New-Item -ItemType Directory -Path $target -Force | Out-Null; continue }
-            New-Item -ItemType Directory -Path ([IO.Path]::GetDirectoryName($target)) -Force | Out-Null
-            [IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $target, $true)
+            # The "\\?\" prefix lifts the MAX_PATH limit: the deepest Web UI
+            # paths are 161 characters below the source folder. Symbolic links
+            # (the fork's Swift package headers) are written as small text
+            # files holding the link target; the build does not use them.
+            $longTarget = "\\?\" + $target
+            if ($name.EndsWith('/')) { [void][IO.Directory]::CreateDirectory($longTarget); continue }
+            [void][IO.Directory]::CreateDirectory([IO.Path]::GetDirectoryName($longTarget))
+            [IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $longTarget, $true)
         }
     }
     finally { $zip.Dispose() }
@@ -213,7 +239,7 @@ if (-not $Force -and (Test-Path -LiteralPath $buildInfoPath) -and
 $WorkDir = Resolve-FullPath $WorkDir
 $sourceDir = Join-Path $WorkDir "llama.cpp"
 $buildDir = Join-Path $WorkDir "build-$Arch"
-if (Test-Path -LiteralPath $WorkDir) { Remove-Item -LiteralPath $WorkDir -Recurse -Force }
+Remove-Tree $WorkDir
 New-Item -ItemType Directory -Path $WorkDir -Force | Out-Null
 
 $stopwatch = [Diagnostics.Stopwatch]::StartNew()
@@ -227,7 +253,7 @@ if ($Source -ne "archive") {
         if ($Source -eq "git") { throw }
         Write-Host "[WARN] Could not fetch the source with git: $($_.Exception.Message)"
         Write-Host "[WARN] Falling back to the source archive."
-        if (Test-Path -LiteralPath $sourceDir) { Remove-Item -LiteralPath $sourceDir -Recurse -Force }
+        Remove-Tree $sourceDir
     }
 }
 if (-not $sourceOrigin) {
@@ -235,9 +261,11 @@ if (-not $sourceOrigin) {
 }
 Write-Host "[*] Source: $sourceOrigin"
 
-# git apply also works outside a repository (archive source).
+# git apply also works outside a repository (archive source), but there it
+# follows the global core.autocrlf (true on AppVeyor) and would write the
+# patched files with CRLF; keep them LF like the rest of the source.
 foreach ($patch in $patches) {
-    Invoke-Checked "git" @("-C", $sourceDir, "apply", "--whitespace=nowarn", $patch.FullName)
+    Invoke-Checked "git" @("-c", "core.autocrlf=false", "-C", $sourceDir, "apply", "--whitespace=nowarn", $patch.FullName)
 }
 
 # ================================
@@ -252,16 +280,20 @@ $configure += @(
     "-DGGML_NATIVE=OFF",
     "-DGGML_BACKEND_DL=ON",
     "-DGGML_CPU_ALL_VARIANTS=ON",
+    # BitNet: the I2_S kernels only. The TL1/TL2 lookup-table kernels need the
+    # BitNet repository and code generated for one model.
+    "-DGGML_BITNET_ARM_TL1=OFF",
+    "-DGGML_BITNET_X86_TL2=OFF",
     "-DLLAMA_BUILD_TESTS=OFF",
     "-DLLAMA_BUILD_EXAMPLES=OFF",
     "-DLLAMA_BUILD_SERVER=ON",
-    "-DLLAMA_CURL=OFF",
+    "-DLLAMA_BUILD_APP=OFF",
+    # The tools only need HTTP on localhost.
+    "-DLLAMA_OPENSSL=OFF",
     # No downloads during the build: the server's Web UI is fetched from a
-    # floating Hugging Face location otherwise (the launcher only uses the API),
-    # and llama-connect is a prebuilt binary.
+    # floating Hugging Face location otherwise (the launcher only uses the API).
     "-DLLAMA_BUILD_UI=OFF",
     "-DLLAMA_USE_PREBUILT_UI=OFF",
-    "-DLLAMA_CONNECT=OFF",
     # The WelsonJS icon in every tool executable (patches\0002-tools-windows-icon.patch).
     "-DLLAMA_WIN_ICON=$($iconPath.Replace('\', '/'))",
     # Without a .git folder (archive source) the build cannot read the commit.
@@ -297,6 +329,7 @@ Copy-Item -LiteralPath (Join-Path $sourceDir "LICENSE") -Destination (Join-Path 
     "llama.cpp $version ($commit) built for WelsonJS",
     "Source: $sourceOrigin",
     "Architecture: $Arch (CPU backends: $($backendTargets -join ', '))",
+    "BitNet kernels: I2_S (TL1/TL2 off)",
     "Patches: $(if ($patches.Count) { ($patches | ForEach-Object Name) -join ', ' } else { '(none)' })",
     "Build ID: $buildId",
     "Built: $([DateTime]::UtcNow.ToString('u'))"

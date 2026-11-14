@@ -1,6 +1,8 @@
 # llama.cpp build for WelsonJS
 
-This folder builds [llama.cpp](https://github.com/ggml-org/llama.cpp) for Windows with the patches WelsonJS needs. The output contains the same files as the official `llama-<version>-bin-win-cpu-<arch>.zip` package: `llama-server`, `llama-cli`, `llama-quantize`, and the ggml backends with every CPU variant, which are loaded at run time.
+This folder builds llama.cpp for Windows from the fork that [bitnet.cpp](https://github.com/microsoft/BitNet) uses as its `3rdparty/llama.cpp` submodule, with the patches WelsonJS needs. The output contains the same files as the official `llama-<version>-bin-win-cpu-<arch>.zip` package: `llama-server`, `llama-cli`, `llama-quantize`, and the ggml backends with every CPU variant, which are loaded at run time.
+
+The fork adds BitNet's `I2_S` type and kernels, so besides the usual GGUF files the build loads 1.58-bit BitNet models such as [microsoft/BitNet-b1.58-2B-4T-gguf](https://huggingface.co/microsoft/BitNet-b1.58-2B-4T-gguf), which upstream llama.cpp cannot load.
 
 The launcher uses `llama-server` only through its OpenAI-compatible HTTP API (`/llamacpp/chat`, `lib/llamacpp.js`).
 
@@ -8,13 +10,26 @@ The launcher uses `llama-server` only through its OpenAI-compatible HTTP API (`/
 
 | File | Purpose |
 | --- | --- |
-| `commit.txt` | The llama.cpp commit that is built, as a full 40-character SHA. The source is fetched by this SHA rather than by a tag, because a tag can be moved upstream and a commit cannot. |
-| `version.txt` | A label for the build, written in `git describe` form (for example `b12284-17-g956591f`). It is a label only and does not select the source. |
+| `commit.txt` | The llama.cpp commit that is built, as a full 40-character SHA. The source is fetched by this SHA rather than by a branch, because a branch can move and a commit cannot. |
+| `version.txt` | A label for the build. It is a label only and does not select the source. |
 | `source-archive.txt` | The fallback source archive (`url=`) and its SHA-256 (`sha256=`), used when git cannot fetch the commit. |
 | `patches/*.patch` | Patches applied in name order with `git apply`. They are stored with LF line endings, and `.gitattributes` keeps them byte-exact on checkout. |
 | `build-llamacpp.ps1` | Fetches the source, applies the patches, builds, and writes the output. |
 
-Current pin: commit `956591f4570aa6636895d90439892fef7c075b17`, which is master at b12284 + 17 commits. No release tag points to this commit.
+Current pin: commit `390c307752ab78fd8189f359d6954c9ba1be74af` of `https://github.com/isHuangXin/llama.cpp.git` (branch `release-bitnet-embedding-0.6b-270m`, 2026-07-15). It is the submodule commit of BitNet `0b341e582afbf9e1011f24744b554c96a3477eb5`.
+
+The fork is older than upstream llama.cpp, so upstream changes made after it are not included.
+
+## Why the BitNet repository is not used
+
+bitnet.cpp builds the fork as a subproject of the BitNet repository, which adds two things:
+
+- The TL1/TL2 lookup-table kernels (`src/ggml-bitnet-lut.cpp`, `include/ggml-bitnet.h`, `include/bitnet-lut-kernels.h`). These need code generated for one model's shapes (`utils/codegen_tl*.py`, run by `setup_env.py`), so a build with them serves only that model.
+- A CMake check that stops with "Clang or GCC is required".
+
+The `I2_S` type and kernels (`ggml/src/ggml-cpu/ggml-cpu-i2s.c`, AVX2, and AVX-VNNI or AVX512-VNNI when available) are part of the fork. They need one header from the BitNet repository, `gemm-config.h` (the kernels' block sizes), which patch 0003 copies into the fork.
+
+The other BitNet files are used only inside `#if defined(GGML_BITNET_ARM_TL1) || defined(GGML_BITNET_X86_TL2)` in the fork's code. Only the fork's CMake refers to them unconditionally, and patch 0003 changes that. So with TL1/TL2 off, the fork builds on its own, with MSVC like upstream llama.cpp.
 
 ## Build
 
@@ -23,7 +38,7 @@ powershell -ExecutionPolicy Bypass -NoProfile -File native\llamacpp\build-llamac
     [-OutDir <dir>] [-WorkDir <dir>] [-Source auto|git|archive] [-Arch x64] [-Force]
 ```
 
-Requirements: git, CMake, and Visual Studio (MSVC) with the C++ workload. A clean build took about 7 minutes on a 12-core PC.
+Requirements: git, CMake, and Visual Studio (MSVC) with the C++ workload. CMake must know the installed Visual Studio version. For example, CMake 3.29 has no generator for Visual Studio 2026; use the CMake that comes with Visual Studio.
 
 ### Source
 
@@ -33,25 +48,33 @@ Requirements: git, CMake, and Visual Studio (MSVC) with the C++ workload. A clea
   - its URL names the pinned commit,
   - its SHA-256 matches `source-archive.txt`,
   - every entry is inside `llama.cpp-<commit>/`.
-- The top-level folder of the archive is stripped when it is extracted. Otherwise the deepest Web UI paths exceed the Windows `MAX_PATH` limit. Entries that would land outside the work folder are rejected.
-- The archive in `source-archive.txt` was compared file by file with a git checkout of the same commit: all 4162 files are identical.
+- The top-level folder of the archive is stripped when it is extracted. Entries that would land outside the work folder are rejected.
+- The archive in `source-archive.txt` was compared file by file with a git checkout of the same commit.
+  - All 3059 regular files are identical.
+  - The 6 symbolic links (Swift package headers under `spm-headers` and `spm-sources`) are written as small text files holding the link target, as git does with `core.symlinks=false`. The build does not use them.
+  - After the patches, the sources from git and from the archive are identical.
+- The deepest Web UI paths are 161 characters below the source folder.
+  - Git checkouts use `core.longpaths=true`.
+  - The script extracts the archive and deletes old work folders with the `\\?\` prefix, so the `MAX_PATH` limit does not apply.
 - The source is checked out with `core.autocrlf=false` so that the LF patches apply. This matters on AppVeyor, which sets `core.autocrlf=true` globally.
+- `git apply` runs with `-c core.autocrlf=false`. Outside a repository (archive source) it otherwise follows the global setting and writes the patched files with CRLF.
 - An archive source has no `.git` folder, so the script passes `LLAMA_BUILD_COMMIT` and `--version` still reports the commit.
 
 ### Configuration
 
-- `GGML_BACKEND_DL=ON` and `GGML_CPU_ALL_VARIANTS=ON`, as in the official package.
-- Tests and examples are not built.
+- `GGML_BACKEND_DL=ON` and `GGML_CPU_ALL_VARIANTS=ON`, as in the official package. The fork compiles the `I2_S` kernels into every CPU variant.
+- `GGML_BITNET_ARM_TL1=OFF` and `GGML_BITNET_X86_TL2=OFF` (the defaults), stated explicitly: the TL kernels need the BitNet repository.
+- Tests, examples, and the unified `llama` app are not built.
+- `LLAMA_OPENSSL=OFF`. The tools only need HTTP on localhost.
 - `LLAMA_WIN_ICON` is set to `app\favicon.ico`, so the executables show the WelsonJS icon. The option comes from a patch; see [Patch: Windows icon](#patch-windows-icon).
-- Nothing is downloaded during the build:
-  - `LLAMA_USE_PREBUILT_UI=OFF` and `LLAMA_BUILD_UI=OFF`. By default the build downloads the server Web UI from a floating Hugging Face location, and the launcher does not use the Web UI.
-  - `LLAMA_CONNECT=OFF`. The llama-connect tool is a prebuilt binary.
+- Nothing is downloaded during the build: `LLAMA_USE_PREBUILT_UI=OFF` and `LLAMA_BUILD_UI=OFF`. By default the build downloads the server Web UI from a floating Hugging Face location, and the launcher does not use the Web UI.
 
 ### Output and skipping the build
 
 The files are written to `<OutDir>\<arch>`; in CI this is `artifacts\llamacpp\x64`. No archive is created. The folder also contains:
 
-- `BUILDINFO.txt`: the version, commit, source used (git, or the archive URL and hash), CPU backends, patches, and the build ID.
+- `LICENSE-llama.cpp.txt` (MIT).
+- `BUILDINFO.txt`: the version, commit, source used (git, or the archive URL and hash), CPU backends, BitNet kernels, patches, and the build ID.
 - `SHA256SUMS.txt`: one `<sha256>  <file name>` line for every file.
 
 The build ID is a SHA-256 over these inputs:
@@ -80,17 +103,88 @@ llama.cpp is built in the **Release** job, so its files are packaged and signed 
   - A patch file that is added later is not in the cache dependency list. The script's build ID still covers it.
 - **`APPVEYOR_SAVE_CACHE_ON_ERROR=true` (Release).** AppVeyor normally saves the cache only for successful jobs. With this setting, a llama.cpp build is kept even if a later step fails (for example, ISCC or the deployment). A partly written output is never reused: `SHA256SUMS.txt` is written last, and the script checks it.
 - **Existing folder.** The cache restores `artifacts\llamacpp` before the build, so the later `mkdir artifacts` step creates the folder only if it does not exist.
-- **Image.** The Release job runs on the Visual Studio 2019 image (MSVC 19.29). The build has been verified locally with MSVC 19.44 and 19.50 only.
+- **Image.** The Release job runs on the Visual Studio 2019 image (MSVC 19.29).
 
 The first build on the hosted VM is expected to take much longer than on a developer PC; the documentation lists 2-core VMs. If the Release job does not finish within 60 minutes, reduce the CPU variants or build the package elsewhere.
 
 The installer does not use this build yet. `postInstall.ps1` still downloads the official package listed in `data\DownloadUrls.psd1`.
 
+## Compatibility with upstream llama.cpp
+
+The fork numbers some ggml tensor types differently from upstream llama.cpp:
+
+| ggml tensor type | This build (fork) | Upstream llama.cpp |
+| --- | --- | --- |
+| 36 | `I2_S` (BitNet) | unused |
+| 37 | `I8_S` (BitNet, run time only) | unused |
+| 38 | `TL1` (BitNet) | unused |
+| 42 | `STQ1_0` (patch 0001, as in Tencent's files) | `Q2_0` |
+| 43 | `TL2` (BitNet; 42 in the fork) | `F8_E4M3` |
+
+- BitNet `I2_S` GGUF files and Tencent's STQ1_0 GGUF files load with this build and not with upstream llama.cpp.
+- Upstream GGUF files that store `Q2_0` (42) or `F8_E4M3` (43) tensors are **not** compatible: this build reads those IDs as `STQ1_0` and `TL2`. The types have different sizes, so such files are expected to fail the GGUF loader's size checks rather than load with wrong data; this was not tested.
+- GGUF files with BitNet `TL2` tensors (type 42 in the fork) are not compatible either; this build has no TL2 kernels.
+- The models WelsonJS installs (Hy-MT2, FrogNano, and Qwen3Guard, all Q4_K_M) use only tensor types 0, 12, and 14 (F32, Q4_K, Q6_K), and their architectures (`hunyuan-dense`, `qwen35`, `qwen3`) are in the fork.
+
+## BitNet (I2_S) models
+
+`microsoft/BitNet-b1.58-2B-4T-gguf` works through `llama-server`'s chat API with no extra options. That depends on patches 0005-0008, which fix four problems found while testing it:
+
+| Problem without the patch | Cause | Patch |
+| --- | --- | --- |
+| Answers the first sentence, then repeats itself until the token limit | The fork's FFN uses SiLU for the 2B-4T model, which uses squared ReLU | 0005 |
+| Only `?` tokens on CPUs without AVX2 (the `x64`, `sse42`, and `sandybridge` variants) | The fork's non-AVX2 I2_S fallbacks compute something else than its AVX2 code | 0006 |
+| Invents a conversation through `/v1/chat/completions` | The GGUF file embeds a chat template the model does not follow | 0007 |
+| Warning "GENERATION QUALITY WILL BE DEGRADED"; some text tokenized differently | The GGUF file has no `tokenizer.ggml.pre` | 0008 |
+
+The I2_S kernels themselves were correct. A GGUF with the I2_S weights converted to F16 generated the same tokens as the I2_S file.
+
+`general.file_type` of the GGUF file is 40, which the fork names `Q1_0`. The file type is metadata only and does not affect loading.
+
+## Test results
+
+Built with MSVC 19.50 (Visual Studio 2026) on a 12-core PC, with all patches.
+
+`llama-server` loaded each model and answered "What is the capital of France? Answer in one short sentence." through `/v1/chat/completions` (`temperature` 0, no template or tokenizer options). The CPU variant chosen for that PC has AVX2 and AVX-VNNI.
+
+| Model | Answer | Generation speed |
+| --- | --- | --- |
+| Qwen3Guard-Gen 0.6B Q4_K_M | `Safety: Safe Categories: None` (its classifier output) | 71 tokens/s |
+| Hy-MT2 1.8B Q4_K_M | `Paris is the capital of France.` | 32 tokens/s |
+| FrogNano 4B 2609 Q4_K_M | `The capital of France is Paris.`, after 182 tokens of reasoning (`reasoning_content`) | 10 tokens/s |
+| BitNet b1.58 2B-4T (I2_S) | `The capital of France is Paris.`, then `<|eot_id|>` | 24 tokens/s |
+
+Hy-MT2 (translation) with the README's default prompt ("Translate the following text into {target_lang}. Note that you should only output the translated result without any additional explanation:"), `temperature` 0. Every file translated these three texts and stopped by itself:
+
+| Text | Into |
+| --- | --- |
+| The weather is really nice today, so let's go for a walk in the park. | Korean |
+| 오늘 회의는 오후 세 시로 변경되었습니다. 늦지 않게 참석해 주세요. | English |
+| 今天天气真好，我们去公园散步吧。 | English |
+
+| File | Example (into Korean) | Generation speed |
+| --- | --- | --- |
+| `tencent/Hy-MT2-1.8B-1.25Bit-GGUF` (STQ1_0) | 오늘 날씨가 정말 좋으니 공원에서 산책을 하러 가자. | 28-30 tokens/s |
+| `tencent/Hy-MT2-1.8B-GGUF` Q4_K_M | 오늘 날씨가 정말 좋으니, 공원에서 산책하러 가요. | 27 tokens/s |
+| `tencent/Hy-MT2-1.8B-GGUF` Q6_K | 오늘 날씨가 정말 좋으니, 공원에서 산책을 하러 가보죠. | 23 tokens/s |
+| `tencent/Hy-MT2-1.8B-GGUF` Q8_0 | 오늘 날씨가 정말 좋으니, 공원에서 산책을 하러 가보죠. | 18 tokens/s |
+
+Also checked:
+
+- **BitNet on the `x64` variant.** With only `ggml-cpu-x64.dll` (no AVX2), the BitNet model generated the same tokens as on the AVX2 variant, ending with `<|eot_id|>`.
+- **BitNet tokenization.** Five texts (contractions, numbers, whitespace, Korean) gave the same tokens as with `--override-kv tokenizer.ggml.pre=str:llama-bpe`.
+- **Hy-MT2 1.25-bit on each kind of CPU variant.** It gave the same translations on every variant tested:
+  - AVX2 variant: 28-30 tokens/s,
+  - `sandybridge` alone: 23-24 tokens/s,
+  - `sse42` alone: 10 tokens/s,
+  - `x64` alone (generic code): 2 tokens/s.
+- **Other tools.** `llama-quantize --help` lists STQ1_0 (41). `llama-server.exe`, `llama-cli.exe`, and `llama-quantize.exe` contain the icon.
+
 ## Patch: STQ1_0 (PR #22836)
 
 `patches/0001-ggml-cpu-add-STQ1_0-pr22836.patch` adds the STQ1_0 ternary quantization type (1.3125 bits per weight) with an ARM NEON `vec_dot` kernel. It comes from [ggml-org/llama.cpp#22836](https://github.com/ggml-org/llama.cpp/pull/22836), PR head `1e411d8f5a1e23525fa3265dfb4bd76265465397`. The PR is open and not merged upstream.
 
-The PR was written against an older base, so it was rebased onto the pinned commit. The differences from the PR are:
+The PR was written against upstream llama.cpp, so it was rebased onto the fork. The differences from the PR are:
 
 ### Type IDs
 
@@ -99,37 +193,42 @@ llama.cpp numbers types in two separate enums:
 - **ggml tensor type** (`enum ggml_type`, `ggml.h`). It is stored for each tensor in a GGUF file, and the loader uses it to read the tensor data.
 - **llama file type** (`enum llama_ftype`, `llama.h`). It is stored once in the `general.file_type` metadata, describes the file's overall quantization, and is the number shown by `llama-quantize --help`.
 
-After the PR was written, upstream added `F8_E4M3` using the IDs the PR had chosen for STQ1_0. STQ1_0 keeps the PR's IDs, and F8_E4M3 moves to the next free IDs:
+The IDs follow the STQ1_0 files Tencent publishes, not the PR.
+
+- `tencent/Hy-MT2-1.8B-1.25Bit-GGUF` stores its STQ1_0 tensors as ggml type **42** (42 bytes per 256 weights, measured from the tensor offsets), and `general.file_type` **41**.
+- The PR uses 43 and 42. A build with the PR's IDs cannot load Tencent's file: it fails with "failed to load model".
+
+The fork uses ggml type 42 for BitNet's `TL2` and llama file type 41 for `I2_S`, so those move:
 
 | Type | ggml tensor type | llama file type |
 | --- | --- | --- |
-| `STQ1_0` (same as the PR) | 43 | 42 (`LLAMA_FTYPE_MOSTLY_STQ1_0`) |
-| `F8_E4M3` (upstream uses 43 / 42) | **44** | **43** |
-| `GGML_TYPE_COUNT` | 45 | |
+| `STQ1_0` | **42** (the PR uses 43) | **41** (the PR uses 42) |
+| `TL2` (BitNet) | **43** (42 in the fork) | 43 |
+| `I2_S` (BitNet) | 36 | **44** (41 in the fork) |
+| `GGML_TYPE_COUNT` | 44 | |
 
-The same change is made in `gguf-py/gguf/constants.py`. Every type table in the code is indexed by enum name (designated initializers), so the swap does not change any other mapping. Only the three enum definitions use the numbers.
+- `TL2` is the type of BitNet's lookup-table kernels, which this build does not use.
+- BitNet's published I2_S file stores `general.file_type` 40, so moving the I2_S file type does not affect it.
+- The same change is made in `gguf-py/gguf/constants.py`. Every type table in the code is indexed by enum name (designated initializers), so only the enum definitions use the numbers.
 
 Compatibility:
 
-- GGUF files quantized to STQ1_0 with the original PR load with this build.
-- GGUF files that store F8_E4M3 tensors with upstream's ID 43 are **not** compatible. This build reads ID 43 as STQ1_0. The GGUF loader rejects such files: a tensor offset or row-size check fails because the two types have different sizes. They do not load silently with wrong data.
-  - Upstream's converter (`conversion/base.py`) writes F8_E4M3 tensors when it keeps the weights of FP8 checkpoints, so this affects GGUF files converted from FP8 models. `llama-quantize` has no F8_E4M3 option.
-- F8_E4M3 files written by this build (ID 44) cannot be loaded by upstream llama.cpp.
-- When selecting a type by number in `llama-quantize`, 42 means STQ1_0 here. Use the type names instead.
+- Tencent's STQ1_0 files load with this build.
+- GGUF files quantized with the PR as it is (STQ1_0 as type 43) do **not** load: 43 is `TL2` here.
+- When selecting a type by number in `llama-quantize`, 41 means STQ1_0 here. Use the type names instead.
 - If the PR is merged upstream with different IDs, STQ1_0 files from this build will not match the official builds.
-
-The models WelsonJS installs (Hy-MT2, FrogNano, and Qwen3Guard, all Q4_K_M) use only tensor types 0, 12, and 14 (F32, Q4_K, Q6_K). They are not affected.
 
 ### Other adjustments
 
-- `ggml/src/ggml-cpu/arch-fallback.h`: at the pinned commit the x86 section has no `quants.c` block, so the STQ1_0 generic mapping starts one.
-- The context lines in `ggml.h`, `llama.h`, and `constants.py` were adjusted for the new enum entries.
+- The fork has no `Q2_0` entries, so the context lines were adjusted and the STQ1_0 lines follow the `TQ2_0` lines.
+- `ggml/src/ggml-cpu/arch-fallback.h`: the fork's x86 section already has an empty `quants.c` block, which receives the STQ1_0 generic mapping.
+- `gguf-py/gguf/constants.py`: the fork defines `LlamaFileType` twice (the second definition wins). `MOSTLY_STQ1_0` is added to both.
 
-On x86, STQ1_0 runs through the generic (scalar) path. The fast kernel is ARM NEON only.
+The PR's fast kernel is ARM NEON only; patch 0009 adds one for x86.
 
 ## Patch: Windows icon
 
-`patches/0002-tools-windows-icon.patch` adds a `LLAMA_WIN_ICON` cache option to `tools/CMakeLists.txt`. Upstream llama.cpp has no Windows resource files, so its executables have no icon.
+`patches/0002-tools-windows-icon.patch` adds a `LLAMA_WIN_ICON` cache option to `tools/CMakeLists.txt`. llama.cpp has no Windows resource files, so its executables have no icon.
 
 When the option names an `.ico` file on Windows, the patch:
 
@@ -139,10 +238,98 @@ When the option names an `.ico` file on Windows, the patch:
 
 The icon file stays in the WelsonJS repository; the patch only adds the option. When the option is empty (the default), the build is the same as without the patch. A missing file stops the configuration with an error.
 
-## Updating llama.cpp
+## Patch: build without the BitNet repository
 
-1. Set `commit.txt` to the new full SHA, and `version.txt` to its `git describe` label.
+`patches/0003-ggml-build-without-bitnet-repository.patch` removes the fork's dependency on the BitNet repository when TL1/TL2 are off:
+
+- **CMake paths.** `ggml/src/CMakeLists.txt` adds `../../../../include` (BitNet's headers) to `ggml-base` only when `GGML_BITNET_ARM_TL1` or `GGML_BITNET_X86_TL2` is on. `ggml/src/ggml-cpu/CMakeLists.txt` does the same for `../../../../src/ggml-bitnet-lut.cpp` and `../../../../include` in every CPU variant.
+  - Without the patch, the fork's CMake refers to these paths, which are in the BitNet repository, even when TL1/TL2 are off. With TL1/TL2 off, the source file compiles to nothing and the headers are not included.
+- **`gemm-config.h`.** The I2_S kernels include it, so the patch adds `ggml/src/ggml-cpu/gemm-config.h`, next to `ggml-cpu-i2s.c`.
+  - It is BitNet's `include/gemm-config.h` at `0b341e5` (MIT, Copyright (c) Microsoft Corporation), with a fallback added at the end.
+  - The header sets `ROW_BLOCK_SIZE` and `COL_BLOCK_SIZE` only for CPUs with AVX/SSSE3 (or NEON). The non-AVX2 path of `ggml-cpu-i2s.c` uses them, so the baseline `x64` variant of `GGML_CPU_ALL_VARIANTS`, and every MSVC variant below AVX (MSVC does not define `__SSSE3__`), would not compile. The fallback uses the x86 values.
+  - BitNet's `utils/tune_gemm_config.py` rewrites this file to tune the block sizes; this build uses the values as published.
+
+When the fork is built inside the BitNet repository with TL1 or TL2 on, the CMake change does nothing, and the copied header takes the place of BitNet's for `ggml-cpu-i2s.c` (same values).
+
+## Patch: I2_S reference quantization in ggml-base
+
+`patches/0004-ggml-i2s-reference-quants-in-ggml-base.patch` moves `dequantize_row_i2_s` and `quantize_i2_s` from `ggml/src/ggml-cpu/quants.c` (the CPU backend) to `ggml/src/ggml-quants.c` (`ggml-base`), and declares them `GGML_API`.
+
+- `ggml.c`, which is part of `ggml-base`, uses both functions: the I2_S type traits (`to_float`) and `ggml_quantize_chunk`.
+- The fork defines them in the CPU backend. That links in a static build, and in shared builds on Linux, where undefined symbols are resolved when the library is loaded.
+- With `GGML_BACKEND_DL` on Windows, each CPU variant is a separate DLL, and `ggml-base.dll` cannot link against it. Without the patch, the MSVC build fails with `LNK2001`/`LNK2019` for these two symbols.
+
+Both functions are plain scalar C, so the code is unchanged. The CPU backend (`ops.cpp` uses `dequantize_row_i2_s`) imports them from `ggml-base`, like the other reference quantization functions.
+
+## Patch: squared ReLU for BitNet b1.58 2B-4T
+
+`patches/0005-models-bitnet-b158-squared-relu.patch` makes the `bitnet-b1.58` architecture use `LLM_FFN_RELU_SQR` in its feed-forward network.
+
+- The fork builds `bitnet-b1.58` (the architecture of `microsoft/BitNet-b1.58-2B-4T-gguf`) with the `bitnet` graph, whose FFN uses SiLU.
+- The 2B-4T model uses squared ReLU: `hidden_act` is `relu2` in `config.json` of `microsoft/bitnet-b1.58-2B-4T`.
+- The older `bitnet_b1_58` models (`bitnet`) keep SiLU.
+
+How the cause was found:
+
+- With SiLU, the model answered the first sentence and then never emitted `<|eot_id|>`, repeating itself until the token limit.
+- A GGUF with the I2_S weights converted to F16 generated exactly the same tokens through the F16 kernels. So the I2_S kernels were not the cause.
+- With squared ReLU, the model answers and stops with `<|eot_id|>`.
+
+## Patch: non-AVX2 I2_S fallbacks
+
+`patches/0006-ggml-cpu-fix-non-avx2-i2s-fallbacks.patch` fixes the code that the `x64`, `sse42`, and `sandybridge` CPU variants (and any CPU without AVX2) use for I2_S. Without it, the 2B-4T model generated only `?` tokens on those variants.
+
+- **`ggml_vec_dot_i2_i8_s`** (`ggml-cpu/quants.c`). The scalar fallback differed from the AVX2 code in three ways:
+  - It read the 2-bit codes sequentially. I2_S interleaves 128 weights in 32 bytes: byte `gp` holds weights `gp`, `gp+32`, `gp+64`, and `gp+96` in bits 7-6, 5-4, 3-2, and 1-0, as `dequantize_row_i2_s` reads them.
+  - It mapped the codes to -1/0/+1. The AVX2 code uses the unsigned codes 0/1/2, and the callers subtract the activation sum.
+  - It addressed row `r` at `r * (n/4)` instead of `r * bx / 4`.
+  
+  The patch rewrites it to compute what the AVX2 code computes.
+- **`ggml_gemm_i2_i8_s`** (`ggml-cpu/ggml-cpu-i2s.c`, used for prompts of four or more tokens). With `ACT_PARALLEL`, which `gemm-config.h` sets, the fallback called `ggml_vec_dot_i2_i8_s` as if that function iterated over activation columns with an output stride. It iterates over weight rows and writes them consecutively. The patch calls it once per activation column, which gives the AVX2 code's layout `s[col * bs + row]`.
+
+With the patch, the `x64` variant generates the same tokens as the AVX2 variants.
+
+## Patch: chat template for BitNet b1.58 2B-4T
+
+`patches/0007-llama-bitnet-b158-chat-template.patch` replaces the chat template of `microsoft/BitNet-b1.58-2B-4T-gguf` with that of the original model.
+
+- The GGUF file embeds `Human: ...\n\nBITNETAssistant: `, which the model does not follow. Through `/v1/chat/completions` it invents a conversation instead of answering.
+- The original model (`microsoft/bitnet-b1.58-2B-4T`, `tokenizer_config.json`) uses `User: ...<|eot_id|>Assistant: `.
+- `llama_model_chat_template` returns the original template when the architecture is `bitnet-b1.58` and the embedded template contains `BITNETAssistant`. The function already has a one-off fix of this kind for Mistral-Small-2503.
+- `--chat-template` and `--chat-template-file` still take precedence.
+
+## Patch: pre-tokenizer for BitNet b1.58 2B-4T
+
+`patches/0008-llama-bitnet-b158-llama-bpe-pre-tokenizer.patch` gives `bitnet-b1.58` the `llama-bpe` pre-tokenizer when the file has no `tokenizer.ggml.pre`.
+
+- `microsoft/BitNet-b1.58-2B-4T-gguf` has no `tokenizer.ggml.pre`. llama.cpp then falls back to the `default` pre-tokenizer and warns that generation quality will be degraded.
+- The original model uses the Llama 3 tokenizer. In a test, `default` split `I'm`, `they'll`, `won't`, and blank lines into different tokens than `llama-bpe`.
+- A file that sets `tokenizer.ggml.pre`, or `--override-kv tokenizer.ggml.pre=...`, is not affected.
+
+## Patch: x86 SIMD vec_dot for STQ1_0
+
+`patches/0009-ggml-cpu-x86-stq1_0-vec-dot.patch` adds `ggml_vec_dot_stq1_0_q8_K` to `ggml/src/ggml-cpu/arch/x86/quants.c`.
+
+- Without it, x86 runs the generic code, which decodes one weight at a time. The 1.25-bit Hy-MT2 model generated about 2 tokens/s with it, against 27 tokens/s for the Q4_K_M file of the same model.
+- The kernel is used on CPUs with SSE4.1 or AVX: the `sse42`, `sandybridge`, and newer variants. `GGML_SSE42` is also tested, because MSVC does not define `__SSE4_1__`. Other CPUs (the `x64` variant) still use the generic code.
+- The patch removes the x86 line of `arch-fallback.h` that patch 0001 adds, which mapped the generic function to this name.
+
+How it works:
+
+1. In each 64-weight chunk, group `g` (0-15) holds weights `g + p*16` (`p` = 0-3). So lane `g` of a 16-byte vector is group `g`.
+2. The kernel builds the 16 five-bit codebook indices of a chunk (4-bit code and sign bit). It looks them up with two `_mm_shuffle_epi8`, one per codebook half, and picks between them by the sign bit.
+3. It multiplies each 2-bit field with 16 activations using `_mm_maddubs_epi16`.
+4. The codes are 0/1/2 for -1/0/+1, so the result is `sum(q * y) - sum(y)`, with `sum(y)` from the q8_K `bsums`.
+
+The arithmetic is integer, so the result equals the generic code's. The translations were the same on the AVX2, `sandybridge`, `sse42`, and `x64` variants.
+
+## Updating
+
+1. Find the llama.cpp commit that the new BitNet commit uses: `git ls-tree <BitNet sha> 3rdparty/llama.cpp` and BitNet's `.gitmodules`. Set `commit.txt` to it, and `RepositoryUrl` in the script if the fork URL changed. Update `version.txt`.
 2. Upload the source archive for that commit (`git archive --format=zip --prefix=llama.cpp-<sha>/ <sha>`), then update the URL and SHA-256 in `source-archive.txt`.
-3. Check that each patch applies to a clean checkout with `git -c core.autocrlf=false apply --check`. Rebase the patches if needed, and check the type IDs in `ggml.h`, `llama.h`, and `gguf-py/gguf/constants.py` against new upstream types.
-4. Build locally with the script. Check that `llama-quantize --help` lists STQ1_0 and that `llama-server` answers a chat request.
-5. Commit. The AppVeyor cache is invalidated by the changed files.
+3. Check that each patch applies to a clean checkout with `git -c core.autocrlf=false apply --check`. Rebase the patches if needed, and check the type IDs in `ggml.h`, `llama.h`, and `gguf-py/gguf/constants.py` against the fork's types.
+4. Check that the fork still keeps every use of the BitNet repository behind the TL1/TL2 options (patch 0003), and that the `I2_S` sources are compiled into every CPU variant.
+5. Build locally with the script. Check that:
+   - `llama-quantize --help` lists STQ1_0,
+   - `llama-server` answers a chat request with one of the installed models and with an `I2_S` model.
+6. Commit. The AppVeyor cache is invalidated by the changed files.

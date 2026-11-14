@@ -1,9 +1,9 @@
 diff --git a/tools/CMakeLists.txt b/tools/CMakeLists.txt
-index 6a6592c..b5ecf9f 100644
+index 780df32..50080f9 100644
 --- a/tools/CMakeLists.txt
 +++ b/tools/CMakeLists.txt
-@@ -46,3 +46,39 @@ else()
-     endif()
+@@ -41,3 +41,39 @@ else()
+     add_subdirectory(fit-params)
      add_subdirectory(results)
  endif()
 +

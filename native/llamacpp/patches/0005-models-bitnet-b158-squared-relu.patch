@@ -1,0 +1,31 @@
+From: WelsonJS
+Subject: [PATCH] models : use squared ReLU for bitnet-b1.58 (BitNet b1.58 2B-4T)
+
+The fork registers bitnet-b1.58, the architecture of
+microsoft/BitNet-b1.58-2B-4T-gguf, as a subclass of bitnet and builds both
+with the bitnet graph, whose FFN uses SiLU. The 2B-4T model uses squared ReLU
+(hidden_act "relu2" in microsoft/bitnet-b1.58-2B-4T config.json); the older
+bitnet_b1_58 models (bitnet) use SiLU.
+
+With SiLU the 2B-4T model answers the first sentence and then never emits
+<|eot_id|>, repeating itself until the token limit; F16 weights converted
+from the same file gave the same tokens, so the I2_S kernels were not the
+cause. With squared ReLU it answers and stops with <|eot_id|>.
+
+Apply with: git -c core.autocrlf=false apply <this file>
+
+diff --git a/src/models/bitnet.cpp b/src/models/bitnet.cpp
+index 985c8d6..8eaebb1 100644
+--- a/src/models/bitnet.cpp
++++ b/src/models/bitnet.cpp
+@@ -130,7 +130,9 @@ llama_model_bitnet::graph::graph(const llama_model & model, const llm_graph_para
+                 model.layers[il].ffn_gate, NULL, model.layers[il].ffn_gate_s,
+                 NULL,                      NULL, NULL,
+                 NULL,
+-                LLM_FFN_SILU, LLM_FFN_PAR, il);
++                // BitNet b1.58 2B-4T (bitnet-b1.58) uses squared ReLU (hidden_act
++                // "relu2"); the older bitnet_b1_58 models (bitnet) use SiLU.
++                arch == LLM_ARCH_BITNET_B158 ? LLM_FFN_RELU_SQR : LLM_FFN_SILU, LLM_FFN_PAR, il);
+         cb(cur, "ffn_sub_out", il);
+ 
+         cur = build_norm(cur,
