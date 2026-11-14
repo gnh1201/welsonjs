@@ -215,7 +215,7 @@ if ($Components -and $Components.Trim() -ne "") {
 # All GGUF models in this installer are served by llama.cpp. Accept both
 # short names and nested Inno Setup component paths for every model.
 $llamaModelComponents = @(
-    "hy_mt2_1_8b",
+    "hy_mt2_1_8b_1_25bit",
     "frognano_4b_2609",
     "qwen3guard_06b"
 )
@@ -1030,7 +1030,7 @@ try {
     # Download archive/file components through one shared path.
     # Nmap/Npcap, GTK runtime and HWP keep dedicated installation handling.
     $downloadComponents = @(
-        "python", "curl", "hy_mt2_1_8b", "frognano_4b_2609", "qwen3guard_06b", "yara", "wamr", "websocat", "artifacts",
+        "python", "curl", "hy_mt2_1_8b_1_25bit", "frognano_4b_2609", "qwen3guard_06b", "yara", "wamr", "websocat", "artifacts",
         "gtkserver", "tessdata", "tessdata_best", "tessdata_fast",
         "windivert", "android_platform_tools", "tun2socks", "sendboxie",
         "ldplayer", "tap_windows6", "thc_hydra", "shadowsocks_libev",

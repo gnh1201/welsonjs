@@ -97,7 +97,7 @@ namespace WelsonJS.Launcher
                 }
 
                 if (!File.Exists(modelPath))
-                    throw new FileNotFoundException("The llama.cpp model was not found at " + modelPath + " (install the setup component llamacpp\\hy_mt2_1_8b or set LlamaCppModelPath).", modelPath);
+                    throw new FileNotFoundException("The llama.cpp model was not found at " + modelPath + " (install the setup component llamacpp\\hy_mt2_1_8b_1_25bit or set LlamaCppModelPath).", modelPath);
 
                 Dictionary<string, object> started = _processes.Start(modelPath, null, "127.0.0.1", 0, ContextSize, 0);
                 string id = (string)started["id"];

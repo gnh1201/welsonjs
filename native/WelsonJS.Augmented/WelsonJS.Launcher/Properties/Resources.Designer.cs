@@ -352,7 +352,7 @@ namespace WelsonJS.Launcher.Properties {
         }
 
         /// <summary>
-        ///   hy_mt2_1_8b\Hy-MT2-1.8B-Q4_K_M.gguf과(와) 유사한 지역화된 문자열을 찾습니다.
+        ///   hy_mt2_1_8b_1_25bit\Hy-MT2-1.8B-1.25Bit.gguf과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string LlamaCppModelPath {
             get {

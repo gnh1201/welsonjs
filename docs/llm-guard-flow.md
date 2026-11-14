@@ -82,7 +82,7 @@ sequenceDiagram
 `LanguageInferenceEngine`에서 Unsafe 데이터는 외부 provider로 전달하지 않고 `llamacpp` provider로 라우팅한다.
 
 - 런처가 사용 가능한 포트를 할당하고 응답한다. 클라이언트는 응답받은 `host`와 `port`로 `/v1/chat/completions`를 호출한다.
-- 기본 fallback 모델: `hy_mt2_1_8b`
+- 기본 fallback 모델: `hy_mt2_1_8b_1_25bit`
 
 ```mermaid
 sequenceDiagram

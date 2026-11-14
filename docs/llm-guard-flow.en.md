@@ -82,7 +82,7 @@ Remote providers registered in the common engine include OpenAI, Anthropic, Groq
 In `LanguageInferenceEngine`, unsafe data is routed to the `llamacpp` provider instead of a remote provider.
 
 - The launcher allocates the local server port and returns it in the start response. The client uses the returned `host` and `port` for `/v1/chat/completions`.
-- Default fallback model: `hy_mt2_1_8b`
+- Default fallback model: `hy_mt2_1_8b_1_25bit`
 
 ```mermaid
 sequenceDiagram

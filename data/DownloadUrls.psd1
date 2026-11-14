@@ -27,10 +27,11 @@
     # from the artifacts package (artifacts\llamacpp\<arch>, native\llamacpp).
 
     # ===========================
-    # Hy-MT2 1.8B Q4_K_M GGUF model
+    # Hy-MT2 1.8B 1.25-bit GGUF model (Tencent AngelSlim, STQ1_0; needs the
+    # WelsonJS llama.cpp build, see native\llamacpp)
     # ===========================
-    hy_mt2_1_8b = @{
-        any   = "https://huggingface.co/tencent/Hy-MT2-1.8B-GGUF/resolve/main/Hy-MT2-1.8B-Q4_K_M.gguf"
+    hy_mt2_1_8b_1_25bit = @{
+        any   = "https://huggingface.co/tencent/Hy-MT2-1.8B-1.25Bit-GGUF/resolve/main/Hy-MT2-1.8B-1.25Bit.gguf"
     }
 
     # ===========================
