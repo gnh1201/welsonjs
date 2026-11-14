@@ -7,15 +7,15 @@ Rebased onto: the llama.cpp fork used by bitnet.cpp,
   https://github.com/isHuangXin/llama.cpp.git 390c307752ab78fd8189f359d6954c9ba1be74af
   (submodule 3rdparty/llama.cpp of microsoft/BitNet 0b341e582afbf9e1011f24744b554c96a3477eb5).
 Changes from the PR:
-  - Type IDs follow the GGUF files Tencent publishes for STQ1_0
-    (tencent/Hy-MT2-1.8B-1.25Bit-GGUF), not the PR: those files store the
-    STQ1_0 tensors as GGML type 42 (42 bytes per 256 weights) and
-    general.file_type 41, while the PR uses 43 and 42.
-    - GGML type: STQ1_0 is 42. The fork used 42 for BitNet's TL2 (the
-      lookup-table type of the TL2 kernels, which this build does not use);
-      TL2 moves to 43 (GGML_TYPE_COUNT 44).
-    - LLAMA_FTYPE: STQ1_0 is 41. The fork used 41 for I2_S; I2_S moves to 44.
-      The file type is metadata only; BitNet's published I2_S file stores 40.
+  - Type IDs: the fork uses GGML types 36-38 and 42 for I2_S, I8_S, TL1 and
+    TL2, and llama file types 41-43 for I2_S, TL1 and TL2; it has neither
+    Q2_0 nor F8_E4M3. Those IDs are kept.
+    - GGML type: STQ1_0 keeps the PR's ID 43 (GGML_TYPE_COUNT 44).
+      Tencent's published STQ1_0 files store type 42 (TL2 here); patch
+      0010 detects them by their tensor sizes.
+    - LLAMA_FTYPE: the PR's 42 is LLAMA_FTYPE_MOSTLY_TL1 in the fork (and 43
+      is TL2), so LLAMA_FTYPE_MOSTLY_STQ1_0 is 44. The file type is metadata
+      only (general.file_type).
   - Context lines adjusted for the fork, which has no Q2_0 entries; the
     STQ1_0 lines follow the TQ2_0 lines instead.
   - ggml/src/ggml-cpu/arch-fallback.h: the fork's x86 section already has an
@@ -26,17 +26,15 @@ Changes from the PR:
 Apply with: git -c core.autocrlf=false apply <this file>
 
 diff --git a/ggml/include/ggml.h b/ggml/include/ggml.h
-index b02fd48..086b688 100644
+index b02fd48..5f99fd4 100644
 --- a/ggml/include/ggml.h
 +++ b/ggml/include/ggml.h
-@@ -430,8 +430,9 @@ extern "C" {
-         GGML_TYPE_MXFP4   = 39, // MXFP4 (1 block)
+@@ -431,7 +431,8 @@ extern "C" {
          GGML_TYPE_NVFP4   = 40, // NVFP4 (4 blocks, E4M3 scale)
          GGML_TYPE_Q1_0    = 41,
--        GGML_TYPE_TL2     = 42,
+         GGML_TYPE_TL2     = 42,
 -        GGML_TYPE_COUNT   = 43,
-+        GGML_TYPE_STQ1_0  = 42, // the ID in Tencent's Hy-MT2 1.25-bit GGUF files (the PR uses 43)
-+        GGML_TYPE_TL2     = 43, // moved from 42 for STQ1_0
++        GGML_TYPE_STQ1_0  = 43, // the PR's ID; files that store STQ1_0 as 42 are detected in gguf.cpp
 +        GGML_TYPE_COUNT   = 44,
      };
  
@@ -663,28 +661,22 @@ index fcf1f13..a303945 100644
          case GGML_TYPE_IQ2_XXS: result = quantize_iq2_xxs(src + start, (char *) dst + start_row * row_size, nrows, n_per_row, imatrix); break;
          case GGML_TYPE_IQ2_XS:  result = quantize_iq2_xs (src + start, (char *) dst + start_row * row_size, nrows, n_per_row, imatrix); break;
 diff --git a/gguf-py/gguf/constants.py b/gguf-py/gguf/constants.py
-index 883bf27..1893a40 100644
+index 883bf27..794e8ea 100644
 --- a/gguf-py/gguf/constants.py
 +++ b/gguf-py/gguf/constants.py
-@@ -4588,7 +4588,8 @@ class GGMLQuantizationType(IntEnum):
-     I2_S    = 36
+@@ -4589,6 +4589,7 @@ class GGMLQuantizationType(IntEnum):
      I8_S    = 37
      TL1     = 38
--    TL2     = 42
-+    STQ1_0  = 42  # the ID in Tencent's Hy-MT2 1.25-bit GGUF files (the PR uses 43)
-+    TL2     = 43  # moved from 42 for STQ1_0
+     TL2     = 42
++    STQ1_0  = 43  # the PR's ID
  
  
  class ExpertGatingFuncType(IntEnum):
-@@ -4644,9 +4645,10 @@ class LlamaFileType(IntEnum):
-     MOSTLY_MXFP4_MOE     = 38  # except 1d tensors
-     MOSTLY_NVFP4         = 39  # except 1d tensors
-     MOSTLY_Q1_0          = 40  # except 1d tensors
--    MOSTLY_I2_S          = 41  # except 1d tensors
-+    MOSTLY_I2_S          = 44  # except 1d tensors (moved from 41 for STQ1_0)
+@@ -4647,6 +4648,7 @@ class LlamaFileType(IntEnum):
+     MOSTLY_I2_S          = 41  # except 1d tensors
      MOSTLY_TL1           = 42
      MOSTLY_TL2           = 43
-+    MOSTLY_STQ1_0        = 41  # except 1d tensors (Tencent's Hy-MT2 1.25-bit GGUF files; the PR uses 42)
++    MOSTLY_STQ1_0        = 44  # except 1d tensors (the PR uses 42, which is TL1 here)
  
      GUESSED              = 1024  # not specified in the model file
  
@@ -692,7 +684,7 @@ index 883bf27..1893a40 100644
      MOSTLY_Q4_0_8_8      = 35  # except 1d tensors
      MOSTLY_TQ1_0         = 36  # except 1d tensors
      MOSTLY_TQ2_0         = 37  # except 1d tensors
-+    MOSTLY_STQ1_0        = 41  # except 1d tensors (Tencent's Hy-MT2 1.25-bit GGUF files; the PR uses 42)
++    MOSTLY_STQ1_0        = 44  # except 1d tensors (the PR uses 42, which is TL1 here)
  
      GUESSED              = 1024  # not specified in the model file
  
@@ -705,18 +697,14 @@ index 883bf27..1893a40 100644
  
  
 diff --git a/include/llama.h b/include/llama.h
-index 3568b62..424fd6c 100644
+index 3568b62..c4adf0b 100644
 --- a/include/llama.h
 +++ b/include/llama.h
-@@ -155,9 +155,10 @@ extern "C" {
-         LLAMA_FTYPE_MOSTLY_MXFP4_MOE     = 38, // except 1d tensors
-         LLAMA_FTYPE_MOSTLY_NVFP4         = 39, // except 1d tensors
-         LLAMA_FTYPE_MOSTLY_Q1_0          = 40, // except 1d tensors
--        LLAMA_FTYPE_MOSTLY_I2_S          = 41, // except 1d tensors
-+        LLAMA_FTYPE_MOSTLY_STQ1_0        = 41, // except 1d tensors (the file type of Tencent's Hy-MT2 1.25-bit GGUF files; the PR uses 42)
+@@ -158,6 +158,7 @@ extern "C" {
+         LLAMA_FTYPE_MOSTLY_I2_S          = 41, // except 1d tensors
          LLAMA_FTYPE_MOSTLY_TL1           = 42,
          LLAMA_FTYPE_MOSTLY_TL2           = 43,
-+        LLAMA_FTYPE_MOSTLY_I2_S          = 44, // except 1d tensors (moved from 41 for STQ1_0)
++        LLAMA_FTYPE_MOSTLY_STQ1_0        = 44, // except 1d tensors (the PR uses 42, which is TL1 here)
          LLAMA_FTYPE_GUESSED = 1024, // not specified in the model file
      };
  

@@ -118,12 +118,12 @@ The fork numbers some ggml tensor types differently from upstream llama.cpp:
 | 36 | `I2_S` (BitNet) | unused |
 | 37 | `I8_S` (BitNet, run time only) | unused |
 | 38 | `TL1` (BitNet) | unused |
-| 42 | `STQ1_0` (patch 0001, as in Tencent's files) | `Q2_0` |
-| 43 | `TL2` (BitNet; 42 in the fork) | `F8_E4M3` |
+| 42 | `TL2` (BitNet), or `STQ1_0` in Tencent's files (detected by size, patch 0010) | `Q2_0` |
+| 43 | `STQ1_0` (patch 0001, the PR's ID) | `F8_E4M3` |
 
-- BitNet `I2_S` GGUF files and Tencent's STQ1_0 GGUF files load with this build and not with upstream llama.cpp.
-- Upstream GGUF files that store `Q2_0` (42) or `F8_E4M3` (43) tensors are **not** compatible: this build reads those IDs as `STQ1_0` and `TL2`. The types have different sizes, so such files are expected to fail the GGUF loader's size checks rather than load with wrong data; this was not tested.
-- GGUF files with BitNet `TL2` tensors (type 42 in the fork) are not compatible either; this build has no TL2 kernels.
+- BitNet `I2_S` GGUF files and STQ1_0 GGUF files (Tencent's, with type 42, and the PR's, with type 43) load with this build and not with upstream llama.cpp.
+- Upstream GGUF files that store `Q2_0` (42) or `F8_E4M3` (43) tensors are **not** compatible: this build reads those IDs as `TL2`/`STQ1_0` and `STQ1_0`. The types have different sizes, so such files are expected to fail the GGUF loader's size checks rather than load with wrong data; this was not tested.
+- BitNet `TL2` tensors keep their ID, but this build has no TL2 kernels to run them.
 - The models WelsonJS installs (Hy-MT2, FrogNano, and Qwen3Guard, all Q4_K_M) use only tensor types 0, 12, and 14 (F32, Q4_K, Q6_K), and their architectures (`hunyuan-dense`, `qwen35`, `qwen3`) are in the fork.
 
 ## BitNet (I2_S) models
@@ -139,7 +139,7 @@ The fork numbers some ggml tensor types differently from upstream llama.cpp:
 
 The I2_S kernels themselves were correct. A GGUF with the I2_S weights converted to F16 generated the same tokens as the I2_S file.
 
-`general.file_type` of the GGUF file is 40, which the fork names `Q1_0`. The file type is metadata only and does not affect loading.
+`general.file_type` of the GGUF file is 40, which is `Q1_0` in the fork. Patch 0010 reports it as `I2_S`, because the file has I2_S tensors and no Q1_0 tensors. The file type is metadata only and does not affect loading.
 
 ## Test results
 
@@ -178,7 +178,9 @@ Also checked:
   - `sandybridge` alone: 23-24 tokens/s,
   - `sse42` alone: 10 tokens/s,
   - `x64` alone (generic code): 2 tokens/s.
-- **Other tools.** `llama-quantize --help` lists STQ1_0 (41). `llama-server.exe`, `llama-cli.exe`, and `llama-quantize.exe` contain the icon.
+- **STQ1_0 type IDs.** The 1.25-bit file with its STQ1_0 tensors renumbered from 42 to 43 (the PR's numbering) gave the same translations as Tencent's file. A synthetic file with a TL2-sized type-42 tensor kept the tensor as `tl2`.
+- **`llama-cli`.** The downloaded files were also run directly with `llama-cli -st --temp 0` (single turn): every Hy-MT2 file gave the translations above in both directions, and the BitNet model answered the capital question and a two-sentence explanation, stopping by itself.
+- **Other tools.** `llama-quantize --help` lists STQ1_0 (44). `llama-server.exe`, `llama-cli.exe`, and `llama-quantize.exe` contain the icon.
 
 ## Patch: STQ1_0 (PR #22836)
 
@@ -193,29 +195,26 @@ llama.cpp numbers types in two separate enums:
 - **ggml tensor type** (`enum ggml_type`, `ggml.h`). It is stored for each tensor in a GGUF file, and the loader uses it to read the tensor data.
 - **llama file type** (`enum llama_ftype`, `llama.h`). It is stored once in the `general.file_type` metadata, describes the file's overall quantization, and is the number shown by `llama-quantize --help`.
 
-The IDs follow the STQ1_0 files Tencent publishes, not the PR.
+The fork's IDs are kept. STQ1_0 takes the next free IDs:
 
-- `tencent/Hy-MT2-1.8B-1.25Bit-GGUF` stores its STQ1_0 tensors as ggml type **42** (42 bytes per 256 weights, measured from the tensor offsets), and `general.file_type` **41**.
-- The PR uses 43 and 42. A build with the PR's IDs cannot load Tencent's file: it fails with "failed to load model".
-
-The fork uses ggml type 42 for BitNet's `TL2` and llama file type 41 for `I2_S`, so those move:
+- The fork uses ggml types 36-38 and 42 for `I2_S`, `I8_S`, `TL1`, and `TL2`, and llama file types 41-43 for `I2_S`, `TL1`, and `TL2`. It has neither `Q2_0` nor `F8_E4M3`.
 
 | Type | ggml tensor type | llama file type |
 | --- | --- | --- |
-| `STQ1_0` | **42** (the PR uses 43) | **41** (the PR uses 42) |
-| `TL2` (BitNet) | **43** (42 in the fork) | 43 |
-| `I2_S` (BitNet) | 36 | **44** (41 in the fork) |
+| `STQ1_0` here | 43 (same as the PR) | **44** (the PR uses 42, which is `TL1` in the fork) |
 | `GGML_TYPE_COUNT` | 44 | |
 
-- `TL2` is the type of BitNet's lookup-table kernels, which this build does not use.
-- BitNet's published I2_S file stores `general.file_type` 40, so moving the I2_S file type does not affect it.
-- The same change is made in `gguf-py/gguf/constants.py`. Every type table in the code is indexed by enum name (designated initializers), so only the enum definitions use the numbers.
+The same change is made in `gguf-py/gguf/constants.py`. Every type table in the code is indexed by enum name (designated initializers), so only the enum definitions use the numbers.
+
+Tencent's files use other IDs:
+
+- `tencent/Hy-MT2-1.8B-1.25Bit-GGUF` stores its STQ1_0 tensors as ggml type **42** (42 bytes per 256 weights, measured from the tensor offsets), and `general.file_type` **41**.
+- Here 42 is `TL2` and 41 is `I2_S`. Patch 0010 tells them apart by the tensor sizes. Without it, the file fails to load ("failed to load model").
 
 Compatibility:
 
-- Tencent's STQ1_0 files load with this build.
-- GGUF files quantized with the PR as it is (STQ1_0 as type 43) do **not** load: 43 is `TL2` here.
-- When selecting a type by number in `llama-quantize`, 41 means STQ1_0 here. Use the type names instead.
+- GGUF files quantized to STQ1_0 with the PR (type 43) and Tencent's files (type 42) both load with this build.
+- When selecting a type by number in `llama-quantize`, 44 means STQ1_0 here. Use the type names instead.
 - If the PR is merged upstream with different IDs, STQ1_0 files from this build will not match the official builds.
 
 ### Other adjustments
@@ -322,6 +321,39 @@ How it works:
 4. The codes are 0/1/2 for -1/0/+1, so the result is `sum(q * y) - sum(y)`, with `sum(y)` from the q8_K `bsums`.
 
 The arithmetic is integer, so the result equals the generic code's. The translations were the same on the AVX2, `sandybridge`, `sse42`, and `x64` variants.
+
+## Patch: STQ1_0 files with type 42
+
+`patches/0010-gguf-detect-stq1_0-type-42.patch` lets the build read STQ1_0 files that use type 42, without changing any type ID.
+
+ggml type 42 has two meanings:
+
+- `GGML_TYPE_TL2` in the fork (bitnet.cpp's lookup-table type),
+- STQ1_0 in Tencent's files (`tencent/Hy-MT2-1.8B-1.25Bit-GGUF`).
+
+This build keeps the fork's `TL2` = 42 and numbers STQ1_0 43, as the PR does. So files that follow either numbering keep their meaning.
+
+**Tensor type (`ggml/src/gguf.cpp`).** The two formats have different sizes, and a GGUF file's tensor offsets must match the tensor sizes; `gguf_init_from_file_impl` checks that right after reading the tensor infos. Before that check, the patch looks at files that have type-42 tensors:
+
+- If the offsets match the sizes as `TL2`, nothing changes.
+- If they match only as STQ1_0, the type-42 tensors are read as STQ1_0 (43). The log then shows `N tensors of type 42 have the size of stq1_0, not tl2; reading them as stq1_0`.
+- If they match neither, the existing offset check fails as before.
+
+**File type (`src/llama-model-loader.cpp`).** `general.file_type` has the same problem with two numbers, so the loader goes by the tensor types:
+
+| `general.file_type` | Meaning here | Also used by | Reported as |
+| --- | --- | --- | --- |
+| 41 | `MOSTLY_I2_S` | Tencent's STQ1_0 files | `MOSTLY_STQ1_0`, when the file has STQ1_0 tensors and no I2_S tensors |
+| 40 | `MOSTLY_Q1_0` | `microsoft/BitNet-b1.58-2B-4T-gguf` | `MOSTLY_I2_S`, when the file has I2_S tensors and no Q1_0 tensors |
+
+The file type is metadata only.
+
+Tested:
+
+- Tencent's file is read as STQ1_0 and shows the file type `STQ1_0 - 1.31 bpw ternary`.
+- The BitNet file shows the file type `I2_S` (before the patch: `Q1_0`).
+- The same file with the tensors renumbered to 43 loads without the detection and gives the same translations.
+- A synthetic file with a TL2-sized type-42 tensor keeps the tensor as `tl2`.
 
 ## Updating
 

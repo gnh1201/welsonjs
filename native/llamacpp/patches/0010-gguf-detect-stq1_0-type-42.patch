@@ -1,0 +1,113 @@
+From: WelsonJS
+Subject: [PATCH] gguf : read type-42 tensors as STQ1_0 when their sizes say so
+
+GGML type 42 has two meanings:
+
+  - GGML_TYPE_TL2 in this fork (bitnet.cpp's lookup-table type), and
+  - STQ1_0 in the GGUF files Tencent publishes for it
+    (tencent/Hy-MT2-1.8B-1.25Bit-GGUF: 42 bytes per 256 weights).
+
+This build keeps the fork's TL2 = 42 and numbers STQ1_0 43, as PR #22836
+does, so files that follow either numbering keep working. To also read
+Tencent's files, gguf_init_from_file_impl looks at the tensor offsets, which
+must match the tensor sizes (it already checks that right after): when a file
+has type-42 tensors and the offsets match their sizes as STQ1_0 but not as
+TL2, those tensors are read as STQ1_0. A real TL2 file matches as TL2 and is
+not changed; a file that matches neither fails the existing offset check as
+before.
+
+general.file_type has the same problem, so the model loader goes by the
+tensor types for two numbers:
+
+  - 41 is LLAMA_FTYPE_MOSTLY_I2_S here and the file type of Tencent's STQ1_0
+    files: reported as MOSTLY_STQ1_0 when the file has STQ1_0 tensors and no
+    I2_S tensors;
+  - 40 is LLAMA_FTYPE_MOSTLY_Q1_0 here and the file type of
+    microsoft/BitNet-b1.58-2B-4T-gguf: reported as MOSTLY_I2_S when the file
+    has I2_S tensors and no Q1_0 tensors.
+
+The file type is metadata only.
+
+Apply with: git -c core.autocrlf=false apply <this file>
+
+diff --git a/ggml/src/gguf.cpp b/ggml/src/gguf.cpp
+index 5e19861..0f831ae 100644
+--- a/ggml/src/gguf.cpp
++++ b/ggml/src/gguf.cpp
+@@ -758,6 +758,55 @@ static struct gguf_context * gguf_init_from_reader(const struct gguf_reader & gr
+     // store the current file offset - this is where the data section starts
+     ctx->offset = gr.tell();
+ 
++    // GGML type 42 has two meanings: GGML_TYPE_TL2 (bitnet.cpp) and STQ1_0 in the
++    // GGUF files Tencent publishes (tencent/Hy-MT2-1.8B-1.25Bit-GGUF); this build
++    // numbers STQ1_0 43, as PR #22836 does. The two formats have different sizes,
++    // and the tensor offsets must match the sizes (checked below), so read the
++    // type-42 tensors as STQ1_0 when the offsets match STQ1_0 and not TL2.
++    {
++        auto set_type = [](ggml_tensor & t, ggml_type type) {
++            t.type  = type;
++            t.nb[0] = ggml_type_size(type);
++            t.nb[1] = t.nb[0]*(t.ne[0]/ggml_blck_size(type));
++            for (int j = 2; j < GGML_MAX_DIMS; ++j) {
++                t.nb[j] = t.nb[j - 1]*t.ne[j - 1];
++            }
++        };
++        auto offsets_match = [&](bool tl2_as_stq1_0) {
++            size_t size = 0;
++            for (const gguf_tensor_info & ti : ctx->info) {
++                ggml_tensor t = ti.t;
++                if (tl2_as_stq1_0 && t.type == GGML_TYPE_TL2) {
++                    if (t.ne[0] % ggml_blck_size(GGML_TYPE_STQ1_0) != 0) {
++                        return false;
++                    }
++                    set_type(t, GGML_TYPE_STQ1_0);
++                }
++                const size_t padded_size = GGML_PAD(ggml_nbytes(&t), ctx->alignment);
++                if (ti.offset != size || SIZE_MAX - size < padded_size) {
++                    return false;
++                }
++                size += padded_size;
++            }
++            return true;
++        };
++
++        size_t n_tl2 = 0;
++        for (const gguf_tensor_info & ti : ctx->info) {
++            n_tl2 += ti.t.type == GGML_TYPE_TL2;
++        }
++        if (n_tl2 > 0 && !offsets_match(false) && offsets_match(true)) {
++            for (gguf_tensor_info & ti : ctx->info) {
++                if (ti.t.type == GGML_TYPE_TL2) {
++                    set_type(ti.t, GGML_TYPE_STQ1_0);
++                }
++            }
++            GGML_LOG_INFO("%s: %zu tensors of type %d have the size of %s, not %s; reading them as %s\n",
++                __func__, n_tl2, (int) GGML_TYPE_TL2, ggml_type_name(GGML_TYPE_STQ1_0), ggml_type_name(GGML_TYPE_TL2),
++                ggml_type_name(GGML_TYPE_STQ1_0));
++        }
++    }
++
+     // compute the total size of the data section, taking into account the alignment
+     {
+         ctx->size = 0;
+diff --git a/src/llama-model-loader.cpp b/src/llama-model-loader.cpp
+index 9ceab8a..56762bb 100644
+--- a/src/llama-model-loader.cpp
++++ b/src/llama-model-loader.cpp
+@@ -794,6 +794,16 @@ llama_model_loader::llama_model_loader(
+             if (get_key(LLM_KV_GENERAL_FILE_TYPE, ftype_val, false)) {
+                 ftype = (llama_ftype) ftype_val;
+             }
++            // Some file type numbers have two meanings; go by the tensor types:
++            // - 41 is LLAMA_FTYPE_MOSTLY_I2_S here, and also the file type of
++            //   Tencent's STQ1_0 files (see gguf.cpp);
++            // - 40 is LLAMA_FTYPE_MOSTLY_Q1_0 here, and also the file type of
++            //   microsoft/BitNet-b1.58-2B-4T-gguf, an I2_S file.
++            if (ftype == LLAMA_FTYPE_MOSTLY_I2_S && n_type[GGML_TYPE_I2_S] == 0 && n_type[GGML_TYPE_STQ1_0] > 0) {
++                ftype = LLAMA_FTYPE_MOSTLY_STQ1_0;
++            } else if (ftype == LLAMA_FTYPE_MOSTLY_Q1_0 && n_type[GGML_TYPE_Q1_0] == 0 && n_type[GGML_TYPE_I2_S] > 0) {
++                ftype = LLAMA_FTYPE_MOSTLY_I2_S;
++            }
+         }
+ 
+         LLAMA_LOG_INFO("%s: Dumping metadata keys/values. Note: KV overrides do not apply in this output.\n", __func__);
