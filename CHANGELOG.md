@@ -1,5 +1,7 @@
 # Changelog
 
+[한국어 문서](CHANGELOG_KO.md)
+
 All notable changes to WelsonJS are recorded in this file. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 - Each version is a Git tag of this repository. Dates are the tag dates.
