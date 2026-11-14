@@ -27,21 +27,34 @@
 # or with -Source archive, the source archive in source-archive.txt is
 # downloaded instead; it is used only if its SHA-256 matches.
 #
-# Usage:
-#   powershell -ExecutionPolicy Bypass -NoProfile -File build-llamacpp.ps1 [-OutDir <dir>] [-WorkDir <dir>] [-Source auto|git|archive] [-Force]
+# Architectures:
+#   x64   MSVC (Visual Studio generator), every x86-64 CPU variant.
+#   arm64 Cross-compiled on x64 with clang (ggml does not support MSVC on ARM),
+#         the fork's cmake\arm64-windows-llvm.cmake toolchain (-march=armv8.7-a)
+#         and Ninja, inside the Visual Studio x64_arm64 developer environment.
+#         GGML_CPU_ALL_VARIANTS is not supported for ARM on Windows, so there
+#         is one CPU backend (ggml-cpu.dll). -InstallLlvm runs
+#         "choco install llvm" when a build is needed and clang is missing.
 #
-# Requirements: git, CMake and Visual Studio (MSVC) with the C++ workload.
+# Usage:
+#   powershell -ExecutionPolicy Bypass -NoProfile -File build-llamacpp.ps1 [-Arch x64|arm64] [-OutDir <dir>] [-WorkDir <dir>] [-Source auto|git|archive] [-LlvmDir <dir>] [-InstallLlvm] [-Force]
+#
+# Requirements: git, CMake and Visual Studio (MSVC) with the C++ workload; for
+# arm64 also the MSVC ARM64 build tools, Ninja and LLVM (clang).
 # Output: <OutDir>\<arch>\* (for example, artifacts\llamacpp\x64 in CI)
 
 param(
     [string]$OutDir    = (Join-Path $PSScriptRoot "..\..\out\llamacpp"),
     [string]$WorkDir   = (Join-Path $env:TEMP "welsonjs-llamacpp-build"),
+    [ValidateSet("x64", "arm64")]
     [string]$Arch      = "x64",
-    [string]$Generator = "",          # empty: the CMake default (Visual Studio)
+    [string]$Generator = "",          # x64 only; empty: the CMake default (Visual Studio)
     [int]$Jobs         = [Environment]::ProcessorCount,
     [ValidateSet("auto", "git", "archive")]
     [string]$Source    = "auto",
     [string]$RepositoryUrl = "https://github.com/isHuangXin/llama.cpp.git",
+    [string]$LlvmDir   = "",          # arm64: folder with clang.exe; empty: search
+    [switch]$InstallLlvm,
     [switch]$Force
 )
 
@@ -110,6 +123,63 @@ function Remove-Tree {
         [IO.File]::SetAttributes($file, [IO.FileAttributes]::Normal)
     }
     [IO.Directory]::Delete($long, $true)
+}
+
+# arm64: finds clang.exe (-LlvmDir, then LLVM from "choco install llvm", then
+# PATH). Returns $null when none is found.
+function Find-Clang {
+    $candidates = @()
+    if ($LlvmDir) { $candidates += (Join-Path $LlvmDir "clang.exe") }
+    else {
+        $candidates += (Join-Path $env:ProgramFiles "LLVM\bin\clang.exe")
+        $onPath = Get-Command "clang.exe" -ErrorAction SilentlyContinue
+        if ($onPath) { $candidates += $onPath.Source }
+    }
+    foreach ($candidate in $candidates) { if (Test-Path -LiteralPath $candidate) { return $candidate } }
+    return $null
+}
+
+# arm64: finds a Visual Studio installation and MSVC version with the ARM64
+# C runtime (VC\Tools\MSVC\<version>\lib\arm64\msvcrt.lib; the folder alone
+# can exist with only the AddressSanitizer libraries), preferring one that also
+# has Visual Studio's CMake and Ninja. Returns the path and the MSVC version.
+function Find-VsForArm64 {
+    $vswhere = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer\vswhere.exe"
+    if (-not (Test-Path -LiteralPath $vswhere)) { throw "vswhere.exe was not found; install Visual Studio or Build Tools with the C++ workload" }
+    $found = @()
+    foreach ($path in @(& $vswhere -all -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -sort -property installationPath)) {
+        $versions = @(Get-ChildItem -Path (Join-Path $path "VC\Tools\MSVC") -Directory -ErrorAction SilentlyContinue |
+            Where-Object { Test-Path -LiteralPath (Join-Path $_.FullName "lib\arm64\msvcrt.lib") } |
+            Sort-Object { [version]$_.Name } -Descending)
+        if ($versions.Count -eq 0) { continue }
+        $hasNinja = Test-Path -LiteralPath (Join-Path $path "Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja\ninja.exe")
+        $found += [pscustomobject]@{ Path = $path; Version = $versions[0].Name; HasNinja = $hasNinja }
+    }
+    $best = @($found | Where-Object HasNinja) + @($found | Where-Object { -not $_.HasNinja }) | Select-Object -First 1
+    if (-not $best) {
+        throw "No Visual Studio installation has the MSVC ARM64 C runtime (VC\Tools\MSVC\*\lib\arm64\msvcrt.lib). Install the 'MSVC ARM64/ARM64EC build tools' component (Microsoft.VisualStudio.Component.VC.Tools.ARM64)."
+    }
+    return $best
+}
+
+# Loads a Visual Studio developer environment (vcvarsall.bat <arch>) into this
+# process: for x64_arm64, the ARM64 MSVC libraries and Windows SDK and the
+# x64-hosted ARM64 linker. Visual Studio's CMake and Ninja are put first on
+# PATH, ahead of other copies (for example, an older CMake from Strawberry Perl).
+function Import-VsDevEnvironment {
+    param([string]$VsPath, [string]$VcvarsArch, [string]$VcToolsVersion = "")
+    $vcvars = Join-Path $VsPath "VC\Auxiliary\Build\vcvarsall.bat"
+    if (-not (Test-Path -LiteralPath $vcvars)) { throw "vcvarsall.bat was not found: $vcvars" }
+    $versionArg = if ($VcToolsVersion) { " -vcvars_ver=$VcToolsVersion" } else { "" }
+    $lines = & cmd.exe /d /s /c "`"$vcvars`" $VcvarsArch$versionArg >nul && set"
+    if ($LASTEXITCODE -ne 0) { throw "vcvarsall.bat $VcvarsArch$versionArg failed with exit code $LASTEXITCODE" }
+    foreach ($line in $lines) {
+        if ($line -match '^([^=]+)=(.*)$') { [Environment]::SetEnvironmentVariable($Matches[1], $Matches[2], "Process") }
+    }
+    foreach ($dir in @("Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja", "Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin")) {
+        $full = Join-Path $VsPath $dir
+        if (Test-Path -LiteralPath $full) { $env:PATH = $full + ";" + $env:PATH }
+    }
 }
 
 # Fetches exactly the pinned commit (not a tag). The patches are LF; keep the
@@ -234,6 +304,32 @@ if (-not $Force -and (Test-Path -LiteralPath $buildInfoPath) -and
 }
 
 # ================================
+# TOOLCHAIN (arm64)
+# ================================
+# Checked before the source is fetched, so a missing tool fails early.
+$compilerInfo = "MSVC"
+if ($Arch -eq "arm64") {
+    $clang = Find-Clang
+    if (-not $clang -and $InstallLlvm) {
+        Invoke-Checked "choco" @("install", "llvm", "-y", "--no-progress")
+        $clang = Find-Clang
+    }
+    if (-not $clang) { throw "clang.exe was not found. Install LLVM (choco install llvm), or pass -LlvmDir or -InstallLlvm." }
+    $vs = Find-VsForArm64
+    $vsPath = $vs.Path
+    Import-VsDevEnvironment $vsPath "x64_arm64" $vs.Version
+    # The toolchain file names the compilers "clang" and "clang++"; put LLVM first on PATH.
+    $env:PATH = (Split-Path -Parent $clang) + ";" + $env:PATH
+    foreach ($tool in @("cmake", "ninja")) {
+        if (-not (Get-Command "$tool.exe" -ErrorAction SilentlyContinue)) { throw "$tool.exe was not found; install the Visual Studio 'C++ CMake tools for Windows' component" }
+    }
+    $compilerInfo = "$((& $clang --version | Select-Object -First 1)), Visual Studio $vsPath (x64_arm64, MSVC $($vs.Version))"
+    Write-Host "[*] Compiler         : $compilerInfo"
+    Write-Host "[*] CMake            : $((Get-Command cmake.exe).Source)"
+    Write-Host "[*] Ninja            : $((Get-Command ninja.exe).Source)"
+}
+
+# ================================
 # SOURCE
 # ================================
 $WorkDir = Resolve-FullPath $WorkDir
@@ -272,14 +368,33 @@ foreach ($patch in $patches) {
 # BUILD
 # ================================
 $configure = @("-S", $sourceDir, "-B", $buildDir)
-if ($Generator) { $configure += @("-G", $Generator) }
-if (-not $Generator -or $Generator -like "Visual Studio*") { $configure += @("-A", $Arch) }
+if ($Arch -eq "arm64") {
+    # clang with the fork's toolchain file (target arm64-pc-windows-msvc,
+    # -march=armv8.7-a); one CPU backend, as GGML_CPU_ALL_VARIANTS is not
+    # supported for ARM on Windows.
+    $configure += @(
+        "-G", "Ninja",
+        "-DCMAKE_TOOLCHAIN_FILE=$((Join-Path $sourceDir 'cmake\arm64-windows-llvm.cmake').Replace('\', '/'))",
+        "-DGGML_CPU_ALL_VARIANTS=OFF",
+        # With clang, OpenMP needs libomp140.aarch64.dll, which Visual Studio
+        # ships only as debug_nonredist (not redistributable); use ggml's own
+        # thread pool instead. (x64/MSVC uses VCOMP140.DLL from the VC++
+        # redistributable.)
+        "-DGGML_OPENMP=OFF"
+    )
+}
+else {
+    if ($Generator) { $configure += @("-G", $Generator) }
+    if (-not $Generator -or $Generator -like "Visual Studio*") { $configure += @("-A", $Arch) }
+    $configure += @("-DGGML_CPU_ALL_VARIANTS=ON")
+}
 $configure += @(
     "-DCMAKE_BUILD_TYPE=Release",
     "-DBUILD_SHARED_LIBS=ON",
     "-DGGML_NATIVE=OFF",
     "-DGGML_BACKEND_DL=ON",
-    "-DGGML_CPU_ALL_VARIANTS=ON",
+    # Do not pick up a ccache from PATH (for example, Strawberry Perl's).
+    "-DGGML_CCACHE=OFF",
     # BitNet: the I2_S kernels only. The TL1/TL2 lookup-table kernels need the
     # BitNet repository and code generated for one model.
     "-DGGML_BITNET_ARM_TL1=OFF",
@@ -328,6 +443,7 @@ Copy-Item -LiteralPath (Join-Path $sourceDir "LICENSE") -Destination (Join-Path 
 @(
     "llama.cpp $version ($commit) built for WelsonJS",
     "Source: $sourceOrigin",
+    "Compiler: $compilerInfo",
     "Architecture: $Arch (CPU backends: $($backendTargets -join ', '))",
     "BitNet kernels: I2_S (TL1/TL2 off)",
     "Patches: $(if ($patches.Count) { ($patches | ForEach-Object Name) -join ', ' } else { '(none)' })",

@@ -238,6 +238,12 @@ if (-not $AllComponentsSelected) {
         $SelectedComponents += "llamacpp"
         Write-Host "[*] LLM model selected: llamacpp dependency enabled."
     }
+
+    # llama.cpp is the WelsonJS build in the artifacts package, not a download.
+    if ($SelectedComponents -contains "llamacpp" -and $SelectedComponents -notcontains "artifacts") {
+        $SelectedComponents += "artifacts"
+        Write-Host "[*] llamacpp selected: artifacts dependency enabled (the llama.cpp build is in the artifacts package)."
+    }
 }
 
 function Test-ComponentSelected {
@@ -795,6 +801,57 @@ function Extract-CompressedFile {
     Remove-Item -Path $tmpExtractDir -Recurse -Force
 }
 
+# Installs the artifacts package (artifacts.zip). It holds the WelsonJS binaries
+# and the llama.cpp build (llamacpp\<arch>, native\llamacpp\build-llamacpp.ps1),
+# which CI puts there so that it is signed with the rest. The package is
+# extracted to a staging folder; llamacpp\<arch> is copied to llamacpp\ (the
+# only place the launcher runs llama-server.exe from) when the llamacpp
+# component is selected, and everything else goes to bin\ as before.
+function Install-ArtifactsPackage {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$ArchivePath
+    )
+
+    $staging = Join-Path $TmpDir "artifacts-staging"
+    if (Test-Path $staging) { Remove-Item -Path $staging -Recurse -Force }
+    Extract-CompressedFile -CompressedPath $ArchivePath -DestinationDirectory $staging
+
+    $llamaBuildRoot = Join-Path $staging "llamacpp"
+    if (Test-ComponentSelected -Name "llamacpp") {
+        $llamaArchCandidates = @($arch)
+        if ($arch -eq "arm64") { $llamaArchCandidates += "x64" }  # x64 emulation on Windows 11 on Arm
+        $llamaSource = $null
+        foreach ($llamaArch in $llamaArchCandidates) {
+            $candidate = Join-Path $llamaBuildRoot $llamaArch
+            if (Test-Path (Join-Path $candidate "llama-server.exe")) { $llamaSource = $candidate; break }
+        }
+
+        if ($llamaSource) {
+            $llamaDestination = Join-Path $TargetDir "llamacpp"
+            Ensure-EmptyDirectory -Path $llamaDestination
+            # Remove files of a previous installation (for example, the official package).
+            Get-ChildItem -Path $llamaDestination -Force | Remove-Item -Recurse -Force
+            Copy-Item -Path (Join-Path $llamaSource "*") -Destination $llamaDestination -Recurse -Force
+            Write-Host "[*] Installed llama.cpp from the artifacts package: llamacpp\$(Split-Path $llamaSource -Leaf) -> $llamaDestination"
+        }
+        else {
+            Write-Host "[WARN] The artifacts package has no llama.cpp build for $arch (llamacpp\$arch). Skipping llama.cpp."
+        }
+    }
+    if (Test-Path $llamaBuildRoot) { Remove-Item -Path $llamaBuildRoot -Recurse -Force }
+
+    # The rest of the package goes to bin\, replacing items of the same name.
+    $binDestination = Join-Path $TargetDir "bin"
+    Ensure-EmptyDirectory -Path $binDestination
+    Get-ChildItem -Path $staging -Force | ForEach-Object {
+        $targetPath = Join-Path $binDestination $_.Name
+        if (Test-Path $targetPath) { Remove-Item -Path $targetPath -Recurse -Force }
+        Move-Item -Path $_.FullName -Destination $targetPath
+    }
+    Remove-Item -Path $staging -Recurse -Force
+}
+
 function Expand-TarFile {
     param(
         [Parameter(Mandatory = $true)]
@@ -973,7 +1030,7 @@ try {
     # Download archive/file components through one shared path.
     # Nmap/Npcap, GTK runtime and HWP keep dedicated installation handling.
     $downloadComponents = @(
-        "python", "curl", "llamacpp", "hy_mt2_1_8b", "frognano_4b_2609", "qwen3guard_06b", "yara", "wamr", "websocat", "artifacts",
+        "python", "curl", "hy_mt2_1_8b", "frognano_4b_2609", "qwen3guard_06b", "yara", "wamr", "websocat", "artifacts",
         "gtkserver", "tessdata", "tessdata_best", "tessdata_fast",
         "windivert", "android_platform_tools", "tun2socks", "sendboxie",
         "ldplayer", "tap_windows6", "thc_hydra", "shadowsocks_libev",
@@ -1042,8 +1099,12 @@ try {
             continue
         }
 
-        $destinationName = if ($component -eq "artifacts") { "bin" } else { $component }
-        $destination = Join-Path $TargetDir $destinationName
+        if ($component -eq "artifacts") {
+            Install-ArtifactsPackage -ArchivePath $archivePath
+            continue
+        }
+
+        $destination = Join-Path $TargetDir $component
         $lowerPath = $archivePath.ToLowerInvariant()
         if ($lowerPath.EndsWith(".tar.gz")) {
             Extract-TarGzArchive -ArchivePath $archivePath -DestinationDirectory $destination

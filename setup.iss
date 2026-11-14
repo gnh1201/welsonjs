@@ -34,7 +34,7 @@ Name: "artifacts"; Description: "WelsonJS Launcher and Windows Service"; Types: 
 Name: "mcp"; Description: "Configure WelsonJS MCP server for supported AI CLIs"; Types: full compact custom;
 Name: "python"; Description: "Download Python Windows embeddable package"; Types: full;
 Name: "curl"; Description: "Download cURL (Universal HTTP client)"; Types: full;
-Name: "llamacpp"; Description: "Download Llama.cpp Windows CPU binaries"; Types: custom;
+Name: "llamacpp"; Description: "Llama.cpp Windows CPU binaries (WelsonJS build, from the artifacts package)"; Types: custom;
 Name: "llamacpp\hy_mt2_1_8b"; Description: "Hy-MT2 1.8B Q4_K_M GGUF (machine translation specialized)"; Types: full; Flags: dontinheritcheck;
 Name: "llamacpp\frognano_4b_2609"; Description: "FrogNano 4B 2609 Q4_K_M GGUF (SWE specialized)"; Types: full; Flags: dontinheritcheck;
 Name: "llamacpp\qwen3guard_06b"; Description: "Qwen3Guard-Gen-0.6B GGUF (local safety model)"; Types: full; Flags: dontinheritcheck;

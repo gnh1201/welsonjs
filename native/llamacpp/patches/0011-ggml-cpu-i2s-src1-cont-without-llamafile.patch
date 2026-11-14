@@ -1,0 +1,30 @@
+From: WelsonJS
+Subject: [PATCH] ggml-cpu : do not use src1_cont outside the llamafile block
+
+The fork's I2_S GEMV/GEMM fast path in ggml_compute_forward_mul_mat uses
+src1_cont, which is declared only inside the "#if GGML_USE_LLAMAFILE" block
+above it. ggml-cpu.c undefines GGML_USE_LLAMAFILE when the target has
+__ARM_FEATURE_SVE or __ARM_FEATURE_MATMUL_INT8, so an ARM64 build with
+-march=armv8.7-a (the Windows ARM64 toolchain, cmake/arm64-windows-llvm.cmake)
+fails:
+
+  ggml-cpu.c:1501:40: error: use of undeclared identifier 'src1_cont'
+
+x86 builds do not see it because GGML_USE_LLAMAFILE stays defined there.
+Call ggml_is_contiguous(src1) directly, which is what src1_cont holds.
+
+Apply with: git -c core.autocrlf=false apply <this file>
+
+diff --git a/ggml/src/ggml-cpu/ggml-cpu.c b/ggml/src/ggml-cpu/ggml-cpu.c
+index 44b14aa..b7c81c5 100644
+--- a/ggml/src/ggml-cpu/ggml-cpu.c
++++ b/ggml/src/ggml-cpu/ggml-cpu.c
+@@ -1498,7 +1498,7 @@ UseGgmlGemm2:;
+     if (src0->type == GGML_TYPE_I2_S && ggml_n_dims(src0) == 2) {
+         const void * src1_wdata = (src1->type == vec_dot_type) ? src1->data : params->wdata;
+         const size_t i2s_row_size = ggml_row_size(vec_dot_type, ne10);
+-        const size_t src1_col_stride = src1_cont || src1->type != vec_dot_type ? i2s_row_size : nb11;
++        const size_t src1_col_stride = ggml_is_contiguous(src1) || src1->type != vec_dot_type ? i2s_row_size : nb11;
+ 
+         const int64_t matmul_num_cols = 4; // gemm processes 4 columns at a time
+         int64_t src0_start = (ith * ne01) / nth;

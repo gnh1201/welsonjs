@@ -31,6 +31,19 @@
       <include path="artifacts/llamacpp/x64/ggml-base.dll" />
       <!-- one CPU backend per CPU variant (GGML_CPU_ALL_VARIANTS); the set depends on the compiler -->
       <include path="artifacts/llamacpp/x64/ggml-cpu-*.dll" min-matches="1" max-matches="unbounded" />
+      <!-- llama.cpp for ARM64 (cross-compiled with clang; one CPU backend, ggml-cpu.dll) -->
+      <include path="artifacts/llamacpp/arm64/llama-server.exe" />
+      <include path="artifacts/llamacpp/arm64/llama-cli.exe" />
+      <include path="artifacts/llamacpp/arm64/llama-quantize.exe" />
+      <include path="artifacts/llamacpp/arm64/llama.dll" />
+      <include path="artifacts/llamacpp/arm64/llama-common.dll" />
+      <include path="artifacts/llamacpp/arm64/llama-server-impl.dll" />
+      <include path="artifacts/llamacpp/arm64/llama-cli-impl.dll" />
+      <include path="artifacts/llamacpp/arm64/llama-quantize-impl.dll" />
+      <include path="artifacts/llamacpp/arm64/mtmd.dll" />
+      <include path="artifacts/llamacpp/arm64/ggml.dll" />
+      <include path="artifacts/llamacpp/arm64/ggml-base.dll" />
+      <include path="artifacts/llamacpp/arm64/ggml-cpu.dll" />
       <for-each>
         <authenticode-sign />
       </for-each>

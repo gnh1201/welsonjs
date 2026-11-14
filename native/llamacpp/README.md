@@ -35,10 +35,31 @@ The other BitNet files are used only inside `#if defined(GGML_BITNET_ARM_TL1) ||
 
 ```powershell
 powershell -ExecutionPolicy Bypass -NoProfile -File native\llamacpp\build-llamacpp.ps1 `
-    [-OutDir <dir>] [-WorkDir <dir>] [-Source auto|git|archive] [-Arch x64] [-Force]
+    [-Arch x64|arm64] [-OutDir <dir>] [-WorkDir <dir>] [-Source auto|git|archive] [-LlvmDir <dir>] [-InstallLlvm] [-Force]
 ```
 
-Requirements: git, CMake, and Visual Studio (MSVC) with the C++ workload. CMake must know the installed Visual Studio version. For example, CMake 3.29 has no generator for Visual Studio 2026; use the CMake that comes with Visual Studio.
+Requirements:
+
+- **Both architectures:** git and Visual Studio (MSVC) with the C++ workload.
+- **x64:** CMake that knows the installed Visual Studio version. For example, CMake 3.29 has no generator for Visual Studio 2026; use the CMake that comes with Visual Studio.
+- **arm64**, cross-compiled on an x64 PC:
+  - LLVM (`choco install llvm`), because ggml does not support MSVC on ARM.
+  - The Visual Studio component "MSVC ARM64/ARM64EC build tools" (`Microsoft.VisualStudio.Component.VC.Tools.ARM64`). The script checks for `VC\Tools\MSVC\<version>\lib\arm64\msvcrt.lib`, because the `lib\arm64` folder can exist with only the AddressSanitizer libraries.
+  - The "C++ CMake tools for Windows" component (CMake and Ninja).
+
+### Architectures
+
+| | x64 | arm64 |
+| --- | --- | --- |
+| Compiler | MSVC, Visual Studio generator | clang (LLVM) with the fork's `cmake\arm64-windows-llvm.cmake` toolchain, Ninja |
+| Environment | Visual Studio default | Visual Studio `x64_arm64` developer environment (ARM64 libraries, x64-hosted ARM64 linker); the MSVC version with the ARM64 C runtime is passed to `vcvarsall.bat` |
+| CPU target | every x86-64 variant (`GGML_CPU_ALL_VARIANTS`), chosen at run time | `-march=armv8.7-a`, one backend `ggml-cpu.dll` (`GGML_CPU_ALL_VARIANTS` is not supported for ARM on Windows) |
+| OpenMP | on (`VCOMP140.DLL` from the VC++ redistributable) | off: with clang it needs `libomp140.aarch64.dll`, which Visual Studio ships only as `debug_nonredist`; ggml uses its own thread pool |
+
+- `-InstallLlvm` runs `choco install llvm -y` when an arm64 build is needed and clang is missing.
+- For arm64, the script puts LLVM and Visual Studio's CMake and Ninja first on `PATH`, ahead of other copies (for example, Strawberry Perl's CMake 3.29).
+- `GGML_CCACHE=OFF` for both, so that a `ccache` on `PATH` is not used.
+- `-march=armv8.7-a` is the fork's default for Windows ARM64; it targets Snapdragon X class CPUs. Older ARM64 PCs (for example, Snapdragon 8cx Gen 1-3) may not run the build.
 
 ### Source
 
@@ -71,10 +92,10 @@ Requirements: git, CMake, and Visual Studio (MSVC) with the C++ workload. CMake 
 
 ### Output and skipping the build
 
-The files are written to `<OutDir>\<arch>`; in CI this is `artifacts\llamacpp\x64`. No archive is created. The folder also contains:
+The files are written to `<OutDir>\<arch>`; in CI this is `artifacts\llamacpp\x64` and `artifacts\llamacpp\arm64`. No archive is created. The folder also contains:
 
 - `LICENSE-llama.cpp.txt` (MIT).
-- `BUILDINFO.txt`: the version, commit, source used (git, or the archive URL and hash), CPU backends, BitNet kernels, patches, and the build ID.
+- `BUILDINFO.txt`: the version, commit, source used (git, or the archive URL and hash), compiler, CPU backends, BitNet kernels, patches, and the build ID.
 - `SHA256SUMS.txt`: one `<sha256>  <file name>` line for every file.
 
 The build ID is a SHA-256 over these inputs:
@@ -96,8 +117,9 @@ The following are not part of the build ID:
 llama.cpp is built in the **Release** job, so its files are packaged and signed with the other artifacts. No separate job is used, because AppVeyor jobs do not share artifacts: a separate job's files would not reach `artifacts.zip` or the SignPath signing request.
 
 - **First step.** The build is the first `before_build` step of the Release job (the Debug job skips it). A job has 60 minutes, and building first lets the llama.cpp build finish as early as possible.
-- **Output: `artifacts\llamacpp\x64`.** The `7z a artifacts.zip artifacts\*` step adds it to `artifacts.zip`, which the deployment sends to SignPath. The SignPath artifact configuration (`.artifact-configuration.xml`) decides which of these files are signed.
-  - It signs the three executables and every DLL. The CPU backends are matched with `ggml-cpu-*.dll`, because the set of CPU variants depends on the compiler.
+- **Both architectures.** The step runs the script for `x64`, then `arm64`, each with `-InstallLlvm`. LLVM is installed only when the arm64 build is needed and clang is missing. The arm64 build also needs the MSVC ARM64 build tools on the image; without them, the script stops with a message that names the component.
+- **Output: `artifacts\llamacpp\x64` and `artifacts\llamacpp\arm64`.** The `7z a artifacts.zip artifacts\*` step adds it to `artifacts.zip`, which the deployment sends to SignPath. The SignPath artifact configuration (`.artifact-configuration.xml`) decides which of these files are signed.
+  - It signs the three executables and every DLL of both architectures. The x64 CPU backends are matched with `ggml-cpu-*.dll`, because the set of CPU variants depends on the compiler. The arm64 build has one backend, `ggml-cpu.dll`.
   - Authenticode signing changes the files. In the signed package, `SHA256SUMS.txt` still lists the hashes of the unsigned build output.
 - **Cache: `artifacts\llamacpp`.** It is invalidated when `commit.txt`, `version.txt`, the script, a patch file, or `app\favicon.ico` changes.
   - AppVeyor keeps a separate cache for each job; only the Release job writes this folder.
@@ -109,7 +131,17 @@ llama.cpp is built in the **Release** job, so its files are packaged and signed 
 
 The first build on the hosted VM is expected to take much longer than on a developer PC; the documentation lists 2-core VMs. If the Release job does not finish within 60 minutes, reduce the CPU variants or build the package elsewhere.
 
-The installer does not use this build yet. `postInstall.ps1` still downloads the official package listed in `data\DownloadUrls.psd1`.
+## Installation
+
+The installer uses this build; it no longer downloads the official llama.cpp package (`data\DownloadUrls.psd1` has no `llamacpp` entry).
+
+- The `llamacpp` component (and every GGUF model component, which selects it) also selects `artifacts`, because the build is part of the artifacts package.
+- The build is inside the artifacts package (`artifacts.zip`, folder `llamacpp\<arch>`) so that it is signed with the other binaries.
+- `postInstall.ps1` (`Install-ArtifactsPackage`) extracts the package to a staging folder.
+  - It copies `llamacpp\<arch>` to `%APPDATA%\WelsonJS\llamacpp`, after removing the files of a previous installation. That is the only place the launcher runs `llama-server.exe` from. The folder is added to the user's `PATH` as before.
+  - Everything else goes to `%APPDATA%\WelsonJS\bin`, as before. The llama.cpp build is not left in `bin`.
+- ARM64 installations download the same artifacts package (`data\DownloadUrls.psd1`) and get the `arm64` build. The x86 WelsonJS binaries in the package run under x86 emulation. If a package has no `arm64` build, the script falls back to `x64`, which runs under x64 emulation on Windows 11.
+- 32-bit Windows gets no llama.cpp, as before.
 
 ## Compatibility with upstream llama.cpp
 
@@ -182,6 +214,7 @@ Also checked:
   - `x64` alone (generic code): 2 tokens/s.
 - **STQ1_0 type IDs.** The 1.25-bit file with its STQ1_0 tensors renumbered from 42 to 43 (the PR's numbering) gave the same translations as Tencent's file. A synthetic file with a TL2-sized type-42 tensor kept the tensor as `tl2`.
 - **`llama-cli`.** The downloaded files were also run directly with `llama-cli -st --temp 0` (single turn): every Hy-MT2 file gave the translations above in both directions, and the BitNet model answered the capital question and a two-sentence explanation, stopping by itself.
+- **arm64 build.** Cross-compiled on the same PC with clang 23.1.3 and MSVC 14.51 (ARM64 build tools) in about 2.5 minutes. All 12 executables and DLLs are ARM64 (PE machine `0xAA64`), and they import only system DLLs, the VC++/UCRT runtime, and each other. They contain the icon. They could not be run here (x64 PC).
 - **Other tools.** `llama-quantize --help` lists STQ1_0 (44). `llama-server.exe`, `llama-cli.exe`, and `llama-quantize.exe` contain the icon.
 
 ## Patch: STQ1_0 (PR #22836)

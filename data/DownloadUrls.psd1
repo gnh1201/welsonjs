@@ -23,14 +23,8 @@
         x86   = "https://catswords.blob.core.windows.net/welsonjs/packages/native/curl/8.20.0-x86/curl-8.20.0-win-x86-full.2026-05-02.zip"
     }
 
-    # ===========================
-    # Llama.cpp Windows CPU binaries
-    # ===========================
-    llamacpp = @{
-        x64   = "https://github.com/ggml-org/llama.cpp/releases/download/b11808/llama-b11808-bin-win-cpu-x64.zip"
-        arm64 = "https://github.com/ggml-org/llama.cpp/releases/download/b11808/llama-b11808-bin-win-cpu-arm64.zip"
-        x86   = $null  # no official x86 CPU package
-    }
+    # Llama.cpp is not downloaded: postInstall.ps1 installs the WelsonJS build
+    # from the artifacts package (artifacts\llamacpp\<arch>, native\llamacpp).
 
     # ===========================
     # Hy-MT2 1.8B Q4_K_M GGUF model
@@ -85,7 +79,7 @@
     # ===========================
     artifacts = @{
         x64   = "https://catswords.blob.core.windows.net/welsonjs/artifacts.zip"
-        arm64 = $null  # no official ARM64 build
+        arm64 = "https://catswords.blob.core.windows.net/welsonjs/artifacts.zip"  # x86 WelsonJS binaries (x86 emulation) and the arm64 llama.cpp build
         x86   = "https://catswords.blob.core.windows.net/welsonjs/artifacts.zip"
     }
 
