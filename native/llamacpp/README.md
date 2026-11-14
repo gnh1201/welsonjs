@@ -1,6 +1,8 @@
 # llama.cpp build for WelsonJS
 
-This folder builds llama.cpp for Windows from the fork that [bitnet.cpp](https://github.com/microsoft/BitNet) uses as its `3rdparty/llama.cpp` submodule, with the patches WelsonJS needs. The output contains the same files as the official `llama-<version>-bin-win-cpu-<arch>.zip` package: `llama-server`, `llama-cli`, `llama-quantize`, and the ggml backends with every CPU variant, which are loaded at run time.
+[한국어 문서](README_KO.md)
+
+This folder builds llama.cpp for Windows from the fork that [bitnet.cpp](https://github.com/microsoft/BitNet) uses as its `3rdparty/llama.cpp` submodule, with the patches WelsonJS needs. The output contains the same files as the official `llama-<version>-bin-win-cpu-<arch>.zip` package: `llama-server`, `llama-cli`, `llama-quantize`, and the ggml backends. The x64 build has every x86-64 CPU variant, chosen at run time; the arm64 build has one CPU backend.
 
 The fork adds BitNet's `I2_S` type and kernels, so besides the usual GGUF files the build loads 1.58-bit BitNet models such as [microsoft/BitNet-b1.58-2B-4T-gguf](https://huggingface.co/microsoft/BitNet-b1.58-2B-4T-gguf), which upstream llama.cpp cannot load.
 
@@ -87,11 +89,11 @@ Requirements:
 
 ### Configuration
 
-- `GGML_BACKEND_DL=ON` and `GGML_CPU_ALL_VARIANTS=ON`, as in the official package. The fork compiles the `I2_S` kernels into every CPU variant.
+- `GGML_BACKEND_DL=ON`, and for x64 `GGML_CPU_ALL_VARIANTS=ON`, as in the official package. The fork compiles the `I2_S` kernels into every CPU variant.
 - `GGML_BITNET_ARM_TL1=OFF` and `GGML_BITNET_X86_TL2=OFF` (the defaults), stated explicitly: the TL kernels need the BitNet repository.
 - Tests, examples, and the unified `llama` app are not built.
 - `LLAMA_OPENSSL=OFF`. The tools only need HTTP on localhost.
-- `LLAMA_WIN_ICON` is set to `app\favicon.ico`, so the executables show the WelsonJS icon. The option comes from a patch; see [Patch: Windows icon](#patch-windows-icon).
+- `LLAMA_WIN_ICON` is set to `app\favicon.ico` and `LLAMA_WIN_DESCRIPTION` to `llama.cpp built for WelsonJS`, so the executables show the WelsonJS icon and version information. The options come from a patch; see [0003-windows-build.patch, part 1](#part-1-windows-icon-and-version-information).
 - Nothing is downloaded during the build: `LLAMA_USE_PREBUILT_UI=OFF` and `LLAMA_BUILD_UI=OFF`. By default the build downloads the server Web UI from a floating Hugging Face location, and the launcher does not use the Web UI.
 
 ### Output and skipping the build
@@ -120,7 +122,7 @@ The following are not part of the build ID:
 
 llama.cpp is built in the **Release** job, so its files are packaged and signed with the other artifacts. No separate job is used, because AppVeyor jobs do not share artifacts: a separate job's files would not reach `artifacts.zip` or the SignPath signing request.
 
-- **First step.** The build is the first `before_build` step of the Release job (the Debug job skips it). A job has 60 minutes, and building first lets the llama.cpp build finish as early as possible.
+- **First step.** The build is the first `before_build` step of the Release job. The Debug job skips it, so only the Release job's `artifacts.zip` contains `llamacpp`. A job has 60 minutes, and building first lets the llama.cpp build finish as early as possible.
 - **stderr of native tools.** AppVeyor's `ps:` steps capture stderr, and with `$ErrorActionPreference = "Stop"` each stderr line of a native command becomes a terminating error. CMake, git, Ninja, and `vcvarsall.bat` write warnings and progress there. For example, CMake warns about an unused `CMAKE_BUILD_TYPE`, and `vcvarsall.bat` prints `'vswhere.exe' is not recognized`. So the script prints stderr like stdout (`Invoke-Checked`, `Get-NativeOutput`) and decides by exit codes only. `CMAKE_BUILD_TYPE` is passed only to single-configuration generators (Ninja), not to the Visual Studio generator.
 - **Both architectures.** The step runs the script for `x64`, then `arm64`, each with `-InstallLlvm`. LLVM is installed only when the arm64 build is needed and clang is missing. The arm64 build also needs the MSVC ARM64 build tools on the image; without them, the script stops with a message that names the component.
 - **Output: `artifacts\llamacpp\x64` and `artifacts\llamacpp\arm64`.** The `7z a artifacts.zip artifacts\*` step adds it to `artifacts.zip`, which the deployment sends to SignPath. The SignPath artifact configuration (`.artifact-configuration.xml`) decides which of these files are signed.
@@ -134,7 +136,7 @@ llama.cpp is built in the **Release** job, so its files are packaged and signed 
 - **Existing folder.** The cache restores `artifacts\llamacpp` before the build, so the later `mkdir artifacts` step creates the folder only if it does not exist.
 - **Image.** The Release job runs on the Visual Studio 2019 image (MSVC 19.29).
 
-The first build on the hosted VM is expected to take much longer than on a developer PC; the documentation lists 2-core VMs. If the Release job does not finish within 60 minutes, reduce the CPU variants or build the package elsewhere.
+A build without the cache takes much longer on the hosted VM than on a developer PC. In the first successful run (build 0.2.7.build2427), x64 took 20.2 minutes and arm64 9.1 minutes, and the whole Release job 36 minutes of its 60. With a valid cache both builds are skipped. If the Release job comes close to 60 minutes, reduce the x64 CPU variants or build the package elsewhere.
 
 ## Installation
 
@@ -181,6 +183,26 @@ The I2_S kernels themselves were correct. A GGUF with the I2_S weights converted
 `general.file_type` of the GGUF file is 40, which is `Q1_0` in the fork. `0001-stq1_0.patch` (part 3) reports it as `I2_S`, because the file has I2_S tensors and no Q1_0 tensors. The file type is metadata only and does not affect loading.
 
 ## Test results
+
+### AppVeyor build
+
+The `llamacpp\x64` files of `artifacts.zip` from the Release job of build 0.2.7.build2427 (MSVC 19.29; commit `c68128af`, before signing) were tested on a 12-core x64 PC:
+
+- `SHA256SUMS.txt` matches every file of both architectures (x64 22 files, arm64 14).
+- `llama-cli` with each of three CPU variants. Only the best variant for the PC was kept, or only `ggml-cpu-sse42.dll`, or only `ggml-cpu-x64.dll`:
+
+  | Variant | BitNet b1.58 2B-4T (I2_S) | Hy-MT2 1.25-bit (STQ1_0), into Korean |
+  | --- | --- | --- |
+  | best (AVX2) | `The capital of France is Paris.` (2.6 s) | 오늘 날씨가 정말 좋으니 공원에서 산책을 하러 가자. (2.8 s) |
+  | `sse42` | same (4.9 s) | same (4.8 s) |
+  | `x64` (generic code) | same (4.3 s) | same (43.8 s) |
+
+  - BitNet loaded 210 `I2_S` tensors and stopped with `<|eot_id|>` (token 128009) on every variant.
+  - Hy-MT2 1.25-bit read its 224 type-42 tensors as STQ1_0. It also translated Korean into English correctly.
+- `llama-server` chat API (best variant): BitNet 25 tokens/s, Hy-MT2 1.25-bit 58 tokens/s.
+- The arm64 files could not be run on this PC.
+
+### Local build
 
 Built with MSVC 19.50 (Visual Studio 2026) on a 12-core PC, with all patches.
 
@@ -346,7 +368,7 @@ When the fork is built inside the BitNet repository with TL1 or TL2 on, the CMak
 
 This part moves `dequantize_row_i2_s` and `quantize_i2_s` from `ggml/src/ggml-cpu/quants.c` (the CPU backend) to `ggml/src/ggml-quants.c` (`ggml-base`), and declares them `GGML_API`.
 
-- `ggml.c`, which is part of `ggml-base`, uses both functions: the I2_S type traits (`to_float`) and `ggml_quantize_chunk`.
+- `ggml.c`, which is part of `ggml-base`, uses `quantize_i2_s` in `ggml_quantize_chunk`. In the fork it also registered `dequantize_row_i2_s` as the I2_S `to_float`, which part 8 removes.
 - The fork defines them in the CPU backend. That links in a static build, and in shared builds on Linux, where undefined symbols are resolved when the library is loaded.
 - With `GGML_BACKEND_DL` on Windows, each CPU variant is a separate DLL, and `ggml-base.dll` cannot link against it. Without the patch, the MSVC build fails with `LNK2001`/`LNK2019` for these two symbols.
 
@@ -486,7 +508,7 @@ The patch adds `function_pointer()`, which asks for `target<func_hptr *>()` and 
 2. Upload the source archive for that commit (`git archive --format=zip --prefix=llama.cpp-<sha>/ <sha>`), then update the URL and SHA-256 in `source-archive.txt`.
 3. Check that each patch applies to a clean checkout with `git -c core.autocrlf=false apply --check`. Rebase the patches if needed, and check the type IDs in `ggml.h`, `llama.h`, and `gguf-py/gguf/constants.py` against the fork's types.
 4. Check that the fork still keeps every use of the BitNet repository behind the TL1/TL2 options (`0002-bitnet-i2s.patch`, part 1), and that the `I2_S` sources are compiled into every CPU variant.
-5. Build locally with the script. Check that:
+5. Build locally with the script, for x64 and arm64. Check that:
    - `llama-quantize --help` lists STQ1_0,
    - `llama-server` answers a chat request with one of the installed models and with an `I2_S` model.
 6. Commit. The AppVeyor cache is invalidated by the changed files.
