@@ -64,11 +64,42 @@ $Targets = @("llama-server", "llama-cli", "llama-quantize")
 # Windows PowerShell 5.1 may default to older TLS versions.
 [Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 
+# Runs a native command and fails on a non-zero exit code. Native tools write
+# warnings and progress to stderr (for example, CMake's "Manually-specified
+# variables were not used"). Where PowerShell captures stderr, as AppVeyor's
+# "ps:" steps do, each such line becomes an error record, which
+# $ErrorActionPreference = "Stop" turns into a terminating error. So stderr is
+# printed like stdout, and only the exit code decides.
 function Invoke-Checked {
     param([string]$File, [string[]]$Arguments)
     Write-Host "[*] $File $($Arguments -join ' ')"
-    & $File @Arguments
-    if ($LASTEXITCODE -ne 0) { throw "$File failed with exit code $LASTEXITCODE" }
+    $savedPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
+        & $File @Arguments 2>&1 | ForEach-Object { Write-Host "$_" }
+        $exitCode = $LASTEXITCODE
+    }
+    finally { $ErrorActionPreference = $savedPreference }
+    if ($exitCode -ne 0) { throw "$File failed with exit code $exitCode" }
+}
+
+# Runs a native command and returns its stdout lines. Its stderr lines are
+# printed, not raised (see Invoke-Checked); for example, vcvarsall.bat prints
+# "'vswhere.exe' is not recognized ..." to stderr and still succeeds.
+# $script:NativeExitCode holds the exit code.
+function Get-NativeOutput {
+    param([string]$File, [string[]]$Arguments)
+    $savedPreference = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
+        $output = @(& $File @Arguments 2>&1 | ForEach-Object {
+            if ($_ -is [System.Management.Automation.ErrorRecord]) { Write-Host "$_"; return }
+            "$_"
+        })
+        $script:NativeExitCode = $LASTEXITCODE
+    }
+    finally { $ErrorActionPreference = $savedPreference }
+    return $output
 }
 
 function Get-Sha256 {
@@ -147,7 +178,7 @@ function Find-VsForArm64 {
     $vswhere = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer\vswhere.exe"
     if (-not (Test-Path -LiteralPath $vswhere)) { throw "vswhere.exe was not found; install Visual Studio or Build Tools with the C++ workload" }
     $found = @()
-    foreach ($path in @(& $vswhere -all -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -sort -property installationPath)) {
+    foreach ($path in (Get-NativeOutput $vswhere @("-all", "-products", "*", "-requires", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64", "-sort", "-property", "installationPath"))) {
         $versions = @(Get-ChildItem -Path (Join-Path $path "VC\Tools\MSVC") -Directory -ErrorAction SilentlyContinue |
             Where-Object { Test-Path -LiteralPath (Join-Path $_.FullName "lib\arm64\msvcrt.lib") } |
             Sort-Object { [version]$_.Name } -Descending)
@@ -171,8 +202,8 @@ function Import-VsDevEnvironment {
     $vcvars = Join-Path $VsPath "VC\Auxiliary\Build\vcvarsall.bat"
     if (-not (Test-Path -LiteralPath $vcvars)) { throw "vcvarsall.bat was not found: $vcvars" }
     $versionArg = if ($VcToolsVersion) { " -vcvars_ver=$VcToolsVersion" } else { "" }
-    $lines = & cmd.exe /d /s /c "`"$vcvars`" $VcvarsArch$versionArg >nul && set"
-    if ($LASTEXITCODE -ne 0) { throw "vcvarsall.bat $VcvarsArch$versionArg failed with exit code $LASTEXITCODE" }
+    $lines = Get-NativeOutput "cmd.exe" @("/d", "/s", "/c", "`"$vcvars`" $VcvarsArch$versionArg >nul && set")
+    if ($script:NativeExitCode -ne 0) { throw "vcvarsall.bat $VcvarsArch$versionArg failed with exit code $($script:NativeExitCode)" }
     foreach ($line in $lines) {
         if ($line -match '^([^=]+)=(.*)$') { [Environment]::SetEnvironmentVariable($Matches[1], $Matches[2], "Process") }
     }
@@ -194,7 +225,7 @@ function Get-SourceFromGit {
     Invoke-Checked "git" @("-C", $Destination, "remote", "add", "origin", $RepositoryUrl)
     Invoke-Checked "git" @("-C", $Destination, "fetch", "--quiet", "--depth", "1", "origin", $commit)
     Invoke-Checked "git" @("-C", $Destination, "checkout", "--quiet", "FETCH_HEAD")
-    $checkedOut = (& git -C $Destination rev-parse HEAD).Trim().ToLowerInvariant()
+    $checkedOut = ("" + (Get-NativeOutput "git" @("-C", $Destination, "rev-parse", "HEAD") | Select-Object -First 1)).Trim().ToLowerInvariant()
     if ($checkedOut -ne $commit) { throw "Checked out $checkedOut, but commit.txt pins $commit" }
     return "git $RepositoryUrl"
 }
@@ -323,7 +354,7 @@ if ($Arch -eq "arm64") {
     foreach ($tool in @("cmake", "ninja")) {
         if (-not (Get-Command "$tool.exe" -ErrorAction SilentlyContinue)) { throw "$tool.exe was not found; install the Visual Studio 'C++ CMake tools for Windows' component" }
     }
-    $compilerInfo = "$((& $clang --version | Select-Object -First 1)), Visual Studio $vsPath (x64_arm64, MSVC $($vs.Version))"
+    $compilerInfo = "$(Get-NativeOutput $clang @('--version') | Select-Object -First 1), Visual Studio $vsPath (x64_arm64, MSVC $($vs.Version))"
     Write-Host "[*] Compiler         : $compilerInfo"
     Write-Host "[*] CMake            : $((Get-Command cmake.exe).Source)"
     Write-Host "[*] Ninja            : $((Get-Command ninja.exe).Source)"
@@ -374,6 +405,7 @@ if ($Arch -eq "arm64") {
     # supported for ARM on Windows.
     $configure += @(
         "-G", "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
         "-DCMAKE_TOOLCHAIN_FILE=$((Join-Path $sourceDir 'cmake\arm64-windows-llvm.cmake').Replace('\', '/'))",
         "-DGGML_CPU_ALL_VARIANTS=OFF",
         # With clang, OpenMP needs libomp140.aarch64.dll, which Visual Studio
@@ -385,11 +417,16 @@ if ($Arch -eq "arm64") {
 }
 else {
     if ($Generator) { $configure += @("-G", $Generator) }
-    if (-not $Generator -or $Generator -like "Visual Studio*") { $configure += @("-A", $Arch) }
+    if (-not $Generator -or $Generator -like "Visual Studio*") {
+        # Multi-config generator: the configuration is chosen at build time
+        # (--config Release); CMAKE_BUILD_TYPE would only produce an
+        # "unused variable" warning.
+        $configure += @("-A", $Arch)
+    }
+    else { $configure += @("-DCMAKE_BUILD_TYPE=Release") }
     $configure += @("-DGGML_CPU_ALL_VARIANTS=ON")
 }
 $configure += @(
-    "-DCMAKE_BUILD_TYPE=Release",
     "-DBUILD_SHARED_LIBS=ON",
     "-DGGML_NATIVE=OFF",
     "-DGGML_BACKEND_DL=ON",
