@@ -142,7 +142,7 @@
             }
 
             function RibbonMenu({
-                webChatName, onWebChatToggleClick,
+                aiServiceName, onAiServiceToggleClick,
                 onOpenFileClick, onSaveFileClick, onPromptEditorClick,
                 onSavePromptClick, onLoadPromptClick, onQueryWhoisClick, onQueryDnsClick,
                 onQueryIpClick, onMapClick, onRunScriptClick, onTerminalClick,
@@ -180,8 +180,9 @@
                     { id: 'btnPromptEditor', icon: 'mif-pencil', caption: 'Prompt', onClick: onPromptEditorClick },
                     { id: 'btnSavePrompt', icon: 'mif-floppy-disks', caption: 'Save', onClick: onSavePromptClick },
                     { id: 'btnLoadPrompt', icon: 'mif-file-upload', caption: 'Load', onClick: onLoadPromptClick },
-                    // Switches the web chat service that the editor's context menu sends to.
-                    { id: 'btnWebChat', icon: 'mif-loop2', caption: webChatName, onClick: onWebChatToggleClick }
+                    // Switches the AI service (Local AI, which is llama.cpp, or a web chat service) that the
+                    // editor's context menu sends to.
+                    { id: 'btnAiService', icon: 'mif-loop2', caption: aiServiceName, onClick: onAiServiceToggleClick }
                 ];
 
                 const networkToolsButtons = [
@@ -724,7 +725,7 @@
                 // answer replaces a status comment inserted below lineNumber.
                 const askLlamaCpp = (promptMessage, lineNumber, summary) => {
                     const replace = insertPlaceholder(lineNumber,
-                        `// ${summarize(summary)}... Generating text with llama.cpp (the first request may take a while to load the model)...`);
+                        `// ${summarize(summary)}... Generating text with Local AI (llama.cpp; the first request may take a while to load the model)...`);
                     pushPromptMessage("user", promptMessage);
 
                     // The system language goes in the system message (added to the first one
@@ -754,7 +755,7 @@
                     }).then(response => {
                         const choices = (response.data && response.data.choices) || [];
                         if (choices.length === 0) {
-                            replace('// llama.cpp returned no response.');
+                            replace('// Local AI (llama.cpp) returned no response.');
                             return;
                         }
 
@@ -764,7 +765,7 @@
                             let note = '';
                             if (!responseContent && message.reasoning_content) {
                                 // The model ran out of tokens while reasoning.
-                                note = `// llama.cpp returned only reasoning (finish_reason: ${x.finish_reason}).\n`;
+                                note = `// Local AI (llama.cpp) returned only reasoning (finish_reason: ${x.finish_reason}).\n`;
                                 responseContent = message.reasoning_content;
                             }
                             pushPromptMessage("assistant", responseContent);
@@ -781,7 +782,7 @@
                             ? (typeof body.error === 'string' ? body.error : (body.error.message || JSON.stringify(body.error)))
                             : error.message;
                         console.error('Error:', body || error.message);
-                        replace(`// llama.cpp request failed: ${detail}`);
+                        replace(`// Local AI (llama.cpp) request failed: ${detail}`);
                     });
                 };
 
@@ -1760,24 +1761,35 @@
                     })();
                 };
 
-                // The web chat service chosen in the ribbon (WEB_CHATS key), remembered
-                // across sessions.
-                const WEB_CHAT_STORAGE_KEY = 'welsonjs.editor.webChat';
-                const [webChatKey, setWebChatKey] = React.useState(() => {
+                // The AI services that the ribbon toggle switches between, in its order:
+                // Local AI (the local llama.cpp model), then the web chat services.
+                const AI_SERVICES = Object.assign(
+                    { llamacpp: { name: 'Local AI', ask: askLlamaCpp } },
+                    Object.keys(WEB_CHATS).reduce((services, key) => {
+                        const service = WEB_CHATS[key];
+                        services[key] = { name: service.name, ask: (m, l, s) => askWebChat(service, m, l, s) };
+                        return services;
+                    }, {})
+                );
+
+                // The AI service chosen in the ribbon (AI_SERVICES key), remembered across
+                // sessions; Local AI until another one is chosen.
+                const AI_SERVICE_STORAGE_KEY = 'welsonjs.editor.aiService';
+                const [aiServiceKey, setAiServiceKey] = React.useState(() => {
                     try {
-                        const saved = localStorage.getItem(WEB_CHAT_STORAGE_KEY);
-                        if (saved && WEB_CHATS[saved])
+                        const saved = localStorage.getItem(AI_SERVICE_STORAGE_KEY);
+                        if (saved && AI_SERVICES[saved])
                             return saved;
                     } catch (e) {}
-                    return 'copilot';
+                    return 'llamacpp';
                 });
-                const webChatEditorRef = React.useRef(null);
-                const webChatActionsRef = React.useRef([]);
+                const aiEditorRef = React.useRef(null);
+                const aiActionsRef = React.useRef([]);
 
-                // Editor context menu: llama.cpp, and the web chat service chosen in the
-                // ribbon. "Send" and "Explain" need a selection; "Ask..." asks for a
-                // message and includes the selection, if any. The answer goes below the
-                // selection (or the cursor line). Returns the added actions (disposables).
+                // Editor context menu for the AI service chosen in the ribbon. "Send" and
+                // "Explain" need a selection; "Ask..." asks for a message and includes the
+                // selection, if any. The answer goes below the selection (or the cursor
+                // line). Returns the added actions (disposables).
                 const addProviderActions = (editor, provider) => {
                     const getContext = () => {
                         const model = editor.getModel();
@@ -1848,45 +1860,44 @@
                     }));
                 };
 
-                // Replaces the web chat actions with the ones for the chosen service, so
-                // the menu shows its name ("Copilot: Ask...", "ChatGPT: Ask...").
-                const registerWebChatActions = (key) => {
-                    const editor = webChatEditorRef.current;
+                // Replaces the AI actions with the ones for the chosen service, so the menu
+                // shows its name ("Local AI: Ask...", "Copilot: Ask...").
+                const registerAiServiceActions = (key) => {
+                    const editor = aiEditorRef.current;
                     if (!editor)
                         return;
 
-                    webChatActionsRef.current.forEach(action => action.dispose());
-                    const service = WEB_CHATS[key];
-                    webChatActionsRef.current = addProviderActions(editor, {
-                        key: 'webchat',
+                    aiActionsRef.current.forEach(action => action.dispose());
+                    const service = AI_SERVICES[key];
+                    aiActionsRef.current = addProviderActions(editor, {
+                        key: 'ai',
                         name: service.name,
-                        group: '2_webchat',
-                        ask: (m, l, s) => askWebChat(service, m, l, s)
+                        group: '1_ai',
+                        ask: service.ask
                     });
                 };
 
                 const registerAiActions = (editor) => {
-                    addProviderActions(editor, { key: 'llamacpp', name: 'llama.cpp', group: '1_llamacpp', ask: askLlamaCpp });
-                    webChatEditorRef.current = editor;
-                    registerWebChatActions(webChatKey);
+                    aiEditorRef.current = editor;
+                    registerAiServiceActions(aiServiceKey);
                 };
 
-                // Ribbon toggle: switches to the next web chat service. When there are prompt
+                // Ribbon toggle: switches to the next AI service. When there are prompt
                 // messages, asks whether to keep them for the new service (every turn sends
                 // all of them) or to start over with an empty prompt.
-                const toggleWebChat = () => {
-                    const keys = Object.keys(WEB_CHATS);
-                    const key = keys[(keys.indexOf(webChatKey) + 1) % keys.length];
-                    const name = WEB_CHATS[key].name;
+                const toggleAiService = () => {
+                    const keys = Object.keys(AI_SERVICES);
+                    const key = keys[(keys.indexOf(aiServiceKey) + 1) % keys.length];
+                    const name = AI_SERVICES[key].name;
 
-                    setWebChatKey(key);
+                    setAiServiceKey(key);
                     try {
-                        localStorage.setItem(WEB_CHAT_STORAGE_KEY, key);
+                        localStorage.setItem(AI_SERVICE_STORAGE_KEY, key);
                     } catch (e) {}
-                    registerWebChatActions(key);
+                    registerAiServiceActions(key);
 
                     const count = promptMessagesRef.current.length;
-                    if (count > 0 && !confirm(`The web chat service is now ${name}.\n\n` +
+                    if (count > 0 && !confirm(`The AI service is now ${name}.\n\n` +
                         `Keep the current prompt (${count} message${count === 1 ? '' : 's'}) and send it to ${name}?\n\n` +
                         `OK: keep the prompt.\nCancel: clear the prompt and start over.`)) {
                         promptMessagesRef.current = [];
@@ -2092,8 +2103,8 @@
 
                 return _e('div', { className: 'app' },
                     _e(RibbonMenu, {
-                        webChatName: WEB_CHATS[webChatKey].name,
-                        onWebChatToggleClick: toggleWebChat,
+                        aiServiceName: AI_SERVICES[aiServiceKey].name,
+                        onAiServiceToggleClick: toggleAiService,
                         onOpenFileClick: openFile,
                         onSaveFileClick: saveFile,
                         onPromptEditorClick: openPromptEditor,
