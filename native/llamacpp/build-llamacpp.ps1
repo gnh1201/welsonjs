@@ -405,10 +405,29 @@ if ($Arch -eq "arm64") {
     # clang with the fork's toolchain file (target arm64-pc-windows-msvc,
     # -march=armv8.7-a); one CPU backend, as GGML_CPU_ALL_VARIANTS is not
     # supported for ARM on Windows.
+    # tools/ui builds a host (x64) tool, llama-ui-embed, by running the first
+    # g++ or clang++ on PATH with only "-O2 -std=c++17 -o". In this
+    # environment clang++ targets x64 but links with LIB, which vcvars set to
+    # the ARM64 libraries (LNK2019/LNK4272 on AppVeyor); a g++ found elsewhere
+    # (e.g. Strawberry Perl) would hide that. Give it a wrapper that sets LIB to
+    # the x64 libraries and calls clang++ for x86_64-pc-windows-msvc.
+    $hostLib = @(($env:LIB -split ";") | Where-Object { $_ } | ForEach-Object { $_ -replace '\\arm64(?=\\|$)', '\x64' })
+    $missingLib = @($hostLib | Where-Object { -not (Test-Path -LiteralPath $_) })
+    if ($missingLib.Count -gt 0) { throw "x64 libraries for the host tool were not found: $($missingLib -join '; ')" }
+    $hostCxx = Join-Path $WorkDir "host-cxx.cmd"
+    $hostClangxx = Join-Path (Split-Path -Parent $clang) "clang++.exe"
+    @(
+        "@echo off",
+        "rem Host (x64) C++ compiler for tools that run during the ARM64 build.",
+        "set `"LIB=$($hostLib -join ';')`"",
+        "`"$hostClangxx`" --target=x86_64-pc-windows-msvc %*",
+        "exit /b %ERRORLEVEL%"
+    ) | Set-Content -LiteralPath $hostCxx -Encoding ASCII
     $configure += @(
         "-G", "Ninja",
         "-DCMAKE_BUILD_TYPE=Release",
         "-DCMAKE_TOOLCHAIN_FILE=$((Join-Path $sourceDir 'cmake\arm64-windows-llvm.cmake').Replace('\', '/'))",
+        "-DHOST_CXX_COMPILER=$($hostCxx.Replace('\', '/'))",
         "-DGGML_CPU_ALL_VARIANTS=OFF",
         # With clang, OpenMP needs libomp140.aarch64.dll, which Visual Studio
         # ships only as debug_nonredist (not redistributable); use ggml's own

@@ -55,9 +55,13 @@ Requirements:
 | Environment | Visual Studio default | Visual Studio `x64_arm64` developer environment (ARM64 libraries, x64-hosted ARM64 linker); the MSVC version with the ARM64 C runtime is passed to `vcvarsall.bat` |
 | CPU target | every x86-64 variant (`GGML_CPU_ALL_VARIANTS`), chosen at run time | `-march=armv8.7-a`, one backend `ggml-cpu.dll` (`GGML_CPU_ALL_VARIANTS` is not supported for ARM on Windows) |
 | OpenMP | on (`VCOMP140.DLL` from the VC++ redistributable) | off: with clang it needs `libomp140.aarch64.dll`, which Visual Studio ships only as `debug_nonredist`; ggml uses its own thread pool |
+| Host tool (`llama-ui-embed`) | built as part of the build | built for x64 with `host-cxx.cmd` in the work folder (`HOST_CXX_COMPILER`), see below |
 
 - `-InstallLlvm` runs `choco install llvm -y` when an arm64 build is needed and clang is missing.
 - For arm64, the script puts LLVM and Visual Studio's CMake and Ninja first on `PATH`, ahead of other copies (for example, Strawberry Perl's CMake 3.29).
+- When cross-compiling, `tools/ui` builds `llama-ui-embed` for the host (x64) with the first `g++` or `clang++` on `PATH`, passing only `-O2 -std=c++17 -o`.
+  - In the `x64_arm64` environment, `LIB` points to the ARM64 libraries, so `clang++` failed to link it on AppVeyor (`LNK2019`, `LNK4272`). Locally, Strawberry Perl's `g++` was found first and hid the problem.
+  - The script writes `host-cxx.cmd`, which sets `LIB` to the x64 libraries (the `LIB` entries with `arm64` replaced by `x64`) and calls `clang++ --target=x86_64-pc-windows-msvc`. It passes the wrapper as `HOST_CXX_COMPILER`, so every machine uses the same compiler.
 - `GGML_CCACHE=OFF` for both, so that a `ccache` on `PATH` is not used.
 - `-march=armv8.7-a` is the fork's default for Windows ARM64; it targets Snapdragon X class CPUs. Older ARM64 PCs (for example, Snapdragon 8cx Gen 1-3) may not run the build.
 
