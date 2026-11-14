@@ -96,7 +96,9 @@ The following are not part of the build ID:
 llama.cpp is built in the **Release** job, so its files are packaged and signed with the other artifacts. No separate job is used, because AppVeyor jobs do not share artifacts: a separate job's files would not reach `artifacts.zip` or the SignPath signing request.
 
 - **First step.** The build is the first `before_build` step of the Release job (the Debug job skips it). A job has 60 minutes, and building first lets the llama.cpp build finish as early as possible.
-- **Output: `artifacts\llamacpp\x64`.** The `7z a artifacts.zip artifacts\*` step adds it to `artifacts.zip`, which the deployment sends to SignPath. The SignPath artifact configuration decides which of these files are signed.
+- **Output: `artifacts\llamacpp\x64`.** The `7z a artifacts.zip artifacts\*` step adds it to `artifacts.zip`, which the deployment sends to SignPath. The SignPath artifact configuration (`.artifact-configuration.xml`) decides which of these files are signed.
+  - It signs the three executables and every DLL. The CPU backends are matched with `ggml-cpu-*.dll`, because the set of CPU variants depends on the compiler.
+  - Authenticode signing changes the files. In the signed package, `SHA256SUMS.txt` still lists the hashes of the unsigned build output.
 - **Cache: `artifacts\llamacpp`.** It is invalidated when `commit.txt`, `version.txt`, the script, a patch file, or `app\favicon.ico` changes.
   - AppVeyor keeps a separate cache for each job; only the Release job writes this folder.
   - AppVeyor re-uploads the cache only when the folder contents change.
