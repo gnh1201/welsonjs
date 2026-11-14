@@ -225,8 +225,8 @@ The patches are applied in name order. Each one groups related changes as number
 | File | Parts |
 | --- | --- |
 | `0001-stq1_0.patch` | 1. STQ1_0 (PR #22836), 2. x86 SIMD vec_dot for STQ1_0, 3. STQ1_0 files with type 42 |
-| `0002-bitnet-i2s.patch` | 1. build without the BitNet repository, 2. I2_S reference quantization in ggml-base, 3. I2_S fast path without llamafile, 4. non-AVX2 I2_S fallbacks, 5. squared ReLU, 6. chat template, 7. pre-tokenizer (5-7 for BitNet b1.58 2B-4T) |
-| `0003-windows-build.patch` | 1. Windows icon and version information, 2. unsupported MSVC options, 3. MSVC conversion warnings |
+| `0002-bitnet-i2s.patch` | 1. build without the BitNet repository, 2. I2_S reference quantization in ggml-base, 3. I2_S fast path without llamafile, 4. non-AVX2 I2_S fallbacks, 5. squared ReLU, 6. chat template, 7. pre-tokenizer (5-7 for BitNet b1.58 2B-4T), 8. I2_S type traits |
+| `0003-windows-build.patch` | 1. Windows icon and version information, 2. unsupported MSVC options, 3. MSVC conversion warnings, 4. jinja with the Visual Studio 2019 STL |
 
 ## 0001-stq1_0.patch
 
@@ -401,6 +401,16 @@ This part gives `bitnet-b1.58` the `llama-bpe` pre-tokenizer when the file has n
 - The original model uses the Llama 3 tokenizer. In a test, `default` split `I'm`, `they'll`, `won't`, and blank lines into different tokens than `llama-bpe`.
 - A file that sets `tokenizer.ggml.pre`, or `--override-kv tokenizer.ggml.pre=...`, is not affected.
 
+### Part 8: I2_S type traits
+
+This part fixes two problems in the fork's `type_traits` table in `ggml/src/ggml.c`, which clang reports:
+
+- **`-Winitializer-overrides`.** The entries `[36]`, `[37]`, and `[38]` (the removed `IQ4_NL_4_4`, `IQ4_NL_4_8`, and `IQ4_NL_8_8`) were initialized, then overridden by the fork's `I2_S`, `I8_S`, and `TL1`, which use the same numbers. The part removes the three placeholders.
+- **`-Wcast-function-type-mismatch`.** `I2_S` registered `(ggml_to_float_t) dequantize_row_i2_s`, but `dequantize_row_i2_s` takes a fourth argument, the tensor scale.
+  - The scale is stored after the packed data of the whole tensor, so it cannot be passed through `ggml_to_float_t`, which takes only a row pointer and a count. Called through that type, the scale was undefined.
+  - The part sets `to_float` to `NULL`. `get_rows` and `mul_mat` handle `I2_S` themselves.
+  - Code that needs `to_float` refuses the type instead of producing wrong values. For example, `llama-quantize` requantization checks for `NULL`.
+
 ## 0003-windows-build.patch
 
 ### Part 1: Windows icon and version information
@@ -455,6 +465,16 @@ This part handles the many C4244 warnings ("possible loss of data") that MSVC re
 - **One real truncation fixed.** In `src/llama-quant.cpp` (`llama_tensor_dequantize_impl`), the worker lambda took the element count as `int`, but it is passed a `size_t`. The functions it calls take `int64_t`: `to_float`, `ggml_fp16_to_fp32_row`, and `ggml_bf16_to_fp32_row`.
   - A thread with more than 2^31 - 1 elements would get a wrong count. That can happen when `llama-quantize` requantizes a very large tensor with few threads.
   - The patch makes the parameter `int64_t`.
+
+### Part 4: jinja with the Visual Studio 2019 STL
+
+This part changes `value_func_t` in `common/jinja/value.h`, which called `std::function::target<func_hptr>()` with the function type `func_hptr`.
+
+- With clang and the MSVC 14.29 STL (Visual Studio 2019), the ARM64 build on AppVeyor failed with `reinterpret_cast from 'const void *' to '... (*)(const jinja::func_args &)' casts away qualifiers`.
+- The MSVC 14.44 and 14.51 STLs compile it, so it did not show on a PC with Visual Studio 2022 or 2026.
+- The call also never matched: `std::function` stores a plain function as a function pointer, so the target type is `func_hptr *`.
+
+The patch adds `function_pointer()`, which asks for `target<func_hptr *>()` and returns the stored function pointer (`nullptr` for another callable). `unique_hash()` and `equivalent()` use it; their comments describe comparing function pointers. Both are unused for now.
 
 ## Updating
 

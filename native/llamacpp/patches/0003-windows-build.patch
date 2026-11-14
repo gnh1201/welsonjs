@@ -2,7 +2,8 @@ From: WelsonJS
 Subject: [PATCH] Windows build: resources for the tools and MSVC fixes
 
 Windows-specific changes: an icon and version information for the tool
-executables, and MSVC options and warnings.
+executables, MSVC options and warnings, and building with clang against the
+Visual Studio 2019 STL.
 
 1. tools : Windows icon and version information for the tool executables
 
@@ -62,6 +63,23 @@ executables, and MSVC options and warnings.
       elements (requantizing a very large tensor with few threads) would get a
       wrong count. Take int64_t.
 
+4. common : build jinja value_func_t with the Visual Studio 2019 STL
+
+  value_func_t (common/jinja/value.h) calls std::function::target<func_hptr>(),
+  where func_hptr is a function type. With clang and the MSVC 14.29 STL
+  (Visual Studio 2019, the AppVeyor image; the ARM64 build) this fails:
+
+    functional:1140: error: reinterpret_cast from 'const void *' to
+    'std::shared_ptr<jinja::value_t> (*)(const jinja::func_args &)' casts away
+    qualifiers
+
+  Newer STLs (14.44, 14.51) compile it. It also never matches: std::function
+  stores a plain function as a function pointer, so the target type is
+  func_hptr *. Add function_pointer(), which asks for target<func_hptr *>() and
+  returns the stored function pointer (nullptr for another callable), and use
+  it in unique_hash() and equivalent(), which the comments describe as
+  comparing function pointers. Both are unused for now.
+
 Apply with: git -c core.autocrlf=false apply <this file>
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
@@ -85,6 +103,42 @@ index 81f23d7..d4a2b68 100644
  add_subdirectory(src)
  
  #
+diff --git a/common/jinja/value.h b/common/jinja/value.h
+index 5cf85e4..5a36857 100644
+--- a/common/jinja/value.h
++++ b/common/jinja/value.h
+@@ -717,7 +717,7 @@ struct value_func_t : public value_t {
+     virtual hasher unique_hash() const noexcept override {
+         // Note: this is unused for now, we don't support function as object keys
+         // use function pointer as unique identifier
+-        const auto target = val_func.target<func_hptr>();
++        const auto target = function_pointer(val_func);
+         return hasher(typeid(*this)).update(&target, sizeof(target));
+     }
+ protected:
+@@ -725,10 +725,20 @@ protected:
+         // Note: this is unused for now, we don't support function as object keys
+         // compare function pointers
+         // (val_func == other.val_func does not work as std::function::operator== is only used for nullptr check)
+-        const auto target_this  = this->val_func.target<func_hptr>();
+-        const auto target_other = other.val_func.target<func_hptr>();
++        const auto target_this  = function_pointer(this->val_func);
++        const auto target_other = function_pointer(other.val_func);
+         return typeid(*this) == typeid(other) && target_this == target_other;
+     }
++private:
++    // The plain function a func_handler holds, or nullptr for another callable.
++    // std::function stores a plain function as a function pointer, so the target
++    // type is func_hptr * (target<func_hptr>() never matches). It also compiles
++    // with the Visual Studio 2019 STL, whose target<function type>() fails with
++    // clang ("reinterpret_cast ... casts away qualifiers").
++    static func_hptr * function_pointer(const func_handler & func) {
++        const auto target = func.target<func_hptr *>();
++        return target ? *target : nullptr;
++    }
+ };
+ using value_func = std::shared_ptr<value_func_t>;
+ 
 diff --git a/ggml/src/ggml-cpu/CMakeLists.txt b/ggml/src/ggml-cpu/CMakeLists.txt
 index 55f0f5a..6e0fec5 100644
 --- a/ggml/src/ggml-cpu/CMakeLists.txt
