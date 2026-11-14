@@ -33,9 +33,9 @@ install:
 cache:
   # llama.cpp build output (native\llamacpp\build-llamacpp.ps1), written by the
   # Release job only. Each job has its own cache. Invalidated when the pinned
-  # commit, the version, the script or the patch changes; the script also
-  # checks its build ID (every patch) and SHA256SUMS.txt.
-  - artifacts\llamacpp -> native\llamacpp\commit.txt, native\llamacpp\version.txt, native\llamacpp\build-llamacpp.ps1, native\llamacpp\patches\0001-ggml-cpu-add-STQ1_0-pr22836.patch
+  # commit, the version, the script, a patch or the icon changes; the script
+  # also checks its build ID (every patch and the icon) and SHA256SUMS.txt.
+  - artifacts\llamacpp -> native\llamacpp\commit.txt, native\llamacpp\version.txt, native\llamacpp\build-llamacpp.ps1, native\llamacpp\patches\0001-ggml-cpu-add-STQ1_0-pr22836.patch, native\llamacpp\patches\0002-tools-windows-icon.patch, app\favicon.ico
 
 before_build:
   - ps: |

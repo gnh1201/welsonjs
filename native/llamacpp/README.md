@@ -42,6 +42,7 @@ Requirements: git, CMake, and Visual Studio (MSVC) with the C++ workload. A clea
 
 - `GGML_BACKEND_DL=ON` and `GGML_CPU_ALL_VARIANTS=ON`, as in the official package.
 - Tests and examples are not built.
+- `LLAMA_WIN_ICON` is set to `app\favicon.ico`, so the executables show the WelsonJS icon. The option comes from a patch; see [Patch: Windows icon](#patch-windows-icon).
 - Nothing is downloaded during the build:
   - `LLAMA_USE_PREBUILT_UI=OFF` and `LLAMA_BUILD_UI=OFF`. By default the build downloads the server Web UI from a floating Hugging Face location, and the launcher does not use the Web UI.
   - `LLAMA_CONNECT=OFF`. The llama-connect tool is a prebuilt binary.
@@ -57,6 +58,7 @@ The build ID is a SHA-256 over these inputs:
 
 - `version.txt`, `commit.txt`, and the architecture,
 - the name and bytes of every patch,
+- the bytes of `app\favicon.ico`, the icon embedded in the executables,
 - the bytes of the script itself, which contains the CMake options.
 
 The script skips the build when `BUILDINFO.txt` has the same build ID and every file matches `SHA256SUMS.txt`. Otherwise, for example when an input changed or a file was modified, it builds again. `-Force` always builds.
@@ -72,7 +74,7 @@ llama.cpp is built in the **Release** job, so its files are packaged and signed 
 
 - **First step.** The build is the first `before_build` step of the Release job (the Debug job skips it). A job has 60 minutes, and building first lets the llama.cpp build finish as early as possible.
 - **Output: `artifacts\llamacpp\x64`.** The `7z a artifacts.zip artifacts\*` step adds it to `artifacts.zip`, which the deployment sends to SignPath. The SignPath artifact configuration decides which of these files are signed.
-- **Cache: `artifacts\llamacpp`.** It is invalidated when `commit.txt`, `version.txt`, the script, or the patch file changes.
+- **Cache: `artifacts\llamacpp`.** It is invalidated when `commit.txt`, `version.txt`, the script, a patch file, or `app\favicon.ico` changes.
   - AppVeyor keeps a separate cache for each job; only the Release job writes this folder.
   - AppVeyor re-uploads the cache only when the folder contents change.
   - A patch file that is added later is not in the cache dependency list. The script's build ID still covers it.
@@ -124,6 +126,18 @@ The models WelsonJS installs (Hy-MT2, FrogNano, and Qwen3Guard, all Q4_K_M) use 
 - The context lines in `ggml.h`, `llama.h`, and `constants.py` were adjusted for the new enum entries.
 
 On x86, STQ1_0 runs through the generic (scalar) path. The fast kernel is ARM NEON only.
+
+## Patch: Windows icon
+
+`patches/0002-tools-windows-icon.patch` adds a `LLAMA_WIN_ICON` cache option to `tools/CMakeLists.txt`. Upstream llama.cpp has no Windows resource files, so its executables have no icon.
+
+When the option names an `.ico` file on Windows, the patch:
+
+1. copies the icon into the build folder as `llama-icon.ico`,
+2. writes `llama-icon.rc` with `1 ICON "<build folder>/llama-icon.ico"`. The resource script starts with `#pragma code_page(65001)`, so a build folder with non-ASCII characters in its path works regardless of the ANSI code page,
+3. adds the resource script to every executable target under `tools/`, including `llama-server`, `llama-cli`, and `llama-quantize`. The DLLs get no icon.
+
+The icon file stays in the WelsonJS repository; the patch only adds the option. When the option is empty (the default), the build is the same as without the patch. A missing file stops the configuration with an error.
 
 ## Updating llama.cpp
 

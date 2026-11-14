@@ -9,10 +9,11 @@
 # llama-<version>-bin-win-cpu-<arch>.zip package, in <OutDir>\<arch>:
 #   llama-server, llama-cli, llama-quantize and the ggml backends, with every
 #   CPU variant loaded at run time (GGML_BACKEND_DL, GGML_CPU_ALL_VARIANTS),
-#   plus BUILDINFO.txt and SHA256SUMS.txt.
+#   plus BUILDINFO.txt and SHA256SUMS.txt. The executables carry the WelsonJS
+#   icon (app\favicon.ico, passed to LLAMA_WIN_ICON, which a patch adds).
 #
 # A build is skipped when <OutDir>\<arch> was built from the same inputs
-# (version, commit, patches and this script; the "Build ID" in BUILDINFO.txt)
+# (version, commit, patches, the icon and this script; the "Build ID" in BUILDINFO.txt)
 # and its files match SHA256SUMS.txt, so the folder can be kept in a CI cache.
 #
 # Source: the pinned commit is fetched with git. If that fails (-Source auto),
@@ -168,11 +169,16 @@ if ($version -notmatch '^[A-Za-z0-9._-]+$') { throw "Invalid llama.cpp version: 
 $commit = (Get-Content -LiteralPath (Join-Path $PSScriptRoot "commit.txt") -Raw).Trim().ToLowerInvariant()
 if ($commit -notmatch '^[0-9a-f]{40}$') { throw "commit.txt must contain a full 40-character commit SHA: $commit" }
 $patches = @(Get-ChildItem -LiteralPath (Join-Path $PSScriptRoot "patches") -Filter "*.patch" | Sort-Object Name)
+# The icon embedded in the tool executables (LLAMA_WIN_ICON, added by
+# patches\0002-tools-windows-icon.patch).
+$iconPath = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot "..\..\app\favicon.ico"))
+if (-not (Test-Path -LiteralPath $iconPath)) { throw "The icon was not found: $iconPath" }
 
 # The build ID covers every input, so a change to any of them rebuilds.
 $inputs = New-Object IO.MemoryStream
 foreach ($item in @(@{ Name = "version"; Bytes = [Text.Encoding]::UTF8.GetBytes("$version|$commit|$Arch") }) +
                   @($patches | ForEach-Object { @{ Name = $_.Name; Bytes = [IO.File]::ReadAllBytes($_.FullName) } }) +
+                  @(@{ Name = "icon"; Bytes = [IO.File]::ReadAllBytes($iconPath) }) +
                   @(@{ Name = "script"; Bytes = [IO.File]::ReadAllBytes($PSCommandPath) })) {
     $name = [Text.Encoding]::UTF8.GetBytes($item.Name + "`n")
     $inputs.Write($name, 0, $name.Length)
@@ -256,6 +262,8 @@ $configure += @(
     "-DLLAMA_BUILD_UI=OFF",
     "-DLLAMA_USE_PREBUILT_UI=OFF",
     "-DLLAMA_CONNECT=OFF",
+    # The WelsonJS icon in every tool executable (patches\0002-tools-windows-icon.patch).
+    "-DLLAMA_WIN_ICON=$($iconPath.Replace('\', '/'))",
     # Without a .git folder (archive source) the build cannot read the commit.
     "-DLLAMA_BUILD_COMMIT=$($commit.Substring(0, 7))"
 )
