@@ -246,7 +246,11 @@ Also checked:
 - **STQ1_0 type IDs.** The 1.25-bit file with its STQ1_0 tensors renumbered from 42 to 43 (the PR's numbering) gave the same translations as Tencent's file. A synthetic file with a TL2-sized type-42 tensor kept the tensor as `tl2`.
 - **`llama-cli`.** The downloaded files were also run directly with `llama-cli -st --temp 0` (single turn): every Hy-MT2 file gave the translations above in both directions, and the BitNet model answered the capital question and a two-sentence explanation, stopping by itself.
 - **arm64 build.** Cross-compiled on the same PC with clang 23.1.3 and MSVC 14.51 (ARM64 build tools) in about 2.5 minutes. All 12 executables and DLLs are ARM64 (PE machine `0xAA64`), and they import only system DLLs, the VC++/UCRT runtime, and each other. They contain the icon. They could not be run here (x64 PC).
-- **Other tools.** `llama-quantize --help` lists STQ1_0 (44). `llama-server.exe`, `llama-cli.exe`, and `llama-quantize.exe` contain the icon.
+- **`llama-quantize`.**
+  - **I2_S (`0002-bitnet-i2s.patch` part 9).** `microsoft/BitNet-b1.58-2B-4T-gguf` was converted to F16 (its I2_S weights times the scale) and quantized back with `llama-quantize <f16> <out> I2_S`. The result has the original file's tensor types (210 I2_S, F16 token embeddings, 121 F32), the same 2-bit codes in all 210 I2_S tensors, scales within F16 rounding (4.6e-4), and identical other tensors. With `41 1` (one thread) the file is byte-identical. It answered `The capital of France is Paris.` on the AVX2, `sse42`, and `x64` variants and through `llama-server` (26 tokens/s).
+  - **STQ1_0.** Tencent's 1.25-bit file was dequantized to F16 and quantized back to STQ1_0: all 224 STQ1_0 tensors are byte-identical to the original (type 42 written as 43), and the translations are the same. Only the Q6_K output tensor differs, as requantizing a lossy type does.
+  - **Requantizing.** STQ1_0 to Q4_K_M works and translates the same. I2_S to another type stops with `type i2_s unsupported for integer quantization: no dequantization available`.
+- **Other tools.** `llama-quantize --help` lists STQ1_0 (44) and I2_S (41). `llama-server.exe`, `llama-cli.exe`, and `llama-quantize.exe` contain the icon.
 
 ## Patches
 
@@ -255,7 +259,7 @@ The patches are applied in name order. Each one groups related changes as number
 | File | Parts |
 | --- | --- |
 | `0001-stq1_0.patch` | 1. STQ1_0 (PR #22836), 2. x86 SIMD vec_dot for STQ1_0, 3. STQ1_0 files with type 42 |
-| `0002-bitnet-i2s.patch` | 1. build without the BitNet repository, 2. I2_S reference quantization in ggml-base, 3. I2_S fast path without llamafile, 4. non-AVX2 I2_S fallbacks, 5. squared ReLU, 6. chat template, 7. pre-tokenizer (5-7 for BitNet b1.58 2B-4T), 8. I2_S type traits |
+| `0002-bitnet-i2s.patch` | 1. build without the BitNet repository, 2. I2_S reference quantization in ggml-base, 3. I2_S fast path without llamafile, 4. non-AVX2 I2_S fallbacks, 5. squared ReLU, 6. chat template, 7. pre-tokenizer (5-7 for BitNet b1.58 2B-4T), 8. I2_S type traits, 9. llama-quantize for I2_S |
 | `0003-windows-build.patch` | 1. Windows icon and version information, 2. unsupported MSVC options, 3. MSVC conversion warnings, 4. jinja with the Visual Studio 2019 STL |
 
 ## 0001-stq1_0.patch
@@ -302,6 +306,14 @@ Compatibility:
 - `gguf-py/gguf/constants.py`: the fork defines `LlamaFileType` twice (the second definition wins). `MOSTLY_STQ1_0` is added to both.
 
 The PR's fast kernel is ARM NEON only; part 2 adds one for x86.
+
+#### Quantizing with llama-quantize
+
+The PR includes `llama-quantize` support (`STQ1_0`, file type 44 here). Its instructions convert a Sherry-trained checkpoint (for example, `AngelSlim/Hy-MT1.5-1.8B-1.25bit`) to a BF16 GGUF with `convert_hf_to_gguf.py` and then run `llama-quantize <bf16.gguf> <out.gguf> STQ1_0`.
+
+- STQ1_0 stores weights that already follow its 3:4 sparse ternary structure: in each group of four weights (stride 16 within a 64-weight chunk) exactly one is zero. The weights of such a checkpoint are stored without loss.
+- Other models are not suited to it. Quantizing them forces one zero in every group, so even a ternary model that is not 3:4 sparse is damaged: BitNet b1.58 2B-4T quantized to STQ1_0 produced only one repeated word.
+- Requantizing an STQ1_0 file to another type works, because STQ1_0 has `to_float`.
 
 ### Part 2: x86 SIMD vec_dot for STQ1_0
 
@@ -376,7 +388,7 @@ This part moves `dequantize_row_i2_s` and `quantize_i2_s` from `ggml/src/ggml-cp
 - The fork defines them in the CPU backend. That links in a static build, and in shared builds on Linux, where undefined symbols are resolved when the library is loaded.
 - With `GGML_BACKEND_DL` on Windows, each CPU variant is a separate DLL, and `ggml-base.dll` cannot link against it. Without the patch, the MSVC build fails with `LNK2001`/`LNK2019` for these two symbols.
 
-Both functions are plain scalar C, so the code is unchanged. The CPU backend (`ops.cpp` uses `dequantize_row_i2_s`) imports them from `ggml-base`, like the other reference quantization functions.
+Both functions are plain scalar C and are moved unchanged; part 9 then rewrites `quantize_i2_s`. The CPU backend (`ops.cpp` uses `dequantize_row_i2_s`) imports them from `ggml-base`, like the other reference quantization functions.
 
 ### Part 3: I2_S fast path without llamafile
 
@@ -440,6 +452,27 @@ This part fixes two problems in the fork's `type_traits` table in `ggml/src/ggml
   - The scale is stored after the packed data of the whole tensor, so it cannot be passed through `ggml_to_float_t`, which takes only a row pointer and a count. Called through that type, the scale was undefined.
   - The part sets `to_float` to `NULL`. `get_rows` and `mul_mat` handle `I2_S` themselves.
   - Code that needs `to_float` refuses the type instead of producing wrong values. For example, `llama-quantize` requantization checks for `NULL`.
+
+### Part 9: llama-quantize for I2_S
+
+This part lets `llama-quantize` produce I2_S files. bitnet.cpp's `setup_env.py` runs `llama-quantize <f32> <out> I2_S 1`, but with the fork that failed:
+
+- **No I2_S option.** `llama-quantize` rejected `I2_S` and `41` ("invalid ftype"), and `llama-quant.cpp` did not map the file type to a tensor type. The fork has the file type `LLAMA_FTYPE_MOSTLY_I2_S` and an I2_S case in `ggml_quantize_chunk`.
+- **Wrong layout.** The fork's `quantize_i2_s` packed the 2-bit codes sequentially, but the kernels and `dequantize_row_i2_s` read 128 weights per 32 bytes (byte `gp` holds weights `gp`, `gp+32`, `gp+64`, and `gp+96`). Its output would have given wrong results.
+- **One scale per tensor.** `llama-quantize` splits a tensor into chunks for its threads, and each chunk would have written its own scale.
+- **Unreadable input.** `ggml_validate_row_data` rejected type 36, so `llama-quantize` could not read an I2_S file at all. Requantizing one failed with `invalid type 36` instead of the message for types without `to_float` (part 8).
+
+The changes:
+
+- `quantize_i2_s` packs the codes in the kernels' layout and zeroes the rest of the last 32 bytes (the original files leave 28 of them uninitialized).
+  - The weights must already be ternary, `{-s, 0, +s}` with one `s` per tensor, as the BitNet b1.58 converters write them.
+  - `s` is the largest absolute value. A weight whose magnitude is above `s/2` becomes +1 or -1; the others become 0.
+- An I2_S tensor is quantized in one call (one thread). `ggml_quantize_chunk` asserts that I2_S starts at row 0.
+- `llama-quant.cpp` maps the file type to `GGML_TYPE_I2_S`.
+  - The output weights and the token embeddings use F16 by default, as in the BitNet b1.58 GGUF files (they are not ternary). A model that shares the token embeddings with the output, like BitNet b1.58 2B-4T, otherwise got the output tensor's Q6_K. `--output-tensor-type` and `--token-embedding-type` still apply.
+  - Tensors whose rows are not a multiple of 128, and 3D (expert) tensors, fall back to Q4_0.
+- `llama-quantize` lists I2_S.
+- `ggml_validate_row_data` accepts I2_S (it checks the scale) and the other BitNet types.
 
 ## 0003-windows-build.patch
 

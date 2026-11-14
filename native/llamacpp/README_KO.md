@@ -246,7 +246,11 @@ Hy-MT2(번역)는 모델 README의 기본 프롬프트("Translate the following 
 - **STQ1_0 타입 ID.** STQ1_0 텐서를 42에서 43(PR의 번호)으로 바꾼 1.25비트 파일은 Tencent 파일과 같은 번역을 냈습니다. TL2 크기의 타입 42 텐서를 넣은 합성 파일은 그 텐서를 `tl2`로 유지했습니다.
 - **`llama-cli`.** 다운로드한 파일을 `llama-cli -st --temp 0`(한 번만 주고받기)으로도 직접 실행했습니다. 모든 Hy-MT2 파일이 양방향으로 위 번역을 냈고, BitNet 모델은 수도 질문과 두 문장 설명 요청에 답하고 스스로 멈췄습니다.
 - **arm64 빌드.** 같은 PC에서 clang 23.1.3과 MSVC 14.51(ARM64 빌드 도구)로 약 2.5분 만에 크로스 컴파일했습니다. 실행 파일과 DLL 12개 모두 ARM64(PE machine `0xAA64`)이고, 시스템 DLL, VC++/UCRT 런타임, 서로만 가져옵니다. 아이콘이 들어 있습니다. 이 PC(x64)에서는 실행할 수 없었습니다.
-- **기타 도구.** `llama-quantize --help`가 STQ1_0(44)을 보여 줍니다. `llama-server.exe`, `llama-cli.exe`, `llama-quantize.exe`에 아이콘이 들어 있습니다.
+- **`llama-quantize`.**
+  - **I2_S(`0002-bitnet-i2s.patch` 파트 9).** `microsoft/BitNet-b1.58-2B-4T-gguf`를 F16(I2_S 가중치×스케일)으로 변환한 뒤 `llama-quantize <f16> <out> I2_S`로 다시 양자화했습니다. 결과는 원본 파일과 텐서 타입이 같고(I2_S 210개, F16 토큰 임베딩, F32 121개), I2_S 텐서 210개의 2비트 코드가 모두 같으며, 스케일은 F16 반올림 오차(4.6e-4) 안이고, 나머지 텐서는 같았습니다. `41 1`(스레드 하나)로 만든 파일도 바이트 단위로 같았습니다. AVX2, `sse42`, `x64` 변형과 `llama-server`(26 토큰/초)에서 `The capital of France is Paris.`라고 답했습니다.
+  - **STQ1_0.** Tencent의 1.25비트 파일을 F16으로 풀었다가 다시 STQ1_0으로 양자화했습니다. STQ1_0 텐서 224개가 모두 원본과 바이트 단위로 같았고(타입 42가 43으로 기록됨), 번역도 같았습니다. 손실 타입을 재양자화하면 그렇듯이 Q6_K 출력 텐서만 달랐습니다.
+  - **재양자화.** STQ1_0에서 Q4_K_M으로는 되고 번역도 같습니다. I2_S에서 다른 타입으로는 `type i2_s unsupported for integer quantization: no dequantization available`로 멈춥니다.
+- **기타 도구.** `llama-quantize --help`가 STQ1_0(44)과 I2_S(41)를 보여 줍니다. `llama-server.exe`, `llama-cli.exe`, `llama-quantize.exe`에 아이콘이 들어 있습니다.
 
 ## 패치
 
@@ -255,7 +259,7 @@ Hy-MT2(번역)는 모델 README의 기본 프롬프트("Translate the following 
 | 파일 | 파트 |
 | --- | --- |
 | `0001-stq1_0.patch` | 1. STQ1_0(PR #22836), 2. STQ1_0용 x86 SIMD vec_dot, 3. 타입 42를 쓰는 STQ1_0 파일 |
-| `0002-bitnet-i2s.patch` | 1. BitNet 저장소 없이 빌드, 2. ggml-base의 I2_S 기준 양자화, 3. llamafile 없는 I2_S 빠른 경로, 4. 비 AVX2 I2_S 대체 코드, 5. squared ReLU, 6. 채팅 템플릿, 7. 프리토크나이저(5~7은 BitNet b1.58 2B-4T용), 8. I2_S 타입 특성 |
+| `0002-bitnet-i2s.patch` | 1. BitNet 저장소 없이 빌드, 2. ggml-base의 I2_S 기준 양자화, 3. llamafile 없는 I2_S 빠른 경로, 4. 비 AVX2 I2_S 대체 코드, 5. squared ReLU, 6. 채팅 템플릿, 7. 프리토크나이저(5~7은 BitNet b1.58 2B-4T용), 8. I2_S 타입 특성, 9. I2_S용 llama-quantize |
 | `0003-windows-build.patch` | 1. Windows 아이콘과 버전 정보, 2. 지원되지 않는 MSVC 옵션, 3. MSVC 변환 경고, 4. Visual Studio 2019 STL에서의 jinja |
 
 ## 0001-stq1_0.patch
@@ -302,6 +306,14 @@ Tencent 파일은 다른 ID를 씁니다:
 - `gguf-py/gguf/constants.py`: 포크는 `LlamaFileType`을 두 번 정의합니다(두 번째 정의가 이김). `MOSTLY_STQ1_0`을 둘 다에 추가합니다.
 
 PR의 빠른 커널은 ARM NEON 전용이며, 파트 2가 x86용을 추가합니다.
+
+#### llama-quantize로 양자화하기
+
+PR에는 `llama-quantize` 지원(`STQ1_0`, 여기서는 파일 타입 44)이 들어 있습니다. PR의 안내는 Sherry로 학습한 체크포인트(예: `AngelSlim/Hy-MT1.5-1.8B-1.25bit`)를 `convert_hf_to_gguf.py`로 BF16 GGUF로 변환한 뒤 `llama-quantize <bf16.gguf> <out.gguf> STQ1_0`을 실행하는 것입니다.
+
+- STQ1_0은 이미 3:4 희소 삼진 구조를 따르는 가중치를 담습니다. 즉 가중치 4개 묶음(64개 청크 안에서 간격 16)마다 정확히 하나가 0입니다. 이런 체크포인트의 가중치는 손실 없이 저장됩니다.
+- 다른 모델에는 맞지 않습니다. 양자화하면 묶음마다 하나를 강제로 0으로 만들기 때문에, 삼진 모델이라도 3:4 희소가 아니면 망가집니다. BitNet b1.58 2B-4T를 STQ1_0으로 양자화하면 한 단어만 반복했습니다.
+- STQ1_0 파일을 다른 타입으로 재양자화하는 것은 됩니다. STQ1_0에는 `to_float`가 있기 때문입니다.
 
 ### 파트 2: STQ1_0용 x86 SIMD vec_dot
 
@@ -376,7 +388,7 @@ TL1이나 TL2를 켜고 BitNet 저장소 안에서 포크를 빌드하면, CMake
 - 포크는 이 함수들을 CPU 백엔드에 정의합니다. 정적 빌드나, 라이브러리를 불러올 때 정의되지 않은 심볼을 해결하는 Linux의 공유 빌드에서는 링크됩니다.
 - Windows의 `GGML_BACKEND_DL`에서는 CPU 변형마다 별도 DLL이고, `ggml-base.dll`은 그 DLL에 링크할 수 없습니다. 패치가 없으면 MSVC 빌드가 이 두 심볼에 대해 `LNK2001`/`LNK2019`로 실패합니다.
 
-두 함수 모두 단순한 스칼라 C이므로 코드는 바뀌지 않습니다. CPU 백엔드(`ops.cpp`가 `dequantize_row_i2_s`를 씀)는 다른 기준 양자화 함수처럼 이 함수들을 `ggml-base`에서 가져옵니다.
+두 함수 모두 단순한 스칼라 C이므로 그대로 옮깁니다. 이후 파트 9가 `quantize_i2_s`를 다시 씁니다. CPU 백엔드(`ops.cpp`가 `dequantize_row_i2_s`를 씀)는 다른 기준 양자화 함수처럼 이 함수들을 `ggml-base`에서 가져옵니다.
 
 ### 파트 3: llamafile 없는 I2_S 빠른 경로
 
@@ -440,6 +452,27 @@ TL1이나 TL2를 켜고 BitNet 저장소 안에서 포크를 빌드하면, CMake
   - 스케일은 텐서 전체의 압축된 데이터 뒤에 저장되므로, 행 포인터와 개수만 받는 `ggml_to_float_t`로는 넘길 수 없습니다. 이 형식으로 호출하면 스케일이 정의되지 않은 값이었습니다.
   - 이 파트는 `to_float`를 `NULL`로 둡니다. `get_rows`와 `mul_mat`은 `I2_S`를 직접 처리합니다.
   - `to_float`가 필요한 코드는 잘못된 값을 만드는 대신 이 타입을 거부합니다. 예를 들어 `llama-quantize`의 재양자화는 `NULL`인지 확인합니다.
+
+### 파트 9: I2_S용 llama-quantize
+
+이 파트는 `llama-quantize`가 I2_S 파일을 만들 수 있게 합니다. bitnet.cpp의 `setup_env.py`는 `llama-quantize <f32> <out> I2_S 1`을 실행하지만, 포크에서는 실패했습니다:
+
+- **I2_S 옵션이 없음.** `llama-quantize`가 `I2_S`와 `41`을 거부했고("invalid ftype"), `llama-quant.cpp`는 파일 타입을 텐서 타입으로 변환하지 않았습니다. 포크에는 파일 타입 `LLAMA_FTYPE_MOSTLY_I2_S`와 `ggml_quantize_chunk`의 I2_S 분기는 있습니다.
+- **배치가 다름.** 포크의 `quantize_i2_s`는 2비트 코드를 순서대로 기록했지만, 커널과 `dequantize_row_i2_s`는 128개 가중치를 32바이트에 끼워 넣은 배치(바이트 `gp`에 가중치 `gp`, `gp+32`, `gp+64`, `gp+96`)를 읽습니다. 그 결과물은 잘못된 값을 냈을 것입니다.
+- **텐서당 스케일 하나.** `llama-quantize`는 스레드마다 텐서를 청크로 나누는데, 청크마다 자기 스케일을 기록했을 것입니다.
+- **입력을 읽지 못함.** `ggml_validate_row_data`가 타입 36을 거부해서 `llama-quantize`가 I2_S 파일을 아예 읽지 못했습니다. 재양자화하면 `to_float`가 없는 타입에 대한 메시지(파트 8) 대신 `invalid type 36`으로 실패했습니다.
+
+변경 사항:
+
+- `quantize_i2_s`가 커널의 배치로 코드를 기록하고, 마지막 32바이트의 나머지를 0으로 채웁니다(원본 파일은 그중 28바이트를 초기화하지 않음).
+  - 가중치는 BitNet b1.58 변환기가 쓰는 것처럼 이미 삼진, 즉 텐서마다 `s` 하나인 `{-s, 0, +s}`여야 합니다.
+  - `s`는 가장 큰 절댓값입니다. 크기가 `s/2`보다 큰 가중치는 +1이나 -1이 되고, 나머지는 0이 됩니다.
+- I2_S 텐서는 한 번의 호출(스레드 하나)로 양자화합니다. `ggml_quantize_chunk`는 I2_S가 0번 행에서 시작하는지 확인합니다.
+- `llama-quant.cpp`가 파일 타입을 `GGML_TYPE_I2_S`로 변환합니다.
+  - 출력 가중치와 토큰 임베딩은 BitNet b1.58 GGUF 파일처럼 기본으로 F16을 씁니다(삼진 가중치가 아님). BitNet b1.58 2B-4T처럼 토큰 임베딩을 출력과 공유하는 모델은 그러지 않으면 출력 텐서의 Q6_K가 됩니다. `--output-tensor-type`과 `--token-embedding-type`은 여전히 적용됩니다.
+  - 행이 128의 배수가 아닌 텐서와 3D(전문가) 텐서는 Q4_0으로 대체합니다.
+- `llama-quantize`가 I2_S를 보여 줍니다.
+- `ggml_validate_row_data`가 I2_S(스케일을 확인함)와 다른 BitNet 타입을 받아들입니다.
 
 ## 0003-windows-build.patch
 

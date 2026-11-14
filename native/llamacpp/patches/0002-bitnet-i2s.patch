@@ -3,8 +3,8 @@ Subject: [PATCH] BitNet I2_S: build without the BitNet repository and fix the fo
 
 Everything for the BitNet I2_S type of this fork: building it without the
 BitNet repository (and on Windows with GGML_BACKEND_DL), correct results on
-CPUs without AVX2, and microsoft/BitNet-b1.58-2B-4T-gguf working as a chat
-model.
+CPUs without AVX2, microsoft/BitNet-b1.58-2B-4T-gguf working as a chat model,
+and quantizing to I2_S with llama-quantize.
 
 1. ggml : build without the BitNet repository unless TL1/TL2 is on
 
@@ -40,7 +40,8 @@ model.
 
   Both functions are plain scalar C. Move them to ggml-quants.c and declare
   them GGML_API, so the CPU backend (ops.cpp uses dequantize_row_i2_s) imports
-  them from ggml-base like the other reference quantization functions.
+  them from ggml-base like the other reference quantization functions. (Part 9
+  rewrites quantize_i2_s.)
 
 3. ggml-cpu : do not use src1_cont outside the llamafile block
 
@@ -133,6 +134,47 @@ model.
     mul_mat handle I2_S themselves, and code that needs to_float (for example
     llama-quantize requantization, which checks for NULL) refuses the type
     instead of producing wrong values.
+
+9. llama-quantize : quantize to I2_S
+
+  The fork has the file type LLAMA_FTYPE_MOSTLY_I2_S and an I2_S case in
+  ggml_quantize_chunk, but llama-quantize could not produce I2_S: the type was
+  not in its list ("invalid ftype 'I2_S'", also as 41), and llama-quant.cpp did
+  not map the file type to a tensor type. bitnet.cpp's setup_env.py runs
+  "llama-quantize <f32> <out> I2_S 1". The fork's quantize_i2_s also did not
+  match the rest of the fork:
+
+  - It packed the 2-bit codes sequentially. The kernels and
+    dequantize_row_i2_s read 128 weights per 32 bytes, byte gp holding weights
+    gp, gp+32, gp+64 and gp+96, so its output gave wrong results.
+  - It has one scale for the whole tensor, but llama-quantize splits a tensor
+    into chunks for its threads, and each chunk would write its own scale.
+  - It left 28 of the 32 bytes after the scale uninitialized.
+
+  Changes:
+
+  - quantize_i2_s packs the codes in the kernels' layout. The weights must
+    already be ternary ({-s, 0, +s}, as the BitNet b1.58 converters write
+    them); s is the largest absolute value, and a weight is +1/-1 when its
+    magnitude is above s/2. The rest of the last 32 bytes is zeroed.
+  - ggml_quantize_chunk asserts that I2_S starts at row 0, and llama-quant.cpp
+    quantizes an I2_S tensor in one call (one thread).
+  - llama-quant.cpp maps LLAMA_FTYPE_MOSTLY_I2_S to GGML_TYPE_I2_S, uses F16
+    for the output weights and the token embeddings by default (as the BitNet
+    b1.58 GGUF files do; --output-tensor-type and --token-embedding-type still
+    apply), and falls back to Q4_0 for tensors whose rows are not a multiple
+    of 128 and for 3D (expert) tensors.
+  - llama-quantize lists I2_S.
+  - ggml_validate_row_data accepts I2_S (it checks the scale) and the other
+    BitNet types. It rejected type 36 as invalid, so llama-quantize could not
+    even read an I2_S file: requantizing one failed with "invalid type 36"
+    instead of the message for types without to_float (part 8).
+
+  Tested with microsoft/BitNet-b1.58-2B-4T-gguf converted to F16 (its I2_S
+  weights times the scale). Quantizing that to I2_S gives the original file's
+  tensor types, the same 2-bit codes for all 210 I2_S tensors (scales within
+  F16 rounding) and identical other tensors; the same file with 1 thread or
+  many. It answers like the original on the AVX2, sse42 and x64 variants.
 
 Apply with: git -c core.autocrlf=false apply <this file>
 
@@ -414,10 +456,36 @@ index 9c48df4..6a21e89 100644
          s[row] = (float)sum;
      }
 diff --git a/ggml/src/ggml-quants.c b/ggml/src/ggml-quants.c
-index 46aabab..fe9bdda 100644
+index 46aabab..8c262d7 100644
 --- a/ggml/src/ggml-quants.c
 +++ b/ggml/src/ggml-quants.c
-@@ -5684,3 +5684,60 @@ bool ggml_validate_row_data(enum ggml_type type, const void * data, size_t nbyte
+@@ -5608,6 +5608,25 @@ bool ggml_validate_row_data(enum ggml_type type, const void * data, size_t nbyte
+                     }
+                 }
+             } break;
++        case GGML_TYPE_I2_S:
++            {
++                // The 2-bit codes, then the tensor scale (a float) at the start of
++                // the last 32 bytes (nbytes = n/4 + 32).
++                if (nbytes < 32) {
++                    fprintf(stderr, "%s: invalid size %zu for type i2_s\n", __func__, nbytes);
++                    return false;
++                }
++                float scale;
++                memcpy(&scale, (const uint8_t *) data + nbytes - 32, sizeof(scale));
++                if (!validate_float(scale, 0)) {
++                    return false;
++                }
++            } break;
++        case GGML_TYPE_I8_S:
++        case GGML_TYPE_TL1:
++        case GGML_TYPE_TL2:
++            // BitNet types without per-block values to check.
++            break;
+         case GGML_TYPE_TQ1_0:
+             {
+                 VALIDATE_ROW_DATA_D_F16_IMPL(block_tq1_0, data, nb);
+@@ -5684,3 +5703,65 @@ bool ggml_validate_row_data(enum ggml_type type, const void * data, size_t nbyte
  
  // ====================== BitNet I2_S quantization functions ======================
  
@@ -447,35 +515,40 @@ index 46aabab..fe9bdda 100644
 +    }
 +}
 +
++// Quantizes a whole tensor (nrow rows) to I2_S. The weights must already be
++// ternary, {-s, 0, +s} with one s for the tensor, as the BitNet b1.58
++// converters write them. Codes 0/1/2 (-1/0/+1) are packed 128 weights per 32
++// bytes, byte gp holding weights gp, gp+32, gp+64 and gp+96 in bits 7-6, 5-4,
++// 3-2 and 1-0, as dequantize_row_i2_s and the kernels read them. The scale s
++// (the largest absolute value) follows as a float in the last 32 bytes.
 +size_t quantize_i2_s(const float * src, void * dst, int64_t nrow, int64_t n_per_row, const float * quant_weights) {
 +    (void)quant_weights;
-+    int64_t n = nrow * n_per_row;
++    const int64_t n = nrow * n_per_row;
++    GGML_ASSERT(n % 128 == 0);
 +
-+    double max = 0.0;
++    float scale = 0.0f;
 +    for (int64_t i = 0; i < n; i++) {
-+        double v = fabs((double)src[i]);
-+        if (v > max) { max = v; break; }  // first nonzero abs as scale (BitNet convention)
++        scale = MAX(scale, fabsf(src[i]));
 +    }
++    const float threshold = scale / 2;
 +
-+    uint8_t * q = (uint8_t *)dst;
-+    memset(q, 0, n / 4);
-+
-+    for (int64_t i = 0; i < n; i++) {
-+        uint8_t val;
-+        if (fabs((double)src[i]) < 1e-6) {
-+            val = 1; // maps to 0
-+        } else {
-+            val = ((double)src[i] * max > 0) ? 2 : 0; // maps to +1 or -1
++    uint8_t * q = (uint8_t *) dst;
++    for (int64_t base = 0; base < n; base += 128) {
++        for (int gp = 0; gp < 32; gp++) {
++            uint8_t byte = 0;
++            for (int k = 0; k < 4; k++) {
++                const float v = src[base + 32*k + gp];
++                const uint8_t code = v > threshold ? 2 : (v < -threshold ? 0 : 1);
++                byte |= code << (6 - 2*k);
++            }
++            q[base/4 + gp] = byte;
 +        }
-+        int byte_idx = i / 4;
-+        int bit_pos = 6 - 2 * (i % 4);
-+        q[byte_idx] |= (val << bit_pos);
 +    }
 +
-+    float * scale_ptr = (float *)(q + n / 4);
-+    scale_ptr[0] = (float)max;
++    memset(q + n/4, 0, 32);
++    memcpy(q + n/4, &scale, sizeof(scale));
 +
-+    return nrow * n_per_row / 4 + 32;
++    return n/4 + 32;
 +}
 +
 diff --git a/ggml/src/ggml-quants.h b/ggml/src/ggml-quants.h
@@ -495,7 +568,7 @@ index 38c5450..80aebdf 100644
  // Dequantization
  GGML_API void dequantize_row_q1_0(const block_q1_0 * GGML_RESTRICT x, float * GGML_RESTRICT y, int64_t k);
 diff --git a/ggml/src/ggml.c b/ggml/src/ggml.c
-index a303945..bb70d9b 100644
+index a303945..62e03c3 100644
 --- a/ggml/src/ggml.c
 +++ b/ggml/src/ggml.c
 @@ -910,30 +910,20 @@ static const struct ggml_type_traits type_traits[GGML_TYPE_COUNT] = {
@@ -538,6 +611,16 @@ index a303945..bb70d9b 100644
      },
      [GGML_TYPE_I8_S] = {
          .type_name                = "i8_s",
+@@ -7768,6 +7758,9 @@ size_t ggml_quantize_chunk(
+ 
+     GGML_ASSERT(start % type_traits[type].blck_size == 0);
+     GGML_ASSERT(start % n_per_row == 0);
++    // I2_S has one scale for the whole tensor, stored after its packed data, so
++    // the tensor is quantized in one call.
++    GGML_ASSERT(type != GGML_TYPE_I2_S || start == 0);
+ 
+     ggml_quantize_init(type); // this is noop if already initialized
+ 
 diff --git a/src/llama-model.cpp b/src/llama-model.cpp
 index 6eda8f3..150be24 100644
 --- a/src/llama-model.cpp
@@ -558,6 +641,75 @@ index 6eda8f3..150be24 100644
      return it->second.c_str();
  }
  
+diff --git a/src/llama-quant.cpp b/src/llama-quant.cpp
+index c15bc7c..897c904 100644
+--- a/src/llama-quant.cpp
++++ b/src/llama-quant.cpp
+@@ -363,9 +363,11 @@ static ggml_type tensor_type_fallback(quantize_state_impl & qs, const ggml_tenso
+     ggml_type return_type = target_type;
+ 
+     const int64_t ncols = t->ne[0];
+-    const int64_t qk_k = ggml_blck_size(target_type);
++    // I2_S packs 128 weights per 32 bytes (its ggml block size is 1), and its
++    // one scale per tensor does not fit the per-expert loop of 3D tensors.
++    const int64_t qk_k = target_type == GGML_TYPE_I2_S ? 128 : ggml_blck_size(target_type);
+ 
+-    if (ncols % qk_k != 0) { // this tensor's shape is incompatible with this quant
++    if (ncols % qk_k != 0 || (target_type == GGML_TYPE_I2_S && t->ne[2] > 1)) { // this tensor's shape is incompatible with this quant
+         LLAMA_LOG_WARN("warning: %-36s - ncols %6" PRId64 " not divisible by %3" PRId64 " (required for type %7s) ",
+                         t->name, ncols, qk_k, ggml_type_name(target_type));
+         ++qs.n_fallback;
+@@ -384,7 +386,8 @@ static ggml_type tensor_type_fallback(quantize_state_impl & qs, const ggml_tenso
+             case GGML_TYPE_Q3_K:
+             case GGML_TYPE_TQ1_0:
+             case GGML_TYPE_TQ2_0:
+-            case GGML_TYPE_STQ1_0:  return_type = GGML_TYPE_Q4_0;   break;
++            case GGML_TYPE_STQ1_0:
++            case GGML_TYPE_I2_S:    return_type = GGML_TYPE_Q4_0;   break;
+             case GGML_TYPE_Q4_K:    return_type = GGML_TYPE_Q5_0;   break;
+             case GGML_TYPE_Q5_K:    return_type = GGML_TYPE_Q5_1;   break;
+             case GGML_TYPE_Q6_K:    return_type = GGML_TYPE_Q8_0;   break;
+@@ -447,6 +450,11 @@ static ggml_type llama_tensor_get_type_impl(quantize_state_impl & qs, ggml_type
+             if (ftype == LLAMA_FTYPE_MOSTLY_MXFP4_MOE) {
+                 new_type = GGML_TYPE_Q8_0;
+             }
++            else if (ftype == LLAMA_FTYPE_MOSTLY_I2_S) {
++                // as in the BitNet b1.58 GGUF files (the output weights, and the
++                // token embeddings shared with them, are not ternary)
++                new_type = GGML_TYPE_F16;
++            }
+             else if (arch == LLM_ARCH_FALCON || nx % qk_k != 0) {
+                 new_type = GGML_TYPE_Q8_0;
+             }
+@@ -485,6 +493,10 @@ static ggml_type llama_tensor_get_type_impl(quantize_state_impl & qs, ggml_type
+                      ftype == LLAMA_FTYPE_MOSTLY_STQ1_0) {
+                 new_type = GGML_TYPE_Q4_K;
+             }
++            else if (ftype == LLAMA_FTYPE_MOSTLY_I2_S) {
++                // as in the BitNet b1.58 GGUF files (the embeddings are not ternary)
++                new_type = GGML_TYPE_F16;
++            }
+         }
+     } else if (ftype == LLAMA_FTYPE_MOSTLY_IQ2_XXS || ftype == LLAMA_FTYPE_MOSTLY_IQ2_XS || ftype == LLAMA_FTYPE_MOSTLY_IQ1_S ||
+                ftype == LLAMA_FTYPE_MOSTLY_IQ2_S || ftype == LLAMA_FTYPE_MOSTLY_IQ2_M    || ftype == LLAMA_FTYPE_MOSTLY_IQ1_M) {
+@@ -709,7 +721,8 @@ static ggml_type llama_tensor_get_type(quantize_state_impl & qs, const llama_mod
+ //
+ 
+ static size_t llama_tensor_quantize_impl(enum ggml_type new_type, const float * f32_data, void * new_data, const int64_t chunk_size, int64_t nrows, int64_t n_per_row, const float * imatrix, std::vector<std::thread> & workers, const int nthread) {
+-    if (nthread < 2) {
++    // I2_S has one scale per tensor, so it is quantized in one call.
++    if (nthread < 2 || new_type == GGML_TYPE_I2_S) {
+         // single-thread
+         size_t new_size = ggml_quantize_chunk(new_type, f32_data, new_data, 0, nrows, n_per_row, imatrix);
+         if (!ggml_validate_row_data(new_type, new_data, new_size)) {
+@@ -820,6 +833,7 @@ ggml_type llama_ftype_get_default_type(llama_ftype ftype) {
+         case LLAMA_FTYPE_MOSTLY_TQ1_0:   return GGML_TYPE_TQ1_0;
+         case LLAMA_FTYPE_MOSTLY_TQ2_0:   return GGML_TYPE_TQ2_0;
+         case LLAMA_FTYPE_MOSTLY_STQ1_0:  return GGML_TYPE_STQ1_0;
++        case LLAMA_FTYPE_MOSTLY_I2_S:    return GGML_TYPE_I2_S;
+         case LLAMA_FTYPE_MOSTLY_IQ2_XXS: return GGML_TYPE_IQ2_XXS;
+         case LLAMA_FTYPE_MOSTLY_IQ2_XS:  return GGML_TYPE_IQ2_XS;
+         case LLAMA_FTYPE_MOSTLY_IQ2_S:   return GGML_TYPE_IQ2_XS;
 diff --git a/src/llama-vocab.cpp b/src/llama-vocab.cpp
 index 2b546c4..ae1ab82 100644
 --- a/src/llama-vocab.cpp
@@ -590,3 +742,15 @@ index 985c8d6..8eaebb1 100644
          cb(cur, "ffn_sub_out", il);
  
          cur = build_norm(cur,
+diff --git a/tools/quantize/quantize.cpp b/tools/quantize/quantize.cpp
+index a24d59e..96d776c 100644
+--- a/tools/quantize/quantize.cpp
++++ b/tools/quantize/quantize.cpp
+@@ -47,6 +47,7 @@ static const std::vector<quant_option> QUANT_OPTIONS = {
+     { "TQ1_0",    LLAMA_FTYPE_MOSTLY_TQ1_0,    " 1.69 bpw ternarization",           },
+     { "TQ2_0",    LLAMA_FTYPE_MOSTLY_TQ2_0,    " 2.06 bpw ternarization",           },
+     { "STQ1_0",   LLAMA_FTYPE_MOSTLY_STQ1_0,   " 1.31 bpw ternarization",           },
++    { "I2_S",     LLAMA_FTYPE_MOSTLY_I2_S,     " 2.00 bpw ternarization, BitNet b1.58 (weights must be ternary)", },
+     { "Q2_K",     LLAMA_FTYPE_MOSTLY_Q2_K,     " 2.96G, +3.5199 ppl @ Llama-3-8B",  },
+     { "Q2_K_S",   LLAMA_FTYPE_MOSTLY_Q2_K_S,   " 2.96G, +3.1836 ppl @ Llama-3-8B",  },
+     { "IQ3_XXS",  LLAMA_FTYPE_MOSTLY_IQ3_XXS,  " 3.06 bpw quantization",            },
