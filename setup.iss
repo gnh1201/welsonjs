@@ -1,5 +1,5 @@
 ; @created_on 2020-06-26
-; @updated_on 2026-11-01
+; @updated_on 2026-11-15
 ; @author Namhyeon Go <gnh1201@catswords.re.kr> and Catswords OSS contributors.
 
 [Setup]
@@ -143,7 +143,7 @@ Filename: {app}\uninstallService.bat; Components: artifacts; Flags: waituntilter
 
 [CustomMessages]
 AppName=WelsonJS
-AppVersion=0.2.7.61
+AppVersion=0.2.7.62
 PostHogApiKey=phc_pmRHJ0aVEhtULRT4ilexwCjYpGtE9VYRhlA05fwiYt8
 
 [Code]

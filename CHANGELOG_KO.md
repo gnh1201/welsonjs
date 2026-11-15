@@ -16,7 +16,14 @@
 
 ## [Unreleased]
 
-0.2.7.62-rc1 이후 `dev` 브랜치의 변경 사항입니다.
+## [0.2.7.62] - 2026-11-15
+
+설치 파일 없이 배포한 사전 릴리스 0.2.7.62-rc1 이후의 변경 사항입니다. 0.2.7.61에서 업그레이드한다면 [0.2.7.62-rc1](#0262-rc1---2026-11-01)도 함께 확인하세요.
+
+업그레이드 전에 확인할 점:
+
+- 설치 프로그램이 런처 설정 파일(`bin\x86\WelsonJS.Launcher.exe.config`)을 새 파일로 바꿉니다. IP 조회 API 키(`IpQueryApiKey`, `IpQueryApiKey2`)나 `ResourceServerApiKey`처럼 직접 바꾼 값은 미리 적어 두었다가 업그레이드 후 다시 설정하세요. 이번 릴리스에서 제거한 설정(아래 참고)은 더 이상 읽지 않습니다.
+- 이전 런처가 띄운 브라우저 창(에디터와 웹 채팅 창)을 닫으세요. 새 런처는 자기 브라우저를 새로 띄웁니다.
 
 ### 추가
 
@@ -32,6 +39,7 @@
 - OpenAI 호환 런처 API: llama.cpp 모델과 웹 채팅 서비스(Copilot, ChatGPT, Claude 등)에 쓰는 `POST /v1/chat/completions`와 `GET /v1/models`. 웹 채팅은 이제 런처가 브라우저를 직접 조작하며, 서비스 정의는 에디터에서 `webchat.js`로 옮겼고 에디터도 이 API를 씁니다. 응답은 스트리밍하지 않습니다(`"stream": true`이면 완성된 답을 청크 하나로 보냄). 다른 로컬 소프트웨어(예: 브라우저 엔진 기반 앱)는 런처 API 키(`ResourceServerApiKey`, `Authorization: Bearer`로 전송)로 쓸 수 있습니다. `docs/openai-compatible-api.md`를 참고하세요.
 - 언어 추론 엔진에 UberLLM 제공자 추가([#543]).
 - 프롬프트를 검사하는 런처 관리 LLM 가드(Qwen3Guard).
+- 모든 릴리스 태그를 다루는 영어·한국어 변경 내역(`CHANGELOG.md`, `CHANGELOG_KO.md`).
 
 ### 변경
 
@@ -778,7 +786,8 @@
 - 콘솔 모드의 `JSON` 모듈([#8]).
 - WSH에서 core-js의 `Object.create(null)` 충돌(상위 프로젝트 수정).
 
-[Unreleased]: https://github.com/gnh1201/welsonjs/compare/0.2.7.62-rc1...HEAD
+[Unreleased]: https://github.com/gnh1201/welsonjs/compare/0.2.7.62...HEAD
+[0.2.7.62]: https://github.com/gnh1201/welsonjs/compare/0.2.7.62-rc1...0.2.7.62
 [0.2.7.62-rc1]: https://github.com/gnh1201/welsonjs/compare/0.2.7.61...0.2.7.62-rc1
 [0.2.7.61]: https://github.com/gnh1201/welsonjs/compare/0.2.7.60...0.2.7.61
 [0.2.7.60]: https://github.com/gnh1201/welsonjs/compare/0.2.7.57...0.2.7.60

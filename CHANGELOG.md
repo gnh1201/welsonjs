@@ -16,7 +16,14 @@ Notes on the tags:
 
 ## [Unreleased]
 
-Changes on the `dev` branch since 0.2.7.62-rc1.
+## [0.2.7.62] - 2026-11-15
+
+Changes since 0.2.7.62-rc1, a pre-release without an installer. When upgrading from 0.2.7.61, see [0.2.7.62-rc1](#0262-rc1---2026-11-01) as well.
+
+Before upgrading:
+
+- The installer replaces the launcher's settings file (`bin\x86\WelsonJS.Launcher.exe.config`). Note the values you changed there, such as the IP query API keys (`IpQueryApiKey`, `IpQueryApiKey2`) and `ResourceServerApiKey`, and set them again after upgrading. Settings removed in this release (listed below) are no longer read.
+- Close the windows of the browser that an earlier launcher opened (the editor and web chat windows); the new launcher starts its own browser.
 
 ### Added
 
@@ -32,6 +39,7 @@ Changes on the `dev` branch since 0.2.7.62-rc1.
 - OpenAI-compatible launcher API: `POST /v1/chat/completions` and `GET /v1/models` for the llama.cpp models and the web chat services (Copilot, ChatGPT, Claude, ...), which the launcher now drives in its browser itself; the services moved from the editor to `webchat.js`, and the editor uses the API as well. Responses are not streamed (`"stream": true` sends the finished answer as one chunk). Other local software (for example apps built on a browser engine) can use it with an API key (the launcher's `ResourceServerApiKey`, sent as `Authorization: Bearer`). See `docs/openai-compatible-api.md`.
 - UberLLM provider in the language inference engine ([#543]).
 - Launcher-managed LLM guard (Qwen3Guard) for prompts.
+- This changelog, in English and Korean (`CHANGELOG.md`, `CHANGELOG_KO.md`), covering every release tag.
 
 ### Changed
 
@@ -778,7 +786,8 @@ Pre-release.
 - The `JSON` module in console mode ([#8]).
 - Crashes of `Object.create(null)` in core-js on WSH (upstream fixes).
 
-[Unreleased]: https://github.com/gnh1201/welsonjs/compare/0.2.7.62-rc1...HEAD
+[Unreleased]: https://github.com/gnh1201/welsonjs/compare/0.2.7.62...HEAD
+[0.2.7.62]: https://github.com/gnh1201/welsonjs/compare/0.2.7.62-rc1...0.2.7.62
 [0.2.7.62-rc1]: https://github.com/gnh1201/welsonjs/compare/0.2.7.61...0.2.7.62-rc1
 [0.2.7.61]: https://github.com/gnh1201/welsonjs/compare/0.2.7.60...0.2.7.61
 [0.2.7.60]: https://github.com/gnh1201/welsonjs/compare/0.2.7.57...0.2.7.60
