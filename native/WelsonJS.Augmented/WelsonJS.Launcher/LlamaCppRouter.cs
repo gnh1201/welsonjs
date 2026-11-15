@@ -10,7 +10,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Sockets;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -313,8 +312,8 @@ namespace WelsonJS.Launcher
                 throw new FileNotFoundException("llama-server.exe was not found (install the setup component llamacpp).", executable);
 
             string modelsDirectory = ModelsDirectory;
-            _host = "127.0.0.1";
-            _port = FindAvailablePort(_host);
+            _host = LocalPorts.Host;
+            _port = LocalPorts.FindAvailable(_host);
 
             var arguments = new List<string>
             {
@@ -401,18 +400,6 @@ namespace WelsonJS.Launcher
         {
             int value;
             return int.TryParse(Program.GetAppConfig(key), out value) && value >= minimum ? value : fallback;
-        }
-
-        private static int FindAvailablePort(string host)
-        {
-            TcpListener listener = null;
-            try
-            {
-                listener = new TcpListener(IPAddress.Parse(host), 0);
-                listener.Start();
-                return ((IPEndPoint)listener.LocalEndpoint).Port;
-            }
-            finally { if (listener != null) listener.Stop(); }
         }
 
         private static void KillTree(int pid)

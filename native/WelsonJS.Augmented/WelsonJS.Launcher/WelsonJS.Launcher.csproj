@@ -148,6 +148,7 @@
     <Compile Include="LlamaCppChat.cs" />
     <Compile Include="LlamaCppPromptTranslator.cs" />
     <Compile Include="LlamaCppRouter.cs" />
+    <Compile Include="LocalPorts.cs" />
     <Compile Include="LlmGuardService.cs" />
     <Compile Include="JsrtInstanceProcessManager.cs" />
     <Compile Include="ChildProcessJob.cs" />

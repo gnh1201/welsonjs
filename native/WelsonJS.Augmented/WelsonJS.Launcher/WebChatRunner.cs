@@ -19,7 +19,7 @@ namespace WelsonJS.Launcher
 {
     /// <summary>
     /// Asks a web chat service (Copilot, ChatGPT, ...) in the launcher's browser through the
-    /// DevTools protocol (ChromiumDevToolsPrefix): finds the service's open page, or opens
+    /// DevTools protocol (Program.GetChromiumDevToolsPrefix): finds the service's open page, or opens
     /// it (starting the browser when it is not running), puts the message into the message
     /// box, sends it, and waits for the answer. Sign in to the service in that window when
     /// it asks; the page waits for the message box for a few minutes.
@@ -397,7 +397,7 @@ namespace WelsonJS.Launcher
                 if (page != null && page.ContainsKey("webSocketDebuggerUrl"))
                     return page;
             }
-            throw new TimeoutException("The " + name + " window did not open. Make sure the launcher's browser runs with remote debugging (ChromiumDevToolsPrefix).");
+            throw new TimeoutException("The " + name + " window did not open. If browser windows are left from an earlier launcher run, close all of them, then try again.");
         }
 
         private static bool IsServicePage(Dictionary<string, object> service, Dictionary<string, object> target)
@@ -426,7 +426,13 @@ namespace WelsonJS.Launcher
 
         private static async Task<object> GetJsonAsync(string path, CancellationToken token, bool throwOnError)
         {
-            string baseUrl = (Program.GetAppConfig("ChromiumDevToolsPrefix") ?? "http://localhost:9222/").TrimEnd('/');
+            string prefix = Program.GetChromiumDevToolsPrefix();
+            if (prefix == null)
+            {
+                if (throwOnError) throw new InvalidOperationException("The launcher's browser is not running with remote debugging.");
+                return null;
+            }
+            string baseUrl = prefix.TrimEnd('/');
             try
             {
                 using (HttpResponseMessage response = await Http.GetAsync(baseUrl + "/" + path, token))

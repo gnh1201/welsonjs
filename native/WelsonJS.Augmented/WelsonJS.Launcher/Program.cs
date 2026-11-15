@@ -9,6 +9,7 @@ using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Windows.Forms;
 using Catswords.Phantomizer;
@@ -521,27 +522,89 @@ namespace WelsonJS.Launcher
                 }
             }
         }
+        /// <summary>The launcher browser's profile folder.</summary>
+        public static string ChromiumUserDataDirectory
+        {
+            get { return Path.Combine(GetAppDataPath(), "EdgeUserProfile"); }
+        }
+
+        // The remote debugging port the launcher chose when it started its browser
+        // (LocalPorts); 0 before it has. Kept in memory only.
+        private static int _chromiumDevToolsPort;
+        private static readonly object _browserStartSync = new object();
+
+        /// <summary>
+        /// The base URL of the launcher browser's DevTools HTTP endpoint (for example
+        /// http://127.0.0.1:51234/), or null when this launcher run has not started the
+        /// browser. The port is the one the launcher chose when it started the browser. When
+        /// the browser has ended since, the port does not answer, which callers treat as no
+        /// browser. A browser left from an earlier launcher run is not known: close its windows.
+        /// </summary>
+        public static string GetChromiumDevToolsPrefix()
+        {
+            int port;
+            lock (_browserStartSync) port = _chromiumDevToolsPort;
+            return port > 0 ? "http://" + LocalPorts.Host + ":" + port + "/" : null;
+        }
+
+        // Whether the launcher's browser answers DevTools requests on the port.
+        private static bool IsChromiumDevTools(int port)
+        {
+            try
+            {
+                var request = (HttpWebRequest)WebRequest.Create("http://" + LocalPorts.Host + ":" + port + "/json/version");
+                request.Timeout = 2000;
+                request.ReadWriteTimeout = 2000;
+                request.Proxy = null;
+                using (var response = (HttpWebResponse)request.GetResponse())
+                using (var reader = new StreamReader(response.GetResponseStream()))
+                {
+                    return JsonCodec.Deserialize(reader.ReadToEnd()) is Dictionary<string, object> version
+                        && version.ContainsKey("webSocketDebuggerUrl");
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
         /// <summary>
         /// Opens the URL in the launcher's browser (its own profile, with remote debugging),
         /// starting the browser when it is not running; a running browser opens it in a new
-        /// window. appMode: true opens an app window (no tabs or address bar) whatever
-        /// ChromiumAppMode says, as the web chat pages are opened (WebChatRunner).
+        /// window. The launcher chooses the remote debugging port when it starts the browser
+        /// (LocalPorts); while that browser answers on it, the port is kept. appMode: true opens an app window (no
+        /// tabs or address bar) whatever ChromiumAppMode says, as the web chat pages are
+        /// opened (WebChatRunner).
         /// </summary>
         public static void OpenWebBrowser(string url, bool appMode = false)
         {
             Uri resourceServerUri = new Uri(GetAppConfig("ResourceServerPrefix"));
-            Uri devToolsUri = new Uri(GetAppConfig("ChromiumDevToolsPrefix"));
             string browserPath = ResolveChromiumExecutable();
 
-            string userDataDir = Path.Combine(GetAppDataPath(), "EdgeUserProfile");
+            string userDataDir = ChromiumUserDataDirectory;
             string remoteAllowOrigins = $"{resourceServerUri.Scheme}://{resourceServerUri.Host}:{resourceServerUri.Port}";
-            int remoteDebuggingPort = devToolsUri.Port;
+            int remoteDebuggingPort;
+            lock (_browserStartSync)
+            {
+                if (_chromiumDevToolsPort > 0 && IsChromiumDevTools(_chromiumDevToolsPort))
+                {
+                    // The browser runs: it takes the URL and keeps its port.
+                    remoteDebuggingPort = _chromiumDevToolsPort;
+                }
+                else
+                {
+                    remoteDebuggingPort = LocalPorts.FindAvailable();
+                    _chromiumDevToolsPort = remoteDebuggingPort;
+                }
+            }
             bool isAppMode = appMode || string.Equals(
                 GetAppConfig("ChromiumAppMode"),
                 "true",
                 StringComparison.OrdinalIgnoreCase);
             string[] arguments = {
                 isAppMode ? $"\"--app={url}\"" : $"\"{url}\"",
+                $"--remote-debugging-address={LocalPorts.Host}",
                 $"--remote-debugging-port={remoteDebuggingPort}",
                 $"--remote-allow-origins={remoteAllowOrigins}",
                 $"--user-data-dir=\"{userDataDir}\"",

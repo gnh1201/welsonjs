@@ -154,9 +154,6 @@
   <data name="ResourceServerPrefix" xml:space="preserve">
     <value>http://localhost:3000/</value>
   </data>
-  <data name="ChromiumDevToolsPrefix" xml:space="preserve">
-    <value>http://localhost:9222/</value>
-  </data>
   <data name="DnsServerAddress" xml:space="preserve">
     <value>1.1.1.1</value>
   </data>

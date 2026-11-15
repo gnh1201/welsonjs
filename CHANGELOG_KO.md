@@ -45,6 +45,7 @@
   - 설정: `LlamaCppModelPath`와 `LlmGuardModelPath` 대신 `LlamaCppModels`(에디터 모델 목록, 쉼표로 구분)와 `LlmGuardModel`(모델 이름)을 씁니다. `LlamaCppModelsMax`와 `LlamaCppContextSize`를 추가했습니다.
   - `lib/llamacpp.js`는 모델을 이름으로 고릅니다(`setModel`, `loadModel`, `unloadModel`, `listModels`, `chat`). 모델 경로, 포트, `openBrowser` 옵션은 제거했습니다.
 - 런처의 자식 프로세스(llama.cpp 라우터와 모델 인스턴스, 터미널 세션, JSRT 인스턴스)를 Windows Job Object에 넣어, 런처가 강제 종료되거나 디버거에서 중지되거나 비정상 종료돼도 함께 종료되게 했습니다.
+- 런처가 브라우저를 시작할 때 고정된 9222 대신 비어 있는 원격 디버깅 포트를 고르고(`ChromiumDevToolsPrefix` 설정 제거), 브라우저는 127.0.0.1에서만 받게 했습니다. 포트는 브라우저가 응답하는 동안 런처 메모리에만 유지하며, 이전 런처 실행에서 남은 브라우저는 쓰지 않습니다(그 창들을 닫아야 함). llama.cpp 라우터와 브라우저의 포트는 하나의 공통 구현(`LocalPorts`)에서 다룹니다.
 - 벤더 JavaScript 파일을 필요할 때 복원합니다(`restoreAppAssets.ps1`).
 - 부트스트랩에서 `app.hta`를 `welsonjs-hta.exe`로 엽니다. YAWW를 업데이트했습니다.
 

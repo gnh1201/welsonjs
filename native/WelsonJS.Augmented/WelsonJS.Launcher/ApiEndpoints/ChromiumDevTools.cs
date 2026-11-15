@@ -41,7 +41,12 @@ namespace WelsonJS.Launcher.ApiEndpoints
             {
                 try
                 {
-                    string baseUrl = Program.GetAppConfig("ChromiumDevToolsPrefix"); // e.g., http://localhost:9222/
+                    string baseUrl = Program.GetChromiumDevToolsPrefix(); // e.g., http://127.0.0.1:51234/
+                    if (baseUrl == null)
+                    {
+                        await Server.ServeResource(context, "<error>The browser is not running with remote debugging.</error>", "application/xml", 503);
+                        return;
+                    }
                     string url = baseUrl.TrimEnd('/') + "/" + endpoint;
                     string data = await _httpClient.GetStringAsync(url);
                     await Server.ServeResource(context, data, "application/json");
@@ -56,10 +61,10 @@ namespace WelsonJS.Launcher.ApiEndpoints
             if (endpoint.StartsWith("page/", StringComparison.OrdinalIgnoreCase))
             {
                 // read the variable
-                string baseUrl = Program.GetAppConfig("ChromiumDevToolsPrefix");
-                if (!Uri.TryCreate(baseUrl, UriKind.Absolute, out Uri uri))
+                string baseUrl = Program.GetChromiumDevToolsPrefix();
+                if (!Uri.TryCreate(baseUrl ?? "", UriKind.Absolute, out Uri uri))
                 {
-                    await Server.ServeResource(context, "<error>Invalid ChromiumDevToolsPrefix</error>", "application/xml", 500);
+                    await Server.ServeResource(context, "<error>The browser is not running with remote debugging.</error>", "application/xml", 503);
                     return;
                 }
 

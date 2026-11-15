@@ -45,6 +45,7 @@ Changes on the `dev` branch since 0.2.7.62-rc1.
   - Settings: `LlamaCppModels` (a comma-separated list of the editor's models) and `LlmGuardModel` (a model name) replace `LlamaCppModelPath` and `LlmGuardModelPath`; new `LlamaCppModelsMax` and `LlamaCppContextSize`.
   - `lib/llamacpp.js` selects models by name (`setModel`, `loadModel`, `unloadModel`, `listModels`, `chat`); the model path, port, and `openBrowser` options are removed.
 - The launcher's child processes (the llama.cpp router with its model instances, terminal sessions and JSRT instances) are in a Windows job object that ends them with the launcher, also when it is killed, stopped in the debugger or crashes.
+- The launcher chooses a free remote debugging port for its browser when it starts it, instead of the fixed 9222 (`ChromiumDevToolsPrefix` is removed), and the browser listens on 127.0.0.1 only. The launcher keeps the port in memory while the browser answers on it; a browser left from an earlier launcher run is not used (close its windows). The ports of the llama.cpp router and the browser are handled by one shared implementation (`LocalPorts`).
 - Vendor JavaScript files are restored on demand (`restoreAppAssets.ps1`).
 - `app.hta` is opened with `welsonjs-hta.exe` in the bootstrap; YAWW updated.
 
