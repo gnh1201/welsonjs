@@ -57,10 +57,10 @@ namespace WelsonJS.Launcher
             get { return Path.Combine(Program.GetAppDataPath(), "llamacpp", "llama-server.exe"); }
         }
 
-        /// <summary>Maximum number of models loaded at once (LlamaCppModelsMax, default 2).</summary>
+        /// <summary>Maximum number of models loaded at once (LlamaCppModelsMax, default 3).</summary>
         public static int ModelsMax
         {
-            get { return GetIntSetting("LlamaCppModelsMax", 2, 0); }
+            get { return GetIntSetting("LlamaCppModelsMax", 3, 0); }
         }
 
         /// <summary>Context size passed to every model instance (LlamaCppContextSize, default 8192).</summary>

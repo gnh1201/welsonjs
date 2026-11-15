@@ -23,6 +23,9 @@ namespace WelsonJS.Launcher.ApiEndpoints
     ///   POST llamacpp/load      load a model and wait until ready {"model": "..."}
     ///   POST llamacpp/unload    unload a model                     {"model": "..."}
     ///   POST llamacpp/chat      OpenAI-compatible chat completion  {"model": "...", "messages": [...]}
+    ///                           For LlamaCppTranslatedModels the user messages are first
+    ///                           translated into English (LlamaCppPromptTranslator); optional
+    ///                           "language" (the system language code) and "translate": false.
     ///
     /// The endpoints start and stop local processes, so only local callers may use them.
     /// </summary>
@@ -42,11 +45,13 @@ namespace WelsonJS.Launcher.ApiEndpoints
         private static readonly string[] ChatParameters = { "temperature", "top_p", "top_k", "max_tokens", "presence_penalty", "frequency_penalty", "stop", "seed", "chat_template_kwargs" };
 
         private readonly LlamaCppRouter _router;
+        private readonly LlamaCppPromptTranslator _translator;
         private readonly ILogger _logger;
 
         public LlamaCpp(ResourceServer server, System.Net.Http.HttpClient httpClient, ILogger logger)
         {
             _router = server.LlamaCppRouter;
+            _translator = new LlamaCppPromptTranslator(_router);
             _logger = logger;
         }
 
@@ -113,7 +118,13 @@ namespace WelsonJS.Launcher.ApiEndpoints
                     switch (action)
                     {
                         case "status":
-                            await Write(context, new Dictionary<string, object> { ["server"] = _router.Status(), ["models"] = ConfiguredModelInfo() });
+                            await Write(context, new Dictionary<string, object>
+                            {
+                                ["server"] = _router.Status(),
+                                ["models"] = ConfiguredModelInfo(),
+                                ["translationModel"] = LlamaCppPromptTranslator.TranslationModel,
+                                ["translatedModels"] = LlamaCppPromptTranslator.TranslatedModels
+                            });
                             return;
                         case "models":
                             await Write(context, new Dictionary<string, object> { ["models"] = await ListModelsAsync(cts.Token) });
@@ -176,12 +187,17 @@ namespace WelsonJS.Launcher.ApiEndpoints
         private async Task HandleChatAsync(HttpListenerContext context)
         {
             string model;
+            string language;
+            bool translate;
             Dictionary<string, object> request;
             try
             {
                 Dictionary<string, object> input = await ReadJsonObject(context, MaxChatRequestBodyBytes);
                 model = LlamaCppRouter.ValidateModelName(GetString(input, "model"));
                 request = BuildChatRequest(input);
+                language = LlamaCppPromptTranslator.ResolveLanguage(GetString(input, "language"));
+                object value;
+                translate = !(input.TryGetValue("translate", out value) && false.Equals(value));
             }
             catch (Exception ex)
             {
@@ -193,8 +209,33 @@ namespace WelsonJS.Launcher.ApiEndpoints
             {
                 using (var cts = new CancellationTokenSource(ChatRequestTimeout))
                 {
+                    Dictionary<string, object> translation = null;
+                    if (translate && LlamaCppPromptTranslator.AppliesTo(model))
+                    {
+                        try
+                        {
+                            translation = await _translator.PrepareAsync(request, language, cts.Token);
+                        }
+                        catch (FileNotFoundException ex)
+                        {
+                            // The translation model is not installed: send the prompt as it is.
+                            _logger.Warn("[LlamaCpp] Prompt not translated: " + ex.Message);
+                        }
+                    }
+
                     KeyValuePair<int, string> result = await _router.ChatAsync(model, request, cts.Token);
-                    await WriteRaw(context, result.Value, result.Key);
+                    string body = result.Value;
+                    if (translation != null && result.Key >= 200 && result.Key <= 299)
+                    {
+                        // Report the English prompt that the model answered.
+                        Dictionary<string, object> response = JsonCodec.DeserializeObject(body);
+                        if (response != null)
+                        {
+                            response["welsonjs_translation"] = translation;
+                            body = JsonCodec.Serialize(response);
+                        }
+                    }
+                    await WriteRaw(context, body, result.Key);
                 }
             }
             catch (FileNotFoundException ex)

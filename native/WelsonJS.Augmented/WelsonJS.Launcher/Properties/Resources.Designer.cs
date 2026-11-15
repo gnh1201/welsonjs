@@ -361,11 +361,29 @@ namespace WelsonJS.Launcher.Properties {
         }
 
         /// <summary>
-        ///   2과(와) 유사한 지역화된 문자열을 찾습니다.
+        ///   3과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string LlamaCppModelsMax {
             get {
                 return ResourceManager.GetString("LlamaCppModelsMax", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   frognano_4b_2609,bitnet_b1_58_2b_4t과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string LlamaCppTranslatedModels {
+            get {
+                return ResourceManager.GetString("LlamaCppTranslatedModels", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   hy_mt2_1_8b_1_25bit과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string LlamaCppTranslationModel {
+            get {
+                return ResourceManager.GetString("LlamaCppTranslationModel", resourceCulture);
             }
         }
 

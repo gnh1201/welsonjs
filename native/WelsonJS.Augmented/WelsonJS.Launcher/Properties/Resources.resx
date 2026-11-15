@@ -236,7 +236,13 @@
     <value>hy_mt2_1_8b_1_25bit,frognano_4b_2609,bitnet_b1_58_2b_4t</value>
   </data>
   <data name="LlamaCppModelsMax" xml:space="preserve">
-    <value>2</value>
+    <value>3</value>
+  </data>
+  <data name="LlamaCppTranslatedModels" xml:space="preserve">
+    <value>frognano_4b_2609,bitnet_b1_58_2b_4t</value>
+  </data>
+  <data name="LlamaCppTranslationModel" xml:space="preserve">
+    <value>hy_mt2_1_8b_1_25bit</value>
   </data>
   <data name="LlamaCppContextSize" xml:space="preserve">
     <value>8192</value>

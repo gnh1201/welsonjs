@@ -142,6 +142,7 @@
     <Compile Include="TraceLogger.cs" />
     <Compile Include="WebSocketManager.cs" />
     <Compile Include="LogFileTraceListener.cs" />
+    <Compile Include="LlamaCppPromptTranslator.cs" />
     <Compile Include="LlamaCppRouter.cs" />
     <Compile Include="LlmGuardService.cs" />
     <Compile Include="JsrtInstanceProcessManager.cs" />

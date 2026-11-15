@@ -732,8 +732,11 @@
                         return code;
                     }
                 };
+                // The language applies to the prose only: models otherwise tend to translate
+                // identifiers and other code too.
                 const buildSystemLanguageNote = () =>
-                    `The user's system language is ${getSystemLanguage()}. Reply in that language unless the conversation asks for another.`;
+                    `The user's system language is ${getSystemLanguage()}. Reply in that language unless the conversation asks for another. ` +
+                    'Use it only for the text that is not code: do not translate code, including variable, function and other identifiers.';
 
                 // The Local AI models: the launcher's LlamaCppModels setting (model names, which
                 // are installer components), read from /llamacpp/status. Until it answers, the
@@ -742,11 +745,20 @@
                 const LOCAL_MODEL_LABELS = { hy_mt2_1_8b_1_25bit: 'Hy-MT2', frognano_4b_2609: 'FrogNano', bitnet_b1_58_2b_4t: 'BitNet' };
                 const localModelLabel = (model) => LOCAL_MODEL_LABELS[model] || model;
                 const [localModels, setLocalModels] = React.useState(DEFAULT_LOCAL_MODELS);
+                // The launcher's translation model (LlamaCppTranslationModel): the Local AI
+                // models send translation requests to it directly.
+                const [translationModel, setTranslationModel] = React.useState('hy_mt2_1_8b_1_25bit');
+                // The models whose prompts the launcher translates (LlamaCppTranslatedModels); it
+                // tells them the system language itself, so the editor adds no language note.
+                const [translatedModels, setTranslatedModels] = React.useState(['frognano_4b_2609', 'bitnet_b1_58_2b_4t']);
                 React.useEffect(() => {
                     axios.get('/llamacpp/status').then(response => {
-                        const models = ((response.data && response.data.models) || []).map(m => m.id).filter(Boolean);
+                        const data = response.data || {};
+                        const models = (data.models || []).map(m => m.id).filter(Boolean);
                         if (models.length)
                             setLocalModels(models);
+                        setTranslationModel(data.translationModel || null);
+                        setTranslatedModels(data.translationModel ? (data.translatedModels || []) : []);
                     }).catch(error => console.warn('Could not read the Local AI models from the launcher:', error.message));
                 }, []);
 
@@ -762,12 +774,15 @@
 
                     // The system language goes in the system message (added to the first one
                     // when the prompt has it: chat templates expect a single system message
-                    // at the start). It is not stored in the prompt messages.
+                    // at the start). It is not stored in the prompt messages. Not for the models
+                    // whose prompts the launcher translates: it tells them the system language.
                     const messages = promptMessagesRef.current.slice();
-                    if (messages.length && messages[0] && messages[0].role === 'system')
-                        messages[0] = Object.assign({}, messages[0], { content: `${messages[0].content}\n\n${buildSystemLanguageNote()}` });
-                    else
-                        messages.unshift({ role: 'system', content: buildSystemLanguageNote() });
+                    if (translatedModels.indexOf(model) < 0) {
+                        if (messages.length && messages[0] && messages[0].role === 'system')
+                            messages[0] = Object.assign({}, messages[0], { content: `${messages[0].content}\n\n${buildSystemLanguageNote()}` });
+                        else
+                            messages.unshift({ role: 'system', content: buildSystemLanguageNote() });
+                    }
 
                     const data = {
                         messages: messages,
@@ -782,7 +797,9 @@
                         chat_template_kwargs: { enable_thinking: false }
                     };
 
-                    axios.post('/llamacpp/chat', Object.assign({ model: model }, data), {
+                    // language: the system language, used by the launcher when it translates the
+                    // prompt into English for models that work best in English (FrogNano, BitNet).
+                    axios.post('/llamacpp/chat', Object.assign({ model: model, language: getSystemLanguageCode() }, data), {
                         headers: { 'Content-Type': 'application/json' }
                     }).then(response => {
                         const choices = (response.data && response.data.choices) || [];
@@ -1797,7 +1814,12 @@
                 // Local AI models (keys "llamacpp:<model>"), then the web chat services.
                 const AI_SERVICES = Object.assign(
                     localModels.reduce((services, model) => {
-                        services['llamacpp:' + model] = { name: localModelLabel(model), ask: (m, l, s) => askLlamaCpp(model, m, l, s) };
+                        services['llamacpp:' + model] = {
+                            name: localModelLabel(model),
+                            ask: (m, l, s) => askLlamaCpp(model, m, l, s),
+                            // Translation requests go to the translation model directly.
+                            translate: translationModel ? (m, l, s) => askLlamaCpp(translationModel, m, l, s) : null
+                        };
                         return services;
                     }, {}),
                     Object.keys(WEB_CHATS).reduce((services, key) => {
@@ -1823,7 +1845,7 @@
 
                 // Editor context menu for the AI service chosen in the ribbon. "Send",
                 // "Explain", "Find Problems", "Translate ... into <language> (<code>)" (the system language and
-                // English) and "Convert ... to JavaScript (ES3)" need a selection;
+                // English) and "Write Code" (JavaScript, ES3) need a selection;
                 // "Ask..." asks for a message and includes the selection, if any. The answer
                 // goes below the selection (or the cursor line). Returns the added actions
                 // (disposables).
@@ -1854,8 +1876,10 @@
                             id: 'translateSelection_' + code,
                             label: `Translate Selection into ${language} (${code})`,
                             precondition: 'editorHasSelection',
+                            translation: true,
                             build: context => ({
-                                message: `Translate the following text into ${language}. Note that you should only output the translated result without any additional explanation:\n\n${context.text}`,
+                                message: `Translate the following text into ${language}. Translate only the parts that are not code, and keep code, ` +
+                                    `including variable, function and other identifiers, unchanged. Note that you should only output the translated result without any additional explanation:\n\n${context.text}`,
                                 summary: `Translate the selection into ${language}`
                             })
                         };
@@ -1895,21 +1919,22 @@
                         },
                         ...translateCodes.map(translateAction),
                         {
-                            // WelsonJS scripts run in the Windows Script Host JScript engine (ES3);
+                            // The language specification is in the instruction only: WelsonJS
+                            // scripts run in the Windows Script Host JScript engine (ES3), and
                             // app.js provides console.log, info, warn, error and debug.
-                            id: 'convertSelectionToJavaScript',
-                            label: 'Convert Selection to JavaScript (ES3)',
+                            id: 'writeCode',
+                            label: 'Write Code',
                             precondition: 'editorHasSelection',
                             build: context => ({
-                                message: 'Convert the following into JavaScript. The code must use ES3 syntax only, ' +
+                                message: 'Write JavaScript code for the following request, or convert the following code into ' +
+                                    'JavaScript. The code must use ES3 syntax only, ' +
                                     'because it runs in the Windows Script Host JScript engine: use var and function ' +
                                     'declarations, and do not use let, const, arrow functions, classes, template literals, ' +
                                     'destructuring, default or rest parameters, spread, for...of, Promise or async/await, ' +
                                     'modules, getters or setters, or trailing commas. The console API is available ' +
                                     '(console.log, console.info, console.warn, console.error and console.debug). ' +
-                                    'Output only the converted code ' +
-                                    'without any additional explanation.\n\n' + fence(context),
-                                summary: 'Convert the selection to JavaScript (ES3)'
+                                    'Output only the code without any additional explanation.\n\n' + fence(context),
+                                summary: 'Write code for the selection'
                             })
                         },
                         {
@@ -1942,8 +1967,9 @@
                                 return;
 
                             const request = action.build(context);
+                            const ask = action.translation && provider.translate ? provider.translate : provider.ask;
                             if (request)
-                                provider.ask(request.message, context.endLine, request.summary);
+                                ask(request.message, context.endLine, request.summary);
                         }
                     }));
                 };
@@ -1961,7 +1987,8 @@
                         key: 'ai',
                         name: service.name,
                         group: '1_ai',
-                        ask: service.ask
+                        ask: service.ask,
+                        translate: service.translate
                     });
                 };
 
@@ -1970,14 +1997,14 @@
                     registerAiServiceActions(aiServiceKey);
                 };
 
-                // When the launcher's model list arrives, keep the chosen service if it is still
-                // offered (re-registering its actions), or switch to the first one.
+                // When the launcher's model list (or translation model) arrives, keep the chosen
+                // service if it is still offered (re-registering its actions), or switch to the first one.
                 React.useEffect(() => {
                     const key = AI_SERVICES[aiServiceKey] ? aiServiceKey : Object.keys(AI_SERVICES)[0];
                     if (key !== aiServiceKey)
                         setAiServiceKey(key);
                     registerAiServiceActions(key);
-                }, [localModels]);
+                }, [localModels, translationModel, translatedModels]);
 
                 // Ribbon toggle: switches to the next AI service and starts over with an empty
                 // prompt, so the new model does not continue another model's conversation.

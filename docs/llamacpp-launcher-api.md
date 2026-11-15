@@ -29,10 +29,12 @@ The router reads models from `%APPDATA%\WelsonJS` (`--models-dir`). Each folder 
 | --- | --- | --- |
 | `LlamaCppModels` | `hy_mt2_1_8b_1_25bit,frognano_4b_2609,bitnet_b1_58_2b_4t` | The models the editor offers as Local AI, comma-separated, in the order of its ribbon toggle; reported as `models` by `/llamacpp/status` |
 | `LlmGuardModel` | `qwen3guard_06b` | The LLM guard's model |
-| `LlamaCppModelsMax` | `2` | Models loaded at once (`--models-max`); beyond it the least recently used model is unloaded. `0` means no limit |
+| `LlamaCppModelsMax` | `3` | Models loaded at once (`--models-max`); beyond it the least recently used model is unloaded. `0` means no limit |
+| `LlamaCppTranslatedModels` | `frognano_4b_2609,bitnet_b1_58_2b_4t` | Models that work best in English: their prompts are translated first (see [Chat](#chat)) |
+| `LlamaCppTranslationModel` | `hy_mt2_1_8b_1_25bit` | The model that translates those prompts; empty turns the translation off |
 | `LlamaCppContextSize` | `8192` | Context size of every model instance (`--ctx-size`) |
 
-With the default of 2, the model in use and the LLM guard stay loaded together; switching between Hy-MT2, FrogNano and BitNet in the editor swaps them.
+With the default of 3, the model in use, the translation model, and the LLM guard stay loaded together; switching between FrogNano and BitNet in the editor swaps them.
 
 ## Endpoints
 
@@ -47,7 +49,9 @@ GET /llamacpp/status
   "server": {"running": true, "pid": 1234, "host": "127.0.0.1", "port": 50123, "baseUrl": "http://127.0.0.1:50123",
              "modelsDirectory": "C:\\Users\\user\\AppData\\Roaming\\WelsonJS", "modelsMax": 2, "contextSize": 8192, ...},
   "models": [{"id": "hy_mt2_1_8b_1_25bit", "installed": true}, {"id": "frognano_4b_2609", "installed": true},
-             {"id": "bitnet_b1_58_2b_4t", "installed": true}]
+             {"id": "bitnet_b1_58_2b_4t", "installed": true}],
+  "translationModel": "hy_mt2_1_8b_1_25bit",
+  "translatedModels": ["frognano_4b_2609", "bitnet_b1_58_2b_4t"]
 }
 ```
 
@@ -107,6 +111,18 @@ Content-Type: application/json
 ```
 
 An OpenAI-compatible, non-streaming chat completion. `model` is required. The launcher loads the model if needed and returns the llama-server response (status code and body) unchanged. The passed-through parameters are `temperature`, `top_p`, `top_k`, `max_tokens`, `presence_penalty`, `frequency_penalty`, `stop`, `seed`, and `chat_template_kwargs` (for example `{"enable_thinking": false}` for reasoning models).
+
+**Prompt translation.** FrogNano and BitNet work best in English, so for the models in `LlamaCppTranslatedModels` the launcher prepares the request first:
+
+1. The user messages are translated into English with `LlamaCppTranslationModel` (Hy-MT2), in the prompt format of its model card.
+   - Fenced code blocks are not translated; only the text between them is. Inline code stays inside its sentence, and a translation that does not keep every inline code span unchanged is discarded (the text is sent as it is).
+   - Text without non-ASCII characters is taken to be English already. Translations are cached.
+2. The last user message gets `The user's system language is <language>.` There is no instruction about the reply language. (The editor does not add its own language note for these models.)
+3. The model answers; the answer is not translated.
+
+The system language is the optional `language` field (a language code such as `ko`; the editor sends the browser's UI language, which follows the Windows display language), or else the launcher's Windows display language. Nothing is changed when it is English. `"translate": false` skips the translation. The response then has a `welsonjs_translation` object with the translation model, the language, the number of translated messages, and the English prompt the model answered. When the translation model is not installed, the prompt is sent as it is.
+
+The editor sends its translation actions (Translate Selection into ...) to the translation model directly when a Local AI model is chosen.
 
 ### Direct requests to the router
 

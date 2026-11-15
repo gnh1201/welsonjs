@@ -28,7 +28,7 @@
   - 두 아키텍처의 모든 실행 파일과 DLL을 서명합니다. `.artifact-configuration.xml`에 하나씩 이름으로 적으며(와일드카드 없음), 바이너리에 버전 정보가 없거나 서명 목록에 없으면 빌드가 실패합니다.
   - `llama-quantize`로 I2_S 파일을 만들 수 있습니다. 포크의 양자화기는 커널이 읽지 않는 배치로 기록했고, 도구의 타입 목록에도 없었습니다. STQ1_0 양자화는 Sherry로 학습한 체크포인트용이라고 문서화했습니다.
   - README에 `llama-quantize`로 양자화하는 방법과 예시를 넣었습니다. 파일 타입 번호가 빌드마다 다르므로 타입은 이름(`I2_S`, `STQ1_0`)으로 지정합니다.
-- 에디터의 AI 서비스 토글로 Local AI 모델(llama.cpp: 기본값인 Hy-MT2, FrogNano, BitNet, 런처 설정 `LlamaCppModels`)과 웹 채팅 서비스(Copilot, ChatGPT 등)를 전환합니다. 컨텍스트 메뉴에는 고른 서비스의 Send Selection, Explain Selection, Find Problems in Selection(문제점 찾기), 시스템 언어와 영어(en)로 번역하는 Translate Selection into <언어> (<코드>), Convert Selection to JavaScript(WSH JScript 엔진용 ES3), Ask...가 표시되고, 프롬프트와 함께 시스템 언어를 보냅니다. 서비스를 바꾸면 프롬프트를 초기화합니다.
+- 에디터의 AI 서비스 토글로 Local AI 모델(llama.cpp: 기본값인 Hy-MT2, FrogNano, BitNet, 런처 설정 `LlamaCppModels`)과 웹 채팅 서비스(Copilot, ChatGPT 등)를 전환합니다. 컨텍스트 메뉴에는 고른 서비스의 Send Selection, Explain Selection, Find Problems in Selection(문제점 찾기), 시스템 언어와 영어(en)로 번역하는 Translate Selection into <언어> (<코드>), Write Code(JavaScript, WSH JScript 엔진용 ES3), Ask...가 표시되고, 프롬프트와 함께 시스템 언어를 보냅니다(코드가 아닌 부분에만 쓰도록 지시). 서비스를 바꾸면 프롬프트를 초기화합니다.
 - 언어 추론 엔진에 UberLLM 제공자 추가([#543]).
 - 프롬프트를 검사하는 런처 관리 LLM 가드(Qwen3Guard).
 
@@ -38,7 +38,8 @@
 - Hy-MT2 기본 모델이 Q4_K_M(약 1.1GB) 대신 1.8B 1.25비트 GGUF(462MB)입니다. 구성 요소 이름은 `hy_mt2_1_8b_1_25bit`입니다([#542] 관련).
 - 설치 프로그램은 더 이상 공식 llama.cpp 패키지를 받지 않고, artifacts 패키지의 WelsonJS 빌드를 씁니다. Qwen3Guard는 llama.cpp 구성 요소 아래로 묶었습니다.
 - 런처 에디터의 AI 도구는 로컬 llama.cpp 서버를 씁니다. 런처의 Copilot 메뉴와 `CopilotUrl` 설정은 제거했습니다.
-- llama.cpp는 `llama-server` 하나를 라우터 모드(모델 hot swap)로 실행하며, 에디터의 Local AI, LLM 가드, `lib/llamacpp.js`가 함께 씁니다. 모델은 `%APPDATA%\WelsonJS`에서 `.gguf` 파일이 있는 폴더이고 이름은 설치 구성 요소이며, 모든 요청은 모델을 명시합니다. `LlamaCppModelsMax`(기본값 2)를 넘으면 가장 오래 쓰지 않은 모델을 내립니다.
+- llama.cpp는 `llama-server` 하나를 라우터 모드(모델 hot swap)로 실행하며, 에디터의 Local AI, LLM 가드, `lib/llamacpp.js`가 함께 씁니다. 모델은 `%APPDATA%\WelsonJS`에서 `.gguf` 파일이 있는 폴더이고 이름은 설치 구성 요소이며, 모든 요청은 모델을 명시합니다. `LlamaCppModelsMax`(기본값 3)를 넘으면 가장 오래 쓰지 않은 모델을 내립니다.
+  - FrogNano와 BitNet은 영어에서 가장 잘 동작하므로, 이 모델들(`LlamaCppTranslatedModels`)에는 런처가 사용자 메시지를 Hy-MT2(`LlamaCppTranslationModel`)로 영어로 번역하고(코드 블록과 인라인 코드는 그대로), 사용자의 시스템 언어만 알려 줍니다(답변 언어에 관한 지시는 없음). 답변은 번역하지 않습니다. 에디터의 번역 항목은 Hy-MT2로 바로 보냅니다.
   - 런처 API: `/llamacpp/status`, `models`, `start`, `stop`, `load`, `unload`, `chat`(`model` 필수). 로컬 호출자만 쓸 수 있습니다. `docs/llamacpp-launcher-api.md`를 참고하세요.
   - 설정: `LlamaCppModelPath`와 `LlmGuardModelPath` 대신 `LlamaCppModels`(에디터 모델 목록, 쉼표로 구분)와 `LlmGuardModel`(모델 이름)을 씁니다. `LlamaCppModelsMax`와 `LlamaCppContextSize`를 추가했습니다.
   - `lib/llamacpp.js`는 모델을 이름으로 고릅니다(`setModel`, `loadModel`, `unloadModel`, `listModels`, `chat`). 모델 경로, 포트, `openBrowser` 옵션은 제거했습니다.
