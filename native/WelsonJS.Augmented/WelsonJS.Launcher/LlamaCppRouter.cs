@@ -337,6 +337,10 @@ namespace WelsonJS.Launcher
                 }
             };
             if (!process.Start()) throw new InvalidOperationException("Failed to start llama-server.exe.");
+            // End the router and its model instances with the launcher, however it ends. The
+            // router starts model instances only on request, after this.
+            try { ChildProcessJob.Add(process); }
+            catch (Exception ex) { Trace.TraceWarning("llama-server is not in the launcher's job: " + ex.Message); }
             _process = process;
             _startedAtUtc = DateTime.UtcNow;
         }

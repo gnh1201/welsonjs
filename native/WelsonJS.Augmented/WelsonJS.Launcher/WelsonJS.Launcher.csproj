@@ -146,6 +146,7 @@
     <Compile Include="LlamaCppRouter.cs" />
     <Compile Include="LlmGuardService.cs" />
     <Compile Include="JsrtInstanceProcessManager.cs" />
+    <Compile Include="ChildProcessJob.cs" />
     <Compile Include="ConPtySession.cs" />
     <Compile Include="TerminalSessionManager.cs" />
     <EmbeddedResource Include="EnvForm.resx">
