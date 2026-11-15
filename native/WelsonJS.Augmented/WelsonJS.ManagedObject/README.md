@@ -48,12 +48,24 @@ Provides inter-process communication using Windows named shared memory.
 Example:
 
 ```javascript
-UseObject("WelsonJS.NamedSharedMemory", function(sharedMemory) {
-    // Use named shared memory here.
-});
+var NSM = require("lib/namedsharedmemory");
+var mem = new NSM.NamedSharedMemory("MySharedMemory");
+
+if (!mem.writeText("Hello")) {
+    console.error(mem.getLastError());
+}
+console.log(mem.readText());
+mem.close();
 ```
 
 This module can be used when multiple processes need to exchange data through a shared memory region.
+
+* The region is 1024 bytes. Text is stored as UTF-8 with a NUL terminator, so up to 1023 bytes of text fit; longer text is rejected (`false`) instead of being truncated.
+* ASCII text is byte-compatible with earlier versions. Data that is not valid UTF-8 is decoded with the system ANSI code page, for compatibility with older writers.
+* Methods return `false` (or `""` for reads) on failure; `LastError` describes the cause.
+* A mapping stays open in the process until `CloseSharedMemory` is called; the OS frees it after every process has closed it.
+* Reads and writes are not synchronized between processes.
+* Names prefixed with `Global\` require `SeCreateGlobalPrivilege` (typically administrator or service accounts).
 
 ### `WelsonJS.ProcessControl`
 
@@ -142,6 +154,54 @@ if (object) {
 ```
 
 `CreateObject` supports ProgID-based COM activation and ByRef argument handling through the managed COM implementation.
+
+### ByRef arguments (`Wrap` / `ByRef`)
+
+JScript cannot pass arguments by reference. To call a COM method with `ByRef`/`out` parameters (for example `MSWinsock.Winsock` `GetData`, or WMI `StdRegProv` `GetStringValue`), use `lib/managedobject.js`:
+
+```javascript
+var ManagedObject = require("lib/managedobject");
+
+// The first ByRef parameter is returned (a ref is inserted if none is passed)
+var socket = ManagedObject.create("MSWinsock.Winsock.1");
+var data = socket.callByRef("GetData");
+
+// Explicit refs, for any COM object however it was obtained
+var reg = ManagedObject.wrap(GetObject("winmgmts:root\\default:StdRegProv"));
+var value = ManagedObject.ref();
+var rc = reg.invoke("GetStringValue", 0x80000002, "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion", "ProductName", value);
+console.log(value.Value);
+```
+
+The same is available directly on the managed object:
+
+```javascript
+var managed = CreateObject.managed;
+var target = managed.Wrap(someComObject);
+var output = managed.ByRef();        // or managed.ByRef(initialValue)
+
+target.Call("MethodWithOutParam", "input", output);
+console.log(output.Value);           // value written by the callee
+```
+
+* `Wrap(obj)` accepts any COM object, however it was obtained: `WScript.CreateObject` (ADO, Scripting, WScript), `GetObject`, or the return value of another call (WMI services, Office collections, Shell folders). Managed (.NET) objects are accepted only if the same `ManagedObject` instance created them.
+* `Wrap` adds no tracking reference of its own; see [Releasing COM objects](#releasing-com-objects) for when wrapped COM objects are released. `wrapper.Target` returns the original object.
+* There is no limit on the number of arguments: `lib/managedobject.js` passes them as one array through `CallWithArray`.
+* `Call(name, args...)`, `CallWithArray(name, array)`, `Get(name)`, and `Set(name, value)` call members through late binding. ByRef values are copied back for both COM and managed targets.
+* Failures are reported as COM errors whose message names the ProgID or member; the original HRESULT is preserved.
+
+### Releasing COM objects
+
+COM objects that pass through `WelsonJS.ManagedObject` (created by `CreateObject`, returned by `Call`/`Get`, or passed as arguments) are held by .NET runtime callable wrappers until the .NET garbage collector runs. Because a script host allocates little managed memory, the collector could otherwise stay idle while released COM objects keep their memory and handles.
+
+* A collection runs automatically after every `CollectThreshold` COM objects (default `100`, process-wide; `0` disables it).
+* Call `Collect()` (or `require("lib/managedobject").collect()`) after releasing large COM objects, such as after `Excel.Application.Quit()`, to release them immediately.
+
+```javascript
+excel.Quit();
+excel = null;
+CreateObject.managed.Collect();
+```
 
 ### Choosing Between `UseObject` and `CreateObject`
 

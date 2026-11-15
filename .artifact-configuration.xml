@@ -17,6 +17,42 @@
       <include path="artifacts/welsonjs-hta-webview2.exe" />
       <include path="artifacts/welsonjs-hta-edgehtml.exe" />
       <include path="artifacts/welsonjs-hta-mshtml.exe" />
+      <!-- llama.cpp (native/llamacpp/build-llamacpp.ps1, built in the Release job) -->
+      <include path="artifacts/llamacpp/x64/llama-server.exe" />
+      <include path="artifacts/llamacpp/x64/llama-cli.exe" />
+      <include path="artifacts/llamacpp/x64/llama-quantize.exe" />
+      <include path="artifacts/llamacpp/x64/llama.dll" />
+      <include path="artifacts/llamacpp/x64/llama-common.dll" />
+      <include path="artifacts/llamacpp/x64/llama-server-impl.dll" />
+      <include path="artifacts/llamacpp/x64/llama-cli-impl.dll" />
+      <include path="artifacts/llamacpp/x64/llama-quantize-impl.dll" />
+      <include path="artifacts/llamacpp/x64/mtmd.dll" />
+      <include path="artifacts/llamacpp/x64/ggml.dll" />
+      <include path="artifacts/llamacpp/x64/ggml-base.dll" />
+      <!-- one CPU backend per CPU variant (GGML_CPU_ALL_VARIANTS, MSVC); build-llamacpp.ps1 fails when a
+           built executable or DLL is not listed here -->
+      <include path="artifacts/llamacpp/x64/ggml-cpu-alderlake.dll" />
+      <include path="artifacts/llamacpp/x64/ggml-cpu-cannonlake.dll" />
+      <include path="artifacts/llamacpp/x64/ggml-cpu-cascadelake.dll" />
+      <include path="artifacts/llamacpp/x64/ggml-cpu-haswell.dll" />
+      <include path="artifacts/llamacpp/x64/ggml-cpu-icelake.dll" />
+      <include path="artifacts/llamacpp/x64/ggml-cpu-sandybridge.dll" />
+      <include path="artifacts/llamacpp/x64/ggml-cpu-skylakex.dll" />
+      <include path="artifacts/llamacpp/x64/ggml-cpu-sse42.dll" />
+      <include path="artifacts/llamacpp/x64/ggml-cpu-x64.dll" />
+      <!-- llama.cpp for ARM64 (cross-compiled with clang; one CPU backend, ggml-cpu.dll) -->
+      <include path="artifacts/llamacpp/arm64/llama-server.exe" />
+      <include path="artifacts/llamacpp/arm64/llama-cli.exe" />
+      <include path="artifacts/llamacpp/arm64/llama-quantize.exe" />
+      <include path="artifacts/llamacpp/arm64/llama.dll" />
+      <include path="artifacts/llamacpp/arm64/llama-common.dll" />
+      <include path="artifacts/llamacpp/arm64/llama-server-impl.dll" />
+      <include path="artifacts/llamacpp/arm64/llama-cli-impl.dll" />
+      <include path="artifacts/llamacpp/arm64/llama-quantize-impl.dll" />
+      <include path="artifacts/llamacpp/arm64/mtmd.dll" />
+      <include path="artifacts/llamacpp/arm64/ggml.dll" />
+      <include path="artifacts/llamacpp/arm64/ggml-base.dll" />
+      <include path="artifacts/llamacpp/arm64/ggml-cpu.dll" />
       <for-each>
         <authenticode-sign />
       </for-each>

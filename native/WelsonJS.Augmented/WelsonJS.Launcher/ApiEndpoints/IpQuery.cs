@@ -7,9 +7,10 @@
 // Requires joining the IP Query API providers to provide IP information.
 // WelsonJS has no affiliation with any IP Query API providers.
 //
-// Providers:
-//   1) CriminalIP   -> IpQueryApiPrefix,  IpQueryApiKey
-//   2) AbuseIPDB    -> IpQueryApiPrefix2, IpQueryApiKey2
+// Providers: the addresses come from the blob config (services/ipQuery/provider, by
+// name), the API keys from the local settings:
+//   criminalip -> IpQueryApiKey
+//   abuseipdb  -> IpQueryApiKey2
 //
 // XML response structure:
 // <result target="1.1.1.1">
@@ -18,6 +19,8 @@
 // </result>
 //
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -32,6 +35,13 @@ namespace WelsonJS.Launcher.ApiEndpoints
         private readonly HttpClient _httpClient;
         private readonly ILogger _logger;
         private const string Prefix = "ip-query/";
+
+        // The supported providers (BuildProviderRequest) with the settings of their API keys.
+        private static readonly Dictionary<string, string> ApiKeySettings = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["criminalip"] = "IpQueryApiKey",
+            ["abuseipdb"] = "IpQueryApiKey2"
+        };
 
         public IpQuery(ResourceServer server, HttpClient httpClient, ILogger logger)
         {
@@ -56,25 +66,24 @@ namespace WelsonJS.Launcher.ApiEndpoints
                     return;
                 }
 
-                string crimPrefix = Program.GetAppConfig("IpQueryApiPrefix");
-                string crimKey = Program.GetAppConfig("IpQueryApiKey");
-
-                string abusePrefix = Program.GetAppConfig("IpQueryApiPrefix2");
-                string abuseKey = Program.GetAppConfig("IpQueryApiKey2");
+                List<IpQueryProvider> providers = (await Server.GetBlobConfigAsync())?.Services?.IpQueryProviders;
+                if (providers == null || providers.Count == 0)
+                {
+                    _logger.Error("The IP query providers are not configured (blob config: services/ipQuery).");
+                    await Server.ServeResource(context, "<error>The IP query providers are not configured. Check the network connection and try again.</error>", "application/xml", 503);
+                    return;
+                }
 
                 var root = new XElement("result", new XAttribute("target", target));
 
-                var p1 = QueryProviderAsync(context, target, "criminalip", crimPrefix, crimKey);
-                var p2 = QueryProviderAsync(context, target, "abuseipdb", abusePrefix, abuseKey);
+                XElement[] results = await Task.WhenAll(providers
+                    .Where(p => p.Name != null && ApiKeySettings.ContainsKey(p.Name))
+                    .Select(p => QueryProviderAsync(context, target, p.Name, p.PrefixUrl, Program.GetAppConfig(ApiKeySettings[p.Name]))));
 
-                await Task.WhenAll(p1, p2);
+                foreach (XElement result in results)
+                    root.Add(result);
 
-                root.Add(p1.Result);
-                root.Add(p2.Result);
-
-                bool anySuccess =
-                    (int.TryParse((string)p1.Result.Attribute("status"), out var s1) && s1 >= 200 && s1 < 300) ||
-                    (int.TryParse((string)p2.Result.Attribute("status"), out var s2) && s2 >= 200 && s2 < 300);
+                bool anySuccess = results.Any(r => int.TryParse((string)r.Attribute("status"), out int s) && s >= 200 && s < 300);
 
                 int httpCode = anySuccess ? 200 : 502;
 
@@ -105,9 +114,8 @@ namespace WelsonJS.Launcher.ApiEndpoints
                 try
                 {
                     using (HttpResponseMessage resp = await _httpClient.SendAsync(req))
-                    using (JsSerializer ser = new JsSerializer())
                     {
-                        string body = ser.Pretty(await resp.Content.ReadAsStringAsync(), 4);
+                        string body = JsonCodec.Format(await resp.Content.ReadAsStringAsync(), 4);
                         node.Add(new XAttribute("status", (int)resp.StatusCode));
                         node.Add(new XElement("text", body));
                         return node;

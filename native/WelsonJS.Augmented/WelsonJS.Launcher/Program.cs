@@ -9,11 +9,8 @@ using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
+using System.Net;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Catswords.Phantomizer;
 
@@ -74,14 +71,6 @@ namespace WelsonJS.Launcher
                 return;
             }
 
-            // if use the stdio-jsonrpc2 forwarder
-            if (HasArg(args, "--stdio-jsonrpc2"))
-            {
-                _logger.Info("Starting in the stdio-jsonrpc2 forwarder...");
-                ProcessStdioJsonRpc2().GetAwaiter().GetResult();
-                return;
-            }
-
             // create the mutex
             _mutex = new Mutex(true, "WelsonJS.Launcher", out bool createdNew);
             if (!createdNew)
@@ -95,6 +84,17 @@ namespace WelsonJS.Launcher
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new MainForm(_logger));
 
+            // Do not leave llama.cpp servers or terminals running after the launcher exits
+            try
+            {
+                if (_resourceServer != null)
+                    _resourceServer.ShutdownChildProcesses();
+            }
+            catch (Exception ex)
+            {
+                _logger.Error($"Failed to stop child processes: {ex.Message}");
+            }
+
             // release the mutex
             try
             {
@@ -102,135 +102,6 @@ namespace WelsonJS.Launcher
             }
             catch { /* ignore if not owned */ }
             _mutex.Dispose();
-        }
-
-        private static bool HasArg(string[] args, string key)
-        {
-            if (args == null)
-                return false;
-
-            for (int i = 0; i < args.Length; i++)
-                if (string.Equals(args[i], key, StringComparison.OrdinalIgnoreCase))
-                    return true;
-            
-            return false;
-        }
-
-        private async static Task ProcessStdioJsonRpc2()
-        {
-            string serverPrefix = GetAppConfig("ResourceServerPrefix");
-            string endpoint = $"{serverPrefix}jsonrpc2";
-            int timeout = int.TryParse(GetAppConfig("HttpClientTimeout"), out timeout) ? timeout : 300;
-
-            var http = new HttpClient
-            {
-                Timeout = TimeSpan.FromSeconds(timeout)
-            };
-
-            using (var stdin = Console.OpenStandardInput())
-            using (var stdout = Console.OpenStandardOutput())
-            {
-                var buffer = new byte[8192];
-
-                while (true)
-                {
-                    int read;
-                    try
-                    {
-                        read = await stdin.ReadAsync(buffer, 0, buffer.Length);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.Error("[stdio] stdin read failed", ex);
-                        break;
-                    }
-
-                    if (read <= 0)
-                    {
-                        _logger.Info("[stdio] EOF received, exiting loop");
-                        break;
-                    }
-
-                    byte[] payload = new byte[read];
-                    Buffer.BlockCopy(buffer, 0, payload, 0, read);
-
-                    _logger.Debug($"[stdio] recv {payload.Length} bytes");
-                    _logger.Debug($"[stdio] payload preview: {SafePreviewUtf8(payload, 512)}");
-
-                    try
-                    {
-                        using (var content = new ByteArrayContent(payload))
-                        {
-                            // Content-Type: application/json
-                            content.Headers.ContentType =
-                                new MediaTypeHeaderValue("application/json")
-                                {
-                                    CharSet = "utf-8"
-                                };
-
-                            _logger.Debug($"[http] POST {endpoint}");
-
-                            using (var response = await http.PostAsync(endpoint, content))
-                            {
-                                _logger.Info(
-                                    $"[http] status={(int)response.StatusCode} {response.ReasonPhrase}");
-
-                                foreach (var h in response.Headers)
-                                    _logger.Debug($"[http] H {h.Key}: {string.Join(", ", h.Value)}");
-
-                                foreach (var h in response.Content.Headers)
-                                    _logger.Debug($"[http] HC {h.Key}: {string.Join(", ", h.Value)}");
-
-                                byte[] responseBytes =
-                                    await response.Content.ReadAsByteArrayAsync();
-
-                                _logger.Debug($"[http] body {responseBytes.Length} bytes");
-
-                                _logger.Debug(
-                                    $"[http] body preview: {SafePreviewUtf8(responseBytes, 2048)}");
-
-                                await stdout.WriteAsync(responseBytes, 0, responseBytes.Length);
-                                await stdout.FlushAsync();
-                            }
-                        }
-                    }
-                    catch (TaskCanceledException ex)
-                    {
-                        _logger.Error("[http] request timed out or canceled", ex);
-                    }
-                    catch (HttpRequestException ex)
-                    {
-                        _logger.Error("[http] request failed", ex);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.Error("[http] unexpected error", ex);
-                    }
-                }
-            }
-        }
-
-        private static string SafePreviewUtf8(byte[] bytes, int maxBytes)
-        {
-            if (bytes == null || bytes.Length == 0)
-                return "(empty)";
-
-            try
-            {
-                int len = Math.Min(bytes.Length, maxBytes);
-                string s = Encoding.UTF8.GetString(bytes, 0, len);
-
-                s = s.Replace("\r", "\\r").Replace("\n", "\\n");
-
-                if (bytes.Length > maxBytes)
-                    s += $"...(truncated, total {bytes.Length} bytes)";
-
-                return s;
-            }
-            catch
-            {
-                return "(binary / non-utf8 response)";
-            }
         }
 
         private static void InitializeAssemblyLoader()
@@ -651,24 +522,99 @@ namespace WelsonJS.Launcher
                 }
             }
         }
-        public static void OpenWebBrowser(string url)
+        /// <summary>The launcher browser's profile folder.</summary>
+        public static string ChromiumUserDataDirectory
+        {
+            get { return Path.Combine(GetAppDataPath(), "EdgeUserProfile"); }
+        }
+
+        // The remote debugging port the launcher chose when it started its browser
+        // (LocalPorts); 0 before it has. Kept in memory only.
+        private static int _chromiumDevToolsPort;
+        private static readonly object _browserStartSync = new object();
+
+        /// <summary>
+        /// The base URL of the launcher browser's DevTools HTTP endpoint (for example
+        /// http://127.0.0.1:51234/), or null when this launcher run has not started the
+        /// browser. The port is the one the launcher chose when it started the browser. When
+        /// the browser has ended since, the port does not answer, which callers treat as no
+        /// browser. A browser left from an earlier launcher run is not known: close its windows.
+        /// </summary>
+        public static string GetChromiumDevToolsPrefix()
+        {
+            int port;
+            lock (_browserStartSync) port = _chromiumDevToolsPort;
+            return port > 0 ? "http://" + LocalPorts.Host + ":" + port + "/" : null;
+        }
+
+        // Whether the launcher's browser answers DevTools requests on the port.
+        private static bool IsChromiumDevTools(int port)
+        {
+            try
+            {
+                var request = (HttpWebRequest)WebRequest.Create("http://" + LocalPorts.Host + ":" + port + "/json/version");
+                request.Timeout = 2000;
+                request.ReadWriteTimeout = 2000;
+                request.Proxy = null;
+                using (var response = (HttpWebResponse)request.GetResponse())
+                using (var reader = new StreamReader(response.GetResponseStream()))
+                {
+                    return JsonCodec.Deserialize(reader.ReadToEnd()) is Dictionary<string, object> version
+                        && version.ContainsKey("webSocketDebuggerUrl");
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Opens the URL in the launcher's browser (its own profile, with remote debugging),
+        /// starting the browser when it is not running; a running browser opens it in a new
+        /// window. The launcher chooses the remote debugging port when it starts the browser
+        /// (LocalPorts); while that browser answers on it, the port is kept. appMode: true opens an app window (no
+        /// tabs or address bar) whatever ChromiumAppMode says, as the web chat pages are
+        /// opened (WebChatRunner).
+        /// </summary>
+        public static void OpenWebBrowser(string url, bool appMode = false)
         {
             Uri resourceServerUri = new Uri(GetAppConfig("ResourceServerPrefix"));
-            Uri devToolsUri = new Uri(GetAppConfig("ChromiumDevToolsPrefix"));
             string browserPath = ResolveChromiumExecutable();
 
-            string userDataDir = Path.Combine(GetAppDataPath(), "EdgeUserProfile");
+            string userDataDir = ChromiumUserDataDirectory;
             string remoteAllowOrigins = $"{resourceServerUri.Scheme}://{resourceServerUri.Host}:{resourceServerUri.Port}";
-            int remoteDebuggingPort = devToolsUri.Port;
-            bool isAppMode = string.Equals(
+            int remoteDebuggingPort;
+            lock (_browserStartSync)
+            {
+                if (_chromiumDevToolsPort > 0 && IsChromiumDevTools(_chromiumDevToolsPort))
+                {
+                    // The browser runs: it takes the URL and keeps its port.
+                    remoteDebuggingPort = _chromiumDevToolsPort;
+                }
+                else
+                {
+                    remoteDebuggingPort = LocalPorts.FindAvailable();
+                    _chromiumDevToolsPort = remoteDebuggingPort;
+                }
+            }
+            bool isAppMode = appMode || string.Equals(
                 GetAppConfig("ChromiumAppMode"),
                 "true",
                 StringComparison.OrdinalIgnoreCase);
             string[] arguments = {
                 isAppMode ? $"\"--app={url}\"" : $"\"{url}\"",
+                $"--remote-debugging-address={LocalPorts.Host}",
                 $"--remote-debugging-port={remoteDebuggingPort}",
                 $"--remote-allow-origins={remoteAllowOrigins}",
-                $"--user-data-dir=\"{userDataDir}\""
+                $"--user-data-dir=\"{userDataDir}\"",
+                // Do not offer to translate pages (the editor and the chat pages it opens).
+                "--disable-features=Translate,TranslateUI",
+                // Keep pages working behind other windows: the launcher drives web chat
+                // pages that may stay in the background (WebChatRunner).
+                "--disable-backgrounding-occluded-windows",
+                "--disable-renderer-backgrounding",
+                "--disable-background-timer-throttling"
             };
 
             Process.Start(new ProcessStartInfo

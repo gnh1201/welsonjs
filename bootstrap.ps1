@@ -86,6 +86,27 @@ try {
     Expand-Archive -Path $zipPath -DestinationPath $tempDir
     Write-Ok "Extraction completed"
 
+    # Step 3B: Restore the application assets (app\assets) that app.js needs.
+    # Branches published before the restore script still bundle these files; some
+    # branches still have it under its earlier name, restoreVendorScripts.ps1.
+    # It runs in a separate powershell.exe with -ExecutionPolicy Bypass: this script is
+    # usually started with "irm ... | iex", which is not subject to the execution
+    # policy, but running a downloaded .ps1 file is (the default policy, Restricted,
+    # refuses it).
+    $restore = $null
+    foreach ($name in @("restoreAppAssets.ps1", "restoreVendorScripts.ps1")) {
+        $restore = Get-ChildItem -Path $tempDir -Recurse -Filter $name | Select-Object -First 1
+        if ($restore) { break }
+    }
+    if ($restore) {
+        Write-Step "Restoring application assets..."
+        & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $restore.FullName -Root $restore.DirectoryName
+        if ($LASTEXITCODE -ne 0) {
+            throw "$($restore.Name) failed with exit code $LASTEXITCODE"
+        }
+        Write-Ok "Application assets restored"
+    }
+
     if ($fileArg) {
         # Step 4A: Run cscript via cmd (with visible console)
         Write-Step "Locating app.js..."

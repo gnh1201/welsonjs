@@ -16,7 +16,7 @@ namespace WelsonJS.ManagedObject
     {
         private class Serializer
         {
-            private static Dictionary<string, string> dict = new Dictionary<string, string>();
+            private readonly Dictionary<string, string> dict = new Dictionary<string, string>();
 
             public void Add(string key, string value)
             {
@@ -44,45 +44,37 @@ namespace WelsonJS.ManagedObject
 
         private void Crop(string srcfile, string dstfile, int x, int y, int a, int b)
         {
-            Bitmap originalBitmap = Load(srcfile);
-
-            Rectangle cropArea = new Rectangle(x, y, a, b);
-            Bitmap croppedBitmap = originalBitmap.Clone(cropArea, originalBitmap.PixelFormat);
-
-            croppedBitmap.Save(dstfile);
+            using (Bitmap originalBitmap = Load(srcfile))
+            {
+                Rectangle cropArea = new Rectangle(x, y, a, b);
+                using (Bitmap croppedBitmap = originalBitmap.Clone(cropArea, originalBitmap.PixelFormat))
+                {
+                    // Dispose the source first so that dstfile may equal srcfile.
+                    originalBitmap.Dispose();
+                    croppedBitmap.Save(dstfile);
+                }
+            }
         }
 
         private int[] GetSize(string srcfile)
         {
-            Bitmap bitmap = Load(srcfile);
-
-            int width = bitmap.Width;
-            int height = bitmap.Height;
-
-            bitmap.Dispose();
-
-            return new int[] { width, height };
+            using (Bitmap bitmap = Load(srcfile))
+            {
+                return new int[] { bitmap.Width, bitmap.Height };
+            }
         }
 
         private int[] GetPixel(string srcfile, int x, int y)
         {
-            Bitmap bitmap = Load(srcfile);
-
-            Color pixelColor = bitmap.GetPixel(x, y);
-            int red = pixelColor.R;
-            int green = pixelColor.G;
-            int blue = pixelColor.B;
-
-            bitmap.Dispose();
-
-            return new int[] { red, green, blue };
+            using (Bitmap bitmap = Load(srcfile))
+            {
+                Color pixelColor = bitmap.GetPixel(x, y);
+                return new int[] { pixelColor.R, pixelColor.G, pixelColor.B };
+            }
         }
 
         private string GetBase64(string srcfile)
         {
-            Bitmap bitmap = Load(srcfile);
-            MemoryStream memoryStream = new MemoryStream();
-
             ImageFormat imageFormat;
             if (srcfile.EndsWith(".bmp", StringComparison.OrdinalIgnoreCase))
             {
@@ -109,14 +101,12 @@ namespace WelsonJS.ManagedObject
                 return "";
             }
 
-            bitmap.Save(memoryStream, imageFormat);
-            byte[] imageBytes = memoryStream.ToArray();
-            string base64String = Convert.ToBase64String(imageBytes);
-
-            bitmap.Dispose();
-            memoryStream.Dispose();
-
-            return base64String;
+            using (Bitmap bitmap = Load(srcfile))
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                bitmap.Save(memoryStream, imageFormat);
+                return Convert.ToBase64String(memoryStream.ToArray());
+            }
         }
 
         public string GetImageSize(string srcfile)

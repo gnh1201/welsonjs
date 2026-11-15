@@ -23,20 +23,15 @@
         x86   = "https://catswords.blob.core.windows.net/welsonjs/packages/native/curl/8.20.0-x86/curl-8.20.0-win-x86-full.2026-05-02.zip"
     }
 
-    # ===========================
-    # Llama.cpp Windows CPU binaries
-    # ===========================
-    llamacpp = @{
-        x64   = "https://github.com/ggml-org/llama.cpp/releases/download/b11808/llama-b11808-bin-win-cpu-x64.zip"
-        arm64 = "https://github.com/ggml-org/llama.cpp/releases/download/b11808/llama-b11808-bin-win-cpu-arm64.zip"
-        x86   = $null  # no official x86 CPU package
-    }
+    # Llama.cpp is not downloaded: postInstall.ps1 installs the WelsonJS build
+    # from the artifacts package (artifacts\llamacpp\<arch>, native\llamacpp).
 
     # ===========================
-    # Hy-MT2 1.8B Q4_K_M GGUF model
+    # Hy-MT2 1.8B 1.25-bit GGUF model (Tencent AngelSlim, STQ1_0; needs the
+    # WelsonJS llama.cpp build, see native\llamacpp)
     # ===========================
-    hy_mt2_1_8b = @{
-        any   = "https://huggingface.co/tencent/Hy-MT2-1.8B-GGUF/resolve/main/Hy-MT2-1.8B-Q4_K_M.gguf"
+    hy_mt2_1_8b_1_25bit = @{
+        any   = "https://huggingface.co/tencent/Hy-MT2-1.8B-1.25Bit-GGUF/resolve/main/Hy-MT2-1.8B-1.25Bit.gguf"
     }
 
     # ===========================
@@ -44,6 +39,14 @@
     # ===========================
     frognano_4b_2609 = @{
         any   = "https://huggingface.co/gnh1201/FrogNano-4B-2609-Q4_K_M-GGUF/resolve/main/frognano-4b-2609-q4_k_m.gguf"
+    }
+
+    # ===========================
+    # BitNet b1.58 2B-4T GGUF model (Microsoft, 1.58-bit I2_S; needs the WelsonJS
+    # llama.cpp build, see native\llamacpp)
+    # ===========================
+    bitnet_b1_58_2b_4t = @{
+        any   = "https://huggingface.co/microsoft/bitnet-b1.58-2B-4T-gguf/resolve/main/ggml-model-i2_s.gguf"
     }
 
     # ===========================
@@ -85,7 +88,7 @@
     # ===========================
     artifacts = @{
         x64   = "https://catswords.blob.core.windows.net/welsonjs/artifacts.zip"
-        arm64 = $null  # no official ARM64 build
+        arm64 = "https://catswords.blob.core.windows.net/welsonjs/artifacts.zip"  # x86 WelsonJS binaries (x86 emulation) and the arm64 llama.cpp build
         x86   = "https://catswords.blob.core.windows.net/welsonjs/artifacts.zip"
     }
 

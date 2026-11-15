@@ -13,7 +13,6 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web.Script.Serialization;
 
 namespace WelsonJS.Launcher.ApiEndpoints
 {
@@ -46,7 +45,6 @@ namespace WelsonJS.Launcher.ApiEndpoints
         private const int MaxOutputFrameBytes = 64 * 1024;
 
         private readonly TerminalSessionManager _sessions;
-        private readonly JavaScriptSerializer _serializer = new JavaScriptSerializer();
         private readonly ILogger _logger;
 
         public Terminal(ResourceServer server, HttpClient httpClient, ILogger logger)
@@ -88,7 +86,7 @@ namespace WelsonJS.Launcher.ApiEndpoints
                     }
                     if (method == "POST")
                     {
-                        var input = _serializer.DeserializeObject(await ReadBody(context)) as Dictionary<string, object> ?? new Dictionary<string, object>();
+                        var input = JsonCodec.Deserialize(await ReadBody(context)) as Dictionary<string, object> ?? new Dictionary<string, object>();
                         var session = _sessions.Create(
                             GetString(input, "profile"),
                             GetShort(input, "cols"),
@@ -160,7 +158,7 @@ namespace WelsonJS.Launcher.ApiEndpoints
             var cts = new CancellationTokenSource();
 
             Action<OutgoingFrame> enqueue = frame => { frames.Enqueue(frame); signal.Release(); };
-            enqueue(OutgoingFrame.Json(_serializer.Serialize(new Dictionary<string, object>
+            enqueue(OutgoingFrame.Json(JsonCodec.Serialize(new Dictionary<string, object>
             {
                 ["type"] = "session",
                 ["session"] = session.ToDictionary()
@@ -168,7 +166,7 @@ namespace WelsonJS.Launcher.ApiEndpoints
 
             IDisposable subscription = session.Subscribe(
                 chunk => enqueue(OutgoingFrame.Output(chunk)),
-                exitCode => enqueue(OutgoingFrame.Json(_serializer.Serialize(new Dictionary<string, object>
+                exitCode => enqueue(OutgoingFrame.Json(JsonCodec.Serialize(new Dictionary<string, object>
                 {
                     ["type"] = "exit",
                     ["exitCode"] = exitCode
@@ -223,7 +221,7 @@ namespace WelsonJS.Launcher.ApiEndpoints
 
         private void HandleClientMessage(TerminalSession session, string text)
         {
-            var input = _serializer.DeserializeObject(text) as Dictionary<string, object>;
+            var input = JsonCodec.Deserialize(text) as Dictionary<string, object>;
             if (input == null) return;
 
             switch (GetString(input, "type"))
@@ -315,7 +313,7 @@ namespace WelsonJS.Launcher.ApiEndpoints
 
         private async Task Write(HttpListenerContext context, object value, int status = 200)
         {
-            byte[] bytes = Encoding.UTF8.GetBytes(_serializer.Serialize(value));
+            byte[] bytes = Encoding.UTF8.GetBytes(JsonCodec.Serialize(value));
             context.Response.StatusCode = status;
             context.Response.ContentType = "application/json; charset=utf-8";
             context.Response.ContentLength64 = bytes.Length;

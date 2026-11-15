@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
@@ -57,19 +56,36 @@ namespace WelsonJS.ManagedObject
             VK_F12 = 0x7B
         }
 
-        private static List<Process> Processes = new List<Process>();
-
         private IntPtr GetWindowByTitleContains(string title)
         {
             IntPtr hWnd = IntPtr.Zero;
 
-            foreach (var proc in Process.GetProcesses())
+            if (string.IsNullOrEmpty(title))
+                return hWnd;
+
+            Process[] processes = Process.GetProcesses();
+            try
             {
-                if (proc.MainWindowTitle.Contains(title))
+                foreach (var proc in processes)
                 {
-                    hWnd = proc.MainWindowHandle;
-                    break;
+                    try
+                    {
+                        if (proc.MainWindowTitle.Contains(title))
+                        {
+                            hWnd = proc.MainWindowHandle;
+                            break;
+                        }
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        // The process exited while enumerating.
+                    }
                 }
+            }
+            finally
+            {
+                foreach (var proc in processes)
+                    proc.Dispose();
             }
 
             return hWnd;
@@ -130,7 +146,7 @@ namespace WelsonJS.ManagedObject
             };
             IntPtr hWnd = GetWindowByTitleContains(title);
 
-            if (hWnd != IntPtr.Zero && (fnKeys.Length + 1 < num))
+            if (hWnd != IntPtr.Zero && num >= 1 && num < fnKeys.Length)
             {
                 PostMessage(hWnd, (int)MessageType.WM_KEYDOWN, fnKeys[num], IntPtr.Zero);
                 PostMessage(hWnd, (int)MessageType.WM_KEYUP, fnKeys[num], IntPtr.Zero);
@@ -170,10 +186,14 @@ namespace WelsonJS.ManagedObject
 
             try
             {
-                Process process = new Process();
-                process.StartInfo.FileName = filepath;
-                process.Start();
-                Processes.Add(process);
+                // Disposing the Process object only closes its handle; the
+                // started process keeps running. Callers track it by ID.
+                using (Process process = new Process())
+                {
+                    process.StartInfo.FileName = filepath;
+                    if (process.Start())
+                        processId = process.Id;
+                }
             }
             catch
             {
@@ -187,7 +207,8 @@ namespace WelsonJS.ManagedObject
         {
             try
             {
-                Process.GetProcessById(processId).CloseMainWindow();
+                using (Process process = Process.GetProcessById(processId))
+                    process.CloseMainWindow();
             }
             catch
             {

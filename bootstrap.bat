@@ -18,6 +18,16 @@ if not exist "%APPDATA%\welsonjs" mkdir "%APPDATA%\welsonjs"
 
 echo [*] Initializing WelsonJS pre-configuration...
 
+:: Restore the application assets (app\assets) that app.js needs to start
+echo [*] Restoring application assets...
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0restoreAppAssets.ps1" -Root "%~dp0."
+if errorlevel 1 (
+    echo [ERROR] Failed to restore the application assets. app.js cannot start without them.
+    echo [ERROR] Check the network connection and run restoreAppAssets.ps1 again.
+    popd
+    exit /b 1
+)
+
 :: Determine which managed object to use
 if exist "%LOCAL_MANAGEDOBJECT_DLL%" (
     echo [*] Local managed object found. Using "%LOCAL_MANAGEDOBJECT_DLL%" for registration.

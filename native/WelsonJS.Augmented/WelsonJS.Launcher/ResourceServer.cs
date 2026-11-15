@@ -15,7 +15,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.Xml.Serialization;
 
 namespace WelsonJS.Launcher
@@ -29,11 +28,16 @@ namespace WelsonJS.Launcher
         private string _resourceName;
         private readonly List<IApiEndpoint> _apis = new List<IApiEndpoint>();
         private readonly SemaphoreSlim _requestSlots = new SemaphoreSlim(32, 32);
-        private readonly ApiEndpoints.LlamaCpp _llamaCppEndpoint;
-        private readonly ApiEndpoints.WelsonJsInstance _welsonJsInstanceEndpoint;
+        // One llama-server in router mode, shared by the llama.cpp API and the LLM guard.
+        private readonly LlamaCppRouter _llamaCppRouter = new LlamaCppRouter();
+        private readonly LlamaCppChat _llamaCppChat;
+        private readonly WebChatRunner _webChatRunner;
+        private readonly ApiEndpoints.JsrtInstance _jsrtInstanceEndpoint;
         private readonly ApiEndpoints.Terminal _terminalEndpoint;
         private readonly TerminalSessionManager _terminalSessions = new TerminalSessionManager();
-        private BlobConfig _blobConfig;
+        private readonly object _stateLock = new object();
+        private volatile BlobConfig _blobConfig; // replaced by FetchBlobConfig on a background thread
+        private Task _blobConfigFetch;           // the running or last fetch (guarded by _stateLock)
         private readonly ILogger _logger;
 
         private static readonly HttpClient _httpClient = new HttpClient();
@@ -60,12 +64,12 @@ namespace WelsonJS.Launcher
             _listener = new HttpListener();
             _resourceName = resourceName;
 
-            // Fetch a blob config from Internet (safe fire-and-forget with logging)
-            _ = FetchBlobConfig().ContinueWith(t =>
-            {
-                if (t.IsFaulted)
-                    _logger?.Error($"FetchBlobConfig failed: {t.Exception}");
-            }, TaskScheduler.Default);
+            // Fetch a blob config from Internet (in the background; GetBlobConfigAsync waits for it)
+            _blobConfigFetch = FetchBlobConfig();
+
+            // Shared by the llama.cpp and OpenAI-compatible endpoints
+            _llamaCppChat = new LlamaCppChat(_llamaCppRouter, _logger);
+            _webChatRunner = new WebChatRunner(_logger);
 
             // Add API endpoints
             _apis.Add(new ApiEndpoints.Completion(this, _httpClient, _logger));
@@ -76,16 +80,55 @@ namespace WelsonJS.Launcher
             _apis.Add(new ApiEndpoints.Tfa(this, _httpClient, _logger));
             _apis.Add(new ApiEndpoints.Whois(this, _httpClient, _logger));
             _apis.Add(new ApiEndpoints.ImageColorPicker(this, _httpClient, _logger));
-            _apis.Add(new ApiEndpoints.JsonRpc2(this, _httpClient, _logger));
-            _llamaCppEndpoint = new ApiEndpoints.LlamaCpp(this, _httpClient, _logger);
-            _apis.Add(_llamaCppEndpoint);
-            _welsonJsInstanceEndpoint = new ApiEndpoints.WelsonJsInstance(this, _httpClient, _logger);
-            _apis.Add(_welsonJsInstanceEndpoint);
+            _apis.Add(new ApiEndpoints.LlamaCpp(this, _httpClient, _logger));
+            _apis.Add(new ApiEndpoints.LlmGuard(this, _httpClient, _logger));
+            _apis.Add(new ApiEndpoints.OpenAiCompatible(this, _httpClient, _logger));
+            _jsrtInstanceEndpoint = new ApiEndpoints.JsrtInstance(this, _httpClient, _logger);
+            _apis.Add(_jsrtInstanceEndpoint);
             _terminalEndpoint = new ApiEndpoints.Terminal(this, _httpClient, _logger);
             _apis.Add(_terminalEndpoint);
 
             // Register the prefix
             _listener.Prefixes.Add(prefix);
+        }
+
+        /// <summary>The launcher's llama.cpp router (see LlamaCppRouter).</summary>
+        public LlamaCppRouter LlamaCppRouter
+        {
+            get { return _llamaCppRouter; }
+        }
+
+        /// <summary>Chat completions with the llama.cpp router (see LlamaCppChat).</summary>
+        /// <summary>
+        /// The blob config (BlobConfigUrl): the blob routes and the third-party service
+        /// settings. Waits for the fetch started with the server; when it failed, fetches it
+        /// again. Null when it cannot be fetched.
+        /// </summary>
+        public async Task<BlobConfig> GetBlobConfigAsync()
+        {
+            BlobConfig config = _blobConfig;
+            if (config != null) return config;
+
+            Task fetch;
+            lock (_stateLock)
+            {
+                if (_blobConfig == null && _blobConfigFetch != null && _blobConfigFetch.IsCompleted)
+                    _blobConfigFetch = FetchBlobConfig();
+                fetch = _blobConfigFetch;
+            }
+            if (fetch != null) await fetch.ConfigureAwait(false);
+            return _blobConfig;
+        }
+
+        public LlamaCppChat LlamaCppChat
+        {
+            get { return _llamaCppChat; }
+        }
+
+        /// <summary>The web chat services in the launcher's browser (see WebChatRunner).</summary>
+        public WebChatRunner WebChatRunner
+        {
+            get { return _webChatRunner; }
         }
 
         public TerminalSessionManager TerminalSessions
@@ -100,11 +143,19 @@ namespace WelsonJS.Launcher
 
         public void Start(bool IsOpenWebBrowser = true)
         {
-            if (_isRunning) return;
+            CancellationToken token;
+            lock (_stateLock)
+            {
+                if (_isRunning) return;
 
-            _isRunning = true;
-            _cts = new CancellationTokenSource();
-            _listener.Start();
+                // Throws HttpListenerException (for example, the port is in use or the
+                // URL is not reserved); the server then stays stopped and can be started again.
+                _listener.Start();
+
+                _cts = new CancellationTokenSource();
+                token = _cts.Token;
+                _isRunning = true;
+            }
 
             // Open the web browser
             if (IsOpenWebBrowser)
@@ -113,19 +164,39 @@ namespace WelsonJS.Launcher
             }
 
             // Run a task with cancellation token
-            Task.Run(() => ListenLoop(_cts.Token));
+            Task.Run(() => ListenLoop(token));
         }
 
+        /// <summary>
+        /// Stops accepting requests, then stops the processes the endpoints started.
+        /// Safe to call more than once, and does not interact with the user.
+        /// </summary>
         public void Stop()
         {
-            _isRunning = false;
-            if (_cts != null) _cts.Cancel();
-            _llamaCppEndpoint.Shutdown();
-            _welsonJsInstanceEndpoint.Shutdown();
-            _terminalEndpoint.Shutdown();
-            _listener.Stop();
+            lock (_stateLock)
+            {
+                if (!_isRunning) return;
+                _isRunning = false;
 
-            MessageBox.Show("Server stopped.");
+                if (_cts != null) _cts.Cancel();
+                // Stop the listener first so that no request can start a new child
+                // process while the existing ones are being shut down.
+                _listener.Stop();
+            }
+
+            ShutdownChildProcesses();
+        }
+
+        /// <summary>
+        /// Stops the processes the endpoints started (the llama.cpp router with its model
+        /// instances, including the LLM guard, JSRT instances and terminal sessions).
+        /// Called when the launcher exits.
+        /// </summary>
+        public void ShutdownChildProcesses()
+        {
+            _llamaCppRouter.Shutdown();
+            _jsrtInstanceEndpoint.Shutdown();
+            _terminalEndpoint.Shutdown();
         }
 
         public bool IsRunning()
@@ -147,6 +218,14 @@ namespace WelsonJS.Launcher
                 catch (Exception ex)
                 {
                     if (token.IsCancellationRequested || !_isRunning) break;
+
+                    // A stopped or disposed listener fails every call; do not spin.
+                    if (!_listener.IsListening)
+                    {
+                        _logger?.Error($"The listener stopped unexpectedly: {ex.Message}");
+                        break;
+                    }
+
                     _logger?.Error($"Error: {ex.Message}");
                 }
             }
@@ -170,6 +249,10 @@ namespace WelsonJS.Launcher
 
         private async Task ProcessRequest(HttpListenerContext context)
         {
+            // Answer CORS preflight requests for every path, including API endpoints.
+            if (HandleCorsPreflight(context))
+                return;
+
             string path = context.Request.Url.AbsolutePath.TrimStart('/');
 
             // Serve from a resource name
@@ -186,24 +269,48 @@ namespace WelsonJS.Launcher
                 return;
             }
 
-            if ("terminal.html".Equals(path, StringComparison.OrdinalIgnoreCase))
+            // Serve the web chat services (webchat.js), which the editor loads
+            if ("webchat.js".Equals(path, StringComparison.OrdinalIgnoreCase))
             {
-                await ServeResource(context, GetResource("terminal.html"), "text/html");
+                await ServeResource(context, GetResource("webchat.js"), "text/javascript; charset=utf-8");
                 return;
             }
 
-            // Serve via API endpoints
+            // Serve the pages that the editor opens in separate windows
+            foreach (string page in new[] { "terminal.html", "prompt.html" })
+            {
+                if (page.Equals(path, StringComparison.OrdinalIgnoreCase))
+                {
+                    await ServeResource(context, GetResource(page), "text/html");
+                    return;
+                }
+            }
+
+            // Serve via API endpoints. The endpoints run local processes (scripts,
+            // terminals, llama.cpp), drive the browser through DevTools, expose settings
+            // that include API keys, and spend the user's API quota, so every API request
+            // must come from a trusted local caller (see IsTrustedLocalRequest). Endpoints
+            // that start processes check this again.
             foreach (var api in _apis)
             {
                 if (api.CanHandle(context, path))
                 {
+                    // Other local software may use the endpoints marked IApiKeyEndpoint with the
+                    // launcher's API key (ResourceServerApiKey).
+                    if (!IsTrustedLocalRequest(context) && !(api is IApiKeyEndpoint && HasValidApiKey(context)))
+                    {
+                        _logger?.Warn($"Rejected an untrusted API request: {context.Request.HttpMethod} /{path} from {context.Request.RemoteEndPoint}, Origin: {context.Request.Headers["Origin"] ?? "(none)"}, Sec-Fetch-Site: {context.Request.Headers["Sec-Fetch-Site"] ?? "(none)"}");
+                        await ServeResource(context, "{\"error\":\"This API is only available to the launcher and local scripts.\"}", "application/json", 403);
+                        return;
+                    }
+
                     await api.HandleAsync(context, path);
                     return;
                 }
             }
 
-            // Serve from the blob server
-            if (await ServeBlob(context, path)) return;
+            // Serve from the blob server (read-only: other methods are never proxied)
+            if (IsReadRequest(context) && await ServeBlob(context, path)) return;
 
             // Fallback to 404 (Not Found)
             await ServeResource(context);
@@ -220,24 +327,28 @@ namespace WelsonJS.Launcher
 
                 try
                 {
-                    HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, url);
-                    var ua = context?.Request?.UserAgent;
-                    if (!string.IsNullOrEmpty(ua))
+                    using (var request = new HttpRequestMessage(HttpMethod.Get, url))
                     {
-                        request.Headers.UserAgent.ParseAdd(ua);
+                        var ua = context?.Request?.UserAgent;
+                        if (!string.IsNullOrEmpty(ua))
+                        {
+                            request.Headers.UserAgent.ParseAdd(ua);
+                        }
+
+                        using (HttpResponseMessage response = await _httpClient.SendAsync(request))
+                        {
+                            if (!response.IsSuccessStatusCode)
+                            {
+                                _logger?.Error($"Failed to serve blob. URL: {url}, Status: {response.StatusCode}");
+                                return false;
+                            }
+
+                            data = await response.Content.ReadAsByteArrayAsync();
+                            mimeType = response.Content.Headers.ContentType?.MediaType ?? _defaultMimeType;
+                        }
                     }
-                    HttpResponseMessage response = await _httpClient.SendAsync(request);
 
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        _logger?.Error($"Failed to serve blob. URL: {url}, Status: {response.StatusCode}");
-                        return false;
-                    }
-
-                    data = await response.Content.ReadAsByteArrayAsync();
-                    mimeType = response.Content.Headers.ContentType?.MediaType ?? _defaultMimeType;
-
-                    await ServeResource(context, data, mimeType);
+                    await ServeBlobResource(context, data, mimeType);
                     _ = TrySaveCachedBlob(path, data, mimeType);
 
                     return true;
@@ -260,7 +371,7 @@ namespace WelsonJS.Launcher
                             mimeType = _defaultMimeType;
                         }
 
-                        await ServeResource(context, data, mimeType);
+                        await ServeBlobResource(context, data, mimeType);
                         return true;
                     }
                 }
@@ -379,11 +490,11 @@ namespace WelsonJS.Launcher
                     Directory.CreateDirectory(cacheDirectory);
                 }
 
-                // Save the cache
-                File.WriteAllBytes(cachePath, data);
-
-                // Save the cache meta
-                File.WriteAllBytes($"{cachePath}.meta", Encoding.UTF8.GetBytes(mimeType));
+                // Write each file completely before it becomes visible, so a concurrent
+                // request or an interrupted write never leaves a truncated cache entry.
+                // The metadata is written last because a cache hit requires it.
+                WriteFileAtomically(cachePath, data);
+                WriteFileAtomically($"{cachePath}.meta", Encoding.UTF8.GetBytes(mimeType));
 
                 return true;
             }
@@ -394,16 +505,52 @@ namespace WelsonJS.Launcher
             }
         }
 
+        [System.Runtime.InteropServices.DllImport("kernel32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode, SetLastError = true)]
+        [return: System.Runtime.InteropServices.MarshalAs(System.Runtime.InteropServices.UnmanagedType.Bool)]
+        private static extern bool MoveFileEx(string existingFileName, string newFileName, int flags);
+
+        private const int MOVEFILE_REPLACE_EXISTING = 0x1;
+        private const int MOVEFILE_WRITE_THROUGH = 0x8;
+
+        // Writes a temporary file and renames it over the target. Unlike File.Replace,
+        // the rename leaves no backup (~RF*.TMP) files behind when it fails.
+        private static void WriteFileAtomically(string path, byte[] data)
+        {
+            string tempPath = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
+            try
+            {
+                File.WriteAllBytes(tempPath, data);
+                if (!MoveFileEx(tempPath, path, MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
+                {
+                    int error = System.Runtime.InteropServices.Marshal.GetLastWin32Error();
+                    // Another request is storing or reading the same entry; keep its copy.
+                    if (!File.Exists(path))
+                        throw new IOException("Could not store the cache file " + path, new System.ComponentModel.Win32Exception(error));
+                }
+            }
+            finally
+            {
+                try
+                {
+                    if (File.Exists(tempPath))
+                        File.Delete(tempPath);
+                }
+                catch (IOException) { }
+                catch (UnauthorizedAccessException) { }
+            }
+        }
+
         public async Task ServeResource(HttpListenerContext context)
         {
             await ServeResource(context, "<error>Not Found</error>", "application/xml", 404);
         }
 
+        /// <summary>
+        /// Writes a complete response and closes it. Nothing may be written to the
+        /// response afterwards.
+        /// </summary>
         public async Task ServeResource(HttpListenerContext context, byte[] data, string mimeType = "text/html", int statusCode = 200)
         {
-            if (HandleCorsPreflight(context))
-                return;
-
             TryApplyCors(context);
 
             string xmlHeader = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
@@ -415,10 +562,49 @@ namespace WelsonJS.Launcher
                 statusCode = 404;
             }
 
-            context.Response.StatusCode = statusCode;
-            context.Response.ContentType = mimeType;
-            context.Response.ContentLength64 = data.Length;
-            await context.Response.OutputStream.WriteAsync(data, 0, data.Length);
+            try
+            {
+                // The launcher's pages (editor, terminal, prompt) must not be framed by
+                // other sites (clickjacking).
+                context.Response.Headers["X-Frame-Options"] = "SAMEORIGIN";
+                context.Response.StatusCode = statusCode;
+                context.Response.ContentType = mimeType;
+                context.Response.ContentLength64 = data.Length;
+
+                // A HEAD response carries the headers only.
+                if (!string.Equals(context.Request.HttpMethod, "HEAD", StringComparison.OrdinalIgnoreCase))
+                    await context.Response.OutputStream.WriteAsync(data, 0, data.Length);
+            }
+            finally
+            {
+                // Completes the response and releases the connection; otherwise it is
+                // held until the context is garbage collected.
+                context.Response.Close();
+            }
+        }
+
+        // Content proxied from a blob server is not part of the launcher. HTML and SVG
+        // documents are sandboxed into an opaque origin so that, if a blob server or the
+        // downloaded blob config is compromised, such a page cannot pass
+        // IsTrustedLocalRequest and drive the endpoints that start local processes.
+        // Scripts and stylesheets used by the editor are not documents and are unaffected.
+        private Task ServeBlobResource(HttpListenerContext context, byte[] data, string mimeType)
+        {
+            string type = (mimeType ?? "").Split(';')[0].Trim().ToLowerInvariant();
+            if (type == "text/html" || type == "application/xhtml+xml" || type == "image/svg+xml")
+            {
+                context.Response.Headers["Content-Security-Policy"] = "sandbox allow-scripts allow-forms allow-popups";
+                context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+            }
+
+            return ServeResource(context, data, mimeType);
+        }
+
+        private static bool IsReadRequest(HttpListenerContext context)
+        {
+            string method = context.Request.HttpMethod;
+            return string.Equals(method, "GET", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(method, "HEAD", StringComparison.OrdinalIgnoreCase);
         }
 
         public async Task ServeResource(HttpListenerContext context, string data, string mimeType = "text/html", int statusCode = 200)
@@ -548,25 +734,85 @@ namespace WelsonJS.Launcher
         }
 
         /// <summary>
-        /// Returns true when a request may drive local processes: it must target a
-        /// loopback host (which also defeats DNS rebinding), and a browser-supplied
-        /// Origin must be this server's own origin or an explicitly allowed one.
-        /// A wildcard CORS policy never qualifies.
+        /// Returns true when a request may use the API endpoints (which can run local
+        /// processes):
+        /// <list type="bullet">
+        /// <item>the client connects from this machine (loopback remote address), so a
+        /// network client cannot pass by sending "Host: localhost" when the listener
+        /// prefix is opened to the network;</item>
+        /// <item>it targets a loopback host, which also defeats DNS rebinding;</item>
+        /// <item>a browser-supplied Origin is this server's own origin or an explicitly
+        /// allowed one (a wildcard CORS policy never qualifies, and "null" never matches);</item>
+        /// <item>a browser request without an Origin (for example &lt;img&gt; or &lt;script&gt;
+        /// GET requests from another site) is rejected when Sec-Fetch-Site reports another
+        /// site.</item>
+        /// </list>
+        /// Non-browser clients such as WSH scripts (MSXML) send neither header.
         /// </summary>
+        /// <summary>
+        /// True when the request comes from this machine (loopback address and host) with
+        /// "Authorization: Bearer <ResourceServerApiKey>", the launcher's API key. Only the
+        /// endpoints marked IApiKeyEndpoint accept it. An empty key, or one shorter than 16
+        /// characters, allows nothing. A web page cannot send it without knowing the key,
+        /// and a cross-origin request with that header needs a CORS preflight, which the
+        /// launcher answers only for ResourceServerAllowOrigins.
+        /// </summary>
+        public static bool HasValidApiKey(HttpListenerContext context)
+        {
+            string key = Program.GetAppConfig("ResourceServerApiKey");
+            if (string.IsNullOrEmpty(key) || key.Length < MinApiKeyLength) return false;
+
+            HttpListenerRequest request = context?.Request;
+            if (request?.Url == null || !request.Url.IsLoopback) return false;
+            if (request.RemoteEndPoint == null || !IPAddress.IsLoopback(request.RemoteEndPoint.Address)) return false;
+
+            const string scheme = "Bearer ";
+            string header = request.Headers["Authorization"];
+            if (header == null || !header.StartsWith(scheme, StringComparison.OrdinalIgnoreCase)) return false;
+            return FixedTimeEquals(header.Substring(scheme.Length).Trim(), key);
+        }
+
+        private const int MinApiKeyLength = 16;
+
+        private static bool FixedTimeEquals(string a, string b)
+        {
+            byte[] x = Encoding.UTF8.GetBytes(a), y = Encoding.UTF8.GetBytes(b);
+            int diff = x.Length ^ y.Length;
+            for (int i = 0; i < Math.Max(x.Length, y.Length); i++)
+                diff |= (i < x.Length ? x[i] : 0) ^ (i < y.Length ? y[i] : 0);
+            return diff == 0;
+        }
+
         public static bool IsTrustedLocalRequest(HttpListenerContext context)
         {
-            Uri url = context?.Request?.Url;
+            HttpListenerRequest request = context?.Request;
+            Uri url = request?.Url;
             if (url == null || !url.IsLoopback)
                 return false;
 
-            string origin = context.Request.Headers["Origin"];
-            if (string.IsNullOrEmpty(origin))
-                return true; // Not a cross-site browser request.
+            IPEndPoint remote = request.RemoteEndPoint;
+            if (remote == null || !IPAddress.IsLoopback(remote.Address))
+                return false;
 
-            if (string.Equals(origin, url.GetLeftPart(UriPartial.Authority), StringComparison.OrdinalIgnoreCase))
-                return true;
+            string origin = request.Headers["Origin"];
+            if (!string.IsNullOrEmpty(origin))
+            {
+                if (string.Equals(origin, url.GetLeftPart(UriPartial.Authority), StringComparison.OrdinalIgnoreCase))
+                    return true;
 
-            return (_allowedOrigins ?? Array.Empty<string>()).Contains(origin, StringComparer.Ordinal);
+                return (_allowedOrigins ?? Array.Empty<string>()).Contains(origin, StringComparer.Ordinal);
+            }
+
+            // No Origin: a non-browser client, a same-origin GET, or a user navigation
+            // (Sec-Fetch-Site: same-origin or none). Requests initiated by another site,
+            // including other ports on localhost ("same-site"), are not trusted.
+            string fetchSite = request.Headers["Sec-Fetch-Site"];
+            if (!string.IsNullOrEmpty(fetchSite) &&
+                !string.Equals(fetchSite, "same-origin", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(fetchSite, "none", StringComparison.OrdinalIgnoreCase))
+                return false;
+
+            return true;
         }
 
         private static bool TryApplyCors(HttpListenerContext context)
@@ -631,6 +877,11 @@ namespace WelsonJS.Launcher
         [XmlArrayItem("route")]
         public List<BlobRoute> Routes { get; set; } = new List<BlobRoute>();
 
+        // The addresses of the third-party services the launcher's endpoints call (API keys
+        // stay in the local settings).
+        [XmlElement("services")]
+        public BlobServices Services { get; set; }
+
         public void Compile()
         {
             foreach (var route in Routes)
@@ -667,6 +918,37 @@ namespace WelsonJS.Launcher
 
         [XmlIgnore]
         public List<RegexCondition> RegexConditions { get; set; }
+    }
+
+    public class BlobServices
+    {
+        [XmlElement("whois")]
+        public WhoisService Whois { get; set; }
+
+        [XmlArray("ipQuery")]
+        [XmlArrayItem("provider")]
+        public List<IpQueryProvider> IpQueryProviders { get; set; } = new List<IpQueryProvider>();
+    }
+
+    public class WhoisService
+    {
+        [XmlElement("serverUrl")]
+        public string ServerUrl { get; set; }
+
+        [XmlElement("referrerUrl")]
+        public string ReferrerUrl { get; set; }
+
+        [XmlElement("clientAddress")]
+        public string ClientAddress { get; set; }
+    }
+
+    public class IpQueryProvider
+    {
+        [XmlAttribute("name")]
+        public string Name { get; set; }
+
+        [XmlElement("prefixUrl")]
+        public string PrefixUrl { get; set; }
     }
 
     public class RegexCondition

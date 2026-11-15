@@ -26,6 +26,7 @@ namespace WelsonJS.Launcher
     {
         private const uint EXTENDED_STARTUPINFO_PRESENT = 0x00080000;
         private const uint CREATE_UNICODE_ENVIRONMENT = 0x00000400;
+        private const uint CREATE_SUSPENDED = 0x00000004;
         private const int STARTF_USESTDHANDLES = 0x00000100;
         private static readonly IntPtr PROC_THREAD_ATTRIBUTE_PSEUDOCONSOLE = (IntPtr)0x00020016;
 
@@ -123,7 +124,7 @@ namespace WelsonJS.Launcher
                 // CreateProcessW may modify the command line buffer, so pass a mutable copy.
                 var commandLineBuffer = new StringBuilder(commandLine);
                 if (!CreateProcess(null, commandLineBuffer, IntPtr.Zero, IntPtr.Zero, false,
-                    EXTENDED_STARTUPINFO_PRESENT | CREATE_UNICODE_ENVIRONMENT, environmentBlock,
+                    EXTENDED_STARTUPINFO_PRESENT | CREATE_UNICODE_ENVIRONMENT | CREATE_SUSPENDED, environmentBlock,
                     string.IsNullOrEmpty(workingDirectory) ? null : workingDirectory,
                     ref startupInfo, out processInfo))
                 {
@@ -133,6 +134,17 @@ namespace WelsonJS.Launcher
                 _processHandle = processInfo.hProcess;
                 _threadHandle = processInfo.hThread;
                 ProcessId = processInfo.dwProcessId;
+
+                // Started suspended so that it joins the launcher's job (which ends it with the
+                // launcher, however that ends) before it can start processes of its own.
+                try { ChildProcessJob.Add(_processHandle); }
+                catch (Exception ex) { System.Diagnostics.Trace.TraceWarning("The terminal process is not in the launcher's job: " + ex.Message); }
+                if (ResumeThread(_threadHandle) == uint.MaxValue)
+                {
+                    int error = Marshal.GetLastWin32Error();
+                    TerminateProcess(_processHandle, 1);
+                    throw new Win32Exception(error, $"ResumeThread failed: {commandLine}");
+                }
             }
             finally
             {
@@ -394,6 +406,9 @@ namespace WelsonJS.Launcher
 
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool TerminateProcess(IntPtr hProcess, uint uExitCode);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        private static extern uint ResumeThread(IntPtr hThread);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool CloseHandle(IntPtr hObject);

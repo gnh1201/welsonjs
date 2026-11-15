@@ -25,9 +25,7 @@ namespace WelsonJS.Launcher.ApiEndpoints
     /// Response (error):
     ///   { "ok": false, "error": "..." }
     ///
-    /// JSON handling:
-    ///  - Request parse: JsSerializer.Load/ExtractFrom (engine) + tiny local decoders for literals.
-    ///  - Response encode: Dictionary<string, object> → JsSerializer.Serialize(...).
+    /// JSON handling: JsonCodec (ChakraCore) for both the request and the response.
     /// </summary>
     public class ImageColorPicker : IApiEndpoint
     {
@@ -83,22 +81,31 @@ namespace WelsonJS.Launcher.ApiEndpoints
                 }
 
                 // ---- Extract strictly in unified format ---------------------------------------
-                string imageJson, xJson, yJson;
-                using (var ser = new JsSerializer())
+                Dictionary<string, object> request;
+                try { request = JsonCodec.DeserializeObject(body); }
+                catch (FormatException)
                 {
-                    int id = ser.Load(body);
-
-                    // Required: "image" as JSON string
-                    imageJson = ser.ExtractFrom(id, "image");
-
-                    // Required: "point": { "x": <num>, "y": <num> }
-                    xJson = ser.ExtractFrom(id, "point", "x");
-                    yJson = ser.ExtractFrom(id, "point", "y");
-
-                    ser.Unload(id);
+                    context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
+                    await WriteJsonAsync(context, new Dictionary<string, object>
+                    {
+                        ["ok"] = false,
+                        ["error"] = "Request body must be a JSON object."
+                    });
+                    return;
                 }
 
-                if (string.IsNullOrEmpty(imageJson))
+                // Required: "image" as JSON string
+                request.TryGetValue("image", out object imageValue);
+
+                // Required: "point": { "x": <num>, "y": <num> }
+                object xValue = null, yValue = null;
+                if (request.TryGetValue("point", out object pointValue) && pointValue is Dictionary<string, object> point)
+                {
+                    point.TryGetValue("x", out xValue);
+                    point.TryGetValue("y", out yValue);
+                }
+
+                if (imageValue == null)
                 {
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                     await WriteJsonAsync(context, new Dictionary<string, object>
@@ -108,7 +115,7 @@ namespace WelsonJS.Launcher.ApiEndpoints
                     });
                     return;
                 }
-                if (string.IsNullOrEmpty(xJson) || string.IsNullOrEmpty(yJson))
+                if (xValue == null || yValue == null)
                 {
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                     await WriteJsonAsync(context, new Dictionary<string, object>
@@ -119,9 +126,9 @@ namespace WelsonJS.Launcher.ApiEndpoints
                     return;
                 }
 
-                // ---- Convert JSON literals → CLR ----------------------------------------------
-                string imageB64;
-                if (!TryParseJsonString(imageJson, out imageB64) || string.IsNullOrWhiteSpace(imageB64))
+                // ---- Convert JSON values → CLR ------------------------------------------------
+                string imageB64 = imageValue as string;
+                if (string.IsNullOrWhiteSpace(imageB64))
                 {
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                     await WriteJsonAsync(context, new Dictionary<string, object>
@@ -132,7 +139,7 @@ namespace WelsonJS.Launcher.ApiEndpoints
                     return;
                 }
 
-                if (!TryParseJsonInt(xJson, out var x) || !TryParseJsonInt(yJson, out var y))
+                if (!TryGetInt(xValue, out var x) || !TryGetInt(yValue, out var y))
                 {
                     context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
                     await WriteJsonAsync(context, new Dictionary<string, object>
@@ -212,86 +219,20 @@ namespace WelsonJS.Launcher.ApiEndpoints
 
         // ---------------------------- Helpers -----------------------------------------------
 
-        private static bool TryParseJsonInt(string jsonNumberLiteral, out int value)
+        private static bool TryGetInt(object jsonNumber, out int value)
         {
-            // Accept JSON numbers like: 12, -3, 10.0, 1e2, -4E+1
-            // Strategy: parse as double using invariant culture, then cast if within int range.
+            // JSON numbers only (strings are rejected); fractions truncate toward zero.
             value = default;
 
-            if (string.IsNullOrWhiteSpace(jsonNumberLiteral))
+            if (!(jsonNumber is int || jsonNumber is long || jsonNumber is double))
                 return false;
 
-            var s = jsonNumberLiteral.Trim();
-
-            // Reject if wrapped in quotes (should be a number literal, not a string)
-            if (s.Length >= 2 && s[0] == '"' && s[s.Length - 1] == '"')
+            double d = Convert.ToDouble(jsonNumber, CultureInfo.InvariantCulture);
+            if (d < int.MinValue || d > int.MaxValue)
                 return false;
 
-            if (double.TryParse(s, NumberStyles.Float, CultureInfo.InvariantCulture, out var d))
-            {
-                if (d >= int.MinValue && d <= int.MaxValue)
-                {
-                    value = (int)d; // truncate toward zero (JSON has no ints; this is reasonable)
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        private static bool TryParseJsonString(string jsonStringLiteral, out string value)
-        {
-            value = null;
-            if (string.IsNullOrWhiteSpace(jsonStringLiteral))
-                return false;
-
-            var s = jsonStringLiteral.Trim();
-            if (s.Length < 2 || s[0] != '"' || s[s.Length - 1] != '"')
-                return false;
-
-            // Remove surrounding quotes and unescape JSON sequences
-            value = JsonUnescape(s.Substring(1, s.Length - 2));
+            value = (int)d;
             return true;
-        }
-
-        private static string JsonUnescape(string s)
-        {
-            var sb = new StringBuilder(s.Length);
-            for (int i = 0; i < s.Length; i++)
-            {
-                char c = s[i];
-                if (c != '\\') { sb.Append(c); continue; }
-
-                if (i + 1 >= s.Length) { sb.Append('\\'); break; }
-                char n = s[++i];
-                switch (n)
-                {
-                    case '\"': sb.Append('\"'); break;
-                    case '\\': sb.Append('\\'); break;
-                    case '/': sb.Append('/'); break;
-                    case 'b': sb.Append('\b'); break;
-                    case 'f': sb.Append('\f'); break;
-                    case 'n': sb.Append('\n'); break;
-                    case 'r': sb.Append('\r'); break;
-                    case 't': sb.Append('\t'); break;
-                    case 'u':
-                        if (i + 4 < s.Length)
-                        {
-                            string hex = s.Substring(i + 1, 4);
-                            if (ushort.TryParse(hex, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var cp))
-                            {
-                                sb.Append((char)cp);
-                                i += 4;
-                            }
-                            else sb.Append('u');
-                        }
-                        else sb.Append('u');
-                        break;
-                    default:
-                        sb.Append(n);
-                        break;
-                }
-            }
-            return sb.ToString();
         }
 
         private static string StripDataUrlPrefix(string b64)
@@ -331,13 +272,8 @@ namespace WelsonJS.Launcher.ApiEndpoints
 
         private async Task WriteJsonAsync(HttpListenerContext ctx, Dictionary<string, object> doc, int space = 0)
         {
-            using (var ser = new JsSerializer())
-            {
-                string json = ser.Serialize(doc, space);
-                byte[] payload = Encoding.UTF8.GetBytes(json);
-
-                await Server.ServeResource(ctx, payload, "application/json", 200);
-            }
+            byte[] payload = Encoding.UTF8.GetBytes(JsonCodec.Serialize(doc, space));
+            await Server.ServeResource(ctx, payload, "application/json", 200);
         }
     }
 }

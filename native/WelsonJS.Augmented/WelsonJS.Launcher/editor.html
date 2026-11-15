@@ -33,22 +33,18 @@
         }
 
         /* min-width/min-height: 0 let the panes shrink below their content size when the
-           window gets smaller; otherwise Monaco's fixed-size content pushes the prompt
-           editor out of view. */
-        #editor, #mapView, #promptEditor {
+           window gets smaller. The prompt messages editor opens in its own window
+           (prompt.html). */
+        #editor, #mapView {
             min-width: 0;
             min-height: 0;
         }
 
         #editor {
-            flex: 3;
+            flex: 1;
         }
 
         #mapView {
-            flex: 3;
-        }
-
-        #promptEditor {
             flex: 1;
         }
 
@@ -80,8 +76,6 @@
         };
     </script>
     <script src="http://localhost:3000/ajax/libs/leaflet/1.9.4/leaflet.min.js" integrity="sha384-NElt3Op+9NBMCYaef5HxeJmU4Xeard/Lku8ek6hoPTvYkQPh3zLIrJP7KiRocsxO" crossorigin="anonymous"></script>
-    <script src="http://localhost:3000/ajax/libs/lodash/4.17.21/lodash.min.js" integrity="sha384-H6KKS1H1WwuERMSm+54dYLzjg0fKqRK5ZRyASdbrI/lwrCc6bXEmtGYr5SwvP1pZ" crossorigin="anonymous"></script>
-    <script src="http://localhost:3000/ajax/libs/jsoneditor/10.1.3/jsoneditor.min.js" integrity="sha384-NdVVc20Tze856ZAWEoJNCk0mL4zJrGztRwULc5Hz25HUXQQgYtmjFtgVAxR4p5dD" crossorigin="anonymous"></script>
     <script src="http://localhost:3000/ajax/libs/react/18.3.1/umd/react.production.min.js" integrity="sha384-DGyLxAyjq0f9SPpVevD6IgztCFlnMF6oW/XQGmfe+IsZ8TqEiDrcHkMLKI6fiB/Z" crossorigin="anonymous"></script>
     <script src="http://localhost:3000/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js" integrity="sha384-gTGxhz21lVGYNMcdJOyq01Edg0jhn/c22nsx0kyqP0TxaV5WVdsSH1fSDUf5YJj1" crossorigin="anonymous"></script>
     <script src="http://localhost:3000/ajax/libs/axios/1.8.4/axios.min.js" integrity="sha384-06w+raHvkSL3+E7mbQ2X6DZwI5A3veU8Ba+NLrAPxxRGw4Xy78sihHDHQMustMM4" crossorigin="anonymous"></script>
@@ -89,6 +83,7 @@
     <script src="http://localhost:3000/ajax/libs/dompurify/3.2.4/purify.min.js" integrity="sha384-eEu5CTj3qGvu9PdJuS+YlkNi7d2XxQROAFYOr59zgObtlcux1ae1Il3u7jvdCSWu" crossorigin="anonymous"></script>
     <script src="http://localhost:3000/ajax/libs/monaco-editor/0.52.2/min/vs/loader.js" integrity="sha384-pHG02SG8pId94Np3AbPmBEJ1yPqaH0IkJGLSNGXYmuGhkazT8Lr/57WYpbkGjJtu" crossorigin="anonymous"></script>
     <script src="http://localhost:3000/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.js" integrity="sha384-fj9z+NUc93I3woCCy5IRQfrQ8Amu1E27tllwgb5gz3d9Vr1ymS13xcF6two3e4KH" crossorigin="anonymous"></script>
+    <script src="/webchat.js"></script>
     <script>
         function loadResource(url, mimeType, integrity) {
             mimeType = mimeType || 'application/javascript';
@@ -123,7 +118,6 @@
             loadResource("http://localhost:3000/ajax/libs/metroui/dev/lib/metro.css", "text/css", "sha384-4XgOiXH2ZMaWt5s5B35yKi7EAOabhZvx7wO8Jr71q2vZ+uONdRza/6CsK2kpyocd"),
             loadResource("http://localhost:3000/ajax/libs/metroui/dev/lib/icons.css", "text/css", "sha384-FuLND994etg+RtnpPSPMyNBvL+fEz+xGhbN61WUWuDEeZ+wJzcQ8SGqAMuI5hWrt"),
             loadResource("http://localhost:3000/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.css", "text/css", "sha384-06yHXpYRlHEPaR4AS0fB/W+lMN09Zh5e1XMtfkNQdHV38OlhfkOEW5M+pCj3QskC"),
-            loadResource("http://localhost:3000/ajax/libs/jsoneditor/10.1.3/jsoneditor.min.css", "text/css", "sha384-cj1rYBc4/dVYAknZMTkVCDRL6Knzugf32igVqsuFW0iRWFHKH8Ci8+ekC8gNsFZ+"),
             loadResource("http://localhost:3000/ajax/libs/leaflet/1.9.4/leaflet.min.css", "text/css", "sha384-c6Rcwz4e4CITMbu/NBmnNS8yN2sC3cUElMEMfP3vqqKFp7GOYaaBBCqmaWBjmkjb")
         ]).then(() => {
             const _e = React.createElement;
@@ -149,7 +143,8 @@
             }
 
             function RibbonMenu({
-                onOpenFileClick, onSaveFileClick, onAzureCognitiveClick,
+                aiServiceName, onAiServiceToggleClick,
+                onOpenFileClick, onSaveFileClick, onPromptEditorClick,
                 onSavePromptClick, onLoadPromptClick, onQueryWhoisClick, onQueryDnsClick,
                 onQueryIpClick, onMapClick, onRunScriptClick, onTerminalClick,
                 onExcelExampleClick, onPowerPointExampleClick, onWordExampleClick, onHwpExampleClick,
@@ -182,10 +177,13 @@
                     }
                 ];
 
-                const cognitiveToolsButtons = [
-                    { id: 'btnAzureCognitive', icon: 'mif-rocket', caption: 'Azure', onClick: onAzureCognitiveClick },
+                const inferenceButtons = [
+                    { id: 'btnPromptEditor', icon: 'mif-pencil', caption: 'Prompt', onClick: onPromptEditorClick },
                     { id: 'btnSavePrompt', icon: 'mif-floppy-disks', caption: 'Save', onClick: onSavePromptClick },
-                    { id: 'btnLoadPrompt', icon: 'mif-file-upload', caption: 'Load', onClick: onLoadPromptClick }
+                    { id: 'btnLoadPrompt', icon: 'mif-file-upload', caption: 'Load', onClick: onLoadPromptClick },
+                    // Switches the AI service (a Local AI model, run by llama.cpp, or a web chat service)
+                    // that the editor's context menu sends to.
+                    { id: 'btnAiService', icon: 'mif-loop2', caption: aiServiceName, onClick: onAiServiceToggleClick }
                 ];
 
                 const networkToolsButtons = [
@@ -218,7 +216,7 @@
                     _e('div', { className: 'content-holder' },
                         _e('div', { className: 'section active', id: 'editor-tab' },
                             _e(Group, { title: 'File', buttons: fileButtons }),
-                            _e(Group, { title: 'Cognitive Tools (AI)', buttons: cognitiveToolsButtons }),
+                            _e(Group, { title: 'Inference (AI)', buttons: inferenceButtons }),
                             _e(Group, { title: 'Network Tools', buttons: networkToolsButtons }),
                             _e(Group, { title: 'Office Automation', buttons: examplesButtons }),
                             _e(Group, { title: 'Community', buttons: communityButtons })
@@ -227,7 +225,7 @@
                 );
             }
 
-            function Editor({ editorRef, visible }) {
+            function Editor({ editorRef, visible, onReady }) {
                 const containerRef = React.useRef(null);
 
                 const getSuggestions = (word, range) => axios.get(`/completion/${encodeURIComponent(word)}`)
@@ -297,6 +295,7 @@
                         });
 
                         editorRef.current = instance;
+                        if (onReady) onReady(instance);
                     });
                 }, []);
                 
@@ -308,52 +307,6 @@
                 return _e('div', { id: 'editor', ref: containerRef });
             }
 
-            function PromptEditor({ promptEditorRef, promptMessagesRef }) {
-                const containerRef = React.useRef(null);
-
-                React.useEffect(() => {
-                    if (!containerRef.current)
-                        return;
-
-                    const invoke = () => {
-                        try {
-                            if (promptEditorRef.current) {
-                                const updated = promptEditorRef.current.get();
-                                promptMessagesRef.current = updated;
-                            } else {
-                                throw new Error("promptEditorRef.current is null");
-                            }
-                        } catch (e) {
-                            console.error("Invalid JSON structure", e);
-                        }
-                    };
-
-                    const throttledInvoke = _.throttle(invoke, 300, {
-                        leading: true,
-                        trailing: true
-                    });
-
-                    const options = {
-                        onChange: throttledInvoke
-                    };
-
-                    const instance = new JSONEditor(containerRef.current, options);
-                    instance.set(promptMessagesRef.current);
-
-                    promptEditorRef.current = instance;
-
-                    return () => {
-                        if (instance) {
-                            throttledInvoke.flush();
-                            throttledInvoke.cancel();
-                            instance.destroy();
-                        }
-                    };
-                }, []);
-
-                return _e('div', { id: 'promptEditor', ref: containerRef });
-            }
-            
             function useLocationMarker(mapViewRef) {
                 const markerRef = React.useRef(null);
 
@@ -445,24 +398,50 @@
 
             function App() {
                 const editorRef = React.useRef(null);
-                const promptEditorRef = React.useRef(null);
-                const settingsRef = React.useRef({});
+                const promptListenersRef = React.useRef([]);
                 const fileNameRef = React.useRef('hello.js');
                 const promptMessagesRef = React.useRef([]);
                 const mapViewRef = React.useRef(null);
                 const coordinateMarkersRef = React.useRef([]);
                 const [showMap, setShowMap] = React.useState(false);
 
-                const fetchSettings = () => axios.get(`/settings`)
-                    .then(response => {
-                        const parser = new XMLParser();
-                        const result = parser.parse(response.data);
-                        settingsRef.current = result.settings;
-                    });
-
                 // The panes are sized by the flex layout; Monaco only needs to re-measure.
                 const resizeEditor = () => {
                     if (editorRef.current) editorRef.current.layout();
+                };
+
+                // Sends the prompt messages to the open prompt editor windows (prompt.html),
+                // except the window the change came from. Closed windows are dropped.
+                const notifyPromptMessages = (source) => {
+                    const json = JSON.stringify(promptMessagesRef.current);
+                    promptListenersRef.current = promptListenersRef.current.filter(listener => {
+                        try {
+                            if (!listener.win || listener.win.closed)
+                                return false;
+                            if (listener.win !== source)
+                                listener.callback(json);
+                            return true;
+                        } catch (e) {
+                            return false;
+                        }
+                    });
+                };
+
+                // Lets the prompt editor window read and edit the prompt messages. Data is
+                // exchanged as JSON text so that no objects are shared between windows.
+                window.welsonJSPrompt = {
+                    getJSON: () => JSON.stringify(promptMessagesRef.current),
+                    setJSON: (json, source) => {
+                        promptMessagesRef.current = JSON.parse(json);
+                        notifyPromptMessages(source);
+                    },
+                    subscribe: (win, callback) => {
+                        const listener = { win: win, callback: callback };
+                        promptListenersRef.current.push(listener);
+                        return () => {
+                            promptListenersRef.current = promptListenersRef.current.filter(x => x !== listener);
+                        };
+                    }
                 };
 
                 const pushPromptMessage = (role, content) => {
@@ -470,7 +449,17 @@
                         role: role,
                         content: content
                     });
-                    promptEditorRef.current.set(promptMessagesRef.current);
+                    notifyPromptMessages(null);
+                };
+
+                const openPromptEditor = () => {
+                    // Reuses (and focuses) the window if it is already open.
+                    const promptWindow = window.open('/prompt.html', 'WelsonJSPromptEditor', 'width=900,height=700,resizable=yes,scrollbars=no');
+                    if (!promptWindow) {
+                        appendTextToEditor('\n// Prompt editor window was blocked by the browser. Please allow popups for localhost.');
+                        return;
+                    }
+                    promptWindow.focus();
                 };
 
                 const navigate = (href) => {
@@ -599,7 +588,7 @@
                     // Open the window inside the click handler so popup blockers allow it,
                     // then attach it to the interactive session once the instance starts.
                     const terminalWindow = openTerminalWindow('wait=1');
-                    axios.post('/welsonjs-instance/run', { script: script })
+                    axios.post('/jsrt-instance/run', { script: script })
                         .then(response => {
                             if (terminalWindow && response.data && response.data.sessionId) {
                                 terminalWindow.location.href = '/terminal.html?session=' + encodeURIComponent(response.data.sessionId);
@@ -609,7 +598,7 @@
                 };
 
                 const openTerminalWindow = (query) => {
-                    const terminalWindow = window.open('/terminal.html' + (query ? '?' + query : ''), 'WelsonJSInstanceTerminal', 'width=1100,height=720,resizable=yes,scrollbars=no');
+                    const terminalWindow = window.open('/terminal.html' + (query ? '?' + query : ''), 'JsrtInstanceTerminal', 'width=1100,height=720,resizable=yes,scrollbars=no');
                     if (!terminalWindow) {
                         appendTextToEditor('\n// Terminal window was blocked by the browser. Please allow popups for localhost.');
                     }
@@ -668,51 +657,433 @@
                     document.body.removeChild(a);
                 };
 
-                const sendMessageToAzureCognitive = () => {
-                    const promptMessage = prompt("Enter a prompt message:", '');
-                    if (!promptMessage || promptMessage.trim() == '') {
-                        alert("A prompt message is required.");
-                        return;
-                    }
+                // Inserts a one-line status comment below lineNumber and returns a function
+                // that later replaces that line. The line is tracked with a decoration, so
+                // the result lands in the right place even if the user keeps editing while
+                // the model is generating.
+                const insertPlaceholder = (lineNumber, text) => {
+                    const editor = editorRef.current;
+                    const model = editor.getModel();
+                    lineNumber = Math.min(Math.max(lineNumber, 1), model.getLineCount());
 
-                    appendTextToEditor(`\n// ${promptMessage}... Generating text with Azure Cognitive...`);
+                    const column = model.getLineMaxColumn(lineNumber);
+                    editor.executeEdits('llamacpp', [{
+                        range: new monaco.Range(lineNumber, column, lineNumber, column),
+                        text: '\n' + text,
+                        forceMoveMarkers: true
+                    }]);
+
+                    const line = lineNumber + 1;
+                    const ids = model.deltaDecorations([], [{
+                        range: new monaco.Range(line, 1, line, model.getLineMaxColumn(line)),
+                        options: { stickiness: monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges }
+                    }]);
+
+                    return (replacement) => {
+                        const range = model.isDisposed() ? null : model.getDecorationRange(ids[0]);
+                        if (!model.isDisposed()) model.deltaDecorations(ids, []);
+
+                        if (!range || editorRef.current.getModel() !== model) {
+                            // The content was replaced (for example, a file was opened) while
+                            // waiting. Do not change the new content; the answer is kept in
+                            // the prompt messages (Prompt window).
+                            console.info('llama.cpp answer not inserted because the editor content was replaced:', replacement);
+                            return;
+                        }
+
+                        if (range.isEmpty()) {
+                            // The status line was deleted; insert at the cursor instead.
+                            appendTextToEditor(replacement);
+                            return;
+                        }
+
+                        editorRef.current.executeEdits('llamacpp', [{ range: range, text: replacement, forceMoveMarkers: true }]);
+                    };
+                };
+
+                // One line of the prompt for the status comment.
+                const summarize = (text) => {
+                    const firstLine = String(text).split(/\r?\n/).find(x => x.trim() !== '') || '';
+                    return firstLine.length > 80 ? firstLine.substring(0, 80) + '...' : firstLine;
+                };
+
+                // The user's system language (the browser's UI language, which follows the
+                // Windows display language), sent with the prompt so that the model can reply
+                // in it, for example: "Korean (South Korea) [ko-KR]".
+                const getSystemLanguage = () => {
+                    const tag = (navigator.languages && navigator.languages[0]) || navigator.language || 'en-US';
+                    let name = '';
+                    try {
+                        name = new Intl.DisplayNames(['en'], { type: 'language' }).of(tag) || '';
+                    } catch (e) {}
+                    return name && name !== tag ? `${name} [${tag}]` : tag;
+                };
+                // Translation targets are language codes without the region: the system
+                // language (for example "ko" for ko-KR) and "en". The English name of a code is
+                // used in the instruction and the menu, for example "Korean" (falls back to the
+                // code).
+                const getSystemLanguageCode = () => {
+                    const tag = (navigator.languages && navigator.languages[0]) || navigator.language || 'en-US';
+                    return tag.split('-')[0].toLowerCase();
+                };
+                const getLanguageName = (code) => {
+                    try {
+                        return new Intl.DisplayNames(['en'], { type: 'language' }).of(code) || code;
+                    } catch (e) {
+                        return code;
+                    }
+                };
+                // Kept short for small local models. The language applies to the prose only:
+                // models otherwise tend to translate identifiers and other code too.
+                const buildSystemLanguageNote = () =>
+                    `The user's system language is ${getSystemLanguage()}. Reply in it, but do not translate code or identifiers.`;
+
+                // The Local AI models: the launcher's LlamaCppModels setting (model names, which
+                // are installer components), read from /llamacpp/status. Until it answers, the
+                // setting's default is used. Each model is one entry of the ribbon toggle.
+                const DEFAULT_LOCAL_MODELS = ['hy_mt2_1_8b_1_25bit', 'frognano_4b_2609', 'bitnet_b1_58_2b_4t'];
+                const LOCAL_MODEL_LABELS = { hy_mt2_1_8b_1_25bit: 'Hy-MT2', frognano_4b_2609: 'FrogNano', bitnet_b1_58_2b_4t: 'BitNet' };
+                const localModelLabel = (model) => LOCAL_MODEL_LABELS[model] || model;
+                const [localModels, setLocalModels] = React.useState(DEFAULT_LOCAL_MODELS);
+                // The launcher's translation model (LlamaCppTranslationModel): the Local AI
+                // models send translation requests to it directly.
+                const [translationModel, setTranslationModel] = React.useState('hy_mt2_1_8b_1_25bit');
+                // The models whose prompts the launcher translates (LlamaCppTranslatedModels); it
+                // tells them the system language itself, so the editor adds no language note.
+                const [translatedModels, setTranslatedModels] = React.useState(['frognano_4b_2609', 'bitnet_b1_58_2b_4t']);
+                React.useEffect(() => {
+                    axios.get('/llamacpp/status').then(response => {
+                        const data = response.data || {};
+                        const models = (data.models || []).map(m => m.id).filter(Boolean);
+                        if (models.length)
+                            setLocalModels(models);
+                        setTranslationModel(data.translationModel || null);
+                        setTranslatedModels(data.translationModel ? (data.translatedModels || []) : []);
+                    }).catch(error => console.warn('Could not read the Local AI models from the launcher:', error.message));
+                }, []);
+
+                // Generates text with a local llama.cpp model through the launcher's llama.cpp
+                // router (/llamacpp/chat), which loads the named model on the first request and
+                // swaps models as needed. The answer replaces a status comment inserted below
+                // lineNumber.
+                const askLlamaCpp = (model, promptMessage, lineNumber, summary) => {
+                    const label = localModelLabel(model);
+                    const replace = insertPlaceholder(lineNumber,
+                        `// ${summarize(summary)}... Generating text with ${label} (llama.cpp; loading the model may take a while)...`);
                     pushPromptMessage("user", promptMessage);
 
-                    const apiKey = settingsRef.current.AzureCognitiveApiKey;
-                    if (!apiKey || apiKey.trim() == '') {
-                        alert("Azure Cognitive API key is not set.");
-                        return;
+                    // The system language goes in the system message (added to the first one
+                    // when the prompt has it: chat templates expect a single system message
+                    // at the start). It is not stored in the prompt messages. Not for the models
+                    // whose prompts the launcher translates: it tells them the system language.
+                    const messages = promptMessagesRef.current.slice();
+                    if (translatedModels.indexOf(model) < 0) {
+                        if (messages.length && messages[0] && messages[0].role === 'system')
+                            messages[0] = Object.assign({}, messages[0], { content: `${messages[0].content}\n\n${buildSystemLanguageNote()}` });
+                        else
+                            messages.unshift({ role: 'system', content: buildSystemLanguageNote() });
                     }
 
-                    const url = `${settingsRef.current.AzureCognitivePrefix}models/chat/completions?api-version=${settingsRef.current.AzureCognitiveApiVersion}`;
-
                     const data = {
-                        messages: promptMessagesRef.current,
+                        messages: messages,
                         max_tokens: 2048,
                         temperature: 0.8,
                         top_p: 0.1,
                         presence_penalty: 0,
                         frequency_penalty: 0,
-                        model: 'Phi-4'
+                        // For reasoning models (for example, FrogNano): without this they spend
+                        // the token budget on reasoning_content (minutes on a CPU) before
+                        // writing the answer. Templates without the option ignore it.
+                        chat_template_kwargs: { enable_thinking: false }
                     };
 
-                    axios.post(url, data, {
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'api-key': apiKey
-                        }
+                    // language: the system language, used by the launcher when it translates the
+                    // prompt into English for models that work best in English (FrogNano, BitNet).
+                    axios.post('/llamacpp/chat', Object.assign({ model: model, language: getSystemLanguageCode() }, data), {
+                        headers: { 'Content-Type': 'application/json' }
                     }).then(response => {
-                        response.data.choices.forEach(x => {
-                            const responseContent = x.message.content;
+                        const choices = (response.data && response.data.choices) || [];
+                        if (choices.length === 0) {
+                            replace(`// ${label} (llama.cpp) returned no response.`);
+                            return;
+                        }
+
+                        const blocks = choices.map(x => {
+                            const message = x.message || {};
+                            let responseContent = message.content || '';
+                            let note = '';
+                            if (!responseContent && message.reasoning_content) {
+                                // The model ran out of tokens while reasoning.
+                                note = `// ${label} (llama.cpp) returned only reasoning (finish_reason: ${x.finish_reason}).\n`;
+                                responseContent = message.reasoning_content;
+                            }
                             pushPromptMessage("assistant", responseContent);
 
-                            const responseText = DOMPurify.sanitize(responseContent, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
-                            appendTextToEditor(`/*\n${responseText}\n*/`);
+                            // Keep the text inside the comment block.
+                            const responseText = DOMPurify.sanitize(responseContent, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] }).replace(/\*\//g, '* /');
+                            return `${note}/*\n${responseText}\n*/`;
                         });
-                    })
-                        .catch(error => {
-                            console.error('Error:', error.response?.data || error.message);
-                        });
+                        replace(blocks.join('\n'));
+                    }).catch(error => {
+                        // Launcher errors are {error: "..."}; llama-server errors are {error: {message}}.
+                        const body = error.response && error.response.data;
+                        const detail = body && body.error
+                            ? (typeof body.error === 'string' ? body.error : (body.error.message || JSON.stringify(body.error)))
+                            : error.message;
+                        console.error('Error:', body || error.message);
+                        replace(`// ${label} (llama.cpp) request failed: ${detail}`);
+                    });
+                };
+
+                // ---- Web chat services (Copilot, ChatGPT, ...) through the launcher ----
+                //
+                // The launcher drives the chat page in its browser through the DevTools
+                // protocol (POST /v1/chat/completions with the service as the model; the
+                // services are in webchat.js). It opens the page when none is open (sign in
+                // there if asked).
+
+                const WEB_CHATS = WelsonJSWebChat.services;
+                const WEB_CHAT_CONFIRM_CHARS = 10000;
+                const WEB_CHAT_TIMEOUT_MS = 900000;   // opening, sign-in and the longest answer
+
+                // Sends the whole accumulated prompt plus promptMessage to a web chat
+                // service. A chat service receives one text message per turn and does not
+                // know this editor's conversation, so the launcher sends all messages
+                // (including tool results such as Whois/DNS/IP) as one message. The answer
+                // replaces a status comment inserted below lineNumber.
+                const askWebChat = (key, service, promptMessage, lineNumber, summary) => {
+                    const messages = [{ role: 'system', content: buildSystemLanguageNote() }]
+                        .concat(promptMessagesRef.current, [{ role: 'user', content: promptMessage }]);
+                    const count = messages.length - 1;
+                    const length = messages.reduce((total, m) => total + String(m.content || '').length, 0);
+                    if (length > WEB_CHAT_CONFIRM_CHARS &&
+                        !confirm(`The accumulated prompt is ${length} characters (${count} messages). ${service.name} may reject long messages. Send it anyway?`))
+                        return;
+
+                    const status = `// ${summarize(summary)}... Sending the whole prompt (${count} messages) to ${service.name}`;
+                    const replace = insertPlaceholder(lineNumber, status + '...');
+                    pushPromptMessage("user", promptMessage);
+
+                    axios.post('/v1/chat/completions', { model: key, messages: messages }, {
+                        headers: { 'Content-Type': 'application/json' },
+                        timeout: WEB_CHAT_TIMEOUT_MS
+                    }).then(response => {
+                        const choice = response.data && response.data.choices && response.data.choices[0];
+                        const answer = choice && choice.message ? String(choice.message.content || '') : '';
+                        pushPromptMessage("assistant", answer);
+                        // Keep the text inside the comment block.
+                        replace(`/*\n${DOMPurify.sanitize(answer, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] }).replace(/\*\//g, '* /')}\n*/`);
+                    }).catch(error => {
+                        const body = error.response && error.response.data;
+                        const detail = body && body.error ? (body.error.message || String(body.error)) : error.message;
+                        console.error(`${service.name} error:`, body || error.message);
+                        replace(`// ${service.name} request failed: ${String(detail).replace(/\r?\n/g, ' ')}`);
+                    });
+                };
+
+                // The AI services that the ribbon toggle switches between, in its order: the
+                // Local AI models (keys "llamacpp:<model>"), then the web chat services.
+                const AI_SERVICES = Object.assign(
+                    localModels.reduce((services, model) => {
+                        services['llamacpp:' + model] = {
+                            name: localModelLabel(model),
+                            ask: (m, l, s) => askLlamaCpp(model, m, l, s),
+                            // Translation requests go to the translation model directly.
+                            translate: translationModel ? (m, l, s) => askLlamaCpp(translationModel, m, l, s) : null
+                        };
+                        return services;
+                    }, {}),
+                    Object.keys(WEB_CHATS).reduce((services, key) => {
+                        const service = WEB_CHATS[key];
+                        services[key] = { name: service.name, ask: (m, l, s) => askWebChat(key, service, m, l, s) };
+                        return services;
+                    }, {})
+                );
+
+                // The AI service chosen in the ribbon (AI_SERVICES key), remembered across
+                // sessions; the first Local AI model until another one is chosen.
+                const AI_SERVICE_STORAGE_KEY = 'welsonjs.editor.aiService';
+                const [aiServiceKey, setAiServiceKey] = React.useState(() => {
+                    try {
+                        const saved = localStorage.getItem(AI_SERVICE_STORAGE_KEY);
+                        if (saved && AI_SERVICES[saved])
+                            return saved;
+                    } catch (e) {}
+                    return Object.keys(AI_SERVICES)[0];
+                });
+                const aiEditorRef = React.useRef(null);
+                const aiActionsRef = React.useRef([]);
+
+                // Editor context menu for the AI service chosen in the ribbon. "Send",
+                // "Explain", "Find Problems", "Translate ... into <language> (<code>)" (the system language and
+                // English) and "Write Code" (JavaScript, ES3) need a selection;
+                // "Ask..." asks for a message and includes the selection, if any. The answer
+                // goes below the selection (or the cursor line). Returns the added actions
+                // (disposables).
+                const addProviderActions = (editor, provider) => {
+                    const getContext = () => {
+                        const model = editor.getModel();
+                        const selection = editor.getSelection();
+                        if (!selection || selection.isEmpty()) {
+                            const position = editor.getPosition() || { lineNumber: 1 };
+                            return { text: '', endLine: position.lineNumber, language: model.getLanguageId() };
+                        }
+
+                        // A selection of whole lines ends at column 1 of the next line.
+                        const endLine = (selection.endColumn === 1 && selection.endLineNumber > selection.startLineNumber)
+                            ? selection.endLineNumber - 1
+                            : selection.endLineNumber;
+                        return { text: model.getValueInRange(selection), endLine: endLine, language: model.getLanguageId() };
+                    };
+
+                    const fence = (context) => '```' + context.language + '\n' + context.text + '\n```';
+
+                    // A translation action for a language code, in the prompt format of the
+                    // Hy-MT2 model card (which it was trained on) with a short note on code.
+                    // The prompts below are kept short for small local models.
+                    const translateAction = (code) => {
+                        const language = getLanguageName(code);
+                        return {
+                            id: 'translateSelection_' + code,
+                            label: `Translate Selection into ${language} (${code})`,
+                            precondition: 'editorHasSelection',
+                            translation: true,
+                            build: context => ({
+                                message: `Translate the following text into ${language}, leaving code unchanged. Note that you should only output the translated result without any additional explanation:\n\n${context.text}`,
+                                summary: `Translate the selection into ${language}`
+                            })
+                        };
+                    };
+                    // The system language, then English (once, when it is the system language).
+                    const translateCodes = [getSystemLanguageCode(), 'en'].filter((code, i, all) => all.indexOf(code) === i);
+
+                    const actions = [
+                        {
+                            id: 'sendSelection',
+                            label: 'Send Selection',
+                            precondition: 'editorHasSelection',
+                            build: context => ({ message: context.text, summary: context.text })
+                        },
+                        {
+                            id: 'explainSelection',
+                            label: 'Explain Selection',
+                            precondition: 'editorHasSelection',
+                            build: context => ({
+                                message: 'Explain this code.\n\n' + fence(context),
+                                summary: 'Explain the selection'
+                            })
+                        },
+                        {
+                            id: 'findProblemsInSelection',
+                            label: 'Find Problems in Selection',
+                            precondition: 'editorHasSelection',
+                            build: context => ({
+                                message: 'Find bugs and security or performance risks in this code, with fixes. ' +
+                                    'JavaScript runs on WSH JScript: syntax newer than ES3 is a bug (console API is available).\n\n' + fence(context),
+                                summary: 'Find problems in the selection'
+                            })
+                        },
+                        ...translateCodes.map(translateAction),
+                        {
+                            // The language specification is in the instruction only: WelsonJS
+                            // scripts run in the Windows Script Host JScript engine (ES3), and
+                            // app.js provides console.log, info, warn, error and debug.
+                            id: 'writeCode',
+                            label: 'Write Code',
+                            precondition: 'editorHasSelection',
+                            build: context => ({
+                                message: 'Write this as JavaScript for WSH JScript, ES3 only: no let, const, arrow functions, ' +
+                                    'classes, template literals, destructuring, default parameters, spread, for...of, Promise, ' +
+                                    'async/await, import/export, getters/setters or trailing commas. console API, require and module.exports are available. ' +
+                                    'Output only the code.\n\n' + fence(context),
+                                summary: 'Write code for the selection'
+                            })
+                        },
+                        {
+                            id: 'ask',
+                            label: 'Ask...',
+                            precondition: undefined,
+                            build: context => {
+                                const question = prompt(context.text
+                                    ? `Ask ${provider.name} about the selection:`
+                                    : `Ask ${provider.name}:`, '');
+                                if (!question || question.trim() === '')
+                                    return null;
+                                return {
+                                    message: context.text ? question + '\n\n' + fence(context) : question,
+                                    summary: question
+                                };
+                            }
+                        }
+                    ];
+
+                    return actions.map((action, index) => editor.addAction({
+                        id: `welsonjs.${provider.key}.${action.id}`,
+                        label: `${provider.name}: ${action.label}`,
+                        precondition: action.precondition,
+                        contextMenuGroupId: provider.group,
+                        contextMenuOrder: index + 1,
+                        run: () => {
+                            const context = getContext();
+                            if (action.precondition && !context.text)
+                                return;
+
+                            const request = action.build(context);
+                            const ask = action.translation && provider.translate ? provider.translate : provider.ask;
+                            if (request)
+                                ask(request.message, context.endLine, request.summary);
+                        }
+                    }));
+                };
+
+                // Replaces the AI actions with the ones for the chosen service, so the menu
+                // shows its name ("Hy-MT2: Ask...", "Copilot: Ask...").
+                const registerAiServiceActions = (key) => {
+                    const editor = aiEditorRef.current;
+                    if (!editor)
+                        return;
+
+                    aiActionsRef.current.forEach(action => action.dispose());
+                    const service = AI_SERVICES[key];
+                    aiActionsRef.current = addProviderActions(editor, {
+                        key: 'ai',
+                        name: service.name,
+                        group: '1_ai',
+                        ask: service.ask,
+                        translate: service.translate
+                    });
+                };
+
+                const registerAiActions = (editor) => {
+                    aiEditorRef.current = editor;
+                    registerAiServiceActions(aiServiceKey);
+                };
+
+                // When the launcher's model list (or translation model) arrives, keep the chosen
+                // service if it is still offered (re-registering its actions), or switch to the first one.
+                React.useEffect(() => {
+                    const key = AI_SERVICES[aiServiceKey] ? aiServiceKey : Object.keys(AI_SERVICES)[0];
+                    if (key !== aiServiceKey)
+                        setAiServiceKey(key);
+                    registerAiServiceActions(key);
+                }, [localModels, translationModel, translatedModels]);
+
+                // Ribbon toggle: switches to the next AI service and starts over with an empty
+                // prompt, so the new model does not continue another model's conversation.
+                const toggleAiService = () => {
+                    const keys = Object.keys(AI_SERVICES);
+                    const key = keys[(keys.indexOf(aiServiceKey) + 1) % keys.length];
+
+                    setAiServiceKey(key);
+                    try {
+                        localStorage.setItem(AI_SERVICE_STORAGE_KEY, key);
+                    } catch (e) {}
+                    registerAiServiceActions(key);
+
+                    if (promptMessagesRef.current.length > 0) {
+                        promptMessagesRef.current = [];
+                        notifyPromptMessages(null);
+                    }
                 };
 
                 const savePromptMessages = () => {
@@ -739,7 +1110,7 @@
                         let reader = new FileReader();
                         reader.onload = function (e) {
                             promptMessagesRef.current = JSON.parse(e.target.result);
-                            promptEditorRef.current.set(promptMessagesRef.current);
+                            notifyPromptMessages(null);
                             appendTextToEditor("\n//Prompt loaded successfully.");
                         };
                         reader.readAsText(file);
@@ -770,7 +1141,7 @@
                         return;
                     }
 
-                    axios.get(`/dns-query/${hostname}`).then(response => {
+                    axios.get(`/dns-query/${encodeURIComponent(hostname.trim())}`).then(response => {
                         const responseText = response.data;
                         appendTextToEditor(`/*\nHostname:${hostname}\n\n${responseText}\n*/`);
                         pushPromptMessage("system", responseText);
@@ -911,13 +1282,13 @@
                 React.useEffect(() => {
                 }, []);
 
-                fetchSettings();
-
                 return _e('div', { className: 'app' },
                     _e(RibbonMenu, {
+                        aiServiceName: (AI_SERVICES[aiServiceKey] || AI_SERVICES[Object.keys(AI_SERVICES)[0]]).name,
+                        onAiServiceToggleClick: toggleAiService,
                         onOpenFileClick: openFile,
                         onSaveFileClick: saveFile,
-                        onAzureCognitiveClick: sendMessageToAzureCognitive,
+                        onPromptEditorClick: openPromptEditor,
                         onSavePromptClick: savePromptMessages,
                         onLoadPromptClick: loadPromptMessages,
                         onQueryWhoisClick: queryWhois,
@@ -935,9 +1306,8 @@
                         onWorldTouristExampleClick: showWorldTouristExample,
                     }),
                     _e('div', { id: 'container' },
-                        _e(Editor, { editorRef: editorRef, visible: !showMap }),
-                        _e(MapView, { mapViewRef: mapViewRef, visible: showMap }),
-                        _e(PromptEditor, { promptEditorRef, promptMessagesRef })
+                        _e(Editor, { editorRef: editorRef, visible: !showMap, onReady: registerAiActions }),
+                        _e(MapView, { mapViewRef: mapViewRef, visible: showMap })
                     ),
                     _e('div', { className: 'banner' }, _e('a', { href: 'https://github.com/gnh1201/welsonjs' }, '❤️ Contribute this project')),
                 );

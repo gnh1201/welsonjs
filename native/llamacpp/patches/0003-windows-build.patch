@@ -1,0 +1,387 @@
+From: WelsonJS
+Subject: [PATCH] Windows build: resources for the binaries and MSVC fixes
+
+Windows-specific changes: an icon for the executables and version information
+for every executable and DLL, MSVC options and warnings, and building with
+clang against the Visual Studio 2019 STL.
+
+1. cmake : Windows icon and version information for every executable and DLL
+
+  llama.cpp has no Windows resource files, so its executables and DLLs have no
+  icon and no version information (the "Description" in the file properties is
+  empty).
+
+  Add cmake/win-resources.cmake, included at the end of the top-level
+  CMakeLists.txt, after all targets are defined. It collects every executable,
+  shared library and module library of the build (ggml, ggml-base, the CPU
+  backends, llama, llama-common, mtmd, the tools and their -impl libraries) and
+  gives each its own resource script. Cache options:
+
+    - LLAMA_WIN_ICON: an .ico file, embedded as the application icon of the
+      executables. It is copied next to the resource scripts, which start with
+      #pragma code_page(65001), so a build folder with non-ASCII characters
+      works regardless of the ANSI code page.
+    - LLAMA_WIN_DESCRIPTION: a text for the version information, which is added
+      when it is set. FileDescription is "<target> - <role> (<text>)", where
+      <role> says what the binary is (for example "ggml CPU backend, haswell
+      variant"; omitted for a target it does not know), ProductName is
+      "llama.cpp", InternalName and OriginalFilename come from the target, and
+      Comments gives the text, LLAMA_BUILD_COMMIT and LLAMA_BUILD_NUMBER.
+    - LLAMA_WIN_VERSION: FileVersion and ProductVersion (a.b.c.d); without it,
+      0.0.<LLAMA_BUILD_NUMBER>.0.
+    - LLAMA_WIN_COMPANY, LLAMA_WIN_COPYRIGHT: CompanyName and LegalCopyright,
+      when set.
+
+  The resource uses numeric FILEOS/FILETYPE values (VFT_APP for executables,
+  VFT_DLL for DLLs) instead of the winver.h names, so no include path is needed
+  (rc.exe and llvm-rc). The scripts are written through configure_file, which
+  only touches a file when its content changes, so a new CMake run does not
+  relink. With LLAMA_WIN_ICON and LLAMA_WIN_DESCRIPTION empty (the default) the
+  build is unchanged.
+
+2. ggml-cpu : do not pass unsupported options to MSVC
+
+  Two compiler options in ggml/src/ggml-cpu/CMakeLists.txt produce warning
+  D9002 ("ignoring unknown option") with MSVC:
+
+    - /arch:SSE4.2 for the sse42 CPU variant exists only in newer MSVC. MSVC
+      19.29 (Visual Studio 2019, the AppVeyor image) ignores it for every
+      source file of that variant. Add it only when check_c_compiler_flag
+      accepts it; CMake treats D9002 as a failed check. Without the option the
+      variant is compiled for SSE2 code generation, which is safe: MSVC accepts
+      SSE4 intrinsics with any /arch, and the variant is chosen at run time only
+      on CPUs with SSE4.2.
+    - -fno-lto for the CPU feature detection objects is a GCC/clang option.
+      Pass it only when not MSVC; MSVC does not use LTO unless /GL is given.
+
+3. llama : fix a size_t truncation, and disable MSVC conversion warnings like ggml
+
+  MSVC reports many C4244 ("possible loss of data") warnings in the llama,
+  mtmd and other targets (for example std::fill of a float vector with 0.0 or
+  0 in tools/mtmd/mtmd-audio.cpp, or std::pair<int64_t, uint32_t> from an
+  int64_t in src/llama-model.cpp). Almost all are harmless and are the same in
+  upstream llama.cpp. ggml/CMakeLists.txt already disables C4244, C4267 and
+  C4305 (among others) for the ggml targets; do the same in the top-level
+  CMakeLists.txt, before src, common and tools are added. MSVC only, so clang
+  (the ARM64 build) is not affected.
+
+  One of these warnings is a real truncation, fixed here:
+
+    - src/llama-quant.cpp, llama_tensor_dequantize_impl: the worker lambda took
+      the element count as int, but it is passed a size_t (thr_elems), and the
+      functions it calls (to_float, ggml_fp16_to_fp32_row,
+      ggml_bf16_to_fp32_row) take int64_t. A thread with more than 2^31 - 1
+      elements (requantizing a very large tensor with few threads) would get a
+      wrong count. Take int64_t.
+
+4. common : build jinja value_func_t with the Visual Studio 2019 STL
+
+  value_func_t (common/jinja/value.h) calls std::function::target<func_hptr>(),
+  where func_hptr is a function type. With clang and the MSVC 14.29 STL
+  (Visual Studio 2019, the AppVeyor image; the ARM64 build) this fails:
+
+    functional:1140: error: reinterpret_cast from 'const void *' to
+    'std::shared_ptr<jinja::value_t> (*)(const jinja::func_args &)' casts away
+    qualifiers
+
+  Newer STLs (14.44, 14.51) compile it. It also never matches: std::function
+  stores a plain function as a function pointer, so the target type is
+  func_hptr *. Add function_pointer(), which asks for target<func_hptr *>() and
+  returns the stored function pointer (nullptr for another callable), and use
+  it in unique_hash() and equivalent(), which the comments describe as
+  comparing function pointers. Both are unused for now.
+
+Apply with: git -c core.autocrlf=false apply <this file>
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 81f23d7..11d28f9 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -193,6 +193,16 @@ endif()
+ # build the library
+ #
+ 
++# MSVC: disable the conversion warnings that ggml/CMakeLists.txt also disables
++# for the ggml targets (MSVC_WARNING_FLAGS), for llama, common and the tools.
++if (MSVC)
++    add_compile_options(
++        /wd4244  # Conversion from one type to another type, possible loss of data
++        /wd4267  # Conversion from 'size_t' to a smaller type, possible loss of data
++        /wd4305  # Conversion from 'type1' to 'type2', possible loss of data
++    )
++endif()
++
+ add_subdirectory(src)
+ 
+ #
+@@ -280,3 +290,7 @@ configure_file(cmake/llama.pc.in
+ 
+ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/llama.pc"
+         DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
++
++# Windows icon and version information for the executables and DLLs; after all
++# targets are defined.
++include(cmake/win-resources.cmake)
+diff --git a/cmake/win-resources.cmake b/cmake/win-resources.cmake
+new file mode 100644
+index 0000000..99e88f3
+--- /dev/null
++++ b/cmake/win-resources.cmake
+@@ -0,0 +1,175 @@
++# Windows resources for every executable and DLL of the build: an icon for the
++# executables and version information for all of them. Included at the end of
++# the top-level CMakeLists.txt, after all targets are defined.
++#
++#   LLAMA_WIN_ICON         .ico file embedded as the application icon of the executables
++#   LLAMA_WIN_DESCRIPTION  text for the version information, for example "llama.cpp built
++#                          for WelsonJS": the description becomes "<target> - <role> (<text>)"
++#   LLAMA_WIN_VERSION      file and product version (a.b.c.d); default 0.0.<build number>.0
++#   LLAMA_WIN_COMPANY      CompanyName
++#   LLAMA_WIN_COPYRIGHT    LegalCopyright
++#
++# The version information is added when LLAMA_WIN_DESCRIPTION is set.
++
++set(LLAMA_WIN_ICON        "" CACHE FILEPATH "llama: .ico file embedded in the Windows executables")
++set(LLAMA_WIN_DESCRIPTION "" CACHE STRING   "llama: text for the version information of the Windows executables and DLLs")
++set(LLAMA_WIN_VERSION     "" CACHE STRING   "llama: version (a.b.c.d) in the version information (default: 0.0.<build number>.0)")
++set(LLAMA_WIN_COMPANY     "" CACHE STRING   "llama: CompanyName in the version information")
++set(LLAMA_WIN_COPYRIGHT   "" CACHE STRING   "llama: LegalCopyright in the version information")
++
++# Executables and DLLs (shared and module libraries) defined in dir and below.
++function(llama_win_collect_binaries dir out)
++    get_property(targets DIRECTORY "${dir}" PROPERTY BUILDSYSTEM_TARGETS)
++    set(result "")
++    foreach (target IN LISTS targets)
++        get_target_property(type ${target} TYPE)
++        if (type STREQUAL "EXECUTABLE" OR type STREQUAL "SHARED_LIBRARY" OR type STREQUAL "MODULE_LIBRARY")
++            list(APPEND result ${target})
++        endif()
++    endforeach()
++    get_property(subdirs DIRECTORY "${dir}" PROPERTY SUBDIRECTORIES)
++    foreach (subdir IN LISTS subdirs)
++        llama_win_collect_binaries("${subdir}" sub)
++        list(APPEND result ${sub})
++    endforeach()
++    set(${out} ${result} PARENT_SCOPE)
++endfunction()
++
++# What a binary is, for its file description ("" when not known).
++function(llama_win_role target out)
++    set(role "")
++    if (target STREQUAL "ggml")
++        set(role "ggml tensor library")
++    elseif (target STREQUAL "ggml-base")
++        set(role "ggml base library")
++    elseif (target STREQUAL "ggml-cpu")
++        set(role "ggml CPU backend")
++    elseif (target MATCHES "^ggml-cpu-(.+)$")
++        set(role "ggml CPU backend, ${CMAKE_MATCH_1} variant")
++    elseif (target MATCHES "^ggml-(.+)$")
++        set(role "ggml ${CMAKE_MATCH_1} backend")
++    elseif (target STREQUAL "llama")
++        set(role "llama.cpp library")
++    elseif (target STREQUAL "llama-common")
++        set(role "llama.cpp common library")
++    elseif (target STREQUAL "mtmd")
++        set(role "llama.cpp multimodal library")
++    elseif (target MATCHES "^(.+)-impl$")
++        set(role "${CMAKE_MATCH_1} implementation library")
++    elseif (target STREQUAL "llama-server")
++        set(role "OpenAI-compatible LLM server")
++    elseif (target STREQUAL "llama-cli")
++        set(role "LLM command-line interface")
++    elseif (target STREQUAL "llama-quantize")
++        set(role "GGUF model quantizer")
++    endif()
++    set(${out} "${role}" PARENT_SCOPE)
++endfunction()
++
++if (WIN32 AND (LLAMA_WIN_ICON OR LLAMA_WIN_DESCRIPTION))
++    set(llama_win_res_dir "${CMAKE_BINARY_DIR}/win-resources")
++    file(MAKE_DIRECTORY "${llama_win_res_dir}")
++
++    if (LLAMA_WIN_ICON)
++        if (NOT EXISTS "${LLAMA_WIN_ICON}")
++            message(FATAL_ERROR "LLAMA_WIN_ICON does not exist: ${LLAMA_WIN_ICON}")
++        endif()
++        # Copy the icon next to the resource scripts, which are UTF-8, so a path
++        # with non-ASCII characters does not depend on the ANSI code page.
++        configure_file("${LLAMA_WIN_ICON}" "${llama_win_res_dir}/llama-icon.ico" COPYONLY)
++    endif()
++
++    set(llama_win_build "${LLAMA_BUILD_NUMBER}")
++    if (NOT llama_win_build MATCHES "^[0-9]+$")
++        set(llama_win_build 0)
++    endif()
++    if (LLAMA_WIN_VERSION)
++        if (NOT LLAMA_WIN_VERSION MATCHES "^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$")
++            message(FATAL_ERROR "LLAMA_WIN_VERSION must be a.b.c.d: ${LLAMA_WIN_VERSION}")
++        endif()
++        set(llama_win_version "${LLAMA_WIN_VERSION}")
++    else()
++        # As in LLAMA_INSTALL_VERSION (0.0.<build number>).
++        set(llama_win_version "0.0.${llama_win_build}.0")
++    endif()
++    string(REPLACE "." "," llama_win_version_numbers "${llama_win_version}")
++
++    # A double quote inside a resource string is written as two.
++    string(REPLACE "\"" "\"\"" llama_win_desc      "${LLAMA_WIN_DESCRIPTION}")
++    string(REPLACE "\"" "\"\"" llama_win_commit    "${LLAMA_BUILD_COMMIT}")
++    string(REPLACE "\"" "\"\"" llama_win_company   "${LLAMA_WIN_COMPANY}")
++    string(REPLACE "\"" "\"\"" llama_win_copyright "${LLAMA_WIN_COPYRIGHT}")
++
++    llama_win_collect_binaries("${CMAKE_SOURCE_DIR}" llama_win_binaries)
++    foreach (target IN LISTS llama_win_binaries)
++        get_target_property(type ${target} TYPE)
++        get_target_property(output_name ${target} OUTPUT_NAME)
++        if (NOT output_name)
++            set(output_name ${target})
++        endif()
++        if (type STREQUAL "EXECUTABLE")
++            set(file_name "${output_name}.exe")
++            set(file_type "0x1")    # VFT_APP
++        else()
++            set(file_name "${output_name}.dll")
++            set(file_type "0x2")    # VFT_DLL
++        endif()
++
++        set(rc "#pragma code_page(65001)\n")
++        if (LLAMA_WIN_ICON AND type STREQUAL "EXECUTABLE")
++            string(APPEND rc "1 ICON \"${llama_win_res_dir}/llama-icon.ico\"\n")
++        endif()
++        if (LLAMA_WIN_DESCRIPTION)
++            llama_win_role(${target} role)
++            if (role)
++                set(description "${target} - ${role} (${llama_win_desc})")
++            else()
++                set(description "${target} (${llama_win_desc})")
++            endif()
++            # Numeric values instead of winver.h names (0x40004 = VOS_NT_WINDOWS32),
++            # so no include path is needed (rc.exe and llvm-rc).
++            string(APPEND rc
++                "1 VERSIONINFO\n"
++                "FILEVERSION ${llama_win_version_numbers}\n"
++                "PRODUCTVERSION ${llama_win_version_numbers}\n"
++                "FILEFLAGSMASK 0x3F\n"
++                "FILEFLAGS 0x0\n"
++                "FILEOS 0x40004\n"
++                "FILETYPE ${file_type}\n"
++                "FILESUBTYPE 0x0\n"
++                "BEGIN\n"
++                "    BLOCK \"StringFileInfo\"\n"
++                "    BEGIN\n"
++                "        BLOCK \"040904B0\"\n"
++                "        BEGIN\n")
++            if (LLAMA_WIN_COMPANY)
++                string(APPEND rc "            VALUE \"CompanyName\", \"${llama_win_company}\"\n")
++            endif()
++            string(APPEND rc
++                "            VALUE \"FileDescription\", \"${description}\"\n"
++                "            VALUE \"FileVersion\", \"${llama_win_version}\"\n"
++                "            VALUE \"InternalName\", \"${target}\"\n")
++            if (LLAMA_WIN_COPYRIGHT)
++                string(APPEND rc "            VALUE \"LegalCopyright\", \"${llama_win_copyright}\"\n")
++            endif()
++            string(APPEND rc
++                "            VALUE \"OriginalFilename\", \"${file_name}\"\n"
++                "            VALUE \"ProductName\", \"llama.cpp\"\n"
++                "            VALUE \"ProductVersion\", \"${llama_win_version}\"\n"
++                "            VALUE \"Comments\", \"${llama_win_desc}. llama.cpp ${llama_win_commit}, build ${llama_win_build}.\"\n"
++                "        END\n"
++                "    END\n"
++                "    BLOCK \"VarFileInfo\"\n"
++                "    BEGIN\n"
++                "        VALUE \"Translation\", 0x409, 1200\n"
++                "    END\n"
++                "END\n")
++        endif()
++        # Write through configure_file, which only touches the file when it
++        # changes, so a new CMake run does not relink every binary.
++        file(WRITE "${llama_win_res_dir}/${target}.rc.in" "${rc}")
++        configure_file("${llama_win_res_dir}/${target}.rc.in" "${llama_win_res_dir}/${target}.rc" COPYONLY)
++        target_sources(${target} PRIVATE "${llama_win_res_dir}/${target}.rc")
++    endforeach()
++    message(STATUS "Windows resources (version ${llama_win_version}; icon: ${LLAMA_WIN_ICON}; description: ${LLAMA_WIN_DESCRIPTION}): ${llama_win_binaries}")
++endif()
+diff --git a/common/jinja/value.h b/common/jinja/value.h
+index 5cf85e4..5a36857 100644
+--- a/common/jinja/value.h
++++ b/common/jinja/value.h
+@@ -717,7 +717,7 @@ struct value_func_t : public value_t {
+     virtual hasher unique_hash() const noexcept override {
+         // Note: this is unused for now, we don't support function as object keys
+         // use function pointer as unique identifier
+-        const auto target = val_func.target<func_hptr>();
++        const auto target = function_pointer(val_func);
+         return hasher(typeid(*this)).update(&target, sizeof(target));
+     }
+ protected:
+@@ -725,10 +725,20 @@ protected:
+         // Note: this is unused for now, we don't support function as object keys
+         // compare function pointers
+         // (val_func == other.val_func does not work as std::function::operator== is only used for nullptr check)
+-        const auto target_this  = this->val_func.target<func_hptr>();
+-        const auto target_other = other.val_func.target<func_hptr>();
++        const auto target_this  = function_pointer(this->val_func);
++        const auto target_other = function_pointer(other.val_func);
+         return typeid(*this) == typeid(other) && target_this == target_other;
+     }
++private:
++    // The plain function a func_handler holds, or nullptr for another callable.
++    // std::function stores a plain function as a function pointer, so the target
++    // type is func_hptr * (target<func_hptr>() never matches). It also compiles
++    // with the Visual Studio 2019 STL, whose target<function type>() fails with
++    // clang ("reinterpret_cast ... casts away qualifiers").
++    static func_hptr * function_pointer(const func_handler & func) {
++        const auto target = func.target<func_hptr *>();
++        return target ? *target : nullptr;
++    }
+ };
+ using value_func = std::shared_ptr<value_func_t>;
+ 
+diff --git a/ggml/src/ggml-cpu/CMakeLists.txt b/ggml/src/ggml-cpu/CMakeLists.txt
+index 55f0f5a..6e0fec5 100644
+--- a/ggml/src/ggml-cpu/CMakeLists.txt
++++ b/ggml/src/ggml-cpu/CMakeLists.txt
+@@ -13,7 +13,11 @@ function(ggml_add_cpu_backend_features cpu_name arch)
+     # from inlining architecture-specific instructions into the score function.
+     # Without this, LTO can cause SIGILL when loading backends on older CPUs
+     # (e.g., loading power10 backend on power9 crashes before feature check runs).
+-    target_compile_options(${GGML_CPU_FEATS_NAME} PRIVATE -fno-lto)
++    # -fno-lto is a GCC/clang option; MSVC warns about it (D9002) and does not
++    # use LTO unless /GL is given.
++    if (NOT MSVC)
++        target_compile_options(${GGML_CPU_FEATS_NAME} PRIVATE -fno-lto)
++    endif()
+     target_link_libraries(${cpu_name} PRIVATE ${GGML_CPU_FEATS_NAME})
+ endfunction()
+ 
+@@ -300,7 +304,14 @@ function(ggml_add_cpu_backend_variant_impl tag_name)
+                 list(APPEND ARCH_FLAGS /arch:AVX)
+                 list(APPEND ARCH_DEFINITIONS GGML_AVX)
+             elseif (GGML_SSE42)
+-                list(APPEND ARCH_FLAGS /arch:SSE4.2)
++                # /arch:SSE4.2 exists only in newer MSVC; MSVC 19.29 (Visual
++                # Studio 2019) ignores it with warning D9002. The variant still
++                # builds without it: MSVC accepts SSE4 intrinsics with any /arch.
++                include(CheckCCompilerFlag)
++                check_c_compiler_flag("/arch:SSE4.2" GGML_MSVC_HAS_ARCH_SSE42)
++                if (GGML_MSVC_HAS_ARCH_SSE42)
++                    list(APPEND ARCH_FLAGS /arch:SSE4.2)
++                endif()
+                 list(APPEND ARCH_DEFINITIONS GGML_SSE42)
+             endif()
+             if (GGML_AVX_VNNI)
+diff --git a/src/llama-quant.cpp b/src/llama-quant.cpp
+index 897c904..3622f9c 100644
+--- a/src/llama-quant.cpp
++++ b/src/llama-quant.cpp
+@@ -264,7 +264,7 @@ static void llama_tensor_dequantize_impl(
+         size_t thr_elems = thr_blocks * block_size; // number of elements for this thread
+         size_t thr_block_bytes = thr_blocks * block_size_bytes; // number of input bytes for this thread
+ 
+-        auto compute = [qtype] (ggml_type typ, uint8_t * inbuf, float * outbuf, int nels) {
++        auto compute = [qtype] (ggml_type typ, uint8_t * inbuf, float * outbuf, int64_t nels) {
+             if (typ == GGML_TYPE_F16) {
+                 ggml_fp16_to_fp32_row((ggml_fp16_t *)inbuf, outbuf, nels);
+             } else if (typ == GGML_TYPE_BF16) {

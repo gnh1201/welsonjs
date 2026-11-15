@@ -4,6 +4,7 @@
 // https://github.com/gnh1201/welsonjs
 // 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -20,7 +21,13 @@ namespace WelsonJS.Launcher
         private readonly string _endpoint;
         private readonly string _hostname;
         private readonly string _group;
-        private readonly string _systemInfo;
+        private readonly Dictionary<string, object> _systemInfo;
+
+        // Log lines written before ChakraCore.dll is loaded (JsonCodec needs it);
+        // sent with the first line after it is.
+        private const int MaxPendingLogs = 100;
+        private readonly Queue<Dictionary<string, object>> _pending =
+            new Queue<Dictionary<string, object>>();
 
         public AppSignalTraceListener(
             string apiKey,
@@ -60,7 +67,7 @@ namespace WelsonJS.Launcher
                 + Uri.EscapeDataString(apiKey);
         }
 
-        private string BuildSystemInfo()
+        private Dictionary<string, object> BuildSystemInfo()
         {
             var process = Process.GetCurrentProcess();
 
@@ -105,30 +112,17 @@ namespace WelsonJS.Launcher
                     ? "x64"
                     : "x86";
 
-            return
-                "\"machine_name\":" +
-                JsonString(Environment.MachineName) + "," +
-
-                "\"os_version\":" +
-                JsonString(Environment.OSVersion.ToString()) + "," +
-
-                "\"os_architecture\":" +
-                JsonString(osArchitecture) + "," +
-
-                "\"process_architecture\":" +
-                JsonString(processArchitecture) + "," +
-
-                "\"process_name\":" +
-                JsonString(processName) + "," +
-
-                "\"process_id\":" +
-                process.Id + "," +
-
-                "\"runtime_version\":" +
-                JsonString(Environment.Version.ToString()) + "," +
-
-                "\"application_version\":" +
-                JsonString(applicationVersion);
+            return new Dictionary<string, object>
+            {
+                ["machine_name"] = Environment.MachineName,
+                ["os_version"] = Environment.OSVersion.ToString(),
+                ["os_architecture"] = osArchitecture,
+                ["process_architecture"] = processArchitecture,
+                ["process_name"] = processName,
+                ["process_id"] = process.Id,
+                ["runtime_version"] = Environment.Version.ToString(),
+                ["application_version"] = applicationVersion
+            };
         }
 
         public override void Write(string message)
@@ -189,11 +183,36 @@ namespace WelsonJS.Launcher
 
             try
             {
-                string json = BuildLogMessage(
+                Dictionary<string, object> entry = BuildLogMessage(
                     severity,
                     message);
 
-                _ = SendHttpAsync(json);
+                var entries = new List<Dictionary<string, object>>();
+
+                // Serialize outside the lock: JsonCodec takes the engine lock, and
+                // logging from inside an engine call must not wait on this one.
+                lock (_pending)
+                {
+                    if (!JsonCodec.IsAvailable)
+                    {
+                        if (_pending.Count >= MaxPendingLogs)
+                            _pending.Dequeue();
+
+                        _pending.Enqueue(entry);
+                        return;
+                    }
+
+                    entries.AddRange(_pending);
+                    _pending.Clear();
+                }
+
+                entries.Add(entry);
+
+                var lines = new StringBuilder();
+                foreach (Dictionary<string, object> item in entries)
+                    lines.Append(JsonCodec.Serialize(item)).Append('\n');
+
+                _ = SendHttpAsync(lines.ToString());
             }
             catch
             {
@@ -201,13 +220,12 @@ namespace WelsonJS.Launcher
             }
         }
 
+        // payload: one or more newline-terminated JSON lines (NDJSON)
         private async System.Threading.Tasks.Task SendHttpAsync(
-            string json)
+            string payload)
         {
             try
             {
-                string payload = json + "\n";
-
                 byte[] data =
                     Encoding.UTF8.GetBytes(payload);
 
@@ -238,7 +256,7 @@ namespace WelsonJS.Launcher
             }
         }
 
-        private string BuildLogMessage(
+        private Dictionary<string, object> BuildLogMessage(
             string severity,
             string message)
         {
@@ -246,22 +264,15 @@ namespace WelsonJS.Launcher
                 DateTime.UtcNow.ToString(
                     "yyyy-MM-dd'T'HH:mm:ss.fff'Z'");
 
-            return
-                "{"
-                + "\"timestamp\":"
-                + JsonString(timestamp)
-                + ",\"group\":"
-                + JsonString(_group)
-                + ",\"severity\":"
-                + JsonString(severity)
-                + ",\"message\":"
-                + JsonString(message)
-                + ",\"hostname\":"
-                + JsonString(_hostname)
-                + ",\"attributes\":{"
-                + _systemInfo
-                + "}"
-                + "}";
+            return new Dictionary<string, object>
+            {
+                ["timestamp"] = timestamp,
+                ["group"] = _group,
+                ["severity"] = severity,
+                ["message"] = message,
+                ["hostname"] = _hostname,
+                ["attributes"] = _systemInfo
+            };
         }
 
         private static string GetSeverity(
@@ -285,72 +296,6 @@ namespace WelsonJS.Launcher
                 default:
                     return "info";
             }
-        }
-
-        private static string JsonString(
-            string value)
-        {
-            if (value == null)
-                return "null";
-
-            var builder =
-                new StringBuilder();
-
-            builder.Append('"');
-
-            for (int i = 0; i < value.Length; i++)
-            {
-                char c = value[i];
-
-                switch (c)
-                {
-                    case '\\':
-                        builder.Append("\\\\");
-                        break;
-
-                    case '"':
-                        builder.Append("\\\"");
-                        break;
-
-                    case '\r':
-                        builder.Append("\\r");
-                        break;
-
-                    case '\n':
-                        builder.Append("\\n");
-                        break;
-
-                    case '\t':
-                        builder.Append("\\t");
-                        break;
-
-                    case '\b':
-                        builder.Append("\\b");
-                        break;
-
-                    case '\f':
-                        builder.Append("\\f");
-                        break;
-
-                    default:
-                        if (c < 0x20)
-                        {
-                            builder.Append("\\u");
-                            builder.Append(
-                                ((int)c).ToString("x4"));
-                        }
-                        else
-                        {
-                            builder.Append(c);
-                        }
-
-                        break;
-                }
-            }
-
-            builder.Append('"');
-
-            return builder.ToString();
         }
     }
 }

@@ -1,6 +1,6 @@
 {
   "name": "welsonjs",
-  "version": "0.2.7.50",
+  "version": "0.2.7.62",
   "description": "WelsonJS is a framework to build a Windows app on the Windows built-in JavaScript engine",
   "main": "app.js",
   "directories": {

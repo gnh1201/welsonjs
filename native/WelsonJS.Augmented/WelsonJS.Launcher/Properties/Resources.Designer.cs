@@ -97,33 +97,6 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
-        ///   과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string AzureCognitiveApiKey {
-            get {
-                return ResourceManager.GetString("AzureCognitiveApiKey", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   2024-05-01-preview과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string AzureCognitiveApiVersion {
-            get {
-                return ResourceManager.GetString("AzureCognitiveApiVersion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   https://catswords-ai-resource.services.ai.azure.com/과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string AzureCognitivePrefix {
-            get {
-                return ResourceManager.GetString("AzureCognitivePrefix", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   https://catswords.blob.core.windows.net/welsonjs/blob.config.xml과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string BlobConfigUrl {
@@ -151,15 +124,6 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
-        ///   http://localhost:9222/과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string ChromiumDevToolsPrefix {
-            get {
-                return ResourceManager.GetString("ChromiumDevToolsPrefix", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   5과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string ChromiumDevToolsTimeout {
@@ -178,15 +142,6 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
-        ///   https://copilot.microsoft.com/과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string CopilotUrl {
-            get {
-                return ResourceManager.GetString("CopilotUrl", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   yyyy-MM-dd HH:mm:ss과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string DateTimeFormat {
@@ -196,7 +151,7 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
-        ///   1.1.1.1과(와) 유사한 지역화된 문자열을 찾습니다.
+        ///   1.1.1.1,8.8.8.8과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string DnsServerAddress {
             get {
@@ -359,31 +314,78 @@ namespace WelsonJS.Launcher.Properties {
                 return ResourceManager.GetString("IpQueryApiKey2", resourceCulture);
             }
         }
-        
+
+
+
         /// <summary>
-        ///   https://api.criminalip.io/v1/과(와) 유사한 지역화된 문자열을 찾습니다.
+        ///   qwen3guard_06b과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
-        internal static string IpQueryApiPrefix {
+        internal static string LlmGuardModel {
             get {
-                return ResourceManager.GetString("IpQueryApiPrefix", resourceCulture);
+                return ResourceManager.GetString("LlmGuardModel", resourceCulture);
             }
         }
-        
+
         /// <summary>
-        ///   https://api.abuseipdb.com/api/v2/과(와) 유사한 지역화된 문자열을 찾습니다.
+        ///   hy_mt2_1_8b_1_25bit,frognano_4b_2609,bitnet_b1_58_2b_4t과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
-        internal static string IpQueryApiPrefix2 {
+        internal static string LlamaCppModels {
             get {
-                return ResourceManager.GetString("IpQueryApiPrefix2", resourceCulture);
+                return ResourceManager.GetString("LlamaCppModels", resourceCulture);
             }
         }
-        
+
+        /// <summary>
+        ///   3과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string LlamaCppModelsMax {
+            get {
+                return ResourceManager.GetString("LlamaCppModelsMax", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   frognano_4b_2609,bitnet_b1_58_2b_4t과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string LlamaCppTranslatedModels {
+            get {
+                return ResourceManager.GetString("LlamaCppTranslatedModels", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   hy_mt2_1_8b_1_25bit과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string LlamaCppTranslationModel {
+            get {
+                return ResourceManager.GetString("LlamaCppTranslationModel", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   8192과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string LlamaCppContextSize {
+            get {
+                return ResourceManager.GetString("LlamaCppContextSize", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   https://github.com/gnh1201/welsonjs과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string RepositoryUrl {
             get {
                 return ResourceManager.GetString("RepositoryUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   oss@catswords.re.kr과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string ResourceServerApiKey {
+            get {
+                return ResourceManager.GetString("ResourceServerApiKey", resourceCulture);
             }
         }
         
@@ -411,33 +413,6 @@ namespace WelsonJS.Launcher.Properties {
         internal static string ResourceServerPrefix {
             get {
                 return ResourceManager.GetString("ResourceServerPrefix", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   49.8.14.101과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string WhoisClientAddress {
-            get {
-                return ResourceManager.GetString("WhoisClientAddress", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   https://whois.kr/kor/whois/whois.jsp과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string WhoisReferrerUrl {
-            get {
-                return ResourceManager.GetString("WhoisReferrerUrl", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   https://whois.kr/kor/whois.jsc과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string WhoisServerUrl {
-            get {
-                return ResourceManager.GetString("WhoisServerUrl", resourceCulture);
             }
         }
     }

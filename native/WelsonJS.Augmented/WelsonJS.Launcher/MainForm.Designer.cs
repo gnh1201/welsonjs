@@ -42,7 +42,6 @@
             this.runAsAdministratorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.globalSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.startTheEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.openCopilotToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.openLauncherToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -134,8 +133,7 @@
             this.instancesToolStripMenuItem,
             this.runAsAdministratorToolStripMenuItem,
             this.globalSettingsToolStripMenuItem,
-            this.startTheEditorToolStripMenuItem,
-            this.openCopilotToolStripMenuItem});
+            this.startTheEditorToolStripMenuItem});
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
             this.settingsToolStripMenuItem.Size = new System.Drawing.Size(62, 20);
             this.settingsToolStripMenuItem.Text = "Settings";
@@ -174,13 +172,6 @@
             this.startTheEditorToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.startTheEditorToolStripMenuItem.Text = "Start the editor...";
             this.startTheEditorToolStripMenuItem.Click += new System.EventHandler(this.startCodeEditorToolStripMenuItem_Click);
-            // 
-            // openCopilotToolStripMenuItem
-            // 
-            this.openCopilotToolStripMenuItem.Name = "openCopilotToolStripMenuItem";
-            this.openCopilotToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
-            this.openCopilotToolStripMenuItem.Text = "Open the Copilot...";
-            this.openCopilotToolStripMenuItem.Click += new System.EventHandler(this.openCopilotToolStripMenuItem_Click);
             // 
             // notifyIcon1
             // 
@@ -290,7 +281,6 @@
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openCodeEditorToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openLauncherToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem openCopilotToolStripMenuItem;
         private System.Windows.Forms.SaveFileDialog saveFileDialog1;
         private System.Windows.Forms.Button btnStartTheEditor;
         private System.Windows.Forms.Button btnJoinTheCommunity;

@@ -5,10 +5,38 @@
 // 
 var StdioServer = require("lib/stdio-server");
 var JsonRpc2 = require("lib/jsonrpc2");
+var LLMGuard = require("lib/llm-guard");
+
+// Tool results go to the MCP client's LLM, so they pass the launcher's LLM guard
+// first (see docs/llm-guard-flow.md). A result that is unsafe, or that cannot be
+// checked, is replaced by an error and never returned.
+function guardToolResult(result) {
+    if (!result || !result.content) return result;
+
+    try {
+        for (var i = 0; i < result.content.length; i++) {
+            var item = result.content[i];
+            if (item && item.type === "text") {
+                item.text = LLMGuard.enforce(item.text);
+            }
+        }
+        return result;
+    } catch (e) {
+        return {
+            "content": [{"type": "text", "text": "Error: The tool result was withheld by the LLM guard. " + e.message}],
+            "isError": true
+        };
+    }
+}
 
 function main(args) {
     var server = StdioServer.create();
-    
+
+    // Console output must not reach stdout directly: it would bypass the LLM guard
+    // (and corrupt the JSON-RPC stream). Messages are still collected in
+    // console._messages and returned, guarded, with the tool result.
+    console._muted = true;
+
     // notify
     var _notify = function(message) {
         console.log(message);
@@ -171,6 +199,17 @@ JsonRpc2.register("tools/list", function (rpc, params, id, callback) {
 
 // tools/call
 JsonRpc2.register("tools/call", function (rpc, params, id, callback) {
+    var result;
+    try {
+        result = callTool(rpc, params, id, callback);
+    } catch (e) {
+        // An exception message can carry data too, so return it as a guarded result.
+        result = {"content": [{"type": "text", "text": "Error: " + e.message}], "isError": true};
+    }
+    return guardToolResult(result);
+});
+
+function callTool(rpc, params, id, callback) {
     var _notify = typeof callback === "function" ? callback : console.log;
     var _getState = typeof rpc.getState === "function" ? function(key) { return rpc.getState(key); } : null; // `_getState(key);`
     var _setState = typeof rpc.setState === "function" ? function(key, value) { rpc.setState(key, value); } : null; // `_setState(key, state);`
@@ -256,6 +295,6 @@ JsonRpc2.register("tools/call", function (rpc, params, id, callback) {
             return {"content": [{"type": "text", "text": "Error: " + e.message}], "isError": true};
         }
     }
-});
+}
 
 exports.main = main;
