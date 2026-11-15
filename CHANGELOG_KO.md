@@ -66,6 +66,7 @@
 - `file:` URL에서 스크립트 디렉터리를 디코딩하는 문제.
 - `resolvePictureSize`의 그림 크기 처리.
 - llama.cpp: PR #22836처럼 파일 타입이 42인 STQ1_0 파일이 `TL1`로 표시되던 문제. 이제 STQ1_0으로 표시됩니다.
+- `lib/aviation.js`가 괄호 누락으로 문법 오류가 나 `require("lib/aviation")`이 실패하던 문제. `limit`과 `offset`을 10진수로 파싱하고(JScript 엔진은 0으로 시작하는 문자열을 8진수로 읽음), `offset`을 `limit`이 아닌 `offset`에서 파싱합니다(radix 제보: [@avelankwon](https://github.com/avelankwon)).
 
 ### 보안
 

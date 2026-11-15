@@ -66,6 +66,7 @@ Before upgrading:
 - Script directory decoding from `file:` URLs.
 - Picture size handling in `resolvePictureSize`.
 - llama.cpp: STQ1_0 files with file type 42, as PR #22836 writes them, were reported as `TL1`; they are reported as STQ1_0.
+- `lib/aviation.js` did not compile (a missing parenthesis), so `require("lib/aviation")` failed; its `limit` and `offset` are now parsed in base 10 (the JScript engine reads a leading zero as octal), and `offset` is parsed from `offset` instead of `limit` (radix reported by [@avelankwon](https://github.com/avelankwon)).
 
 ### Security
 
