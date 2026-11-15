@@ -732,11 +732,10 @@
                         return code;
                     }
                 };
-                // The language applies to the prose only: models otherwise tend to translate
-                // identifiers and other code too.
+                // Kept short for small local models. The language applies to the prose only:
+                // models otherwise tend to translate identifiers and other code too.
                 const buildSystemLanguageNote = () =>
-                    `The user's system language is ${getSystemLanguage()}. Reply in that language unless the conversation asks for another. ` +
-                    'Use it only for the text that is not code: do not translate code, including variable, function and other identifiers.';
+                    `The user's system language is ${getSystemLanguage()}. Reply in it, but do not translate code or identifiers.`;
 
                 // The Local AI models: the launcher's LlamaCppModels setting (model names, which
                 // are installer components), read from /llamacpp/status. Until it answers, the
@@ -1556,8 +1555,7 @@
                 // messages (including tool results such as Whois/DNS/IP) as one message.
                 const buildWebChatMessage = (messages) => {
                     const lines = [
-                        'Below is the whole conversation so far, including tool results, in order.',
-                        'Reply to the last [user] message.',
+                        'The conversation so far, with tool results. Reply to the last [user] message.',
                         buildSystemLanguageNote(),
                         ''
                     ];
@@ -1867,9 +1865,9 @@
 
                     const fence = (context) => '```' + context.language + '\n' + context.text + '\n```';
 
-                    // A translation action for a language code, with the request in the prompt
-                    // format of the Hy-MT2 model card, which the other models and the web chat
-                    // services follow as well.
+                    // A translation action for a language code, in the prompt format of the
+                    // Hy-MT2 model card (which it was trained on) with a short note on code.
+                    // The prompts below are kept short for small local models.
                     const translateAction = (code) => {
                         const language = getLanguageName(code);
                         return {
@@ -1878,8 +1876,7 @@
                             precondition: 'editorHasSelection',
                             translation: true,
                             build: context => ({
-                                message: `Translate the following text into ${language}. Translate only the parts that are not code, and keep code, ` +
-                                    `including variable, function and other identifiers, unchanged. Note that you should only output the translated result without any additional explanation:\n\n${context.text}`,
+                                message: `Translate the following text into ${language}, leaving code unchanged. Note that you should only output the translated result without any additional explanation:\n\n${context.text}`,
                                 summary: `Translate the selection into ${language}`
                             })
                         };
@@ -1899,7 +1896,7 @@
                             label: 'Explain Selection',
                             precondition: 'editorHasSelection',
                             build: context => ({
-                                message: 'Explain what the following code does.\n\n' + fence(context),
+                                message: 'Explain this code.\n\n' + fence(context),
                                 summary: 'Explain the selection'
                             })
                         },
@@ -1908,12 +1905,8 @@
                             label: 'Find Problems in Selection',
                             precondition: 'editorHasSelection',
                             build: context => ({
-                                message: 'Find problems in the following code: bugs, errors, unhandled cases, and ' +
-                                    'security or performance risks. For each problem, quote the code, explain why it is ' +
-                                    'a problem, and show how to fix it. If you find no problems, say so. If it is ' +
-                                    'JavaScript for WelsonJS, it runs in the Windows Script Host JScript engine, so ' +
-                                    'syntax newer than ES3 is a problem as well (the console API, console.log and the ' +
-                                    'like, is available).\n\n' + fence(context),
+                                message: 'Find bugs and security or performance risks in this code, with fixes. ' +
+                                    'JavaScript runs on WSH JScript: syntax newer than ES3 is a bug (console API is available).\n\n' + fence(context),
                                 summary: 'Find problems in the selection'
                             })
                         },
@@ -1926,14 +1919,10 @@
                             label: 'Write Code',
                             precondition: 'editorHasSelection',
                             build: context => ({
-                                message: 'Write JavaScript code for the following request, or convert the following code into ' +
-                                    'JavaScript. The code must use ES3 syntax only, ' +
-                                    'because it runs in the Windows Script Host JScript engine: use var and function ' +
-                                    'declarations, and do not use let, const, arrow functions, classes, template literals, ' +
-                                    'destructuring, default or rest parameters, spread, for...of, Promise or async/await, ' +
-                                    'modules, getters or setters, or trailing commas. The console API is available ' +
-                                    '(console.log, console.info, console.warn, console.error and console.debug). ' +
-                                    'Output only the code without any additional explanation.\n\n' + fence(context),
+                                message: 'Write this as JavaScript for WSH JScript, ES3 only: no let, const, arrow functions, ' +
+                                    'classes, template literals, destructuring, default parameters, spread, for...of, Promise, ' +
+                                    'async/await, import/export, getters/setters or trailing commas. console API, require and module.exports are available. ' +
+                                    'Output only the code.\n\n' + fence(context),
                                 summary: 'Write code for the selection'
                             })
                         },
