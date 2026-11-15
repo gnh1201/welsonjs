@@ -186,6 +186,37 @@ I2_S 커널 자체는 정확했습니다. I2_S 가중치를 F16으로 변환한 
 
 이 GGUF 파일의 `general.file_type`은 40이고, 포크에서는 `Q1_0`입니다. 파일에 I2_S 텐서가 있고 Q1_0 텐서가 없으므로 `0001-stq1_0.patch`(파트 3)는 이를 `I2_S`로 표시합니다. 파일 타입은 메타데이터일 뿐 불러오기에 영향을 주지 않습니다.
 
+## llama-quantize로 양자화하기
+
+`llama-quantize.exe`는 다른 도구와 함께 `%APPDATA%\WelsonJS\llamacpp`에 설치되며, 이 폴더는 사용자 `PATH`에 들어 있습니다. `llama-quantize --help`가 받아들이는 타입 목록을 보여 줍니다.
+
+**타입은 번호가 아니라 이름으로 지정하세요.** `llama-quantize`는 둘 다 받습니다. 먼저 이름을 찾고(대소문자 구분 없음), 없으면 목록에 있는 파일 타입 번호를 찾습니다. BitNet과 STQ1_0 타입의 번호는 빌드마다 다르므로, 다른 빌드나 파일에서 가져온 번호는 다른 타입을 고를 수 있습니다:
+
+| 번호 | 이 빌드 | 다른 곳 |
+| --- | --- | --- |
+| 41 | `I2_S` | Tencent 1.25비트 파일의 `general.file_type` 41은 STQ1_0 |
+| 42 | 받지 않음(`TL1`, 목록에 없음) | PR #22836의 STQ1_0 |
+| 44 | `STQ1_0` | STQ1_0은 PR #22836에서 42, Tencent 파일에서 41 |
+
+예를 들어 Tencent 파일에서 가져온 `41`을 넣으면 STQ1_0이 아니라 I2_S로 양자화되고, 삼진 모델이 아니면 모델이 망가집니다. `I2_S`, `STQ1_0` 같은 이름은 그 타입이 있는 모든 빌드에서 같은 타입을 고릅니다.
+
+예:
+
+```powershell
+# BitNet b1.58: BitNet 변환기가 만든, 삼진 가중치를 담은 F32(또는 F16) GGUF를 I2_S로
+# 출력 가중치와 토큰 임베딩은 F16으로 남습니다.
+llama-quantize ggml-model-f32.gguf ggml-model-i2_s.gguf I2_S
+
+# Sherry로 학습한 체크포인트(예: AngelSlim/Hy-MT1.5-1.8B-1.25bit)를 BF16으로 변환한 파일을 STQ1_0으로
+llama-quantize Hy-MT1.5-1.8B-bf16.gguf Hy-MT1.5-1.8B-STQ1_0.gguf STQ1_0
+
+# STQ1_0 파일을 다른 타입으로(재양자화에는 --allow-requantize가 필요)
+llama-quantize --allow-requantize Hy-MT2-1.8B-1.25Bit.gguf Hy-MT2-1.8B-Q4_K_M.gguf Q4_K_M
+```
+
+- I2_S와 STQ1_0은 이미 그 구조(삼진, STQ1_0은 3:4 희소까지)를 가진 가중치를 담습니다. 다른 모델을 양자화하면 모델이 망가집니다. [STQ1_0](#llama-quantize로-양자화하기-1)과 [I2_S](#파트-9-i2_s용-llama-quantize)를 참고하세요.
+- I2_S 파일은 다른 타입으로 재양자화할 수 없습니다. I2_S에는 `to_float`가 없습니다(`0002-bitnet-i2s.patch` 파트 8).
+
 ## 테스트 결과
 
 ### AppVeyor 빌드
@@ -298,7 +329,7 @@ Tencent 파일은 다른 ID를 씁니다:
 호환성:
 
 - PR로 STQ1_0 양자화한 GGUF 파일(타입 43)과 Tencent 파일(타입 42) 모두 이 빌드에서 불러와집니다.
-- `llama-quantize`에서 번호로 타입을 고를 때, 여기서 44는 STQ1_0입니다. 타입 이름을 쓰세요.
+- `llama-quantize`에서 번호로 타입을 고를 때, 여기서 44는 STQ1_0입니다. 타입 이름을 쓰세요. [llama-quantize로 양자화하기](#llama-quantize로-양자화하기)를 참고하세요.
 - PR이 다른 ID로 업스트림에 병합되면, 이 빌드의 STQ1_0 파일은 공식 빌드와 맞지 않게 됩니다.
 
 #### 기타 조정
@@ -351,12 +382,13 @@ ggml 타입 42에는 두 가지 의미가 있습니다:
 - STQ1_0 크기와만 맞으면 타입 42 텐서를 STQ1_0(43)으로 읽습니다. 이때 로그에 `N tensors of type 42 have the size of stq1_0, not tl2; reading them as stq1_0`이 나옵니다.
 - 어느 쪽과도 맞지 않으면 기존 오프셋 검사가 이전처럼 실패합니다.
 
-**파일 타입(`src/llama-model-loader.cpp`).** `general.file_type`에도 같은 번호 문제가 있으므로, 로더는 텐서 타입을 보고 판단합니다:
+**파일 타입(`src/llama-model-loader.cpp`).** `general.file_type`에도 번호 세 개에 같은 문제가 있으므로, 로더는 텐서 타입을 보고 판단합니다:
 
 | `general.file_type` | 여기서의 의미 | 다른 쪽 사용처 | 표시 |
 | --- | --- | --- | --- |
 | 41 | `MOSTLY_I2_S` | Tencent의 STQ1_0 파일 | 파일에 STQ1_0 텐서가 있고 I2_S 텐서가 없으면 `MOSTLY_STQ1_0` |
 | 40 | `MOSTLY_Q1_0` | `microsoft/BitNet-b1.58-2B-4T-gguf` | 파일에 I2_S 텐서가 있고 Q1_0 텐서가 없으면 `MOSTLY_I2_S` |
+| 42 | `MOSTLY_TL1` | PR #22836으로 만든 STQ1_0 파일(그쪽은 `MOSTLY_STQ1_0` = 42, 여기는 44) | 파일에 STQ1_0 텐서가 있고 TL1 텐서가 없으면 `MOSTLY_STQ1_0` |
 
 파일 타입은 메타데이터일 뿐입니다.
 
@@ -364,6 +396,7 @@ ggml 타입 42에는 두 가지 의미가 있습니다:
 
 - Tencent 파일은 STQ1_0으로 읽히고 파일 타입 `STQ1_0 - 1.31 bpw ternary`를 보여 줍니다.
 - BitNet 파일은 파일 타입 `I2_S`를 보여 줍니다(패치 전: `Q1_0`).
+- PR #22836처럼 `general.file_type`이 42인 STQ1_0 파일은 파일 타입 `STQ1_0 - 1.31 bpw ternary`를 보여 줍니다(이전: `TL1`).
 - 텐서 번호를 43으로 바꾼 같은 파일은 판별 없이 불러와지고 같은 번역을 냅니다.
 - TL2 크기의 타입 42 텐서를 넣은 합성 파일은 그 텐서를 `tl2`로 유지합니다.
 

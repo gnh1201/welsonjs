@@ -71,14 +71,18 @@ files Tencent publishes (tencent/Hy-MT2-1.8B-1.25Bit-GGUF).
   before.
 
   general.file_type has the same problem, so the model loader goes by the
-  tensor types for two numbers:
+  tensor types for three numbers:
 
     - 41 is LLAMA_FTYPE_MOSTLY_I2_S here and the file type of Tencent's STQ1_0
       files: reported as MOSTLY_STQ1_0 when the file has STQ1_0 tensors and no
       I2_S tensors;
     - 40 is LLAMA_FTYPE_MOSTLY_Q1_0 here and the file type of
       microsoft/BitNet-b1.58-2B-4T-gguf: reported as MOSTLY_I2_S when the file
-      has I2_S tensors and no Q1_0 tensors.
+      has I2_S tensors and no Q1_0 tensors;
+    - 42 is LLAMA_FTYPE_MOSTLY_TL1 here and the file type of STQ1_0 files made
+      with PR #22836 (MOSTLY_STQ1_0 = 42 there; 44 here, see part 1):
+      reported as MOSTLY_STQ1_0 when the file has STQ1_0 tensors and no TL1
+      tensors.
 
   The file type is metadata only.
 
@@ -900,7 +904,7 @@ index 3568b62..c4adf0b 100644
      };
  
 diff --git a/src/llama-model-loader.cpp b/src/llama-model-loader.cpp
-index 2c715e3..56762bb 100644
+index 2c715e3..d43f568 100644
 --- a/src/llama-model-loader.cpp
 +++ b/src/llama-model-loader.cpp
 @@ -61,6 +61,7 @@ const char * llama_ftype_name(llama_ftype ftype) {
@@ -919,7 +923,7 @@ index 2c715e3..56762bb 100644
              case GGML_TYPE_TL1:     ftype = LLAMA_FTYPE_MOSTLY_TL1;     break;
              case GGML_TYPE_TL2:     ftype = LLAMA_FTYPE_MOSTLY_TL2;     break;
              case GGML_TYPE_IQ2_XXS: ftype = LLAMA_FTYPE_MOSTLY_IQ2_XXS; break;
-@@ -792,6 +794,16 @@ llama_model_loader::llama_model_loader(
+@@ -792,6 +794,20 @@ llama_model_loader::llama_model_loader(
              if (get_key(LLM_KV_GENERAL_FILE_TYPE, ftype_val, false)) {
                  ftype = (llama_ftype) ftype_val;
              }
@@ -927,11 +931,15 @@ index 2c715e3..56762bb 100644
 +            // - 41 is LLAMA_FTYPE_MOSTLY_I2_S here, and also the file type of
 +            //   Tencent's STQ1_0 files (see gguf.cpp);
 +            // - 40 is LLAMA_FTYPE_MOSTLY_Q1_0 here, and also the file type of
-+            //   microsoft/BitNet-b1.58-2B-4T-gguf, an I2_S file.
++            //   microsoft/BitNet-b1.58-2B-4T-gguf, an I2_S file;
++            // - 42 is LLAMA_FTYPE_MOSTLY_TL1 here, and also the file type of STQ1_0
++            //   files made with PR #22836 (which uses 42 for MOSTLY_STQ1_0).
 +            if (ftype == LLAMA_FTYPE_MOSTLY_I2_S && n_type[GGML_TYPE_I2_S] == 0 && n_type[GGML_TYPE_STQ1_0] > 0) {
 +                ftype = LLAMA_FTYPE_MOSTLY_STQ1_0;
 +            } else if (ftype == LLAMA_FTYPE_MOSTLY_Q1_0 && n_type[GGML_TYPE_Q1_0] == 0 && n_type[GGML_TYPE_I2_S] > 0) {
 +                ftype = LLAMA_FTYPE_MOSTLY_I2_S;
++            } else if (ftype == LLAMA_FTYPE_MOSTLY_TL1 && n_type[GGML_TYPE_TL1] == 0 && n_type[GGML_TYPE_STQ1_0] > 0) {
++                ftype = LLAMA_FTYPE_MOSTLY_STQ1_0;
 +            }
          }
  
