@@ -28,7 +28,7 @@
   - 두 아키텍처의 모든 실행 파일과 DLL을 서명합니다. `.artifact-configuration.xml`에 하나씩 이름으로 적으며(와일드카드 없음), 바이너리에 버전 정보가 없거나 서명 목록에 없으면 빌드가 실패합니다.
   - `llama-quantize`로 I2_S 파일을 만들 수 있습니다. 포크의 양자화기는 커널이 읽지 않는 배치로 기록했고, 도구의 타입 목록에도 없었습니다. STQ1_0 양자화는 Sherry로 학습한 체크포인트용이라고 문서화했습니다.
   - README에 `llama-quantize`로 양자화하는 방법과 예시를 넣었습니다. 파일 타입 번호가 빌드마다 다르므로 타입은 이름(`I2_S`, `STQ1_0`)으로 지정합니다.
-- 에디터의 AI 서비스 토글로 Local AI 모델(llama.cpp: 기본값인 Hy-MT2와 FrogNano, 런처 설정 `LlamaCppModels`)과 웹 채팅 서비스(Copilot, ChatGPT 등)를 전환합니다. 컨텍스트 메뉴에는 고른 서비스의 Send Selection, Explain Selection, Ask...가 표시되고, 프롬프트와 함께 시스템 언어를 보냅니다. 서비스를 바꾸면 프롬프트를 초기화합니다.
+- 에디터의 AI 서비스 토글로 Local AI 모델(llama.cpp: 기본값인 Hy-MT2와 FrogNano, 런처 설정 `LlamaCppModels`)과 웹 채팅 서비스(Copilot, ChatGPT 등)를 전환합니다. 컨텍스트 메뉴에는 고른 서비스의 Send Selection, Explain Selection, Find Problems in Selection(문제점 찾기), 시스템 언어와 영어(en)로 번역하는 Translate Selection into <언어> (<코드>), Convert Selection to JavaScript(WSH JScript 엔진용 ES3), Ask...가 표시되고, 프롬프트와 함께 시스템 언어를 보냅니다. 서비스를 바꾸면 프롬프트를 초기화합니다.
 - 언어 추론 엔진에 UberLLM 제공자 추가([#543]).
 - 프롬프트를 검사하는 런처 관리 LLM 가드(Qwen3Guard).
 

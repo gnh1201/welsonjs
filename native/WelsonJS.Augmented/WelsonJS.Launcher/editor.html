@@ -717,6 +717,21 @@
                     } catch (e) {}
                     return name && name !== tag ? `${name} [${tag}]` : tag;
                 };
+                // Translation targets are language codes without the region: the system
+                // language (for example "ko" for ko-KR) and "en". The English name of a code is
+                // used in the instruction and the menu, for example "Korean" (falls back to the
+                // code).
+                const getSystemLanguageCode = () => {
+                    const tag = (navigator.languages && navigator.languages[0]) || navigator.language || 'en-US';
+                    return tag.split('-')[0].toLowerCase();
+                };
+                const getLanguageName = (code) => {
+                    try {
+                        return new Intl.DisplayNames(['en'], { type: 'language' }).of(code) || code;
+                    } catch (e) {
+                        return code;
+                    }
+                };
                 const buildSystemLanguageNote = () =>
                     `The user's system language is ${getSystemLanguage()}. Reply in that language unless the conversation asks for another.`;
 
@@ -1806,10 +1821,12 @@
                 const aiEditorRef = React.useRef(null);
                 const aiActionsRef = React.useRef([]);
 
-                // Editor context menu for the AI service chosen in the ribbon. "Send" and
-                // "Explain" need a selection; "Ask..." asks for a message and includes the
-                // selection, if any. The answer goes below the selection (or the cursor
-                // line). Returns the added actions (disposables).
+                // Editor context menu for the AI service chosen in the ribbon. "Send",
+                // "Explain", "Find Problems", "Translate ... into <language> (<code>)" (the system language and
+                // English) and "Convert ... to JavaScript (ES3)" need a selection;
+                // "Ask..." asks for a message and includes the selection, if any. The answer
+                // goes below the selection (or the cursor line). Returns the added actions
+                // (disposables).
                 const addProviderActions = (editor, provider) => {
                     const getContext = () => {
                         const model = editor.getModel();
@@ -1828,6 +1845,24 @@
 
                     const fence = (context) => '```' + context.language + '\n' + context.text + '\n```';
 
+                    // A translation action for a language code, with the request in the prompt
+                    // format of the Hy-MT2 model card, which the other models and the web chat
+                    // services follow as well.
+                    const translateAction = (code) => {
+                        const language = getLanguageName(code);
+                        return {
+                            id: 'translateSelection_' + code,
+                            label: `Translate Selection into ${language} (${code})`,
+                            precondition: 'editorHasSelection',
+                            build: context => ({
+                                message: `Translate the following text into ${language}. Note that you should only output the translated result without any additional explanation:\n\n${context.text}`,
+                                summary: `Translate the selection into ${language}`
+                            })
+                        };
+                    };
+                    // The system language, then English (once, when it is the system language).
+                    const translateCodes = [getSystemLanguageCode(), 'en'].filter((code, i, all) => all.indexOf(code) === i);
+
                     const actions = [
                         {
                             id: 'sendSelection',
@@ -1842,6 +1877,39 @@
                             build: context => ({
                                 message: 'Explain what the following code does.\n\n' + fence(context),
                                 summary: 'Explain the selection'
+                            })
+                        },
+                        {
+                            id: 'findProblemsInSelection',
+                            label: 'Find Problems in Selection',
+                            precondition: 'editorHasSelection',
+                            build: context => ({
+                                message: 'Find problems in the following code: bugs, errors, unhandled cases, and ' +
+                                    'security or performance risks. For each problem, quote the code, explain why it is ' +
+                                    'a problem, and show how to fix it. If you find no problems, say so. If it is ' +
+                                    'JavaScript for WelsonJS, it runs in the Windows Script Host JScript engine, so ' +
+                                    'syntax newer than ES3 is a problem as well (the console API, console.log and the ' +
+                                    'like, is available).\n\n' + fence(context),
+                                summary: 'Find problems in the selection'
+                            })
+                        },
+                        ...translateCodes.map(translateAction),
+                        {
+                            // WelsonJS scripts run in the Windows Script Host JScript engine (ES3);
+                            // app.js provides console.log, info, warn, error and debug.
+                            id: 'convertSelectionToJavaScript',
+                            label: 'Convert Selection to JavaScript (ES3)',
+                            precondition: 'editorHasSelection',
+                            build: context => ({
+                                message: 'Convert the following into JavaScript. The code must use ES3 syntax only, ' +
+                                    'because it runs in the Windows Script Host JScript engine: use var and function ' +
+                                    'declarations, and do not use let, const, arrow functions, classes, template literals, ' +
+                                    'destructuring, default or rest parameters, spread, for...of, Promise or async/await, ' +
+                                    'modules, getters or setters, or trailing commas. The console API is available ' +
+                                    '(console.log, console.info, console.warn, console.error and console.debug). ' +
+                                    'Output only the converted code ' +
+                                    'without any additional explanation.\n\n' + fence(context),
+                                summary: 'Convert the selection to JavaScript (ES3)'
                             })
                         },
                         {

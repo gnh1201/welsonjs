@@ -28,7 +28,7 @@ Changes on the `dev` branch since 0.2.7.62-rc1.
   - Every executable and DLL of both architectures is signed, each listed by name in `.artifact-configuration.xml` (no wildcards); the build fails when a binary lacks the version information or is not listed for signing.
   - `llama-quantize` can produce I2_S files: the fork's quantizer wrote a layout its kernels do not read, and the type was missing from the tool. STQ1_0 quantization is documented for Sherry-trained checkpoints.
   - The README explains quantizing with `llama-quantize`, with examples: select the type by name (`I2_S`, `STQ1_0`), as the file type numbers differ between builds.
-- The editor's AI service toggle switches between the Local AI models (llama.cpp: Hy-MT2, the default, and FrogNano, from the launcher's `LlamaCppModels` setting) and web chat services: Copilot, ChatGPT, and more. The context menu shows Send Selection, Explain Selection, and Ask... for the chosen service, and the system language is sent with prompts. Switching the service clears the prompt.
+- The editor's AI service toggle switches between the Local AI models (llama.cpp: Hy-MT2, the default, and FrogNano, from the launcher's `LlamaCppModels` setting) and web chat services: Copilot, ChatGPT, and more. The context menu shows Send Selection, Explain Selection, Find Problems in Selection, Translate Selection into <language> (<code>) for the system language and for English (en), Convert Selection to JavaScript (ES3, for the WSH JScript engine), and Ask... for the chosen service, and the system language is sent with prompts. Switching the service clears the prompt.
 - UberLLM provider in the language inference engine ([#543]).
 - Launcher-managed LLM guard (Qwen3Guard) for prompts.
 
