@@ -24,8 +24,10 @@ Changes on the `dev` branch since 0.2.7.62-rc1.
   - The source is the llama.cpp fork that Microsoft distributes with bitnet.cpp, so BitNet b1.58 (I2_S) models run (related to [#519]).
   - Patches add Tencent's AngelSlim 1.25-bit STQ1_0 type, so `tencent/Hy-MT2-1.8B-1.25Bit-GGUF` runs; type 42 files are detected by tensor size without renumbering the fork's types.
   - Builds for x64 (MSVC, every CPU variant) and ARM64 (clang cross-compile) (related to [#40]).
-  - The executables carry the WelsonJS icon and "built for WelsonJS" version information.
-  - `llama-quantize` can produce I2_S files; STQ1_0 quantization is documented for Sherry-trained checkpoints.
+  - Every executable and DLL carries version information: the WelsonJS version (0.2.7.62), a description of the binary ("... (llama.cpp built for WelsonJS)"), `CompanyName` Catswords Research, and the copyright of the ggml authors (llama.cpp), Microsoft (bitnet.cpp), Tencent (AngelSlim, STQ1_0), and Catswords Research. The executables also carry the WelsonJS icon.
+  - Every executable and DLL of both architectures is signed, each listed by name in `.artifact-configuration.xml` (no wildcards); the build fails when a binary lacks the version information or is not listed for signing.
+  - `llama-quantize` can produce I2_S files: the fork's quantizer wrote a layout its kernels do not read, and the type was missing from the tool. STQ1_0 quantization is documented for Sherry-trained checkpoints.
+  - The README explains quantizing with `llama-quantize`, with examples: select the type by name (`I2_S`, `STQ1_0`), as the file type numbers differ between builds.
 - The editor's AI service toggle switches between Local AI (llama.cpp, the default) and web chat services: Copilot, ChatGPT, and more. The context menu shows Send Selection, Explain Selection, and Ask... for the chosen service, and the system language is sent with prompts.
 - UberLLM provider in the language inference engine ([#543]).
 - Launcher-managed LLM guard (Qwen3Guard) for prompts.
@@ -44,6 +46,7 @@ Changes on the `dev` branch since 0.2.7.62-rc1.
 - `welsonjs-hta.exe` bugs on x86 environments.
 - Script directory decoding from `file:` URLs.
 - Picture size handling in `resolvePictureSize`.
+- llama.cpp: STQ1_0 files with file type 42, as PR #22836 writes them, were reported as `TL1`; they are reported as STQ1_0.
 
 ### Security
 

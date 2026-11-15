@@ -24,8 +24,10 @@
   - 소스는 Microsoft가 bitnet.cpp와 함께 배포하는 llama.cpp 포크이므로 BitNet b1.58(I2_S) 모델이 실행됩니다([#519] 관련).
   - 패치로 Tencent AngelSlim의 1.25비트 STQ1_0 타입을 추가해 `tencent/Hy-MT2-1.8B-1.25Bit-GGUF`가 실행됩니다. 타입 42 파일은 포크의 타입 번호를 바꾸지 않고 텐서 크기로 판별합니다.
   - x64(MSVC, 모든 CPU 변형)와 ARM64(clang 크로스 컴파일)용으로 빌드합니다([#40] 관련).
-  - 실행 파일에 WelsonJS 아이콘과 "built for WelsonJS" 버전 정보가 들어갑니다.
-  - `llama-quantize`로 I2_S 파일을 만들 수 있습니다. STQ1_0 양자화는 Sherry로 학습한 체크포인트용이라고 문서화했습니다.
+  - 모든 실행 파일과 DLL에 버전 정보가 들어갑니다. WelsonJS 버전(0.2.7.62), 바이너리 설명("... (llama.cpp built for WelsonJS)"), `CompanyName` Catswords Research, 그리고 ggml authors(llama.cpp), Microsoft(bitnet.cpp), Tencent(AngelSlim, STQ1_0), Catswords Research의 저작권입니다. 실행 파일에는 WelsonJS 아이콘도 들어갑니다.
+  - 두 아키텍처의 모든 실행 파일과 DLL을 서명합니다. `.artifact-configuration.xml`에 하나씩 이름으로 적으며(와일드카드 없음), 바이너리에 버전 정보가 없거나 서명 목록에 없으면 빌드가 실패합니다.
+  - `llama-quantize`로 I2_S 파일을 만들 수 있습니다. 포크의 양자화기는 커널이 읽지 않는 배치로 기록했고, 도구의 타입 목록에도 없었습니다. STQ1_0 양자화는 Sherry로 학습한 체크포인트용이라고 문서화했습니다.
+  - README에 `llama-quantize`로 양자화하는 방법과 예시를 넣었습니다. 파일 타입 번호가 빌드마다 다르므로 타입은 이름(`I2_S`, `STQ1_0`)으로 지정합니다.
 - 에디터의 AI 서비스 토글로 Local AI(llama.cpp, 기본값)와 웹 채팅 서비스(Copilot, ChatGPT 등)를 전환합니다. 컨텍스트 메뉴에는 고른 서비스의 Send Selection, Explain Selection, Ask...가 표시되고, 프롬프트와 함께 시스템 언어를 보냅니다.
 - 언어 추론 엔진에 UberLLM 제공자 추가([#543]).
 - 프롬프트를 검사하는 런처 관리 LLM 가드(Qwen3Guard).
@@ -44,6 +46,7 @@
 - x86 환경에서 `welsonjs-hta.exe`의 버그.
 - `file:` URL에서 스크립트 디렉터리를 디코딩하는 문제.
 - `resolvePictureSize`의 그림 크기 처리.
+- llama.cpp: PR #22836처럼 파일 타입이 42인 STQ1_0 파일이 `TL1`로 표시되던 문제. 이제 STQ1_0으로 표시됩니다.
 
 ### 보안
 

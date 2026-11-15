@@ -95,7 +95,7 @@ Requirements:
 - `GGML_BITNET_ARM_TL1=OFF` and `GGML_BITNET_X86_TL2=OFF` (the defaults), stated explicitly: the TL kernels need the BitNet repository.
 - Tests, examples, and the unified `llama` app are not built.
 - `LLAMA_OPENSSL=OFF`. The tools only need HTTP on localhost.
-- `LLAMA_WIN_ICON` is set to `app\favicon.ico` and `LLAMA_WIN_DESCRIPTION` to `llama.cpp built for WelsonJS`, so the executables show the WelsonJS icon and version information. The options come from a patch; see [0003-windows-build.patch, part 1](#part-1-windows-icon-and-version-information).
+- `LLAMA_WIN_ICON` is set to `app\favicon.ico`, so the executables show the WelsonJS icon, and every executable and DLL gets version information: the WelsonJS version (`0.2.7.62`, the launcher's `AssemblyFileVersion`; `-ProductVersion` overrides it), a description that says `llama.cpp built for WelsonJS`, `CompanyName` `Catswords Research`, and the copyright of all authors. The options come from a patch; see [0003-windows-build.patch, part 1](#part-1-windows-icon-and-version-information).
 - Nothing is downloaded during the build: `LLAMA_USE_PREBUILT_UI=OFF` and `LLAMA_BUILD_UI=OFF`. By default the build downloads the server Web UI from a floating Hugging Face location, and the launcher does not use the Web UI.
 
 ### Output and skipping the build
@@ -103,7 +103,7 @@ Requirements:
 The files are written to `<OutDir>\<arch>`; in CI this is `artifacts\llamacpp\x64` and `artifacts\llamacpp\arm64`. No archive is created. The folder also contains:
 
 - `LICENSE-llama.cpp.txt` (MIT).
-- `BUILDINFO.txt`: the version, commit, source used (git, or the archive URL and hash), compiler, CPU backends, BitNet kernels, patches, and the build ID.
+- `BUILDINFO.txt`: the version label, the product version, commit, source used (git, or the archive URL and hash), compiler, CPU backends, BitNet kernels, patches, and the build ID.
 - `SHA256SUMS.txt`: one `<sha256>  <file name>` line for every file.
 
 The build ID is a SHA-256 over these inputs:
@@ -128,7 +128,8 @@ llama.cpp is built in the **Release** job, so its files are packaged and signed 
 - **stderr of native tools.** AppVeyor's `ps:` steps capture stderr, and with `$ErrorActionPreference = "Stop"` each stderr line of a native command becomes a terminating error. CMake, git, Ninja, and `vcvarsall.bat` write warnings and progress there. For example, CMake warns about an unused `CMAKE_BUILD_TYPE`, and `vcvarsall.bat` prints `'vswhere.exe' is not recognized`. So the script prints stderr like stdout (`Invoke-Checked`, `Get-NativeOutput`) and decides by exit codes only. `CMAKE_BUILD_TYPE` is passed only to single-configuration generators (Ninja), not to the Visual Studio generator.
 - **Both architectures.** The step runs the script for `x64`, then `arm64`, each with `-InstallLlvm`. LLVM is installed only when the arm64 build is needed and clang is missing. The arm64 build also needs the MSVC ARM64 build tools on the image; without them, the script stops with a message that names the component.
 - **Output: `artifacts\llamacpp\x64` and `artifacts\llamacpp\arm64`.** The `7z a artifacts.zip artifacts\*` step adds it to `artifacts.zip`, which the deployment sends to SignPath. The SignPath artifact configuration (`.artifact-configuration.xml`) decides which of these files are signed.
-  - It signs the three executables and every DLL of both architectures. The x64 CPU backends are matched with `ggml-cpu-*.dll`, because the set of CPU variants depends on the compiler. The arm64 build has one backend, `ggml-cpu.dll`.
+  - It signs the three executables and every DLL of both architectures, each listed by name (no wildcards): for x64 the nine CPU backends that MSVC builds (`ggml-cpu-alderlake.dll` to `ggml-cpu-x64.dll`), for arm64 the one backend `ggml-cpu.dll`.
+  - The build script fails when a built executable or DLL is not listed there, so a new binary cannot be left unsigned.
   - Authenticode signing changes the files. In the signed package, `SHA256SUMS.txt` still lists the hashes of the unsigned build output.
 - **Cache: `artifacts\llamacpp`.** It is invalidated when `commit.txt`, `version.txt`, the script, a patch file, or `app\favicon.ico` changes.
   - AppVeyor keeps a separate cache for each job; only the Release job writes this folder.
@@ -293,7 +294,7 @@ The patches are applied in name order. Each one groups related changes as number
 | --- | --- |
 | `0001-stq1_0.patch` | 1. STQ1_0 (PR #22836), 2. x86 SIMD vec_dot for STQ1_0, 3. STQ1_0 files with type 42 |
 | `0002-bitnet-i2s.patch` | 1. build without the BitNet repository, 2. I2_S reference quantization in ggml-base, 3. I2_S fast path without llamafile, 4. non-AVX2 I2_S fallbacks, 5. squared ReLU, 6. chat template, 7. pre-tokenizer (5-7 for BitNet b1.58 2B-4T), 8. I2_S type traits, 9. llama-quantize for I2_S |
-| `0003-windows-build.patch` | 1. Windows icon and version information, 2. unsupported MSVC options, 3. MSVC conversion warnings, 4. jinja with the Visual Studio 2019 STL |
+| `0003-windows-build.patch` | 1. Windows icon and version information for every executable and DLL, 2. unsupported MSVC options, 3. MSVC conversion warnings, 4. jinja with the Visual Studio 2019 STL |
 
 ## 0001-stq1_0.patch
 
@@ -513,32 +514,52 @@ The changes:
 
 ### Part 1: Windows icon and version information
 
-This part adds two cache options to `tools/CMakeLists.txt`. llama.cpp has no Windows resource files, so its executables have no icon and no version information (the "Description" in the file properties is empty).
+llama.cpp has no Windows resource files, so its executables and DLLs have no icon and no version information (the "Description" in the file properties is empty). This part adds `cmake/win-resources.cmake`, included at the end of the top-level `CMakeLists.txt`, with these cache options:
 
 | Option | Set by the build script to | Effect |
 | --- | --- | --- |
-| `LLAMA_WIN_ICON` | `app\favicon.ico` | The icon is embedded as the application icon. |
-| `LLAMA_WIN_DESCRIPTION` | `llama.cpp built for WelsonJS` | A `VERSIONINFO` resource is added. |
+| `LLAMA_WIN_ICON` | `app\favicon.ico` | The icon is embedded as the application icon of the executables. |
+| `LLAMA_WIN_DESCRIPTION` | `llama.cpp built for WelsonJS` | A `VERSIONINFO` resource is added to every executable and DLL. |
+| `LLAMA_WIN_VERSION` | the WelsonJS version, `0.2.7.62` (the launcher's `AssemblyFileVersion`, or `-ProductVersion`) | `FileVersion` and `ProductVersion` (default `0.0.<LLAMA_BUILD_NUMBER>.0`). |
+| `LLAMA_WIN_COMPANY` | `Catswords Research` | `CompanyName`. |
+| `LLAMA_WIN_COPYRIGHT` | the authors of the code (below) | `LegalCopyright`. |
 
-The `VERSIONINFO` resource of each tool has these values:
+The `LegalCopyright` value names everyone whose code is in the build:
 
-| Value | Example (`llama-server`) |
-| --- | --- |
-| `FileDescription` (shown as "Description") | `llama-server (llama.cpp built for WelsonJS)` |
-| `ProductName` | `llama.cpp` |
-| `FileVersion`, `ProductVersion` | `0.0.<LLAMA_BUILD_NUMBER>.0 (<LLAMA_BUILD_COMMIT>)` |
-| `InternalName`, `OriginalFilename` | `llama-server`, `llama-server.exe` |
-| `Comments` | `llama.cpp built for WelsonJS` |
+```
+Copyright (c) 2023-2026 The ggml authors (llama.cpp), Copyright (c) Microsoft Corporation (bitnet.cpp), Copyright (c) 2025 Tencent (AngelSlim, STQ1_0), Copyright (c) 2026 Catswords Research (WelsonJS)
+```
+
+- **The ggml authors:** llama.cpp and ggml (MIT; `LICENSE-llama.cpp.txt` in the output).
+- **Microsoft Corporation:** bitnet.cpp's I2_S type and kernels in the fork, and `gemm-config.h` (MIT).
+- **Tencent:** STQ1_0, the llama.cpp format of AngelSlim's 1.25-bit quantization (llama.cpp PR #22836).
+- **Catswords Research:** the WelsonJS patches and build.
+
+The `VERSIONINFO` resource of each binary has these values:
+
+| Value | Example (`llama-server.exe`) | Example (`ggml-cpu-haswell.dll`) |
+| --- | --- | --- |
+| `FileDescription` (shown as "Description") | `llama-server - OpenAI-compatible LLM server (llama.cpp built for WelsonJS)` | `ggml-cpu-haswell - ggml CPU backend, haswell variant (llama.cpp built for WelsonJS)` |
+| `FileVersion`, `ProductVersion` | `0.2.7.62` | `0.2.7.62` |
+| `CompanyName` | `Catswords Research` | `Catswords Research` |
+| `LegalCopyright` | the value above | the value above |
+| `ProductName` | `llama.cpp` | `llama.cpp` |
+| `InternalName`, `OriginalFilename` | `llama-server`, `llama-server.exe` | `ggml-cpu-haswell`, `ggml-cpu-haswell.dll` |
+| `Comments` | `llama.cpp built for WelsonJS. llama.cpp 390c307, build 1.` | same |
+
+The roles in `FileDescription`: `ggml tensor library`, `ggml base library`, `ggml CPU backend, <variant> variant`, `llama.cpp library`, `llama.cpp common library`, `llama.cpp multimodal library`, `<tool> implementation library`, `OpenAI-compatible LLM server`, `LLM command-line interface`, and `GGUF model quantizer`. A target without a known role gets `<target> (<text>)`.
 
 How the patch does it:
 
-- Every executable target under `tools/` gets its own resource script (`<build>/tools/win-resources/<target>.rc`). That includes `llama-server`, `llama-cli`, and `llama-quantize`. The DLLs get none.
+- It collects every executable, shared library, and module library of the build, in every directory (ggml, ggml-base, the CPU backends, llama, llama-common, mtmd, the tools, and their `-impl` libraries), and gives each its own resource script (`<build>/win-resources/<target>.rc`). The executables also get the icon.
 - The icon is copied next to the scripts. The scripts start with `#pragma code_page(65001)`, so a build folder with non-ASCII characters in its path works regardless of the ANSI code page.
-- `FILEOS` and `FILETYPE` use numeric values instead of the `winver.h` names, so no include path is needed, whichever resource compiler CMake picks (the x64 build uses the Windows SDK's rc.exe).
-- The scripts are written through `configure_file`, which touches a file only when its content changes, so a new CMake run does not relink the tools.
-- The build number is the commit count of the checkout: 1 for the shallow git clone, 0 for the archive source.
+- `FILEOS` and `FILETYPE` use numeric values (`VFT_APP` for executables, `VFT_DLL` for DLLs) instead of the `winver.h` names, so no include path is needed, whichever resource compiler CMake picks.
+- The scripts are written through `configure_file`, which touches a file only when its content changes, so a new CMake run does not relink.
+- The build number in `Comments` is the commit count of the checkout: 1 for the shallow git clone, 0 for the archive source.
 
-The icon file stays in the WelsonJS repository; the patch only adds the options. With both options empty (the default), the build is the same as without the patch. A missing icon file stops the configuration with an error.
+The icon file stays in the WelsonJS repository; the patch only adds the options. With `LLAMA_WIN_ICON` and `LLAMA_WIN_DESCRIPTION` empty (the default), the build is the same as without the patch. A missing icon file or a malformed version stops the configuration with an error.
+
+The build script checks the output: every executable and DLL must have the `FileDescription`, the version, `CompanyName`, and `LegalCopyright` above, or the build fails.
 
 ### Part 2: unsupported MSVC options
 

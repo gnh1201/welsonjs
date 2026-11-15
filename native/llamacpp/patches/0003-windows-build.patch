@@ -1,32 +1,43 @@
 From: WelsonJS
-Subject: [PATCH] Windows build: resources for the tools and MSVC fixes
+Subject: [PATCH] Windows build: resources for the binaries and MSVC fixes
 
-Windows-specific changes: an icon and version information for the tool
-executables, MSVC options and warnings, and building with clang against the
-Visual Studio 2019 STL.
+Windows-specific changes: an icon for the executables and version information
+for every executable and DLL, MSVC options and warnings, and building with
+clang against the Visual Studio 2019 STL.
 
-1. tools : Windows icon and version information for the tool executables
+1. cmake : Windows icon and version information for every executable and DLL
 
-  llama.cpp has no Windows resource files, so its executables have no icon and
-  no version information (the "Description" in the file properties is empty).
+  llama.cpp has no Windows resource files, so its executables and DLLs have no
+  icon and no version information (the "Description" in the file properties is
+  empty).
 
-  Add two cache options to tools/CMakeLists.txt:
+  Add cmake/win-resources.cmake, included at the end of the top-level
+  CMakeLists.txt, after all targets are defined. It collects every executable,
+  shared library and module library of the build (ggml, ggml-base, the CPU
+  backends, llama, llama-common, mtmd, the tools and their -impl libraries) and
+  gives each its own resource script. Cache options:
 
-    - LLAMA_WIN_ICON: an .ico file, embedded as the application icon. It is
-      copied next to the resource scripts, which start with
+    - LLAMA_WIN_ICON: an .ico file, embedded as the application icon of the
+      executables. It is copied next to the resource scripts, which start with
       #pragma code_page(65001), so a build folder with non-ASCII characters
       works regardless of the ANSI code page.
-    - LLAMA_WIN_DESCRIPTION: a text for the version information. Each tool gets
-      a VERSIONINFO resource with FileDescription "<tool> (<text>)", ProductName
-      "llama.cpp", InternalName/OriginalFilename from the target name, and
-      FileVersion/ProductVersion 0.0.<LLAMA_BUILD_NUMBER>.0 (<LLAMA_BUILD_COMMIT>).
-      The resource uses numeric FILEOS/FILETYPE values instead of the winver.h
-      names, so no include path is needed (rc.exe and llvm-rc).
+    - LLAMA_WIN_DESCRIPTION: a text for the version information, which is added
+      when it is set. FileDescription is "<target> - <role> (<text>)", where
+      <role> says what the binary is (for example "ggml CPU backend, haswell
+      variant"; omitted for a target it does not know), ProductName is
+      "llama.cpp", InternalName and OriginalFilename come from the target, and
+      Comments gives the text, LLAMA_BUILD_COMMIT and LLAMA_BUILD_NUMBER.
+    - LLAMA_WIN_VERSION: FileVersion and ProductVersion (a.b.c.d); without it,
+      0.0.<LLAMA_BUILD_NUMBER>.0.
+    - LLAMA_WIN_COMPANY, LLAMA_WIN_COPYRIGHT: CompanyName and LegalCopyright,
+      when set.
 
-  Every executable target under tools/ gets its own resource script; the DLLs
-  get none. The scripts are written through configure_file, which only touches
-  a file when its content changes, so a new CMake run does not relink the
-  tools. With both options empty (the default) the build is unchanged.
+  The resource uses numeric FILEOS/FILETYPE values (VFT_APP for executables,
+  VFT_DLL for DLLs) instead of the winver.h names, so no include path is needed
+  (rc.exe and llvm-rc). The scripts are written through configure_file, which
+  only touches a file when its content changes, so a new CMake run does not
+  relink. With LLAMA_WIN_ICON and LLAMA_WIN_DESCRIPTION empty (the default) the
+  build is unchanged.
 
 2. ggml-cpu : do not pass unsupported options to MSVC
 
@@ -83,7 +94,7 @@ Visual Studio 2019 STL.
 Apply with: git -c core.autocrlf=false apply <this file>
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 81f23d7..d4a2b68 100644
+index 81f23d7..11d28f9 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -193,6 +193,16 @@ endif()
@@ -103,6 +114,195 @@ index 81f23d7..d4a2b68 100644
  add_subdirectory(src)
  
  #
+@@ -280,3 +290,7 @@ configure_file(cmake/llama.pc.in
+ 
+ install(FILES "${CMAKE_CURRENT_BINARY_DIR}/llama.pc"
+         DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
++
++# Windows icon and version information for the executables and DLLs; after all
++# targets are defined.
++include(cmake/win-resources.cmake)
+diff --git a/cmake/win-resources.cmake b/cmake/win-resources.cmake
+new file mode 100644
+index 0000000..99e88f3
+--- /dev/null
++++ b/cmake/win-resources.cmake
+@@ -0,0 +1,175 @@
++# Windows resources for every executable and DLL of the build: an icon for the
++# executables and version information for all of them. Included at the end of
++# the top-level CMakeLists.txt, after all targets are defined.
++#
++#   LLAMA_WIN_ICON         .ico file embedded as the application icon of the executables
++#   LLAMA_WIN_DESCRIPTION  text for the version information, for example "llama.cpp built
++#                          for WelsonJS": the description becomes "<target> - <role> (<text>)"
++#   LLAMA_WIN_VERSION      file and product version (a.b.c.d); default 0.0.<build number>.0
++#   LLAMA_WIN_COMPANY      CompanyName
++#   LLAMA_WIN_COPYRIGHT    LegalCopyright
++#
++# The version information is added when LLAMA_WIN_DESCRIPTION is set.
++
++set(LLAMA_WIN_ICON        "" CACHE FILEPATH "llama: .ico file embedded in the Windows executables")
++set(LLAMA_WIN_DESCRIPTION "" CACHE STRING   "llama: text for the version information of the Windows executables and DLLs")
++set(LLAMA_WIN_VERSION     "" CACHE STRING   "llama: version (a.b.c.d) in the version information (default: 0.0.<build number>.0)")
++set(LLAMA_WIN_COMPANY     "" CACHE STRING   "llama: CompanyName in the version information")
++set(LLAMA_WIN_COPYRIGHT   "" CACHE STRING   "llama: LegalCopyright in the version information")
++
++# Executables and DLLs (shared and module libraries) defined in dir and below.
++function(llama_win_collect_binaries dir out)
++    get_property(targets DIRECTORY "${dir}" PROPERTY BUILDSYSTEM_TARGETS)
++    set(result "")
++    foreach (target IN LISTS targets)
++        get_target_property(type ${target} TYPE)
++        if (type STREQUAL "EXECUTABLE" OR type STREQUAL "SHARED_LIBRARY" OR type STREQUAL "MODULE_LIBRARY")
++            list(APPEND result ${target})
++        endif()
++    endforeach()
++    get_property(subdirs DIRECTORY "${dir}" PROPERTY SUBDIRECTORIES)
++    foreach (subdir IN LISTS subdirs)
++        llama_win_collect_binaries("${subdir}" sub)
++        list(APPEND result ${sub})
++    endforeach()
++    set(${out} ${result} PARENT_SCOPE)
++endfunction()
++
++# What a binary is, for its file description ("" when not known).
++function(llama_win_role target out)
++    set(role "")
++    if (target STREQUAL "ggml")
++        set(role "ggml tensor library")
++    elseif (target STREQUAL "ggml-base")
++        set(role "ggml base library")
++    elseif (target STREQUAL "ggml-cpu")
++        set(role "ggml CPU backend")
++    elseif (target MATCHES "^ggml-cpu-(.+)$")
++        set(role "ggml CPU backend, ${CMAKE_MATCH_1} variant")
++    elseif (target MATCHES "^ggml-(.+)$")
++        set(role "ggml ${CMAKE_MATCH_1} backend")
++    elseif (target STREQUAL "llama")
++        set(role "llama.cpp library")
++    elseif (target STREQUAL "llama-common")
++        set(role "llama.cpp common library")
++    elseif (target STREQUAL "mtmd")
++        set(role "llama.cpp multimodal library")
++    elseif (target MATCHES "^(.+)-impl$")
++        set(role "${CMAKE_MATCH_1} implementation library")
++    elseif (target STREQUAL "llama-server")
++        set(role "OpenAI-compatible LLM server")
++    elseif (target STREQUAL "llama-cli")
++        set(role "LLM command-line interface")
++    elseif (target STREQUAL "llama-quantize")
++        set(role "GGUF model quantizer")
++    endif()
++    set(${out} "${role}" PARENT_SCOPE)
++endfunction()
++
++if (WIN32 AND (LLAMA_WIN_ICON OR LLAMA_WIN_DESCRIPTION))
++    set(llama_win_res_dir "${CMAKE_BINARY_DIR}/win-resources")
++    file(MAKE_DIRECTORY "${llama_win_res_dir}")
++
++    if (LLAMA_WIN_ICON)
++        if (NOT EXISTS "${LLAMA_WIN_ICON}")
++            message(FATAL_ERROR "LLAMA_WIN_ICON does not exist: ${LLAMA_WIN_ICON}")
++        endif()
++        # Copy the icon next to the resource scripts, which are UTF-8, so a path
++        # with non-ASCII characters does not depend on the ANSI code page.
++        configure_file("${LLAMA_WIN_ICON}" "${llama_win_res_dir}/llama-icon.ico" COPYONLY)
++    endif()
++
++    set(llama_win_build "${LLAMA_BUILD_NUMBER}")
++    if (NOT llama_win_build MATCHES "^[0-9]+$")
++        set(llama_win_build 0)
++    endif()
++    if (LLAMA_WIN_VERSION)
++        if (NOT LLAMA_WIN_VERSION MATCHES "^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$")
++            message(FATAL_ERROR "LLAMA_WIN_VERSION must be a.b.c.d: ${LLAMA_WIN_VERSION}")
++        endif()
++        set(llama_win_version "${LLAMA_WIN_VERSION}")
++    else()
++        # As in LLAMA_INSTALL_VERSION (0.0.<build number>).
++        set(llama_win_version "0.0.${llama_win_build}.0")
++    endif()
++    string(REPLACE "." "," llama_win_version_numbers "${llama_win_version}")
++
++    # A double quote inside a resource string is written as two.
++    string(REPLACE "\"" "\"\"" llama_win_desc      "${LLAMA_WIN_DESCRIPTION}")
++    string(REPLACE "\"" "\"\"" llama_win_commit    "${LLAMA_BUILD_COMMIT}")
++    string(REPLACE "\"" "\"\"" llama_win_company   "${LLAMA_WIN_COMPANY}")
++    string(REPLACE "\"" "\"\"" llama_win_copyright "${LLAMA_WIN_COPYRIGHT}")
++
++    llama_win_collect_binaries("${CMAKE_SOURCE_DIR}" llama_win_binaries)
++    foreach (target IN LISTS llama_win_binaries)
++        get_target_property(type ${target} TYPE)
++        get_target_property(output_name ${target} OUTPUT_NAME)
++        if (NOT output_name)
++            set(output_name ${target})
++        endif()
++        if (type STREQUAL "EXECUTABLE")
++            set(file_name "${output_name}.exe")
++            set(file_type "0x1")    # VFT_APP
++        else()
++            set(file_name "${output_name}.dll")
++            set(file_type "0x2")    # VFT_DLL
++        endif()
++
++        set(rc "#pragma code_page(65001)\n")
++        if (LLAMA_WIN_ICON AND type STREQUAL "EXECUTABLE")
++            string(APPEND rc "1 ICON \"${llama_win_res_dir}/llama-icon.ico\"\n")
++        endif()
++        if (LLAMA_WIN_DESCRIPTION)
++            llama_win_role(${target} role)
++            if (role)
++                set(description "${target} - ${role} (${llama_win_desc})")
++            else()
++                set(description "${target} (${llama_win_desc})")
++            endif()
++            # Numeric values instead of winver.h names (0x40004 = VOS_NT_WINDOWS32),
++            # so no include path is needed (rc.exe and llvm-rc).
++            string(APPEND rc
++                "1 VERSIONINFO\n"
++                "FILEVERSION ${llama_win_version_numbers}\n"
++                "PRODUCTVERSION ${llama_win_version_numbers}\n"
++                "FILEFLAGSMASK 0x3F\n"
++                "FILEFLAGS 0x0\n"
++                "FILEOS 0x40004\n"
++                "FILETYPE ${file_type}\n"
++                "FILESUBTYPE 0x0\n"
++                "BEGIN\n"
++                "    BLOCK \"StringFileInfo\"\n"
++                "    BEGIN\n"
++                "        BLOCK \"040904B0\"\n"
++                "        BEGIN\n")
++            if (LLAMA_WIN_COMPANY)
++                string(APPEND rc "            VALUE \"CompanyName\", \"${llama_win_company}\"\n")
++            endif()
++            string(APPEND rc
++                "            VALUE \"FileDescription\", \"${description}\"\n"
++                "            VALUE \"FileVersion\", \"${llama_win_version}\"\n"
++                "            VALUE \"InternalName\", \"${target}\"\n")
++            if (LLAMA_WIN_COPYRIGHT)
++                string(APPEND rc "            VALUE \"LegalCopyright\", \"${llama_win_copyright}\"\n")
++            endif()
++            string(APPEND rc
++                "            VALUE \"OriginalFilename\", \"${file_name}\"\n"
++                "            VALUE \"ProductName\", \"llama.cpp\"\n"
++                "            VALUE \"ProductVersion\", \"${llama_win_version}\"\n"
++                "            VALUE \"Comments\", \"${llama_win_desc}. llama.cpp ${llama_win_commit}, build ${llama_win_build}.\"\n"
++                "        END\n"
++                "    END\n"
++                "    BLOCK \"VarFileInfo\"\n"
++                "    BEGIN\n"
++                "        VALUE \"Translation\", 0x409, 1200\n"
++                "    END\n"
++                "END\n")
++        endif()
++        # Write through configure_file, which only touches the file when it
++        # changes, so a new CMake run does not relink every binary.
++        file(WRITE "${llama_win_res_dir}/${target}.rc.in" "${rc}")
++        configure_file("${llama_win_res_dir}/${target}.rc.in" "${llama_win_res_dir}/${target}.rc" COPYONLY)
++        target_sources(${target} PRIVATE "${llama_win_res_dir}/${target}.rc")
++    endforeach()
++    message(STATUS "Windows resources (version ${llama_win_version}; icon: ${LLAMA_WIN_ICON}; description: ${LLAMA_WIN_DESCRIPTION}): ${llama_win_binaries}")
++endif()
 diff --git a/common/jinja/value.h b/common/jinja/value.h
 index 5cf85e4..5a36857 100644
 --- a/common/jinja/value.h
@@ -173,7 +373,7 @@ index 55f0f5a..6e0fec5 100644
              endif()
              if (GGML_AVX_VNNI)
 diff --git a/src/llama-quant.cpp b/src/llama-quant.cpp
-index c15bc7c..64773e1 100644
+index 897c904..3622f9c 100644
 --- a/src/llama-quant.cpp
 +++ b/src/llama-quant.cpp
 @@ -264,7 +264,7 @@ static void llama_tensor_dequantize_impl(
@@ -185,105 +385,3 @@ index c15bc7c..64773e1 100644
              if (typ == GGML_TYPE_F16) {
                  ggml_fp16_to_fp32_row((ggml_fp16_t *)inbuf, outbuf, nels);
              } else if (typ == GGML_TYPE_BF16) {
-diff --git a/tools/CMakeLists.txt b/tools/CMakeLists.txt
-index 780df32..04441bf 100644
---- a/tools/CMakeLists.txt
-+++ b/tools/CMakeLists.txt
-@@ -41,3 +41,97 @@ else()
-     add_subdirectory(fit-params)
-     add_subdirectory(results)
- endif()
-+
-+# Windows resources for the tool executables:
-+#   LLAMA_WIN_ICON         .ico file embedded as the application icon
-+#   LLAMA_WIN_DESCRIPTION  text for the version information shown in the file
-+#                          properties, for example "llama.cpp built for WelsonJS":
-+#                          the description becomes "<tool> (<text>)"
-+set(LLAMA_WIN_ICON        "" CACHE FILEPATH "llama: .ico file embedded in the Windows tool executables")
-+set(LLAMA_WIN_DESCRIPTION "" CACHE STRING   "llama: text for the version information of the Windows tool executables")
-+
-+function(llama_collect_executables dir out)
-+    get_property(targets DIRECTORY "${dir}" PROPERTY BUILDSYSTEM_TARGETS)
-+    set(result "")
-+    foreach (target IN LISTS targets)
-+        get_target_property(type ${target} TYPE)
-+        if (type STREQUAL "EXECUTABLE")
-+            list(APPEND result ${target})
-+        endif()
-+    endforeach()
-+    get_property(subdirs DIRECTORY "${dir}" PROPERTY SUBDIRECTORIES)
-+    foreach (subdir IN LISTS subdirs)
-+        llama_collect_executables("${subdir}" sub)
-+        list(APPEND result ${sub})
-+    endforeach()
-+    set(${out} ${result} PARENT_SCOPE)
-+endfunction()
-+
-+if (WIN32 AND (LLAMA_WIN_ICON OR LLAMA_WIN_DESCRIPTION))
-+    set(llama_win_res_dir "${CMAKE_CURRENT_BINARY_DIR}/win-resources")
-+    file(MAKE_DIRECTORY "${llama_win_res_dir}")
-+
-+    if (LLAMA_WIN_ICON)
-+        if (NOT EXISTS "${LLAMA_WIN_ICON}")
-+            message(FATAL_ERROR "LLAMA_WIN_ICON does not exist: ${LLAMA_WIN_ICON}")
-+        endif()
-+        # Copy the icon next to the resource scripts, which are UTF-8, so a path
-+        # with non-ASCII characters does not depend on the ANSI code page.
-+        configure_file("${LLAMA_WIN_ICON}" "${llama_win_res_dir}/llama-icon.ico" COPYONLY)
-+    endif()
-+
-+    # Version numbers as in LLAMA_INSTALL_VERSION (0.0.<build number>).
-+    set(llama_win_build "${LLAMA_BUILD_NUMBER}")
-+    if (NOT llama_win_build MATCHES "^[0-9]+$")
-+        set(llama_win_build 0)
-+    endif()
-+    # A double quote inside a resource string is written as two.
-+    string(REPLACE "\"" "\"\"" llama_win_desc   "${LLAMA_WIN_DESCRIPTION}")
-+    string(REPLACE "\"" "\"\"" llama_win_commit "${LLAMA_BUILD_COMMIT}")
-+
-+    llama_collect_executables("${CMAKE_CURRENT_SOURCE_DIR}" llama_tool_executables)
-+    foreach (target IN LISTS llama_tool_executables)
-+        set(rc "#pragma code_page(65001)\n")
-+        if (LLAMA_WIN_ICON)
-+            string(APPEND rc "1 ICON \"${llama_win_res_dir}/llama-icon.ico\"\n")
-+        endif()
-+        if (LLAMA_WIN_DESCRIPTION)
-+            # Numeric values instead of winver.h names: 0x40004 = VOS_NT_WINDOWS32,
-+            # 0x1 = VFT_APP, so no include path is needed (rc.exe and llvm-rc).
-+            string(APPEND rc
-+                "1 VERSIONINFO\n"
-+                "FILEVERSION 0,0,${llama_win_build},0\n"
-+                "PRODUCTVERSION 0,0,${llama_win_build},0\n"
-+                "FILEFLAGSMASK 0x3F\n"
-+                "FILEFLAGS 0x0\n"
-+                "FILEOS 0x40004\n"
-+                "FILETYPE 0x1\n"
-+                "FILESUBTYPE 0x0\n"
-+                "BEGIN\n"
-+                "    BLOCK \"StringFileInfo\"\n"
-+                "    BEGIN\n"
-+                "        BLOCK \"040904B0\"\n"
-+                "        BEGIN\n"
-+                "            VALUE \"FileDescription\", \"${target} (${llama_win_desc})\"\n"
-+                "            VALUE \"FileVersion\", \"0.0.${llama_win_build}.0 (${llama_win_commit})\"\n"
-+                "            VALUE \"InternalName\", \"${target}\"\n"
-+                "            VALUE \"OriginalFilename\", \"${target}.exe\"\n"
-+                "            VALUE \"ProductName\", \"llama.cpp\"\n"
-+                "            VALUE \"ProductVersion\", \"0.0.${llama_win_build}.0 (${llama_win_commit})\"\n"
-+                "            VALUE \"Comments\", \"${llama_win_desc}\"\n"
-+                "        END\n"
-+                "    END\n"
-+                "    BLOCK \"VarFileInfo\"\n"
-+                "    BEGIN\n"
-+                "        VALUE \"Translation\", 0x409, 1200\n"
-+                "    END\n"
-+                "END\n")
-+        endif()
-+        # Write through configure_file, which only touches the file when it
-+        # changes, so a new CMake run does not relink every tool.
-+        file(WRITE "${llama_win_res_dir}/${target}.rc.in" "${rc}")
-+        configure_file("${llama_win_res_dir}/${target}.rc.in" "${llama_win_res_dir}/${target}.rc" COPYONLY)
-+        target_sources(${target} PRIVATE "${llama_win_res_dir}/${target}.rc")
-+    endforeach()
-+    message(STATUS "Windows resources (icon: ${LLAMA_WIN_ICON}; description: ${LLAMA_WIN_DESCRIPTION}): ${llama_tool_executables}")
-+endif()

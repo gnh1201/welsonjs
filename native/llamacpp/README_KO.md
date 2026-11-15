@@ -95,7 +95,7 @@ powershell -ExecutionPolicy Bypass -NoProfile -File native\llamacpp\build-llamac
 - `GGML_BITNET_ARM_TL1=OFF`와 `GGML_BITNET_X86_TL2=OFF`(기본값)를 명시합니다. TL 커널은 BitNet 저장소가 필요합니다.
 - 테스트, 예제, 통합 `llama` 앱은 빌드하지 않습니다.
 - `LLAMA_OPENSSL=OFF`. 도구들은 localhost HTTP만 쓰면 됩니다.
-- `LLAMA_WIN_ICON`을 `app\favicon.ico`로, `LLAMA_WIN_DESCRIPTION`을 `llama.cpp built for WelsonJS`로 설정하므로, 실행 파일에 WelsonJS 아이콘과 버전 정보가 들어갑니다. 이 옵션은 패치에서 추가됩니다. [0003-windows-build.patch 파트 1](#파트-1-windows-아이콘과-버전-정보)을 참고하세요.
+- `LLAMA_WIN_ICON`을 `app\favicon.ico`로 설정하므로 실행 파일에 WelsonJS 아이콘이 들어가고, 모든 실행 파일과 DLL에 버전 정보가 들어갑니다. 버전 정보에는 WelsonJS 버전(`0.2.7.62`, 런처의 `AssemblyFileVersion`, `-ProductVersion`으로 바꿀 수 있음), `llama.cpp built for WelsonJS`라는 설명, `CompanyName` `Catswords Research`, 모든 저작자의 저작권이 들어 있습니다. 이 옵션은 패치에서 추가됩니다. [0003-windows-build.patch 파트 1](#파트-1-windows-아이콘과-버전-정보)을 참고하세요.
 - 빌드 중에는 아무것도 다운로드하지 않습니다: `LLAMA_USE_PREBUILT_UI=OFF`, `LLAMA_BUILD_UI=OFF`. 기본값으로는 빌드가 고정되지 않은 Hugging Face 위치에서 서버 Web UI를 받는데, 런처는 Web UI를 쓰지 않습니다.
 
 ### 출력과 빌드 건너뛰기
@@ -103,7 +103,7 @@ powershell -ExecutionPolicy Bypass -NoProfile -File native\llamacpp\build-llamac
 파일은 `<OutDir>\<arch>`에 기록됩니다. CI에서는 `artifacts\llamacpp\x64`와 `artifacts\llamacpp\arm64`입니다. 압축 파일은 만들지 않습니다. 폴더에는 다음 파일도 있습니다:
 
 - `LICENSE-llama.cpp.txt`(MIT).
-- `BUILDINFO.txt`: 버전, 커밋, 사용한 소스(git, 또는 압축 파일 URL과 해시), 컴파일러, CPU 백엔드, BitNet 커널, 패치, 빌드 ID.
+- `BUILDINFO.txt`: 버전 이름표, 제품 버전, 커밋, 사용한 소스(git, 또는 압축 파일 URL과 해시), 컴파일러, CPU 백엔드, BitNet 커널, 패치, 빌드 ID.
 - `SHA256SUMS.txt`: 파일마다 `<sha256>  <파일 이름>` 한 줄.
 
 빌드 ID는 다음 입력에 대한 SHA-256입니다:
@@ -128,7 +128,8 @@ llama.cpp는 **Release** 작업에서 빌드하므로, 그 파일들이 다른 �
 - **네이티브 도구의 stderr.** AppVeyor의 `ps:` 단계는 stderr를 잡아내고, `$ErrorActionPreference = "Stop"`에서는 네이티브 명령의 stderr 한 줄 한 줄이 종료 오류가 됩니다. CMake, git, Ninja, `vcvarsall.bat`는 경고와 진행 상황을 stderr에 씁니다. 예를 들어 CMake는 쓰이지 않은 `CMAKE_BUILD_TYPE`에 대해 경고하고, `vcvarsall.bat`는 `'vswhere.exe' is not recognized`를 출력합니다. 그래서 스크립트는 stderr를 stdout처럼 출력하고(`Invoke-Checked`, `Get-NativeOutput`) 종료 코드로만 판단합니다. `CMAKE_BUILD_TYPE`은 단일 구성 생성기(Ninja)에만 넘기고 Visual Studio 생성기에는 넘기지 않습니다.
 - **두 아키텍처.** 이 단계는 스크립트를 `x64`, 이어서 `arm64`로 실행하며, 각각 `-InstallLlvm`을 씁니다. LLVM은 arm64 빌드가 필요하고 clang이 없을 때만 설치됩니다. arm64 빌드는 이미지에 MSVC ARM64 빌드 도구도 필요하며, 없으면 스크립트가 구성 요소 이름을 알려 주며 멈춥니다.
 - **출력: `artifacts\llamacpp\x64`와 `artifacts\llamacpp\arm64`.** `7z a artifacts.zip artifacts\*` 단계가 이를 `artifacts.zip`에 넣고, 배포 단계가 SignPath로 보냅니다. 이 중 어떤 파일을 서명할지는 SignPath 산출물 구성(`.artifact-configuration.xml`)이 정합니다.
-  - 두 아키텍처의 실행 파일 세 개와 모든 DLL을 서명합니다. CPU 변형 구성은 컴파일러에 따라 달라지므로, x64 CPU 백엔드는 `ggml-cpu-*.dll`로 매칭합니다. arm64 빌드는 백엔드가 `ggml-cpu.dll` 하나입니다.
+  - 두 아키텍처의 실행 파일 세 개와 모든 DLL을 이름으로 하나씩 적어(와일드카드 없음) 서명합니다. x64는 MSVC가 만드는 CPU 백엔드 9개(`ggml-cpu-alderlake.dll`부터 `ggml-cpu-x64.dll`까지), arm64는 백엔드 `ggml-cpu.dll` 하나입니다.
+  - 빌드한 실행 파일이나 DLL이 여기에 없으면 빌드 스크립트가 실패하므로, 새 바이너리가 서명에서 빠질 수 없습니다.
   - Authenticode 서명은 파일을 바꿉니다. 서명된 패키지의 `SHA256SUMS.txt`는 서명 전 빌드 출력의 해시를 그대로 담고 있습니다.
 - **캐시: `artifacts\llamacpp`.** `commit.txt`, `version.txt`, 스크립트, 패치 파일, `app\favicon.ico` 중 하나가 바뀌면 무효화됩니다.
   - AppVeyor는 작업마다 별도의 캐시를 두며, 이 폴더는 Release 작업만 씁니다.
@@ -293,7 +294,7 @@ Hy-MT2(번역)는 모델 README의 기본 프롬프트("Translate the following 
 | --- | --- |
 | `0001-stq1_0.patch` | 1. STQ1_0(PR #22836), 2. STQ1_0용 x86 SIMD vec_dot, 3. 타입 42를 쓰는 STQ1_0 파일 |
 | `0002-bitnet-i2s.patch` | 1. BitNet 저장소 없이 빌드, 2. ggml-base의 I2_S 기준 양자화, 3. llamafile 없는 I2_S 빠른 경로, 4. 비 AVX2 I2_S 대체 코드, 5. squared ReLU, 6. 채팅 템플릿, 7. 프리토크나이저(5~7은 BitNet b1.58 2B-4T용), 8. I2_S 타입 특성, 9. I2_S용 llama-quantize |
-| `0003-windows-build.patch` | 1. Windows 아이콘과 버전 정보, 2. 지원되지 않는 MSVC 옵션, 3. MSVC 변환 경고, 4. Visual Studio 2019 STL에서의 jinja |
+| `0003-windows-build.patch` | 1. 모든 실행 파일과 DLL의 Windows 아이콘과 버전 정보, 2. 지원되지 않는 MSVC 옵션, 3. MSVC 변환 경고, 4. Visual Studio 2019 STL에서의 jinja |
 
 ## 0001-stq1_0.patch
 
@@ -513,32 +514,52 @@ TL1이나 TL2를 켜고 BitNet 저장소 안에서 포크를 빌드하면, CMake
 
 ### 파트 1: Windows 아이콘과 버전 정보
 
-이 파트는 `tools/CMakeLists.txt`에 캐시 옵션 두 개를 추가합니다. llama.cpp에는 Windows 리소스 파일이 없으므로, 실행 파일에 아이콘도 버전 정보도 없습니다(파일 속성의 "설명"이 비어 있음).
+llama.cpp에는 Windows 리소스 파일이 없으므로, 실행 파일과 DLL에 아이콘도 버전 정보도 없습니다(파일 속성의 "설명"이 비어 있음). 이 파트는 최상위 `CMakeLists.txt`의 끝에서 불러오는 `cmake/win-resources.cmake`를 추가하며, 캐시 옵션은 다음과 같습니다:
 
 | 옵션 | 빌드 스크립트가 설정하는 값 | 효과 |
 | --- | --- | --- |
-| `LLAMA_WIN_ICON` | `app\favicon.ico` | 아이콘을 애플리케이션 아이콘으로 넣습니다. |
-| `LLAMA_WIN_DESCRIPTION` | `llama.cpp built for WelsonJS` | `VERSIONINFO` 리소스를 추가합니다. |
+| `LLAMA_WIN_ICON` | `app\favicon.ico` | 실행 파일에 아이콘을 애플리케이션 아이콘으로 넣습니다. |
+| `LLAMA_WIN_DESCRIPTION` | `llama.cpp built for WelsonJS` | 모든 실행 파일과 DLL에 `VERSIONINFO` 리소스를 추가합니다. |
+| `LLAMA_WIN_VERSION` | WelsonJS 버전 `0.2.7.62`(런처의 `AssemblyFileVersion`, 또는 `-ProductVersion`) | `FileVersion`과 `ProductVersion`(기본값 `0.0.<LLAMA_BUILD_NUMBER>.0`). |
+| `LLAMA_WIN_COMPANY` | `Catswords Research` | `CompanyName`. |
+| `LLAMA_WIN_COPYRIGHT` | 코드의 저작자들(아래) | `LegalCopyright`. |
 
-각 도구의 `VERSIONINFO` 리소스에는 다음 값이 들어갑니다:
+`LegalCopyright` 값은 빌드에 코드가 들어간 모든 저작자를 적습니다:
 
-| 값 | 예(`llama-server`) |
-| --- | --- |
-| `FileDescription`("설명"으로 표시) | `llama-server (llama.cpp built for WelsonJS)` |
-| `ProductName` | `llama.cpp` |
-| `FileVersion`, `ProductVersion` | `0.0.<LLAMA_BUILD_NUMBER>.0 (<LLAMA_BUILD_COMMIT>)` |
-| `InternalName`, `OriginalFilename` | `llama-server`, `llama-server.exe` |
-| `Comments` | `llama.cpp built for WelsonJS` |
+```
+Copyright (c) 2023-2026 The ggml authors (llama.cpp), Copyright (c) Microsoft Corporation (bitnet.cpp), Copyright (c) 2025 Tencent (AngelSlim, STQ1_0), Copyright (c) 2026 Catswords Research (WelsonJS)
+```
+
+- **The ggml authors:** llama.cpp와 ggml(MIT, 출력물의 `LICENSE-llama.cpp.txt`).
+- **Microsoft Corporation:** 포크에 들어 있는 bitnet.cpp의 I2_S 타입과 커널, `gemm-config.h`(MIT).
+- **Tencent:** AngelSlim 1.25비트 양자화의 llama.cpp 형식인 STQ1_0(llama.cpp PR #22836).
+- **Catswords Research:** WelsonJS 패치와 빌드.
+
+각 바이너리의 `VERSIONINFO` 리소스에는 다음 값이 들어갑니다:
+
+| 값 | 예(`llama-server.exe`) | 예(`ggml-cpu-haswell.dll`) |
+| --- | --- | --- |
+| `FileDescription`("설명"으로 표시) | `llama-server - OpenAI-compatible LLM server (llama.cpp built for WelsonJS)` | `ggml-cpu-haswell - ggml CPU backend, haswell variant (llama.cpp built for WelsonJS)` |
+| `FileVersion`, `ProductVersion` | `0.2.7.62` | `0.2.7.62` |
+| `CompanyName` | `Catswords Research` | `Catswords Research` |
+| `LegalCopyright` | 위의 값 | 위의 값 |
+| `ProductName` | `llama.cpp` | `llama.cpp` |
+| `InternalName`, `OriginalFilename` | `llama-server`, `llama-server.exe` | `ggml-cpu-haswell`, `ggml-cpu-haswell.dll` |
+| `Comments` | `llama.cpp built for WelsonJS. llama.cpp 390c307, build 1.` | 같음 |
+
+`FileDescription`의 역할 문구는 `ggml tensor library`, `ggml base library`, `ggml CPU backend, <변형> variant`, `llama.cpp library`, `llama.cpp common library`, `llama.cpp multimodal library`, `<도구> implementation library`, `OpenAI-compatible LLM server`, `LLM command-line interface`, `GGUF model quantizer`입니다. 역할을 모르는 대상은 `<대상> (<텍스트>)`가 됩니다.
 
 패치가 하는 일:
 
-- `tools/` 아래의 모든 실행 파일 대상이 각자의 리소스 스크립트(`<build>/tools/win-resources/<target>.rc`)를 받습니다. `llama-server`, `llama-cli`, `llama-quantize`도 포함됩니다. DLL은 받지 않습니다.
+- 모든 디렉터리에서 빌드의 실행 파일, 공유 라이브러리, 모듈 라이브러리를 모두 모아(ggml, ggml-base, CPU 백엔드, llama, llama-common, mtmd, 도구와 그 `-impl` 라이브러리) 각자의 리소스 스크립트(`<build>/win-resources/<target>.rc`)를 줍니다. 실행 파일에는 아이콘도 넣습니다.
 - 아이콘은 스크립트 옆에 복사됩니다. 스크립트는 `#pragma code_page(65001)`로 시작하므로, ANSI 코드 페이지와 상관없이 경로에 비 ASCII 문자가 있는 빌드 폴더에서도 동작합니다.
-- `FILEOS`와 `FILETYPE`은 `winver.h`의 이름 대신 숫자 값을 쓰므로, CMake가 어떤 리소스 컴파일러를 고르든(x64 빌드는 Windows SDK의 rc.exe를 씀) 포함 경로가 필요 없습니다.
-- 스크립트는 `configure_file`로 씁니다. `configure_file`은 내용이 바뀔 때만 파일을 건드리므로, CMake를 다시 실행해도 도구를 다시 링크하지 않습니다.
-- 빌드 번호는 체크아웃의 커밋 수입니다. 얕은 git 클론은 1, 압축 파일 소스는 0입니다.
+- `FILEOS`와 `FILETYPE`은 `winver.h`의 이름 대신 숫자 값(실행 파일은 `VFT_APP`, DLL은 `VFT_DLL`)을 쓰므로, CMake가 어떤 리소스 컴파일러를 고르든 포함 경로가 필요 없습니다.
+- 스크립트는 `configure_file`로 씁니다. `configure_file`은 내용이 바뀔 때만 파일을 건드리므로, CMake를 다시 실행해도 다시 링크하지 않습니다.
+- `Comments`의 빌드 번호는 체크아웃의 커밋 수입니다. 얕은 git 클론은 1, 압축 파일 소스는 0입니다.
 
-아이콘 파일은 WelsonJS 저장소에 그대로 있고, 패치는 옵션만 추가합니다. 두 옵션이 비어 있으면(기본값) 패치가 없는 빌드와 같습니다. 아이콘 파일이 없으면 구성 단계가 오류로 멈춥니다.
+아이콘 파일은 WelsonJS 저장소에 그대로 있고, 패치는 옵션만 추가합니다. `LLAMA_WIN_ICON`과 `LLAMA_WIN_DESCRIPTION`이 비어 있으면(기본값) 패치가 없는 빌드와 같습니다. 아이콘 파일이 없거나 버전 형식이 틀리면 구성 단계가 오류로 멈춥니다.
+
+빌드 스크립트는 출력물을 검사합니다. 모든 실행 파일과 DLL에 위의 `FileDescription`, 버전, `CompanyName`, `LegalCopyright`가 있어야 하며, 하나라도 없으면 빌드가 실패합니다.
 
 ### 파트 2: 지원되지 않는 MSVC 옵션
 

@@ -11,9 +11,13 @@
 #   llama-server, llama-cli, llama-quantize and the ggml backends, with every
 #   CPU variant loaded at run time (GGML_BACKEND_DL, GGML_CPU_ALL_VARIANTS),
 #   plus BUILDINFO.txt and SHA256SUMS.txt. The executables carry the WelsonJS
-#   icon (app\favicon.ico, LLAMA_WIN_ICON) and version information whose
-#   description says "llama.cpp built for WelsonJS" (LLAMA_WIN_DESCRIPTION);
-#   a patch adds both options.
+#   icon (app\favicon.ico, LLAMA_WIN_ICON), and every executable and DLL
+#   carries version information (patches\0003-windows-build.patch): the
+#   WelsonJS version (-ProductVersion, by default the launcher's
+#   AssemblyFileVersion), a description that says "llama.cpp built for
+#   WelsonJS", CompanyName, and the copyright of all authors. The build fails
+#   when a binary lacks that information, or when .artifact-configuration.xml
+#   does not list it for signing.
 #
 # Besides the usual GGUF types, the fork loads BitNet's I2_S GGUF files (for
 # example microsoft/BitNet-b1.58-2B-4T-gguf) with its I2_S kernels. The BitNet
@@ -21,7 +25,7 @@
 # are off (patches\0002-bitnet-i2s.patch).
 #
 # A build is skipped when <OutDir>\<arch> was built from the same inputs
-# (version, commit, patches, the icon and this script; the "Build ID" in
+# (version, product version, commit, patches, the icon and this script; the "Build ID" in
 # BUILDINFO.txt) and its files match SHA256SUMS.txt, so the folder can be kept
 # in a CI cache.
 #
@@ -57,6 +61,7 @@ param(
     [string]$RepositoryUrl = "https://github.com/isHuangXin/llama.cpp.git",
     [string]$LlvmDir   = "",          # arm64: folder with clang.exe; empty: search
     [switch]$InstallLlvm,
+    [string]$ProductVersion = "",     # a.b.c.d in the version information; empty: the launcher's AssemblyFileVersion
     [switch]$Force
 )
 
@@ -298,14 +303,33 @@ if ($version -notmatch '^[A-Za-z0-9._-]+$') { throw "Invalid llama.cpp version: 
 $commit = (Get-Content -LiteralPath (Join-Path $PSScriptRoot "commit.txt") -Raw).Trim().ToLowerInvariant()
 if ($commit -notmatch '^[0-9a-f]{40}$') { throw "commit.txt must contain a full 40-character commit SHA: $commit" }
 $patches = @(Get-ChildItem -LiteralPath (Join-Path $PSScriptRoot "patches") -Filter "*.patch" | Sort-Object Name)
-# The icon embedded in the tool executables (LLAMA_WIN_ICON, added by
+# The icon embedded in the executables (LLAMA_WIN_ICON, added by
 # patches\0003-windows-build.patch).
 $iconPath = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot "..\..\app\favicon.ico"))
 if (-not (Test-Path -LiteralPath $iconPath)) { throw "The icon was not found: $iconPath" }
 
+# Version information of every executable and DLL (LLAMA_WIN_*, added by
+# patches\0003-windows-build.patch): the WelsonJS version, and the authors of
+# the code: llama.cpp (MIT, The ggml authors), bitnet.cpp's I2_S kernels and
+# gemm-config.h (MIT, Microsoft), STQ1_0 from Tencent's AngelSlim (llama.cpp
+# PR #22836), and the WelsonJS patches and build (Catswords Research).
+if (-not $ProductVersion) {
+    $assemblyInfo = Join-Path $PSScriptRoot "..\WelsonJS.Augmented\WelsonJS.Launcher\Properties\AssemblyInfo.cs"
+    $match = Select-String -LiteralPath $assemblyInfo -Pattern 'AssemblyFileVersion\("([0-9.]+)"\)' | Select-Object -First 1
+    if (-not $match) { throw "AssemblyFileVersion was not found in $assemblyInfo" }
+    $ProductVersion = $match.Matches[0].Groups[1].Value
+}
+if ($ProductVersion -notmatch '^\d+\.\d+\.\d+\.\d+$') { throw "The product version must be a.b.c.d: $ProductVersion" }
+$companyName = "Catswords Research"
+$copyright = "Copyright (c) 2023-2026 The ggml authors (llama.cpp), Copyright (c) Microsoft Corporation (bitnet.cpp), " +
+             "Copyright (c) 2025 Tencent (AngelSlim, STQ1_0), Copyright (c) 2026 Catswords Research (WelsonJS)"
+$winDescription = "llama.cpp built for WelsonJS"
+# Every executable and DLL must be listed (without wildcards) for SignPath.
+$signingConfigPath = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot "..\..\.artifact-configuration.xml"))
+
 # The build ID covers every input, so a change to any of them rebuilds.
 $inputs = New-Object IO.MemoryStream
-foreach ($item in @(@{ Name = "version"; Bytes = [Text.Encoding]::UTF8.GetBytes("$version|$commit|$Arch") }) +
+foreach ($item in @(@{ Name = "version"; Bytes = [Text.Encoding]::UTF8.GetBytes("$version|$ProductVersion|$commit|$Arch") }) +
                   @($patches | ForEach-Object { @{ Name = $_.Name; Bytes = [IO.File]::ReadAllBytes($_.FullName) } }) +
                   @(@{ Name = "icon"; Bytes = [IO.File]::ReadAllBytes($iconPath) }) +
                   @(@{ Name = "script"; Bytes = [IO.File]::ReadAllBytes($PSCommandPath) })) {
@@ -321,6 +345,7 @@ $buildInfoPath = Join-Path $archDir "BUILDINFO.txt"
 $checksumsPath = Join-Path $archDir "SHA256SUMS.txt"
 
 Write-Host "[*] llama.cpp version: $version, commit $commit ($Arch)"
+Write-Host "[*] Product version  : $ProductVersion"
 Write-Host "[*] Patches          : $(if ($patches.Count) { ($patches | ForEach-Object Name) -join ', ' } else { '(none)' })"
 Write-Host "[*] Build ID         : $buildId"
 Write-Host "[*] Output           : $archDir"
@@ -471,7 +496,10 @@ $configure += @(
     # (patches\0003-windows-build.patch): the file properties show
     # "<tool> (llama.cpp built for WelsonJS)".
     "-DLLAMA_WIN_ICON=$($iconPath.Replace('\', '/'))",
-    "-DLLAMA_WIN_DESCRIPTION=llama.cpp built for WelsonJS",
+    "-DLLAMA_WIN_DESCRIPTION=$winDescription",
+    "-DLLAMA_WIN_VERSION=$ProductVersion",
+    "-DLLAMA_WIN_COMPANY=$companyName",
+    "-DLLAMA_WIN_COPYRIGHT=$copyright",
     # Without a .git folder (archive source) the build cannot read the commit.
     "-DLLAMA_BUILD_COMMIT=$($commit.Substring(0, 7))"
 )
@@ -501,8 +529,38 @@ Get-ChildItem -LiteralPath $binDir -File | Where-Object { $_.Extension -in @(".d
     Copy-Item -Destination $archDir
 Copy-Item -LiteralPath (Join-Path $sourceDir "LICENSE") -Destination (Join-Path $archDir "LICENSE-llama.cpp.txt")
 
+# Every executable and DLL must carry the version information, and be listed
+# for signing in .artifact-configuration.xml.
+$binaries = @(Get-ChildItem -LiteralPath $archDir -File | Where-Object { $_.Extension -in @(".exe", ".dll") } | Sort-Object Name)
+$problems = @()
+foreach ($file in $binaries) {
+    $info = $file.VersionInfo
+    if (-not $info.FileDescription -or -not $info.FileDescription.StartsWith($file.BaseName + " ")) { $problems += "$($file.Name): FileDescription is '$($info.FileDescription)'" }
+    if ($info.FileVersion -ne $ProductVersion) { $problems += "$($file.Name): FileVersion is '$($info.FileVersion)', expected $ProductVersion" }
+    if ($info.ProductVersion -ne $ProductVersion) { $problems += "$($file.Name): ProductVersion is '$($info.ProductVersion)', expected $ProductVersion" }
+    if ($info.CompanyName -ne $companyName) { $problems += "$($file.Name): CompanyName is '$($info.CompanyName)'" }
+    if ($info.LegalCopyright -ne $copyright) { $problems += "$($file.Name): LegalCopyright is '$($info.LegalCopyright)'" }
+}
+if (Test-Path -LiteralPath $signingConfigPath) {
+    $listed = @(([xml](Get-Content -LiteralPath $signingConfigPath -Raw)).SelectNodes("//*[local-name()='include']") |
+        ForEach-Object { $_.GetAttribute("path").ToLowerInvariant() })
+    foreach ($file in $binaries) {
+        if ($listed -notcontains "artifacts/llamacpp/$Arch/$($file.Name)".ToLowerInvariant()) {
+            $problems += "$($file.Name): not listed for signing in .artifact-configuration.xml (artifacts/llamacpp/$Arch/$($file.Name))"
+        }
+    }
+}
+else {
+    Write-Host "[WARN] $signingConfigPath was not found; the signing list was not checked."
+}
+if ($problems.Count) {
+    throw "The build output is incomplete:`n  " + ($problems -join "`n  ")
+}
+Write-Host "[*] Version information and signing list checked: $($binaries.Count) executables and DLLs"
+
 @(
     "llama.cpp $version ($commit) built for WelsonJS",
+    "Version: $ProductVersion",
     "Source: $sourceOrigin",
     "Compiler: $compilerInfo",
     "Architecture: $Arch (CPU backends: $($backendTargets -join ', '))",
