@@ -28,12 +28,13 @@
   - 두 아키텍처의 모든 실행 파일과 DLL을 서명합니다. `.artifact-configuration.xml`에 하나씩 이름으로 적으며(와일드카드 없음), 바이너리에 버전 정보가 없거나 서명 목록에 없으면 빌드가 실패합니다.
   - `llama-quantize`로 I2_S 파일을 만들 수 있습니다. 포크의 양자화기는 커널이 읽지 않는 배치로 기록했고, 도구의 타입 목록에도 없었습니다. STQ1_0 양자화는 Sherry로 학습한 체크포인트용이라고 문서화했습니다.
   - README에 `llama-quantize`로 양자화하는 방법과 예시를 넣었습니다. 파일 타입 번호가 빌드마다 다르므로 타입은 이름(`I2_S`, `STQ1_0`)으로 지정합니다.
-- 에디터의 AI 서비스 토글로 Local AI 모델(llama.cpp: 기본값인 Hy-MT2와 FrogNano, 런처 설정 `LlamaCppModels`)과 웹 채팅 서비스(Copilot, ChatGPT 등)를 전환합니다. 컨텍스트 메뉴에는 고른 서비스의 Send Selection, Explain Selection, Find Problems in Selection(문제점 찾기), 시스템 언어와 영어(en)로 번역하는 Translate Selection into <언어> (<코드>), Convert Selection to JavaScript(WSH JScript 엔진용 ES3), Ask...가 표시되고, 프롬프트와 함께 시스템 언어를 보냅니다. 서비스를 바꾸면 프롬프트를 초기화합니다.
+- 에디터의 AI 서비스 토글로 Local AI 모델(llama.cpp: 기본값인 Hy-MT2, FrogNano, BitNet, 런처 설정 `LlamaCppModels`)과 웹 채팅 서비스(Copilot, ChatGPT 등)를 전환합니다. 컨텍스트 메뉴에는 고른 서비스의 Send Selection, Explain Selection, Find Problems in Selection(문제점 찾기), 시스템 언어와 영어(en)로 번역하는 Translate Selection into <언어> (<코드>), Convert Selection to JavaScript(WSH JScript 엔진용 ES3), Ask...가 표시되고, 프롬프트와 함께 시스템 언어를 보냅니다. 서비스를 바꾸면 프롬프트를 초기화합니다.
 - 언어 추론 엔진에 UberLLM 제공자 추가([#543]).
 - 프롬프트를 검사하는 런처 관리 LLM 가드(Qwen3Guard).
 
 ### 변경
 
+- 새 설치 구성 요소 `llamacpp\bitnet_b1_58_2b_4t`: WelsonJS llama.cpp 빌드가 실행하는 BitNet b1.58 2B-4T(Microsoft, 1.58비트 I2_S, `microsoft/bitnet-b1.58-2B-4T-gguf`, 약 1.2GB)([#519] 관련).
 - Hy-MT2 기본 모델이 Q4_K_M(약 1.1GB) 대신 1.8B 1.25비트 GGUF(462MB)입니다. 구성 요소 이름은 `hy_mt2_1_8b_1_25bit`입니다([#542] 관련).
 - 설치 프로그램은 더 이상 공식 llama.cpp 패키지를 받지 않고, artifacts 패키지의 WelsonJS 빌드를 씁니다. Qwen3Guard는 llama.cpp 구성 요소 아래로 묶었습니다.
 - 런처 에디터의 AI 도구는 로컬 llama.cpp 서버를 씁니다. 런처의 Copilot 메뉴와 `CopilotUrl` 설정은 제거했습니다.

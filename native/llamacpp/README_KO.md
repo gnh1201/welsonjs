@@ -168,8 +168,9 @@ llama.cpp는 **Release** 작업에서 빌드하므로, 그 파일들이 다른 �
 - BitNet `I2_S` GGUF 파일과 STQ1_0 GGUF 파일(타입 42를 쓰는 Tencent 파일, 타입 43을 쓰는 PR 파일)은 이 빌드에서는 불러와지고 업스트림 llama.cpp에서는 불러와지지 않습니다.
 - `Q2_0`(42)이나 `F8_E4M3`(43) 텐서를 저장한 업스트림 GGUF 파일은 호환되지 **않습니다**. 이 빌드는 이 ID를 `TL2`/`STQ1_0`과 `STQ1_0`으로 읽습니다. 타입마다 크기가 다르므로, 이런 파일은 잘못된 데이터로 불러와지기보다 GGUF 로더의 크기 검사에서 실패할 것으로 예상합니다. 이 부분은 테스트하지 않았습니다.
 - BitNet `TL2` 텐서는 ID를 유지하지만, 이 빌드에는 이를 실행할 TL2 커널이 없습니다.
-- WelsonJS가 설치하는 모델의 아키텍처(`hunyuan-dense`, `qwen35`, `qwen3`)는 포크에 들어 있습니다:
+- WelsonJS가 설치하는 모델의 아키텍처(`hunyuan-dense`, `qwen35`, `qwen3`, `bitnet-b1.58`)는 포크에 들어 있습니다:
   - Hy-MT2 1.8B 1.25비트(`tencent/Hy-MT2-1.8B-1.25Bit-GGUF`)는 STQ1_0 텐서를 타입 42로 저장하므로 이 빌드에서만 불러와집니다(`0001-stq1_0.patch` 파트 3). 나머지 텐서는 F32와 Q6_K입니다.
+  - BitNet b1.58 2B-4T(`microsoft/bitnet-b1.58-2B-4T-gguf`, 구성 요소 `bitnet_b1_58_2b_4t`)는 I2_S 텐서(타입 36)를 저장하므로 이 빌드에서만 불러와집니다. [BitNet(I2_S) 모델](#bitneti2_s-모델)을 참고하세요.
   - FrogNano와 Qwen3Guard(Q4_K_M)는 텐서 타입 0, 12, 14(F32, Q4_K, Q6_K)만 씁니다.
 
 ## BitNet(I2_S) 모델

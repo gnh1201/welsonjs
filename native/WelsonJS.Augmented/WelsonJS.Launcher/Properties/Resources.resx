@@ -233,7 +233,7 @@
     <value>qwen3guard_06b</value>
   </data>
   <data name="LlamaCppModels" xml:space="preserve">
-    <value>hy_mt2_1_8b_1_25bit,frognano_4b_2609</value>
+    <value>hy_mt2_1_8b_1_25bit,frognano_4b_2609,bitnet_b1_58_2b_4t</value>
   </data>
   <data name="LlamaCppModelsMax" xml:space="preserve">
     <value>2</value>

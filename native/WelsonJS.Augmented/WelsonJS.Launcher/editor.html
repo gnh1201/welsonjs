@@ -738,8 +738,8 @@
                 // The Local AI models: the launcher's LlamaCppModels setting (model names, which
                 // are installer components), read from /llamacpp/status. Until it answers, the
                 // setting's default is used. Each model is one entry of the ribbon toggle.
-                const DEFAULT_LOCAL_MODELS = ['hy_mt2_1_8b_1_25bit', 'frognano_4b_2609'];
-                const LOCAL_MODEL_LABELS = { hy_mt2_1_8b_1_25bit: 'Hy-MT2', frognano_4b_2609: 'FrogNano' };
+                const DEFAULT_LOCAL_MODELS = ['hy_mt2_1_8b_1_25bit', 'frognano_4b_2609', 'bitnet_b1_58_2b_4t'];
+                const LOCAL_MODEL_LABELS = { hy_mt2_1_8b_1_25bit: 'Hy-MT2', frognano_4b_2609: 'FrogNano', bitnet_b1_58_2b_4t: 'BitNet' };
                 const localModelLabel = (model) => LOCAL_MODEL_LABELS[model] || model;
                 const [localModels, setLocalModels] = React.useState(DEFAULT_LOCAL_MODELS);
                 React.useEffect(() => {

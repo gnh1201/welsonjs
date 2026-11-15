@@ -28,12 +28,13 @@ Changes on the `dev` branch since 0.2.7.62-rc1.
   - Every executable and DLL of both architectures is signed, each listed by name in `.artifact-configuration.xml` (no wildcards); the build fails when a binary lacks the version information or is not listed for signing.
   - `llama-quantize` can produce I2_S files: the fork's quantizer wrote a layout its kernels do not read, and the type was missing from the tool. STQ1_0 quantization is documented for Sherry-trained checkpoints.
   - The README explains quantizing with `llama-quantize`, with examples: select the type by name (`I2_S`, `STQ1_0`), as the file type numbers differ between builds.
-- The editor's AI service toggle switches between the Local AI models (llama.cpp: Hy-MT2, the default, and FrogNano, from the launcher's `LlamaCppModels` setting) and web chat services: Copilot, ChatGPT, and more. The context menu shows Send Selection, Explain Selection, Find Problems in Selection, Translate Selection into <language> (<code>) for the system language and for English (en), Convert Selection to JavaScript (ES3, for the WSH JScript engine), and Ask... for the chosen service, and the system language is sent with prompts. Switching the service clears the prompt.
+- The editor's AI service toggle switches between the Local AI models (llama.cpp: Hy-MT2, the default, FrogNano and BitNet, from the launcher's `LlamaCppModels` setting) and web chat services: Copilot, ChatGPT, and more. The context menu shows Send Selection, Explain Selection, Find Problems in Selection, Translate Selection into <language> (<code>) for the system language and for English (en), Convert Selection to JavaScript (ES3, for the WSH JScript engine), and Ask... for the chosen service, and the system language is sent with prompts. Switching the service clears the prompt.
 - UberLLM provider in the language inference engine ([#543]).
 - Launcher-managed LLM guard (Qwen3Guard) for prompts.
 
 ### Changed
 
+- New installer component `llamacpp\bitnet_b1_58_2b_4t`: BitNet b1.58 2B-4T (Microsoft, 1.58-bit I2_S, `microsoft/bitnet-b1.58-2B-4T-gguf`, about 1.2 GB), which the WelsonJS llama.cpp build runs (related to [#519]).
 - The default Hy-MT2 model is the 1.8B 1.25-bit GGUF (462 MB) instead of Q4_K_M (about 1.1 GB). The component is now `hy_mt2_1_8b_1_25bit` (related to [#542]).
 - The installer no longer downloads the official llama.cpp package; it uses the WelsonJS build from the artifacts package. Qwen3Guard is grouped under the llama.cpp components.
 - The launcher editor's AI tools use the local llama.cpp server; the launcher's Copilot menu and `CopilotUrl` setting are removed.

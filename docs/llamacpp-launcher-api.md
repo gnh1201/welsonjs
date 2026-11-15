@@ -12,6 +12,7 @@ The router reads models from `%APPDATA%\WelsonJS` (`--models-dir`). Each folder 
 %APPDATA%\WelsonJS
  ├─ hy_mt2_1_8b_1_25bit\Hy-MT2-1.8B-1.25Bit.gguf    → model "hy_mt2_1_8b_1_25bit"
  ├─ frognano_4b_2609\frognano-4b-2609-q4_k_m.gguf   → model "frognano_4b_2609"
+ ├─ bitnet_b1_58_2b_4t\ggml-model-i2_s.gguf         → model "bitnet_b1_58_2b_4t"
  ├─ qwen3guard_06b\Qwen3Guard-Gen-0.6B.Q4_K_M.gguf  → model "qwen3guard_06b" (the LLM guard)
  └─ bin\, llamacpp\, ...                            → no .gguf, not a model
 ```
@@ -26,12 +27,12 @@ The router reads models from `%APPDATA%\WelsonJS` (`--models-dir`). Each folder 
 
 | Key | Default | Meaning |
 | --- | --- | --- |
-| `LlamaCppModels` | `hy_mt2_1_8b_1_25bit,frognano_4b_2609` | The models the editor offers as Local AI, comma-separated, in the order of its ribbon toggle; reported as `models` by `/llamacpp/status` |
+| `LlamaCppModels` | `hy_mt2_1_8b_1_25bit,frognano_4b_2609,bitnet_b1_58_2b_4t` | The models the editor offers as Local AI, comma-separated, in the order of its ribbon toggle; reported as `models` by `/llamacpp/status` |
 | `LlmGuardModel` | `qwen3guard_06b` | The LLM guard's model |
 | `LlamaCppModelsMax` | `2` | Models loaded at once (`--models-max`); beyond it the least recently used model is unloaded. `0` means no limit |
 | `LlamaCppContextSize` | `8192` | Context size of every model instance (`--ctx-size`) |
 
-With the default of 2, the model in use and the LLM guard stay loaded together; switching between Hy-MT2 and FrogNano in the editor swaps them.
+With the default of 2, the model in use and the LLM guard stay loaded together; switching between Hy-MT2, FrogNano and BitNet in the editor swaps them.
 
 ## Endpoints
 
@@ -45,7 +46,8 @@ GET /llamacpp/status
 {
   "server": {"running": true, "pid": 1234, "host": "127.0.0.1", "port": 50123, "baseUrl": "http://127.0.0.1:50123",
              "modelsDirectory": "C:\\Users\\user\\AppData\\Roaming\\WelsonJS", "modelsMax": 2, "contextSize": 8192, ...},
-  "models": [{"id": "hy_mt2_1_8b_1_25bit", "installed": true}, {"id": "frognano_4b_2609", "installed": true}]
+  "models": [{"id": "hy_mt2_1_8b_1_25bit", "installed": true}, {"id": "frognano_4b_2609", "installed": true},
+             {"id": "bitnet_b1_58_2b_4t", "installed": true}]
 }
 ```
 

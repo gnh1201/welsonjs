@@ -352,7 +352,7 @@ namespace WelsonJS.Launcher.Properties {
         }
 
         /// <summary>
-        ///   hy_mt2_1_8b_1_25bit,frognano_4b_2609과(와) 유사한 지역화된 문자열을 찾습니다.
+        ///   hy_mt2_1_8b_1_25bit,frognano_4b_2609,bitnet_b1_58_2b_4t과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string LlamaCppModels {
             get {

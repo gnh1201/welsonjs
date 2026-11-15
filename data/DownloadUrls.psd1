@@ -42,6 +42,14 @@
     }
 
     # ===========================
+    # BitNet b1.58 2B-4T GGUF model (Microsoft, 1.58-bit I2_S; needs the WelsonJS
+    # llama.cpp build, see native\llamacpp)
+    # ===========================
+    bitnet_b1_58_2b_4t = @{
+        any   = "https://huggingface.co/microsoft/bitnet-b1.58-2B-4T-gguf/resolve/main/ggml-model-i2_s.gguf"
+    }
+
+    # ===========================
     # Qwen3Guard local safety model
     # ===========================
     qwen3guard_06b = @{

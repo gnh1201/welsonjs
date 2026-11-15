@@ -168,8 +168,9 @@ The fork numbers some ggml tensor types differently from upstream llama.cpp:
 - BitNet `I2_S` GGUF files and STQ1_0 GGUF files (Tencent's, with type 42, and the PR's, with type 43) load with this build and not with upstream llama.cpp.
 - Upstream GGUF files that store `Q2_0` (42) or `F8_E4M3` (43) tensors are **not** compatible: this build reads those IDs as `TL2`/`STQ1_0` and `STQ1_0`. The types have different sizes, so such files are expected to fail the GGUF loader's size checks rather than load with wrong data; this was not tested.
 - BitNet `TL2` tensors keep their ID, but this build has no TL2 kernels to run them.
-- The models WelsonJS installs are in the fork's architectures (`hunyuan-dense`, `qwen35`, `qwen3`):
+- The models WelsonJS installs are in the fork's architectures (`hunyuan-dense`, `qwen35`, `qwen3`, `bitnet-b1.58`):
   - Hy-MT2 1.8B 1.25-bit (`tencent/Hy-MT2-1.8B-1.25Bit-GGUF`) stores STQ1_0 tensors as type 42 and loads only with this build (`0001-stq1_0.patch` part 3); its other tensors are F32 and Q6_K.
+  - BitNet b1.58 2B-4T (`microsoft/bitnet-b1.58-2B-4T-gguf`, component `bitnet_b1_58_2b_4t`) stores I2_S tensors (type 36) and loads only with this build; see [BitNet (I2_S) models](#bitnet-i2_s-models).
   - FrogNano and Qwen3Guard (Q4_K_M) use only tensor types 0, 12, and 14 (F32, Q4_K, Q6_K).
 
 ## BitNet (I2_S) models
