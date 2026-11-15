@@ -47,6 +47,7 @@
 - 런처의 자식 프로세스(llama.cpp 라우터와 모델 인스턴스, 터미널 세션, JSRT 인스턴스)를 Windows Job Object에 넣어, 런처가 강제 종료되거나 디버거에서 중지되거나 비정상 종료돼도 함께 종료되게 했습니다.
 - 런처가 브라우저를 시작할 때 고정된 9222 대신 비어 있는 원격 디버깅 포트를 고르고(`ChromiumDevToolsPrefix` 설정 제거), 브라우저는 127.0.0.1에서만 받게 했습니다. 포트는 브라우저가 응답하는 동안 런처 메모리에만 유지하며, 이전 런처 실행에서 남은 브라우저는 쓰지 않습니다(그 창들을 닫아야 함). llama.cpp 라우터와 브라우저의 포트는 하나의 공통 구현(`LocalPorts`)에서 다룹니다.
 - 런처의 WHOIS와 IP 조회 엔드포인트가 호출하는 외부 서비스 주소를 로컬 설정 대신 blob 설정(`blob.config.xml`의 `services`)에서 가져옵니다(`WhoisServerUrl`, `WhoisReferrerUrl`, `WhoisClientAddress`, `IpQueryApiPrefix`, `IpQueryApiPrefix2` 제거). IP 조회 API 키는 로컬 설정에 남습니다. blob 설정을 받기 전에 온 요청은 로드를 기다리고, 로드에 실패하면 다음 요청 때 다시 받습니다. WHOIS 엔드포인트가 공유 HTTP 클라이언트에 Referrer를 설정하던 문제도 고쳤습니다.
+- 런처의 DNS 조회 도구가 모든 레코드 타입을 동시에 조회하고(타입마다 최대 5초씩 차례로 기다리던 것을 비동기, 시도당 최대 3초로), 잘린 응답은 TCP로 다시 묻고, 응답이 요청과 맞는지 확인하며, 압축된 이름을 올바르게 읽습니다. IP 주소는 역방향(PTR)으로 조회하고, 국제화 도메인은 punycode로 바꾸며, TTL과 SOA·NAPTR·여러 문자열로 된 TXT의 모든 필드를 보여 주고, 레코드가 없는 타입은 한 줄로 모아 보여 줍니다. `DnsServerAddress`에 쉼표로 여러 서버를 적을 수 있으며(기본값 `1.1.1.1,8.8.8.8`), 한 서버가 응답하지 않거나 실패·거부하면 다음 서버에 묻고, 모든 서버에 한 번씩 물은 뒤에 다시 시도합니다. `?type=`으로 레코드 타입을 고를 수 있습니다.
 - 벤더 JavaScript 파일을 필요할 때 복원합니다(`restoreAppAssets.ps1`).
 - 부트스트랩에서 `app.hta`를 `welsonjs-hta.exe`로 엽니다. YAWW를 업데이트했습니다.
 

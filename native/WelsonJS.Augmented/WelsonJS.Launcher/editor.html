@@ -1141,7 +1141,7 @@
                         return;
                     }
 
-                    axios.get(`/dns-query/${hostname}`).then(response => {
+                    axios.get(`/dns-query/${encodeURIComponent(hostname.trim())}`).then(response => {
                         const responseText = response.data;
                         appendTextToEditor(`/*\nHostname:${hostname}\n\n${responseText}\n*/`);
                         pushPromptMessage("system", responseText);

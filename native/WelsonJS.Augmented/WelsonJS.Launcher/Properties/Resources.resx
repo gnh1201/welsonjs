@@ -155,7 +155,7 @@
     <value>http://localhost:3000/</value>
   </data>
   <data name="DnsServerAddress" xml:space="preserve">
-    <value>1.1.1.1</value>
+    <value>1.1.1.1,8.8.8.8</value>
   </data>
   <data name="BlobStoragePrefix" xml:space="preserve">
     <value>https://catswords.blob.core.windows.net/welsonjs/</value>
