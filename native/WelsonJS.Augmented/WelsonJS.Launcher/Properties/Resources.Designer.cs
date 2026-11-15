@@ -343,20 +343,38 @@ namespace WelsonJS.Launcher.Properties {
         }
 
         /// <summary>
-        ///   qwen3guard_06b\Qwen3Guard-Gen-0.6B.Q4_K_M.gguf과(와) 유사한 지역화된 문자열을 찾습니다.
+        ///   qwen3guard_06b과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
-        internal static string LlmGuardModelPath {
+        internal static string LlmGuardModel {
             get {
-                return ResourceManager.GetString("LlmGuardModelPath", resourceCulture);
+                return ResourceManager.GetString("LlmGuardModel", resourceCulture);
             }
         }
 
         /// <summary>
-        ///   hy_mt2_1_8b_1_25bit\Hy-MT2-1.8B-1.25Bit.gguf과(와) 유사한 지역화된 문자열을 찾습니다.
+        ///   hy_mt2_1_8b_1_25bit,frognano_4b_2609과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
-        internal static string LlamaCppModelPath {
+        internal static string LlamaCppModels {
             get {
-                return ResourceManager.GetString("LlamaCppModelPath", resourceCulture);
+                return ResourceManager.GetString("LlamaCppModels", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   2과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string LlamaCppModelsMax {
+            get {
+                return ResourceManager.GetString("LlamaCppModelsMax", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   8192과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string LlamaCppContextSize {
+            get {
+                return ResourceManager.GetString("LlamaCppContextSize", resourceCulture);
             }
         }
 

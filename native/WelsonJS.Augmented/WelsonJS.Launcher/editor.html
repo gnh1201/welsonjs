@@ -180,8 +180,8 @@
                     { id: 'btnPromptEditor', icon: 'mif-pencil', caption: 'Prompt', onClick: onPromptEditorClick },
                     { id: 'btnSavePrompt', icon: 'mif-floppy-disks', caption: 'Save', onClick: onSavePromptClick },
                     { id: 'btnLoadPrompt', icon: 'mif-file-upload', caption: 'Load', onClick: onLoadPromptClick },
-                    // Switches the AI service (Local AI, which is llama.cpp, or a web chat service) that the
-                    // editor's context menu sends to.
+                    // Switches the AI service (a Local AI model, run by llama.cpp, or a web chat service)
+                    // that the editor's context menu sends to.
                     { id: 'btnAiService', icon: 'mif-loop2', caption: aiServiceName, onClick: onAiServiceToggleClick }
                 ];
 
@@ -720,12 +720,29 @@
                 const buildSystemLanguageNote = () =>
                     `The user's system language is ${getSystemLanguage()}. Reply in that language unless the conversation asks for another.`;
 
-                // Generates text with the local llama.cpp model through the launcher
-                // (/llamacpp/chat), which starts llama-server on the first request. The
-                // answer replaces a status comment inserted below lineNumber.
-                const askLlamaCpp = (promptMessage, lineNumber, summary) => {
+                // The Local AI models: the launcher's LlamaCppModels setting (model names, which
+                // are installer components), read from /llamacpp/status. Until it answers, the
+                // setting's default is used. Each model is one entry of the ribbon toggle.
+                const DEFAULT_LOCAL_MODELS = ['hy_mt2_1_8b_1_25bit', 'frognano_4b_2609'];
+                const LOCAL_MODEL_LABELS = { hy_mt2_1_8b_1_25bit: 'Hy-MT2', frognano_4b_2609: 'FrogNano' };
+                const localModelLabel = (model) => LOCAL_MODEL_LABELS[model] || model;
+                const [localModels, setLocalModels] = React.useState(DEFAULT_LOCAL_MODELS);
+                React.useEffect(() => {
+                    axios.get('/llamacpp/status').then(response => {
+                        const models = ((response.data && response.data.models) || []).map(m => m.id).filter(Boolean);
+                        if (models.length)
+                            setLocalModels(models);
+                    }).catch(error => console.warn('Could not read the Local AI models from the launcher:', error.message));
+                }, []);
+
+                // Generates text with a local llama.cpp model through the launcher's llama.cpp
+                // router (/llamacpp/chat), which loads the named model on the first request and
+                // swaps models as needed. The answer replaces a status comment inserted below
+                // lineNumber.
+                const askLlamaCpp = (model, promptMessage, lineNumber, summary) => {
+                    const label = localModelLabel(model);
                     const replace = insertPlaceholder(lineNumber,
-                        `// ${summarize(summary)}... Generating text with Local AI (llama.cpp; the first request may take a while to load the model)...`);
+                        `// ${summarize(summary)}... Generating text with ${label} (llama.cpp; loading the model may take a while)...`);
                     pushPromptMessage("user", promptMessage);
 
                     // The system language goes in the system message (added to the first one
@@ -750,12 +767,12 @@
                         chat_template_kwargs: { enable_thinking: false }
                     };
 
-                    axios.post('/llamacpp/chat', data, {
+                    axios.post('/llamacpp/chat', Object.assign({ model: model }, data), {
                         headers: { 'Content-Type': 'application/json' }
                     }).then(response => {
                         const choices = (response.data && response.data.choices) || [];
                         if (choices.length === 0) {
-                            replace('// Local AI (llama.cpp) returned no response.');
+                            replace(`// ${label} (llama.cpp) returned no response.`);
                             return;
                         }
 
@@ -765,7 +782,7 @@
                             let note = '';
                             if (!responseContent && message.reasoning_content) {
                                 // The model ran out of tokens while reasoning.
-                                note = `// Local AI (llama.cpp) returned only reasoning (finish_reason: ${x.finish_reason}).\n`;
+                                note = `// ${label} (llama.cpp) returned only reasoning (finish_reason: ${x.finish_reason}).\n`;
                                 responseContent = message.reasoning_content;
                             }
                             pushPromptMessage("assistant", responseContent);
@@ -782,7 +799,7 @@
                             ? (typeof body.error === 'string' ? body.error : (body.error.message || JSON.stringify(body.error)))
                             : error.message;
                         console.error('Error:', body || error.message);
-                        replace(`// Local AI (llama.cpp) request failed: ${detail}`);
+                        replace(`// ${label} (llama.cpp) request failed: ${detail}`);
                     });
                 };
 
@@ -1761,10 +1778,13 @@
                     })();
                 };
 
-                // The AI services that the ribbon toggle switches between, in its order:
-                // Local AI (the local llama.cpp model), then the web chat services.
+                // The AI services that the ribbon toggle switches between, in its order: the
+                // Local AI models (keys "llamacpp:<model>"), then the web chat services.
                 const AI_SERVICES = Object.assign(
-                    { llamacpp: { name: 'Local AI', ask: askLlamaCpp } },
+                    localModels.reduce((services, model) => {
+                        services['llamacpp:' + model] = { name: localModelLabel(model), ask: (m, l, s) => askLlamaCpp(model, m, l, s) };
+                        return services;
+                    }, {}),
                     Object.keys(WEB_CHATS).reduce((services, key) => {
                         const service = WEB_CHATS[key];
                         services[key] = { name: service.name, ask: (m, l, s) => askWebChat(service, m, l, s) };
@@ -1773,7 +1793,7 @@
                 );
 
                 // The AI service chosen in the ribbon (AI_SERVICES key), remembered across
-                // sessions; Local AI until another one is chosen.
+                // sessions; the first Local AI model until another one is chosen.
                 const AI_SERVICE_STORAGE_KEY = 'welsonjs.editor.aiService';
                 const [aiServiceKey, setAiServiceKey] = React.useState(() => {
                     try {
@@ -1781,7 +1801,7 @@
                         if (saved && AI_SERVICES[saved])
                             return saved;
                     } catch (e) {}
-                    return 'llamacpp';
+                    return Object.keys(AI_SERVICES)[0];
                 });
                 const aiEditorRef = React.useRef(null);
                 const aiActionsRef = React.useRef([]);
@@ -1861,7 +1881,7 @@
                 };
 
                 // Replaces the AI actions with the ones for the chosen service, so the menu
-                // shows its name ("Local AI: Ask...", "Copilot: Ask...").
+                // shows its name ("Hy-MT2: Ask...", "Copilot: Ask...").
                 const registerAiServiceActions = (key) => {
                     const editor = aiEditorRef.current;
                     if (!editor)
@@ -1882,13 +1902,20 @@
                     registerAiServiceActions(aiServiceKey);
                 };
 
-                // Ribbon toggle: switches to the next AI service. When there are prompt
-                // messages, asks whether to keep them for the new service (every turn sends
-                // all of them) or to start over with an empty prompt.
+                // When the launcher's model list arrives, keep the chosen service if it is still
+                // offered (re-registering its actions), or switch to the first one.
+                React.useEffect(() => {
+                    const key = AI_SERVICES[aiServiceKey] ? aiServiceKey : Object.keys(AI_SERVICES)[0];
+                    if (key !== aiServiceKey)
+                        setAiServiceKey(key);
+                    registerAiServiceActions(key);
+                }, [localModels]);
+
+                // Ribbon toggle: switches to the next AI service and starts over with an empty
+                // prompt, so the new model does not continue another model's conversation.
                 const toggleAiService = () => {
                     const keys = Object.keys(AI_SERVICES);
                     const key = keys[(keys.indexOf(aiServiceKey) + 1) % keys.length];
-                    const name = AI_SERVICES[key].name;
 
                     setAiServiceKey(key);
                     try {
@@ -1896,10 +1923,7 @@
                     } catch (e) {}
                     registerAiServiceActions(key);
 
-                    const count = promptMessagesRef.current.length;
-                    if (count > 0 && !confirm(`The AI service is now ${name}.\n\n` +
-                        `Keep the current prompt (${count} message${count === 1 ? '' : 's'}) and send it to ${name}?\n\n` +
-                        `OK: keep the prompt.\nCancel: clear the prompt and start over.`)) {
+                    if (promptMessagesRef.current.length > 0) {
                         promptMessagesRef.current = [];
                         notifyPromptMessages(null);
                     }
@@ -2103,7 +2127,7 @@
 
                 return _e('div', { className: 'app' },
                     _e(RibbonMenu, {
-                        aiServiceName: AI_SERVICES[aiServiceKey].name,
+                        aiServiceName: (AI_SERVICES[aiServiceKey] || AI_SERVICES[Object.keys(AI_SERVICES)[0]]).name,
                         onAiServiceToggleClick: toggleAiService,
                         onOpenFileClick: openFile,
                         onSaveFileClick: saveFile,

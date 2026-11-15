@@ -5,8 +5,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -15,10 +13,10 @@ using System.Threading.Tasks;
 namespace WelsonJS.Launcher
 {
     /// <summary>
-    /// Local Qwen3Guard policy gate. The launcher owns the guard's llama-server process
-    /// (started on first use, on a launcher-allocated localhost port) and classifies text
-    /// as safe, controversial or unsafe. Every failure is reported as an exception so
-    /// callers can fail closed.
+    /// Local Qwen3Guard policy gate. The guard model runs in the launcher's shared
+    /// llama.cpp router (LlamaCppRouter), which loads it on first use, and classifies
+    /// text as safe, controversial or unsafe. Every failure is reported as an exception
+    /// so callers can fail closed.
     /// </summary>
     public sealed class LlmGuardService
     {
@@ -26,46 +24,33 @@ namespace WelsonJS.Launcher
         public const string Controversial = "controversial";
         public const string Unsafe = "unsafe";
 
-        // Qwen3Guard-Gen-0.6B is run with an 8K context; keep each classified chunk
-        // well inside it (CJK text can be about one token per character).
-        private const int ContextSize = 8192;
+        // The router runs models with LlamaCppContextSize (8K by default); keep each
+        // classified chunk well inside it (CJK text can be about one token per character).
         private const int ChunkChars = 4000;
-        private static readonly TimeSpan ReadyTimeout = TimeSpan.FromSeconds(60);
 
         private static readonly Regex SafetyLine = new Regex(@"^\s*Safety\s*:\s*(Safe|Unsafe|Controversial)\s*$", RegexOptions.IgnoreCase | RegexOptions.Multiline);
         private static readonly Regex CategoriesLine = new Regex(@"Categories?\s*:\s*([^\r\n]+)", RegexOptions.IgnoreCase);
 
-        private readonly HttpClient _httpClient;
-        // A separate manager keeps the guard model out of /llamacpp/list, where clients
-        // look for a generation model to send prompts to.
-        private readonly LlamaCppProcessManager _processes = new LlamaCppProcessManager();
-        private readonly SemaphoreSlim _startLock = new SemaphoreSlim(1, 1);
-        private string _processId;
-        private string _baseUrl;
+        private readonly LlamaCppRouter _router;
 
-        public LlmGuardService(HttpClient httpClient)
+        public LlmGuardService(LlamaCppRouter router)
         {
-            if (httpClient == null) throw new ArgumentNullException(nameof(httpClient));
-            _httpClient = httpClient;
+            if (router == null) throw new ArgumentNullException(nameof(router));
+            _router = router;
         }
 
         /// <summary>
-        /// The GGUF model from the LlmGuardModelPath setting (app.config, falling back to
-        /// the built-in resource). Environment variables are expanded, and a relative path
-        /// is resolved under %APPDATA%\WelsonJS, where the installer puts the model.
+        /// The router model name of the guard (LlmGuardModel setting, app.config, falling
+        /// back to the built-in resource): the installer component qwen3guard_06b.
         /// </summary>
-        public static string ModelPath
+        public static string ModelName
         {
             get
             {
-                string configured = Program.GetAppConfig("LlmGuardModelPath");
+                string configured = Program.GetAppConfig("LlmGuardModel");
                 if (string.IsNullOrWhiteSpace(configured))
-                    throw new InvalidOperationException("LlmGuardModelPath is not configured.");
-
-                string path = Environment.ExpandEnvironmentVariables(configured.Trim());
-                if (!Path.IsPathRooted(path))
-                    path = Path.Combine(Program.GetAppDataPath(), path);
-                return Path.GetFullPath(path);
+                    throw new InvalidOperationException("LlmGuardModel is not configured.");
+                return LlamaCppRouter.ValidateModelName(configured);
             }
         }
 
@@ -87,7 +72,8 @@ namespace WelsonJS.Launcher
                 };
             }
 
-            string baseUrl = await EnsureServerAsync(token);
+            string model = ModelName;
+            await _router.LoadAsync(model, token);
 
             string label = Safe;
             var categories = new List<string>();
@@ -95,7 +81,7 @@ namespace WelsonJS.Launcher
 
             foreach (string chunk in Split(text))
             {
-                string content = await ClassifyAsync(baseUrl, chunk, token);
+                string content = await ClassifyAsync(model, chunk, token);
                 string chunkLabel = ParseLabel(content);
 
                 if (Severity(chunkLabel) > Severity(label))
@@ -127,17 +113,19 @@ namespace WelsonJS.Launcher
 
         public Dictionary<string, object> Status()
         {
-            Dictionary<string, object> process = _processId == null ? null : _processes.Get(_processId);
-            var status = new Dictionary<string, object> { ["process"] = process };
+            var status = new Dictionary<string, object> { ["server"] = _router.Status() };
             try
             {
-                string modelPath = ModelPath;
-                status["modelPath"] = modelPath;
-                status["modelInstalled"] = File.Exists(modelPath);
+                string model = ModelName;
+                string file = LlamaCppRouter.FindModelFile(model);
+                status["model"] = model;
+                status["modelPath"] = file;
+                status["modelInstalled"] = file != null;
             }
             catch (Exception ex)
             {
-                // An invalid LlmGuardModelPath setting
+                // An invalid LlmGuardModel setting
+                status["model"] = null;
                 status["modelPath"] = null;
                 status["modelInstalled"] = false;
                 status["error"] = ex.Message;
@@ -145,101 +133,27 @@ namespace WelsonJS.Launcher
             return status;
         }
 
-        public void Shutdown()
+        private async Task<string> ClassifyAsync(string model, string text, CancellationToken token)
         {
-            _processes.Shutdown();
-        }
-
-        private async Task<string> EnsureServerAsync(CancellationToken token)
-        {
-            await _startLock.WaitAsync(token);
-            try
+            var request = new Dictionary<string, object>
             {
-                if (_processId != null)
-                {
-                    Dictionary<string, object> info = _processes.Get(_processId);
-                    if (info != null && true.Equals(info["running"]))
-                        return _baseUrl;
-                    _processId = null;
-                    _baseUrl = null;
-                }
-
-                string modelPath = ModelPath;
-                if (!File.Exists(modelPath))
-                    throw new FileNotFoundException("The Qwen3Guard model was not found at " + modelPath + " (install the setup component llamacpp\\qwen3guard_06b or set LlmGuardModelPath).", modelPath);
-
-                Dictionary<string, object> started = _processes.Start(modelPath, null, "127.0.0.1", 0, ContextSize, 0);
-                string id = (string)started["id"];
-                string baseUrl = "http://" + started["host"] + ":" + started["port"];
-
-                // Model loading is asynchronous; /health answers 200 once it can serve.
-                DateTime deadline = DateTime.UtcNow + ReadyTimeout;
-                while (true)
-                {
-                    token.ThrowIfCancellationRequested();
-
-                    Dictionary<string, object> info = _processes.Get(id);
-                    if (info == null || !true.Equals(info["running"]))
-                        throw new InvalidOperationException("The Qwen3Guard llama-server process exited during startup.");
-
-                    try
-                    {
-                        using (HttpResponseMessage health = await _httpClient.GetAsync(baseUrl + "/health", token))
-                        {
-                            if (health.IsSuccessStatusCode)
-                                break;
-                        }
-                    }
-                    catch (HttpRequestException)
-                    {
-                        // Not listening yet.
-                    }
-
-                    if (DateTime.UtcNow > deadline)
-                    {
-                        _processes.Stop(id);
-                        throw new TimeoutException("The Qwen3Guard llama-server did not become ready in " + ReadyTimeout.TotalSeconds + " seconds.");
-                    }
-                    await Task.Delay(500, token);
-                }
-
-                _processId = id;
-                _baseUrl = baseUrl;
-                return baseUrl;
-            }
-            finally
-            {
-                _startLock.Release();
-            }
-        }
-
-        private async Task<string> ClassifyAsync(string baseUrl, string text, CancellationToken token)
-        {
-            string body = JsonCodec.Serialize(new Dictionary<string, object>
-            {
-                ["model"] = "qwen3guard",
                 ["messages"] = new[] { new Dictionary<string, object> { ["role"] = "user", ["content"] = text } },
                 ["temperature"] = 0,
-                ["max_tokens"] = 64,
-                ["stream"] = false
-            });
+                ["max_tokens"] = 64
+            };
 
-            using (var content = new StringContent(body, Encoding.UTF8, "application/json"))
-            using (HttpResponseMessage response = await _httpClient.PostAsync(baseUrl + "/v1/chat/completions", content, token))
-            {
-                string responseText = await response.Content.ReadAsStringAsync();
-                if (!response.IsSuccessStatusCode)
-                    throw new InvalidOperationException("Qwen3Guard request failed with HTTP " + (int)response.StatusCode + ".");
+            KeyValuePair<int, string> response = await _router.ChatAsync(model, request, token);
+            if (response.Key < 200 || response.Key > 299)
+                throw new InvalidOperationException("Qwen3Guard request failed with HTTP " + response.Key + ".");
 
-                Dictionary<string, object> result = JsonCodec.DeserializeObject(responseText);
-                object[] choices = result.TryGetValue("choices", out object c) ? c as object[] : null;
-                var first = choices != null && choices.Length > 0 ? choices[0] as Dictionary<string, object> : null;
-                var message = first != null && first.TryGetValue("message", out object m) ? m as Dictionary<string, object> : null;
-                string answer = message != null && message.TryGetValue("content", out object a) ? a as string : null;
-                if (answer == null)
-                    throw new InvalidOperationException("Qwen3Guard returned an empty response.");
-                return answer;
-            }
+            Dictionary<string, object> result = JsonCodec.DeserializeObject(response.Value);
+            object[] choices = result.TryGetValue("choices", out object c) ? c as object[] : null;
+            var first = choices != null && choices.Length > 0 ? choices[0] as Dictionary<string, object> : null;
+            var message = first != null && first.TryGetValue("message", out object m) ? m as Dictionary<string, object> : null;
+            string answer = message != null && message.TryGetValue("content", out object a) ? a as string : null;
+            if (answer == null)
+                throw new InvalidOperationException("Qwen3Guard returned an empty response.");
+            return answer;
         }
 
         private static string ParseLabel(string content)

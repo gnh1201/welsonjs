@@ -8,7 +8,7 @@
 
 이 빌드는 포크 위에 Tencent의 [AngelSlim](https://github.com/Tencent/AngelSlim) 양자화 기술인 STQ1_0 삼진(ternary) 타입과 커널을 추가합니다([ggml-org/llama.cpp#22836](https://github.com/ggml-org/llama.cpp/pull/22836), 업스트림에 병합되지 않음. [0001-stq1_0.patch](#0001-stq1_0patch) 참고). 그래서 [tencent/Hy-MT2-1.8B-1.25Bit-GGUF](https://huggingface.co/tencent/Hy-MT2-1.8B-1.25Bit-GGUF)처럼 AngelSlim으로 만든 1.25비트 모델을 불러옵니다. 포크도 업스트림 llama.cpp도 이런 모델을 불러오지 못합니다.
 
-런처는 `llama-server`를 OpenAI 호환 HTTP API(`/llamacpp/chat`, `lib/llamacpp.js`)로만 사용합니다.
+런처는 `llama-server`를 `%APPDATA%\WelsonJS`에 설치된 모델로 라우터 모드에서 실행하고, HTTP API로만 사용합니다. 요청은 모델 이름을 명시합니다([docs/llamacpp-launcher-api.md](../../docs/llamacpp-launcher-api.md)).
 
 ## 파일
 

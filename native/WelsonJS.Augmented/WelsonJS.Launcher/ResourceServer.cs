@@ -28,8 +28,8 @@ namespace WelsonJS.Launcher
         private string _resourceName;
         private readonly List<IApiEndpoint> _apis = new List<IApiEndpoint>();
         private readonly SemaphoreSlim _requestSlots = new SemaphoreSlim(32, 32);
-        private readonly ApiEndpoints.LlamaCpp _llamaCppEndpoint;
-        private readonly ApiEndpoints.LlmGuard _llmGuardEndpoint;
+        // One llama-server in router mode, shared by the llama.cpp API and the LLM guard.
+        private readonly LlamaCppRouter _llamaCppRouter = new LlamaCppRouter();
         private readonly ApiEndpoints.JsrtInstance _jsrtInstanceEndpoint;
         private readonly ApiEndpoints.Terminal _terminalEndpoint;
         private readonly TerminalSessionManager _terminalSessions = new TerminalSessionManager();
@@ -77,10 +77,8 @@ namespace WelsonJS.Launcher
             _apis.Add(new ApiEndpoints.Tfa(this, _httpClient, _logger));
             _apis.Add(new ApiEndpoints.Whois(this, _httpClient, _logger));
             _apis.Add(new ApiEndpoints.ImageColorPicker(this, _httpClient, _logger));
-            _llamaCppEndpoint = new ApiEndpoints.LlamaCpp(this, _httpClient, _logger);
-            _apis.Add(_llamaCppEndpoint);
-            _llmGuardEndpoint = new ApiEndpoints.LlmGuard(this, _httpClient, _logger);
-            _apis.Add(_llmGuardEndpoint);
+            _apis.Add(new ApiEndpoints.LlamaCpp(this, _httpClient, _logger));
+            _apis.Add(new ApiEndpoints.LlmGuard(this, _httpClient, _logger));
             _jsrtInstanceEndpoint = new ApiEndpoints.JsrtInstance(this, _httpClient, _logger);
             _apis.Add(_jsrtInstanceEndpoint);
             _terminalEndpoint = new ApiEndpoints.Terminal(this, _httpClient, _logger);
@@ -88,6 +86,12 @@ namespace WelsonJS.Launcher
 
             // Register the prefix
             _listener.Prefixes.Add(prefix);
+        }
+
+        /// <summary>The launcher's llama.cpp router (see LlamaCppRouter).</summary>
+        public LlamaCppRouter LlamaCppRouter
+        {
+            get { return _llamaCppRouter; }
         }
 
         public TerminalSessionManager TerminalSessions
@@ -147,13 +151,13 @@ namespace WelsonJS.Launcher
         }
 
         /// <summary>
-        /// Stops the processes the endpoints started (llama.cpp servers, including the
-        /// LLM guard, JSRT instances and terminal sessions). Called when the launcher exits.
+        /// Stops the processes the endpoints started (the llama.cpp router with its model
+        /// instances, including the LLM guard, JSRT instances and terminal sessions).
+        /// Called when the launcher exits.
         /// </summary>
         public void ShutdownChildProcesses()
         {
-            _llamaCppEndpoint.Shutdown();
-            _llmGuardEndpoint.Shutdown();
+            _llamaCppRouter.Shutdown();
             _jsrtInstanceEndpoint.Shutdown();
             _terminalEndpoint.Shutdown();
         }

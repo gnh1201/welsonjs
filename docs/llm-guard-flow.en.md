@@ -40,9 +40,9 @@ WelsonJS.Launcher runs the Qwen3Guard-Gen-0.6B GGUF model with llama.cpp and cla
 - API: `POST http://localhost:3000/llm-guard/inspect` with body `{"text": "..."}`
 - Response: `{"label": "safe|controversial|unsafe", "categories": [...], "raw": "..."}`
 - Status: `GET /llm-guard/status`
-- Model file: set by the launcher setting `LlmGuardModelPath`. The value in `WelsonJS.Launcher.exe.config` (`app.config`) wins; without it the built-in resource default is used. The default is `qwen3guard_06b\Qwen3Guard-Gen-0.6B.Q4_K_M.gguf`; relative paths are resolved under `%APPDATA%\WelsonJS`, and environment variables such as `%APPDATA%` are expanded. The installer names the model file after the URL in `data/DownloadUrls.psd1`, so change this setting when that URL changes. `GET /llm-guard/status` reports the resolved path and whether the file exists.
-- Executable: `%APPDATA%\WelsonJS\llamacpp\llama-server.exe`
-- Startup: on the first request the launcher starts the guard process on a free localhost port and waits up to 60 seconds for `/health`. The guard process is not listed by `/llamacpp/list` and stops when the launcher exits.
+- Model: set by the launcher setting `LlmGuardModel`, the name of the model in the launcher's llama.cpp router. The value in `WelsonJS.Launcher.exe.config` (`app.config`) wins; without it the built-in resource default `qwen3guard_06b` is used. It is the installer component: the router uses the `.gguf` file in `%APPDATA%\WelsonJS\qwen3guard_06b`. `GET /llm-guard/status` reports the model, its file, and whether it is installed.
+- Executable: `%APPDATA%\WelsonJS\llamacpp\llama-server.exe`, run once as a router for all models (see [llamacpp-launcher-api.md](llamacpp-launcher-api.md)).
+- Startup: on the first request the launcher starts the router if needed (on a free localhost port, waiting up to 60 seconds for `/health`) and loads the guard model (up to 3 minutes). `/llamacpp/models` does not list the guard model. The router stops when the launcher exits.
 - Long text: split into 4,000-character chunks that are all classified; the most severe label wins, so nothing beyond the model's context window goes unchecked.
 - Access: local callers only. Browser requests from another origin get 403.
 
@@ -81,7 +81,7 @@ Remote providers registered in the common engine include OpenAI, Anthropic, Groq
 
 In `LanguageInferenceEngine`, unsafe data is routed to the `llamacpp` provider instead of a remote provider.
 
-- The launcher allocates the local server port and returns it in the start response. The client uses the returned `host` and `port` for `/v1/chat/completions`.
+- The request goes to the launcher's llama.cpp router (`lib/llamacpp.js` `getBaseUrl()`), with the model named in `"model"`; the router loads it on demand.
 - Default fallback model: `hy_mt2_1_8b_1_25bit`
 
 ```mermaid
@@ -96,7 +96,7 @@ sequenceDiagram
     Local-->>Engine: local response
 ```
 
-Qwen3Guard is the classification model. The llama.cpp server managed through `/llamacpp` is the local response-generation model. The two processes are managed separately.
+Qwen3Guard is the classification model, and the generation model writes the local response. Both run in the launcher's one llama.cpp router as separate model instances; requests select them by name.
 
 ### 5. MCP tool results
 
@@ -145,7 +145,7 @@ No remote LLM call is made and no MCP result is returned in any of the following
 
 - WelsonJS.Launcher is not running
 - The llama.cpp executable or the Qwen3Guard GGUF model is missing
-- The guard process does not become ready (60 seconds) or exits during startup
+- The router does not become ready (60 seconds), or the guard model is not installed or fails to load
 - The guard response is empty or no `Safety` label can be parsed
 - The categories include `Jailbreak` (any label)
 - `Controversial` data has no anonymizer
@@ -178,7 +178,7 @@ qwen3guard_06b
 
 Classification runs in WelsonJS.Launcher, so the launcher must be running. If it does not listen on the default `http://localhost:3000`, change `DEFAULTS.launcherUrl` in `lib/llm-guard.js` or pass `LanguageInferenceEngine.setGuardOptions({"launcherUrl": "..."})`.
 
-Unsafe requests additionally require a launcher-managed local generation model (`/llamacpp/start`).
+Unsafe requests additionally require the local generation model (the `localFallbackModel`, by default `hy_mt2_1_8b_1_25bit`) to be installed; the router loads it on demand.
 
 ## Security scope
 

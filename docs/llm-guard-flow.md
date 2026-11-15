@@ -40,9 +40,9 @@ WelsonJS.Launcher가 Qwen3Guard-Gen-0.6B GGUF 모델을 llama.cpp 서버로 실�
 - API: `POST http://localhost:3000/llm-guard/inspect`, 본문 `{"text": "..."}`
 - 응답: `{"label": "safe|controversial|unsafe", "categories": [...], "raw": "..."}`
 - 상태 확인: `GET /llm-guard/status`
-- 모델 파일: 런처 설정 `LlmGuardModelPath`로 지정한다. `WelsonJS.Launcher.exe.config`(`app.config`)의 값이 우선이고, 없으면 내장 리소스의 기본값을 쓴다. 기본값은 `qwen3guard_06b\Qwen3Guard-Gen-0.6B.Q4_K_M.gguf`이며 상대 경로는 `%APPDATA%\WelsonJS` 기준으로, 환경 변수(`%APPDATA%` 등)는 펼쳐서 해석한다. 설치 프로그램은 `data/DownloadUrls.psd1`의 URL 파일 이름으로 모델을 저장하므로, URL을 바꾸면 이 값도 맞춰야 한다. 실제 경로와 설치 여부는 `GET /llm-guard/status`로 확인할 수 있다.
-- 실행 파일: `%APPDATA%\WelsonJS\llamacpp\llama-server.exe`
-- 기동: 첫 판정 요청 때 런처가 localhost의 빈 포트로 guard 프로세스를 시작하고 `/health`가 준비될 때까지(최대 60초) 기다린다. guard 프로세스는 `/llamacpp/list`에 나타나지 않으며, 런처가 종료되면 함께 종료된다.
+- 모델: 런처 설정 `LlmGuardModel`로 지정한다. 런처의 llama.cpp 라우터에서 쓰는 모델 이름이다. `WelsonJS.Launcher.exe.config`(`app.config`)의 값이 우선이고, 없으면 내장 리소스의 기본값 `qwen3guard_06b`를 쓴다. 이 이름은 설치 구성 요소이며, 라우터는 `%APPDATA%\WelsonJS\qwen3guard_06b`의 `.gguf` 파일을 쓴다. 모델, 파일, 설치 여부는 `GET /llm-guard/status`로 확인할 수 있다.
+- 실행 파일: `%APPDATA%\WelsonJS\llamacpp\llama-server.exe`. 모든 모델이 쓰는 라우터 하나로 실행된다([llamacpp-launcher-api.md](llamacpp-launcher-api.md) 참고).
+- 기동: 첫 판정 요청 때 런처가 필요하면 라우터를 시작하고(localhost의 빈 포트, `/health`까지 최대 60초) guard 모델을 불러온다(최대 3분). guard 모델은 `/llamacpp/models`에 나타나지 않는다. 라우터는 런처가 종료되면 함께 종료된다.
 - 긴 텍스트: 4,000자 단위로 나누어 모두 판정하고, 가장 심각한 등급을 결과로 쓴다. 따라서 모델의 컨텍스트를 넘는 부분도 검사에서 빠지지 않는다.
 - 접근 제한: 로컬 요청만 허용한다. 다른 출처(Origin)의 브라우저 요청은 403으로 거부한다.
 
@@ -81,7 +81,7 @@ sequenceDiagram
 
 `LanguageInferenceEngine`에서 Unsafe 데이터는 외부 provider로 전달하지 않고 `llamacpp` provider로 라우팅한다.
 
-- 런처가 사용 가능한 포트를 할당하고 응답한다. 클라이언트는 응답받은 `host`와 `port`로 `/v1/chat/completions`를 호출한다.
+- 요청은 런처의 llama.cpp 라우터(`lib/llamacpp.js`의 `getBaseUrl()`)로 가며, `"model"`에 모델 이름을 적는다. 라우터는 필요할 때 그 모델을 불러온다.
 - 기본 fallback 모델: `hy_mt2_1_8b_1_25bit`
 
 ```mermaid
@@ -96,7 +96,7 @@ sequenceDiagram
     Local-->>Engine: local response
 ```
 
-Qwen3Guard는 판정 모델이고, `/llamacpp`로 관리되는 llama.cpp는 실제 응답을 생성하는 로컬 모델이다. 두 프로세스는 따로 관리된다.
+Qwen3Guard는 판정 모델이고, 생성 모델은 실제 응답을 만드는 로컬 모델이다. 둘 다 런처의 llama.cpp 라우터 하나에서 별도 모델 인스턴스로 실행되며, 요청은 이름으로 모델을 고른다.
 
 ### 5. MCP 도구 결과
 
@@ -144,7 +144,7 @@ GUARD.setAnonymizer(function(text, decision) {
 
 - WelsonJS.Launcher가 실행 중이지 않음
 - llama.cpp 실행 파일 또는 Qwen3Guard GGUF 모델 파일이 없음
-- guard 프로세스가 준비되지 않음(60초 초과) 또는 시작 중 종료됨
+- 라우터가 준비되지 않음(60초 초과), 또는 guard 모델이 설치되지 않았거나 불러오지 못함
 - guard 응답이 비어 있거나 `Safety` 등급을 파싱할 수 없음
 - 카테고리에 `Jailbreak`가 있음(등급 무관)
 - `Controversial` 데이터에 비식별화기가 없음
@@ -177,7 +177,7 @@ qwen3guard_06b
 
 판정은 WelsonJS.Launcher가 수행하므로 런처가 실행 중이어야 한다. 런처 주소가 기본값(`http://localhost:3000`)과 다르면 `lib/llm-guard.js`의 `DEFAULTS.launcherUrl`을 바꾸거나 `LanguageInferenceEngine.setGuardOptions({"launcherUrl": "..."})`로 지정한다.
 
-Unsafe 요청을 로컬에서 처리하려면 런처를 통해 로컬 생성 모델(`/llamacpp/start`)도 실행해야 한다.
+Unsafe 요청을 로컬에서 처리하려면 로컬 생성 모델(`localFallbackModel`, 기본값 `hy_mt2_1_8b_1_25bit`)도 설치되어 있어야 한다. 라우터가 필요할 때 불러온다.
 
 ## 보안 범위
 

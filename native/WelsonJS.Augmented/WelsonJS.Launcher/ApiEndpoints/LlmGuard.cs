@@ -18,7 +18,7 @@ namespace WelsonJS.Launcher.ApiEndpoints
     /// Local LLM guard (Qwen3Guard) used before data leaves the machine for an LLM.
     ///
     ///   POST llm-guard/inspect   {"text": "..."} -> {"label": "safe|controversial|unsafe", "categories": [...], "raw": "..."}
-    ///   GET  llm-guard/status    model installation and guard process state
+    ///   GET  llm-guard/status    guard model installation and the llama.cpp router state
     ///
     /// Any failure answers 503 with {"error": "..."}; clients must treat that as blocked.
     /// </summary>
@@ -33,7 +33,7 @@ namespace WelsonJS.Launcher.ApiEndpoints
 
         public LlmGuard(ResourceServer server, HttpClient httpClient, ILogger logger)
         {
-            _guard = new LlmGuardService(httpClient);
+            _guard = new LlmGuardService(server.LlamaCppRouter);
             _logger = logger;
         }
 
@@ -47,7 +47,7 @@ namespace WelsonJS.Launcher.ApiEndpoints
 
         public async Task HandleAsync(HttpListenerContext context, string path)
         {
-            // Starting the guard runs a local process, so only local callers may use it.
+            // The guard may start the llama.cpp router, so only local callers may use it.
             if (!ResourceServer.IsTrustedLocalRequest(context))
             {
                 await Write(context, new { error = "The LLM guard is only available to local callers." }, 403);
@@ -91,11 +91,6 @@ namespace WelsonJS.Launcher.ApiEndpoints
                 _logger.Error("[LlmGuard] Inspection failed", ex);
                 await Write(context, new { error = "LLM guard unavailable: " + ex.Message }, 503);
             }
-        }
-
-        public void Shutdown()
-        {
-            _guard.Shutdown();
         }
 
         private static async Task<string> ReadBody(HttpListenerContext context)

@@ -28,7 +28,7 @@ Changes on the `dev` branch since 0.2.7.62-rc1.
   - Every executable and DLL of both architectures is signed, each listed by name in `.artifact-configuration.xml` (no wildcards); the build fails when a binary lacks the version information or is not listed for signing.
   - `llama-quantize` can produce I2_S files: the fork's quantizer wrote a layout its kernels do not read, and the type was missing from the tool. STQ1_0 quantization is documented for Sherry-trained checkpoints.
   - The README explains quantizing with `llama-quantize`, with examples: select the type by name (`I2_S`, `STQ1_0`), as the file type numbers differ between builds.
-- The editor's AI service toggle switches between Local AI (llama.cpp, the default) and web chat services: Copilot, ChatGPT, and more. The context menu shows Send Selection, Explain Selection, and Ask... for the chosen service, and the system language is sent with prompts.
+- The editor's AI service toggle switches between the Local AI models (llama.cpp: Hy-MT2, the default, and FrogNano, from the launcher's `LlamaCppModels` setting) and web chat services: Copilot, ChatGPT, and more. The context menu shows Send Selection, Explain Selection, and Ask... for the chosen service, and the system language is sent with prompts. Switching the service clears the prompt.
 - UberLLM provider in the language inference engine ([#543]).
 - Launcher-managed LLM guard (Qwen3Guard) for prompts.
 
@@ -37,6 +37,10 @@ Changes on the `dev` branch since 0.2.7.62-rc1.
 - The default Hy-MT2 model is the 1.8B 1.25-bit GGUF (462 MB) instead of Q4_K_M (about 1.1 GB). The component is now `hy_mt2_1_8b_1_25bit` (related to [#542]).
 - The installer no longer downloads the official llama.cpp package; it uses the WelsonJS build from the artifacts package. Qwen3Guard is grouped under the llama.cpp components.
 - The launcher editor's AI tools use the local llama.cpp server; the launcher's Copilot menu and `CopilotUrl` setting are removed.
+- llama.cpp runs as one `llama-server` in router mode (model hot swap), shared by the editor's Local AI, the LLM guard, and `lib/llamacpp.js`. Models are the folders in `%APPDATA%\WelsonJS` that hold a `.gguf` file, named after the installer component, and every request names its model. The least recently used model is unloaded beyond `LlamaCppModelsMax` (default 2).
+  - Launcher API: `/llamacpp/status`, `models`, `start`, `stop`, `load`, `unload`, and `chat`, which requires `model`; for local callers only. See `docs/llamacpp-launcher-api.md`.
+  - Settings: `LlamaCppModels` (a comma-separated list of the editor's models) and `LlmGuardModel` (a model name) replace `LlamaCppModelPath` and `LlmGuardModelPath`; new `LlamaCppModelsMax` and `LlamaCppContextSize`.
+  - `lib/llamacpp.js` selects models by name (`setModel`, `loadModel`, `unloadModel`, `listModels`, `chat`); the model path, port, and `openBrowser` options are removed.
 - Vendor JavaScript files are restored on demand (`restoreAppAssets.ps1`).
 - `app.hta` is opened with `welsonjs-hta.exe` in the bootstrap; YAWW updated.
 
