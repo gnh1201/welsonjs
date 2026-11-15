@@ -16,7 +16,7 @@ Notes on the tags:
 
 ## [Unreleased]
 
-## [0.2.7.62] - 2026-11-15
+## [0.2.7.62] - 2026-11-16
 
 Changes since 0.2.7.62-rc1, a pre-release without an installer. When upgrading from 0.2.7.61, see [0.2.7.62-rc1](#0262-rc1---2026-11-01) as well.
 
