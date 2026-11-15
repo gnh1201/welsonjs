@@ -157,15 +157,6 @@
   <data name="DnsServerAddress" xml:space="preserve">
     <value>1.1.1.1</value>
   </data>
-  <data name="WhoisClientAddress" xml:space="preserve">
-    <value>49.8.14.101</value>
-  </data>
-  <data name="WhoisReferrerUrl" xml:space="preserve">
-    <value>https://whois.kr/kor/whois/whois.jsp</value>
-  </data>
-  <data name="WhoisServerUrl" xml:space="preserve">
-    <value>https://whois.kr/kor/whois.jsc</value>
-  </data>
   <data name="BlobStoragePrefix" xml:space="preserve">
     <value>https://catswords.blob.core.windows.net/welsonjs/</value>
   </data>
@@ -177,9 +168,7 @@
   </data>
   <data name="IpQueryApiKey" xml:space="preserve">
     <value />
-  </data>
-  <data name="IpQueryApiPrefix" xml:space="preserve">
-    <value>https://api.criminalip.io/v1/</value>
+    <comment>API key of Criminal IP (criminalip in the blob config)</comment>
   </data>
   <data name="DateTimeFormat" xml:space="preserve">
     <value>yyyy-MM-dd HH:mm:ss</value>
@@ -198,9 +187,7 @@
   </data>
   <data name="IpQueryApiKey2" xml:space="preserve">
     <value />
-  </data>
-  <data name="IpQueryApiPrefix2" xml:space="preserve">
-    <value>https://api.abuseipdb.com/api/v2/</value>
+    <comment>API key of AbuseIPDB (abuseipdb in the blob config)</comment>
   </data>
   <data name="ResourceServerAllowOrigins" xml:space="preserve">
     <value />

@@ -65,4 +65,19 @@
             </prefixUrls>
         </route>
     </routes>
+    <services>
+        <whois>
+            <serverUrl>https://whois.kr/kor/whois.jsc</serverUrl>
+            <referrerUrl>https://whois.kr/kor/whois/whois.jsp</referrerUrl>
+            <clientAddress>49.8.14.101</clientAddress>
+        </whois>
+        <ipQuery>
+            <provider name="criminalip">
+                <prefixUrl>https://api.criminalip.io/v1/</prefixUrl>
+            </provider>
+            <provider name="abuseipdb">
+                <prefixUrl>https://api.abuseipdb.com/api/v2/</prefixUrl>
+            </provider>
+        </ipQuery>
+    </services>
 </blobConfig>

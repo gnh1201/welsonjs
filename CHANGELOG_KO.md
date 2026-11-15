@@ -46,6 +46,7 @@
   - `lib/llamacpp.js`는 모델을 이름으로 고릅니다(`setModel`, `loadModel`, `unloadModel`, `listModels`, `chat`). 모델 경로, 포트, `openBrowser` 옵션은 제거했습니다.
 - 런처의 자식 프로세스(llama.cpp 라우터와 모델 인스턴스, 터미널 세션, JSRT 인스턴스)를 Windows Job Object에 넣어, 런처가 강제 종료되거나 디버거에서 중지되거나 비정상 종료돼도 함께 종료되게 했습니다.
 - 런처가 브라우저를 시작할 때 고정된 9222 대신 비어 있는 원격 디버깅 포트를 고르고(`ChromiumDevToolsPrefix` 설정 제거), 브라우저는 127.0.0.1에서만 받게 했습니다. 포트는 브라우저가 응답하는 동안 런처 메모리에만 유지하며, 이전 런처 실행에서 남은 브라우저는 쓰지 않습니다(그 창들을 닫아야 함). llama.cpp 라우터와 브라우저의 포트는 하나의 공통 구현(`LocalPorts`)에서 다룹니다.
+- 런처의 WHOIS와 IP 조회 엔드포인트가 호출하는 외부 서비스 주소를 로컬 설정 대신 blob 설정(`blob.config.xml`의 `services`)에서 가져옵니다(`WhoisServerUrl`, `WhoisReferrerUrl`, `WhoisClientAddress`, `IpQueryApiPrefix`, `IpQueryApiPrefix2` 제거). IP 조회 API 키는 로컬 설정에 남습니다. blob 설정을 받기 전에 온 요청은 로드를 기다리고, 로드에 실패하면 다음 요청 때 다시 받습니다. WHOIS 엔드포인트가 공유 HTTP 클라이언트에 Referrer를 설정하던 문제도 고쳤습니다.
 - 벤더 JavaScript 파일을 필요할 때 복원합니다(`restoreAppAssets.ps1`).
 - 부트스트랩에서 `app.hta`를 `welsonjs-hta.exe`로 엽니다. YAWW를 업데이트했습니다.
 

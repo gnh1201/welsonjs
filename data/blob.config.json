@@ -70,5 +70,24 @@
             ],
             "stripPrefix": true
         }
-    ]
+    ],
+    "services": {
+        "whois": {
+            "serverUrl": "https://whois.kr/kor/whois.jsc",
+            "referrerUrl": "https://whois.kr/kor/whois/whois.jsp",
+            "clientAddress": "49.8.14.101"
+        },
+        "ipQuery": {
+            "providers": [
+                {
+                    "name": "criminalip",
+                    "prefixUrl": "https://api.criminalip.io/v1/"
+                },
+                {
+                    "name": "abuseipdb",
+                    "prefixUrl": "https://api.abuseipdb.com/api/v2/"
+                }
+            ]
+        }
+    }
 }

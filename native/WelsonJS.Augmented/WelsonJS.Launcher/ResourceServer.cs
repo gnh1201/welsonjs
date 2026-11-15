@@ -37,6 +37,7 @@ namespace WelsonJS.Launcher
         private readonly TerminalSessionManager _terminalSessions = new TerminalSessionManager();
         private readonly object _stateLock = new object();
         private volatile BlobConfig _blobConfig; // replaced by FetchBlobConfig on a background thread
+        private Task _blobConfigFetch;           // the running or last fetch (guarded by _stateLock)
         private readonly ILogger _logger;
 
         private static readonly HttpClient _httpClient = new HttpClient();
@@ -63,12 +64,8 @@ namespace WelsonJS.Launcher
             _listener = new HttpListener();
             _resourceName = resourceName;
 
-            // Fetch a blob config from Internet (safe fire-and-forget with logging)
-            _ = FetchBlobConfig().ContinueWith(t =>
-            {
-                if (t.IsFaulted)
-                    _logger?.Error($"FetchBlobConfig failed: {t.Exception}");
-            }, TaskScheduler.Default);
+            // Fetch a blob config from Internet (in the background; GetBlobConfigAsync waits for it)
+            _blobConfigFetch = FetchBlobConfig();
 
             // Shared by the llama.cpp and OpenAI-compatible endpoints
             _llamaCppChat = new LlamaCppChat(_llamaCppRouter, _logger);
@@ -102,6 +99,27 @@ namespace WelsonJS.Launcher
         }
 
         /// <summary>Chat completions with the llama.cpp router (see LlamaCppChat).</summary>
+        /// <summary>
+        /// The blob config (BlobConfigUrl): the blob routes and the third-party service
+        /// settings. Waits for the fetch started with the server; when it failed, fetches it
+        /// again. Null when it cannot be fetched.
+        /// </summary>
+        public async Task<BlobConfig> GetBlobConfigAsync()
+        {
+            BlobConfig config = _blobConfig;
+            if (config != null) return config;
+
+            Task fetch;
+            lock (_stateLock)
+            {
+                if (_blobConfig == null && _blobConfigFetch != null && _blobConfigFetch.IsCompleted)
+                    _blobConfigFetch = FetchBlobConfig();
+                fetch = _blobConfigFetch;
+            }
+            if (fetch != null) await fetch.ConfigureAwait(false);
+            return _blobConfig;
+        }
+
         public LlamaCppChat LlamaCppChat
         {
             get { return _llamaCppChat; }
@@ -859,6 +877,11 @@ namespace WelsonJS.Launcher
         [XmlArrayItem("route")]
         public List<BlobRoute> Routes { get; set; } = new List<BlobRoute>();
 
+        // The addresses of the third-party services the launcher's endpoints call (API keys
+        // stay in the local settings).
+        [XmlElement("services")]
+        public BlobServices Services { get; set; }
+
         public void Compile()
         {
             foreach (var route in Routes)
@@ -895,6 +918,37 @@ namespace WelsonJS.Launcher
 
         [XmlIgnore]
         public List<RegexCondition> RegexConditions { get; set; }
+    }
+
+    public class BlobServices
+    {
+        [XmlElement("whois")]
+        public WhoisService Whois { get; set; }
+
+        [XmlArray("ipQuery")]
+        [XmlArrayItem("provider")]
+        public List<IpQueryProvider> IpQueryProviders { get; set; } = new List<IpQueryProvider>();
+    }
+
+    public class WhoisService
+    {
+        [XmlElement("serverUrl")]
+        public string ServerUrl { get; set; }
+
+        [XmlElement("referrerUrl")]
+        public string ReferrerUrl { get; set; }
+
+        [XmlElement("clientAddress")]
+        public string ClientAddress { get; set; }
+    }
+
+    public class IpQueryProvider
+    {
+        [XmlAttribute("name")]
+        public string Name { get; set; }
+
+        [XmlElement("prefixUrl")]
+        public string PrefixUrl { get; set; }
     }
 
     public class RegexCondition

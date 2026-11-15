@@ -314,24 +314,8 @@ namespace WelsonJS.Launcher.Properties {
                 return ResourceManager.GetString("IpQueryApiKey2", resourceCulture);
             }
         }
-        
-        /// <summary>
-        ///   https://api.criminalip.io/v1/과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string IpQueryApiPrefix {
-            get {
-                return ResourceManager.GetString("IpQueryApiPrefix", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   https://api.abuseipdb.com/api/v2/과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string IpQueryApiPrefix2 {
-            get {
-                return ResourceManager.GetString("IpQueryApiPrefix2", resourceCulture);
-            }
-        }
+
+
 
         /// <summary>
         ///   qwen3guard_06b과(와) 유사한 지역화된 문자열을 찾습니다.
@@ -429,33 +413,6 @@ namespace WelsonJS.Launcher.Properties {
         internal static string ResourceServerPrefix {
             get {
                 return ResourceManager.GetString("ResourceServerPrefix", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   49.8.14.101과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string WhoisClientAddress {
-            get {
-                return ResourceManager.GetString("WhoisClientAddress", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   https://whois.kr/kor/whois/whois.jsp과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string WhoisReferrerUrl {
-            get {
-                return ResourceManager.GetString("WhoisReferrerUrl", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   https://whois.kr/kor/whois.jsc과(와) 유사한 지역화된 문자열을 찾습니다.
-        /// </summary>
-        internal static string WhoisServerUrl {
-            get {
-                return ResourceManager.GetString("WhoisServerUrl", resourceCulture);
             }
         }
     }
