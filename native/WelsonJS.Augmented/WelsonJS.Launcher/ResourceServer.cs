@@ -30,6 +30,8 @@ namespace WelsonJS.Launcher
         private readonly SemaphoreSlim _requestSlots = new SemaphoreSlim(32, 32);
         // One llama-server in router mode, shared by the llama.cpp API and the LLM guard.
         private readonly LlamaCppRouter _llamaCppRouter = new LlamaCppRouter();
+        private readonly LlamaCppChat _llamaCppChat;
+        private readonly WebChatRunner _webChatRunner;
         private readonly ApiEndpoints.JsrtInstance _jsrtInstanceEndpoint;
         private readonly ApiEndpoints.Terminal _terminalEndpoint;
         private readonly TerminalSessionManager _terminalSessions = new TerminalSessionManager();
@@ -68,6 +70,10 @@ namespace WelsonJS.Launcher
                     _logger?.Error($"FetchBlobConfig failed: {t.Exception}");
             }, TaskScheduler.Default);
 
+            // Shared by the llama.cpp and OpenAI-compatible endpoints
+            _llamaCppChat = new LlamaCppChat(_llamaCppRouter, _logger);
+            _webChatRunner = new WebChatRunner(_logger);
+
             // Add API endpoints
             _apis.Add(new ApiEndpoints.Completion(this, _httpClient, _logger));
             _apis.Add(new ApiEndpoints.Settings(this, _httpClient, _logger));
@@ -79,6 +85,7 @@ namespace WelsonJS.Launcher
             _apis.Add(new ApiEndpoints.ImageColorPicker(this, _httpClient, _logger));
             _apis.Add(new ApiEndpoints.LlamaCpp(this, _httpClient, _logger));
             _apis.Add(new ApiEndpoints.LlmGuard(this, _httpClient, _logger));
+            _apis.Add(new ApiEndpoints.OpenAiCompatible(this, _httpClient, _logger));
             _jsrtInstanceEndpoint = new ApiEndpoints.JsrtInstance(this, _httpClient, _logger);
             _apis.Add(_jsrtInstanceEndpoint);
             _terminalEndpoint = new ApiEndpoints.Terminal(this, _httpClient, _logger);
@@ -92,6 +99,18 @@ namespace WelsonJS.Launcher
         public LlamaCppRouter LlamaCppRouter
         {
             get { return _llamaCppRouter; }
+        }
+
+        /// <summary>Chat completions with the llama.cpp router (see LlamaCppChat).</summary>
+        public LlamaCppChat LlamaCppChat
+        {
+            get { return _llamaCppChat; }
+        }
+
+        /// <summary>The web chat services in the launcher's browser (see WebChatRunner).</summary>
+        public WebChatRunner WebChatRunner
+        {
+            get { return _webChatRunner; }
         }
 
         public TerminalSessionManager TerminalSessions
@@ -232,6 +251,13 @@ namespace WelsonJS.Launcher
                 return;
             }
 
+            // Serve the web chat services (webchat.js), which the editor loads
+            if ("webchat.js".Equals(path, StringComparison.OrdinalIgnoreCase))
+            {
+                await ServeResource(context, GetResource("webchat.js"), "text/javascript; charset=utf-8");
+                return;
+            }
+
             // Serve the pages that the editor opens in separate windows
             foreach (string page in new[] { "terminal.html", "prompt.html" })
             {
@@ -251,7 +277,9 @@ namespace WelsonJS.Launcher
             {
                 if (api.CanHandle(context, path))
                 {
-                    if (!IsTrustedLocalRequest(context))
+                    // Other local software may use the endpoints marked IApiKeyEndpoint with the
+                    // launcher's API key (ResourceServerApiKey).
+                    if (!IsTrustedLocalRequest(context) && !(api is IApiKeyEndpoint && HasValidApiKey(context)))
                     {
                         _logger?.Warn($"Rejected an untrusted API request: {context.Request.HttpMethod} /{path} from {context.Request.RemoteEndPoint}, Origin: {context.Request.Headers["Origin"] ?? "(none)"}, Sec-Fetch-Site: {context.Request.Headers["Sec-Fetch-Site"] ?? "(none)"}");
                         await ServeResource(context, "{\"error\":\"This API is only available to the launcher and local scripts.\"}", "application/json", 403);
@@ -703,6 +731,40 @@ namespace WelsonJS.Launcher
         /// </list>
         /// Non-browser clients such as WSH scripts (MSXML) send neither header.
         /// </summary>
+        /// <summary>
+        /// True when the request comes from this machine (loopback address and host) with
+        /// "Authorization: Bearer <ResourceServerApiKey>", the launcher's API key. Only the
+        /// endpoints marked IApiKeyEndpoint accept it. An empty key, or one shorter than 16
+        /// characters, allows nothing. A web page cannot send it without knowing the key,
+        /// and a cross-origin request with that header needs a CORS preflight, which the
+        /// launcher answers only for ResourceServerAllowOrigins.
+        /// </summary>
+        public static bool HasValidApiKey(HttpListenerContext context)
+        {
+            string key = Program.GetAppConfig("ResourceServerApiKey");
+            if (string.IsNullOrEmpty(key) || key.Length < MinApiKeyLength) return false;
+
+            HttpListenerRequest request = context?.Request;
+            if (request?.Url == null || !request.Url.IsLoopback) return false;
+            if (request.RemoteEndPoint == null || !IPAddress.IsLoopback(request.RemoteEndPoint.Address)) return false;
+
+            const string scheme = "Bearer ";
+            string header = request.Headers["Authorization"];
+            if (header == null || !header.StartsWith(scheme, StringComparison.OrdinalIgnoreCase)) return false;
+            return FixedTimeEquals(header.Substring(scheme.Length).Trim(), key);
+        }
+
+        private const int MinApiKeyLength = 16;
+
+        private static bool FixedTimeEquals(string a, string b)
+        {
+            byte[] x = Encoding.UTF8.GetBytes(a), y = Encoding.UTF8.GetBytes(b);
+            int diff = x.Length ^ y.Length;
+            for (int i = 0; i < Math.Max(x.Length, y.Length); i++)
+                diff |= (i < x.Length ? x[i] : 0) ^ (i < y.Length ? y[i] : 0);
+            return diff == 0;
+        }
+
         public static bool IsTrustedLocalRequest(HttpListenerContext context)
         {
             HttpListenerRequest request = context?.Request;

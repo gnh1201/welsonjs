@@ -23,6 +23,7 @@ namespace WelsonJS.Launcher.ApiEndpoints
     ///   POST llamacpp/load      load a model and wait until ready {"model": "..."}
     ///   POST llamacpp/unload    unload a model                     {"model": "..."}
     ///   POST llamacpp/chat      OpenAI-compatible chat completion  {"model": "...", "messages": [...]}
+    ///                           (LlamaCppChat; also POST v1/chat/completions).
     ///                           For LlamaCppTranslatedModels the user messages are first
     ///                           translated into English (LlamaCppPromptTranslator); optional
     ///                           "language" (the system language code) and "translate": false.
@@ -40,18 +41,14 @@ namespace WelsonJS.Launcher.ApiEndpoints
         private static readonly string[] ReadPaths = { "status", "models" };
         private static readonly string[] WritePaths = { "start", "stop", "load", "unload", "chat" };
 
-        // Chat request fields passed through to llama-server. chat_template_kwargs lets
-        // callers set template options such as {"enable_thinking": false} for reasoning models.
-        private static readonly string[] ChatParameters = { "temperature", "top_p", "top_k", "max_tokens", "presence_penalty", "frequency_penalty", "stop", "seed", "chat_template_kwargs" };
-
         private readonly LlamaCppRouter _router;
-        private readonly LlamaCppPromptTranslator _translator;
+        private readonly LlamaCppChat _chat;
         private readonly ILogger _logger;
 
         public LlamaCpp(ResourceServer server, System.Net.Http.HttpClient httpClient, ILogger logger)
         {
             _router = server.LlamaCppRouter;
-            _translator = new LlamaCppPromptTranslator(_router);
+            _chat = server.LlamaCppChat;
             _logger = logger;
         }
 
@@ -186,18 +183,10 @@ namespace WelsonJS.Launcher.ApiEndpoints
 
         private async Task HandleChatAsync(HttpListenerContext context)
         {
-            string model;
-            string language;
-            bool translate;
-            Dictionary<string, object> request;
+            Dictionary<string, object> input;
             try
             {
-                Dictionary<string, object> input = await ReadJsonObject(context, MaxChatRequestBodyBytes);
-                model = LlamaCppRouter.ValidateModelName(GetString(input, "model"));
-                request = BuildChatRequest(input);
-                language = LlamaCppPromptTranslator.ResolveLanguage(GetString(input, "language"));
-                object value;
-                translate = !(input.TryGetValue("translate", out value) && false.Equals(value));
+                input = await ReadJsonObject(context, MaxChatRequestBodyBytes);
             }
             catch (Exception ex)
             {
@@ -209,34 +198,13 @@ namespace WelsonJS.Launcher.ApiEndpoints
             {
                 using (var cts = new CancellationTokenSource(ChatRequestTimeout))
                 {
-                    Dictionary<string, object> translation = null;
-                    if (translate && LlamaCppPromptTranslator.AppliesTo(model))
-                    {
-                        try
-                        {
-                            translation = await _translator.PrepareAsync(request, language, cts.Token);
-                        }
-                        catch (FileNotFoundException ex)
-                        {
-                            // The translation model is not installed: send the prompt as it is.
-                            _logger.Warn("[LlamaCpp] Prompt not translated: " + ex.Message);
-                        }
-                    }
-
-                    KeyValuePair<int, string> result = await _router.ChatAsync(model, request, cts.Token);
-                    string body = result.Value;
-                    if (translation != null && result.Key >= 200 && result.Key <= 299)
-                    {
-                        // Report the English prompt that the model answered.
-                        Dictionary<string, object> response = JsonCodec.DeserializeObject(body);
-                        if (response != null)
-                        {
-                            response["welsonjs_translation"] = translation;
-                            body = JsonCodec.Serialize(response);
-                        }
-                    }
-                    await WriteRaw(context, body, result.Key);
+                    KeyValuePair<int, string> result = await _chat.CompleteAsync(input, cts.Token);
+                    await WriteRaw(context, result.Value, result.Key);
                 }
+            }
+            catch (ArgumentException ex)
+            {
+                await Write(context, new { error = "Invalid chat request: " + ex.Message }, 400);
             }
             catch (FileNotFoundException ex)
             {
@@ -247,31 +215,6 @@ namespace WelsonJS.Launcher.ApiEndpoints
                 _logger.Error("[LlamaCpp] Chat request failed", ex);
                 await Write(context, new { error = "llama.cpp is unavailable: " + ex.Message }, 503);
             }
-        }
-
-        // Keeps "messages" (an array of {role, content} objects) and the known generation parameters.
-        private static Dictionary<string, object> BuildChatRequest(Dictionary<string, object> input)
-        {
-            object value;
-            object[] messages = input.TryGetValue("messages", out value) ? value as object[] : null;
-            if (messages == null || messages.Length == 0)
-                throw new ArgumentException("\"messages\" must be a non-empty array.");
-
-            foreach (object item in messages)
-            {
-                var message = item as Dictionary<string, object>;
-                if (message == null || !(message.TryGetValue("role", out value) && value is string) ||
-                    !(message.TryGetValue("content", out value) && value is string))
-                    throw new ArgumentException("Each message must be an object with \"role\" and \"content\" strings.");
-            }
-
-            var request = new Dictionary<string, object> { ["messages"] = messages };
-            foreach (string key in ChatParameters)
-            {
-                if (input.TryGetValue(key, out value) && value != null)
-                    request[key] = value;
-            }
-            return request;
         }
 
         private static string Action(string path)
@@ -286,7 +229,7 @@ namespace WelsonJS.Launcher.ApiEndpoints
             return input.TryGetValue(key, out value) && value != null ? Convert.ToString(value) : null;
         }
 
-        private static async Task<Dictionary<string, object>> ReadJsonObject(HttpListenerContext context, long maxBytes)
+        internal static async Task<Dictionary<string, object>> ReadJsonObject(HttpListenerContext context, long maxBytes)
         {
             string body = await ReadBody(context, maxBytes);
             if (string.IsNullOrWhiteSpace(body)) throw new ArgumentException("The request body must be a JSON object.");
@@ -324,7 +267,7 @@ namespace WelsonJS.Launcher.ApiEndpoints
             return WriteRaw(context, JsonCodec.Serialize(value), status);
         }
 
-        private static async Task WriteRaw(HttpListenerContext context, string json, int status)
+        internal static async Task WriteRaw(HttpListenerContext context, string json, int status)
         {
             byte[] bytes = Encoding.UTF8.GetBytes(json ?? "");
             context.Response.StatusCode = status; context.Response.ContentType = "application/json; charset=utf-8";

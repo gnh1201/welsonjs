@@ -93,12 +93,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiEndpoints\LlamaCpp.cs" />
+    <Compile Include="ApiEndpoints\OpenAiCompatible.cs" />
     <Compile Include="ApiEndpoints\LlmGuard.cs" />
     <Compile Include="ApiEndpoints\Terminal.cs" />
     <Compile Include="ApiEndpoints\JsrtInstance.cs" />
     <Compile Include="AppSignalTraceListener.cs" />
     <Compile Include="AssemblyLoader.cs" />
     <Compile Include="IApiEndpoint.cs" />
+    <Compile Include="IApiKeyEndpoint.cs" />
     <Compile Include="ILogger.cs" />
     <Compile Include="JsCore.cs" />
     <Compile Include="JsNative.cs" />
@@ -140,8 +142,10 @@
     </Compile>
     <Compile Include="ResourceServer.cs" />
     <Compile Include="TraceLogger.cs" />
+    <Compile Include="WebChatRunner.cs" />
     <Compile Include="WebSocketManager.cs" />
     <Compile Include="LogFileTraceListener.cs" />
+    <Compile Include="LlamaCppChat.cs" />
     <Compile Include="LlamaCppPromptTranslator.cs" />
     <Compile Include="LlamaCppRouter.cs" />
     <Compile Include="LlmGuardService.cs" />
@@ -209,6 +213,7 @@
     <EmbeddedResource Include="editor.html" />
     <EmbeddedResource Include="terminal.html" />
     <EmbeddedResource Include="prompt.html" />
+    <EmbeddedResource Include="webchat.js" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ManagedEsent\EsentInterop\EsentInterop.csproj">

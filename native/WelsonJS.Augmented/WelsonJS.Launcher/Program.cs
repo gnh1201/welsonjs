@@ -521,7 +521,13 @@ namespace WelsonJS.Launcher
                 }
             }
         }
-        public static void OpenWebBrowser(string url)
+        /// <summary>
+        /// Opens the URL in the launcher's browser (its own profile, with remote debugging),
+        /// starting the browser when it is not running; a running browser opens it in a new
+        /// window. appMode: true opens an app window (no tabs or address bar) whatever
+        /// ChromiumAppMode says, as the web chat pages are opened (WebChatRunner).
+        /// </summary>
+        public static void OpenWebBrowser(string url, bool appMode = false)
         {
             Uri resourceServerUri = new Uri(GetAppConfig("ResourceServerPrefix"));
             Uri devToolsUri = new Uri(GetAppConfig("ChromiumDevToolsPrefix"));
@@ -530,7 +536,7 @@ namespace WelsonJS.Launcher
             string userDataDir = Path.Combine(GetAppDataPath(), "EdgeUserProfile");
             string remoteAllowOrigins = $"{resourceServerUri.Scheme}://{resourceServerUri.Host}:{resourceServerUri.Port}";
             int remoteDebuggingPort = devToolsUri.Port;
-            bool isAppMode = string.Equals(
+            bool isAppMode = appMode || string.Equals(
                 GetAppConfig("ChromiumAppMode"),
                 "true",
                 StringComparison.OrdinalIgnoreCase);
@@ -540,7 +546,12 @@ namespace WelsonJS.Launcher
                 $"--remote-allow-origins={remoteAllowOrigins}",
                 $"--user-data-dir=\"{userDataDir}\"",
                 // Do not offer to translate pages (the editor and the chat pages it opens).
-                "--disable-features=Translate,TranslateUI"
+                "--disable-features=Translate,TranslateUI",
+                // Keep pages working behind other windows: the launcher drives web chat
+                // pages that may stay in the background (WebChatRunner).
+                "--disable-backgrounding-occluded-windows",
+                "--disable-renderer-backgrounding",
+                "--disable-background-timer-throttling"
             };
 
             Process.Start(new ProcessStartInfo

@@ -124,6 +124,8 @@ The system language is the optional `language` field (a language code such as `k
 
 The editor sends its translation actions (Translate Selection into ...) to the translation model directly when a Local AI model is chosen.
 
+The same models are also available through the launcher's OpenAI-compatible API (`POST /v1/chat/completions`, see [openai-compatible-api.md](openai-compatible-api.md)).
+
 ### Direct requests to the router
 
 Clients may also send OpenAI-compatible requests to the router itself, at the `baseUrl` from `/llamacpp/status` (or `/llamacpp/start`), for example `POST {baseUrl}/v1/chat/completions`. The router requires `"model"` in POST bodies and `?model=` in GET requests, and loads the model on demand. `lib/language-inference-engine.js` does this for the `llamacpp` provider.

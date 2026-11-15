@@ -29,6 +29,7 @@ Changes on the `dev` branch since 0.2.7.62-rc1.
   - `llama-quantize` can produce I2_S files: the fork's quantizer wrote a layout its kernels do not read, and the type was missing from the tool. STQ1_0 quantization is documented for Sherry-trained checkpoints.
   - The README explains quantizing with `llama-quantize`, with examples: select the type by name (`I2_S`, `STQ1_0`), as the file type numbers differ between builds.
 - The editor's AI service toggle switches between the Local AI models (llama.cpp: Hy-MT2, the default, FrogNano and BitNet, from the launcher's `LlamaCppModels` setting) and web chat services: Copilot, ChatGPT, and more. The context menu shows Send Selection, Explain Selection, Find Problems in Selection, Translate Selection into <language> (<code>) for the system language and for English (en), Write Code (JavaScript, ES3 for the WSH JScript engine), and Ask... for the chosen service, and the system language is sent with prompts, to be used for the text that is not code only. Switching the service clears the prompt.
+- OpenAI-compatible launcher API: `POST /v1/chat/completions` and `GET /v1/models` for the llama.cpp models and the web chat services (Copilot, ChatGPT, Claude, ...), which the launcher now drives in its browser itself; the services moved from the editor to `webchat.js`, and the editor uses the API as well. Responses are not streamed (`"stream": true` sends the finished answer as one chunk). Other local software (for example apps built on a browser engine) can use it with an API key (the launcher's `ResourceServerApiKey`, sent as `Authorization: Bearer`). See `docs/openai-compatible-api.md`.
 - UberLLM provider in the language inference engine ([#543]).
 - Launcher-managed LLM guard (Qwen3Guard) for prompts.
 
@@ -40,10 +41,10 @@ Changes on the `dev` branch since 0.2.7.62-rc1.
 - The launcher editor's AI tools use the local llama.cpp server; the launcher's Copilot menu and `CopilotUrl` setting are removed.
 - llama.cpp runs as one `llama-server` in router mode (model hot swap), shared by the editor's Local AI, the LLM guard, and `lib/llamacpp.js`. Models are the folders in `%APPDATA%\WelsonJS` that hold a `.gguf` file, named after the installer component, and every request names its model. The least recently used model is unloaded beyond `LlamaCppModelsMax` (default 3).
   - FrogNano and BitNet work best in English: for them (`LlamaCppTranslatedModels`) the launcher translates the user messages into English with Hy-MT2 (`LlamaCppTranslationModel`), leaving code blocks and inline code unchanged, and tells them the user's system language, without an instruction about the reply language; the answer is not translated. The editor sends its translation actions to Hy-MT2 directly.
-- The launcher's child processes (the llama.cpp router with its model instances, terminal sessions and JSRT instances) are in a Windows job object that ends them with the launcher, also when it is killed, stopped in the debugger or crashes.
   - Launcher API: `/llamacpp/status`, `models`, `start`, `stop`, `load`, `unload`, and `chat`, which requires `model`; for local callers only. See `docs/llamacpp-launcher-api.md`.
   - Settings: `LlamaCppModels` (a comma-separated list of the editor's models) and `LlmGuardModel` (a model name) replace `LlamaCppModelPath` and `LlmGuardModelPath`; new `LlamaCppModelsMax` and `LlamaCppContextSize`.
   - `lib/llamacpp.js` selects models by name (`setModel`, `loadModel`, `unloadModel`, `listModels`, `chat`); the model path, port, and `openBrowser` options are removed.
+- The launcher's child processes (the llama.cpp router with its model instances, terminal sessions and JSRT instances) are in a Windows job object that ends them with the launcher, also when it is killed, stopped in the debugger or crashes.
 - Vendor JavaScript files are restored on demand (`restoreAppAssets.ps1`).
 - `app.hta` is opened with `welsonjs-hta.exe` in the bootstrap; YAWW updated.
 

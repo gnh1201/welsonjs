@@ -406,6 +406,15 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
+        ///   oss@catswords.re.kr과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string ResourceServerApiKey {
+            get {
+                return ResourceManager.GetString("ResourceServerApiKey", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string ResourceServerAllowOrigins {
