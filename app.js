@@ -1201,8 +1201,9 @@ var squel = require("app/assets/js/squel-basic-5.13.0-afa1cb5.wsh");
 // JavaScript YAML parser and dumper. 
 var yaml = require("app/assets/js/js-yaml-4.1.0.wsh");
 
-// is.js Micro check library
-var is = require("app/assets/js/is-0.9.0.min");
+// is.js Micro check library: the in-tree module that replaced is.js 0.9.0, which has no
+// patched release for CVE-2020-26302 (ReDoS in is.url())
+var is = require("lib/is");
 
 // Intl (ECMA-402) polyfill
 //var Intl = require("app/assets/js/Intl-1.2.5-e93b114.min");
