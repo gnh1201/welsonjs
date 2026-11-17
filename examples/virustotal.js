@@ -55,7 +55,7 @@ function main(args) {
             ".shadowRoot.querySelector('.title slot').assignedNodes()[0].innerText"
         );
         if (msgNotFound == "No matches found") {
-            console.log("No matches found"): " + hash);
+            console.log("No matches found: " + hash);
             lines.push([hash, '', '0', '0', '0', ''].join(','));
             return;
         }

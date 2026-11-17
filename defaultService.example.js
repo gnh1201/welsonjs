@@ -4,6 +4,7 @@
 // https://github.com/gnh1201/welsonjs
 // 
 var SYS = require("lib/system");
+var FILE = require("lib/file");
 
 // Examples of class (prototype) and instance referencing .env values
 function examplePrototype() {

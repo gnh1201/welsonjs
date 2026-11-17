@@ -1004,7 +1004,7 @@ require._modernie = function(FN, params, callback) {
         htmlfile.write('<script type="text/javascript">//<!--<![CDATA[\n\nfunction __getUserAgent__(){return window.navigator.userAgent}\n\n//]]>--></script>');
         ua = htmlfile.parentWindow.__getUserAgent__();
 
-        if (ua.indexOf('Trident/ ')) {
+        if (ua.indexOf('Trident/') > -1) {
             text = require._load("app/assets/js/core-js-3.49.0.wsh.js")
                 + "\n\n" + require._load("app/assets/js/modernizr-2.8.3.min.js")
                 + "\n\n" + require._load("app/assets/js/babel-standalone-7.20.6.min.js")
