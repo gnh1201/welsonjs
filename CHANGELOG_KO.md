@@ -16,10 +16,16 @@
 
 ## [Unreleased]
 
+### 추가
+
+- 프레임워크 자체 구현 검사 모듈 `lib/is.js`를 추가했습니다. `app.js`가 전역 `is`로 제공하던 is.js 0.9.0의 메서드 이름과 동작을 외부 코드 없이 유지합니다. 타입·존재·산술·형식·문자열·날짜·객체·배열 검사와 `not`·`all`·`any` 인터페이스를 제공합니다. 런타임이 Windows Script Host이므로 브라우저·기기 판별 묶음은 넣지 않았고, 그 자리에 호스트 기준의 `is.windows()`·`is.linux()`·`is.mac()`·`is.online()`·`is.offline()`을 두었습니다. 임베디드 브라우저는 `lib/browser.js`로 확인합니다([#434] 관련).
+  - `is.url()`과 `is.email()`은 정규식 대신 길이를 제한한 값을 왼쪽에서 오른쪽으로 한 번만 훑어 해석하므로 악의적인 입력으로 되감기(backtracking)가 일어나지 않습니다. 나머지 형식 검사는 되감기가 없는 고정 패턴과 길이 제한을 씁니다.
+- `data/test-misc.json`과 `testloader.js`에 `is_test`를 추가했습니다. 모듈 동작과 악의적인 입력에 대한 `is.url()` 응답 시간을 확인합니다: `cscript app.js testloader is_test data\test-misc.json`([#434] 관련).
+
 ### 보안
 
 - `WelsonJS.Service/app.config`에서 Google.Protobuf와 gRPC 어셈블리 5개의 바인딩 리디렉션을 제거했습니다. 해당 패키지들은 0.2.7.62에서 하트비트 gRPC 클라이언트와 함께 빌드에서 빠졌으므로 리디렉션만 남아 있었습니다([#434] 관련).
-- 패치 버전이 없는 is.js 0.9.0(CVE-2020-26302, `is.url()`의 ReDoS)을 제거했습니다. `app.js`의 require 줄, 무결성 사이드카 2개, `app/assets/integrity.json`의 항목 2개입니다. 프레임워크는 이 라이브러리를 쓰지 않았으며, 애플리케이션에 제공하던 전역 `is`도 사라졌으므로 기본 문법으로 확인하도록 바꾸세요([#434] 관련).
+- 패치 버전이 없는 is.js 0.9.0(CVE-2020-26302, `is.url()`의 ReDoS) 의존성을 제거했습니다. 무결성 사이드카 2개와 `app/assets/integrity.json`의 항목 2개를 없애 더 이상 내려받거나 불러오지 않습니다. 전역 `is`는 `lib/is.js`가 계속 제공하므로 `is`를 쓰던 애플리케이션은 그대로 동작합니다([#434] 관련).
 - 2026-08-05 오픈소스SW 검증에서 보고된 구성 요소 3개의 현황을 `docs/third-party-dependencies.md`에 정리했습니다. IE 6~8에 필요한 jQuery 1.11.3 폴백을 아직 제거할 수 없는 이유도 함께 적었습니다([#434] 관련).
 
 ## [0.2.7.62] - 2026-11-16

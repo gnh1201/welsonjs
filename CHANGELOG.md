@@ -16,10 +16,16 @@ Notes on the tags:
 
 ## [Unreleased]
 
+### Added
+
+- `lib/is.js`, a checks module written for this framework. It keeps the method names and the meaning of is.js 0.9.0, which `app.js` used to load as the global `is`, without third-party code: the type, presence, arithmetic, format, string, date, object and array checks, and the `not`, `all` and `any` interfaces. The browser and device detection group is left out, because the runtime is Windows Script Host; `is.windows()`, `is.linux()`, `is.mac()`, `is.online()` and `is.offline()` answer for the host instead, and `lib/browser.js` covers an embedded browser (related to [#434]).
+  - `is.url()` and `is.email()` are parsed once from left to right over a length limited value instead of being matched by a regular expression, so no input can make them backtrack; the other format checks use anchored patterns and a length limit.
+- `is_test` in `data/test-misc.json` and `testloader.js`, which checks the module and the response time of `is.url()` on hostile input: `cscript app.js testloader is_test data\test-misc.json` (related to [#434]).
+
 ### Security
 
 - Removed the assembly binding redirects for Google.Protobuf and the five gRPC assemblies from `WelsonJS.Service/app.config`. Their packages left the build in 0.2.7.62 with the heartbeat gRPC client, so only the redirects remained (related to [#434]).
-- Removed `is.js` 0.9.0, which has no patched release for CVE-2020-26302 (ReDoS in `is.url()`): the require line in `app.js`, its two integrity sidecars and its entries in `app/assets/integrity.json`. The framework did not use it; the global `is` it created for applications is gone, so use native checks instead (related to [#434]).
+- Removed the `is.js` 0.9.0 dependency, which has no patched release for CVE-2020-26302 (ReDoS in `is.url()`): its two integrity sidecars and its entries in `app/assets/integrity.json` are gone, so the library is no longer downloaded or loaded. The global `is` stays, published from `lib/is.js`, so an application that called `is` keeps working (related to [#434]).
 - Added `docs/third-party-dependencies.md`, which records the state of the three components reported by the Open Source Software Assessment of 2026-08-05, including why the jQuery 1.11.3 fallback that IE 6 to 8 needs cannot be dropped yet (related to [#434]).
 
 ## [0.2.7.62] - 2026-11-16
