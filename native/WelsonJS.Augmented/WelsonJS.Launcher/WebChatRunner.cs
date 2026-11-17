@@ -612,7 +612,8 @@ namespace WelsonJS.Launcher
             public void Dispose()
             {
                 _closing.Cancel();
-                try { _socket.Abort(); } catch { }
+                try { _socket.Abort(); }
+                catch { /* abort is best effort while disposing */ }
                 _socket.Dispose();
             }
         }

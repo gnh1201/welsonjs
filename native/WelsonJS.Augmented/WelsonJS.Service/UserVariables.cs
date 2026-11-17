@@ -5,6 +5,7 @@
 // 
 using System.Collections.Generic;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.ServiceProcess;
 
@@ -57,13 +58,14 @@ namespace WelsonJS.Service
                         }
                         else
                         {
-                            throw new Exception($"Error parsing line: '{pair}'.");
+                            throw new FormatException($"Error parsing line: '{pair}'.");
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error loading variable file: {ex.Message}");
+                    // A malformed file must not stop the service; fall back to no variables.
+                    Trace.TraceError("Error loading variable file: {0}", ex);
                     userVariables = new Dictionary<string, string>();
                 }
             }

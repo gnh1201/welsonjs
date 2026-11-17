@@ -183,7 +183,8 @@ namespace WelsonJS.Launcher
 
                     var chunk = new byte[read];
                     Buffer.BlockCopy(buffer, 0, chunk, 0, read);
-                    try { OutputReceived?.Invoke(chunk); } catch { }
+                    try { OutputReceived?.Invoke(chunk); }
+                    catch { /* a subscriber must not break the read loop */ }
                 }
             }
             catch (IOException) { }
@@ -215,7 +216,8 @@ namespace WelsonJS.Launcher
         private void RaiseExited()
         {
             if (Interlocked.Exchange(ref _exitRaised, 1) != 0) return;
-            try { Exited?.Invoke(_exitCode); } catch { }
+            try { Exited?.Invoke(_exitCode); }
+            catch { /* an exit handler must not break the exit path */ }
         }
 
         public void Write(byte[] data)

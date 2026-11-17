@@ -146,7 +146,8 @@ namespace WelsonJS.Launcher
 
                     if (res.MessageType == WebSocketMessageType.Close)
                     {
-                        try { await sock.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing as requested by server", token); } catch { }
+                        try { await sock.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closing as requested by server", token); }
+                        catch { /* the peer already closed; report it with the exception below */ }
                         throw new WebSocketException($"WebSocket closed by server: {sock.CloseStatus} {sock.CloseStatusDescription}");
                     }
 

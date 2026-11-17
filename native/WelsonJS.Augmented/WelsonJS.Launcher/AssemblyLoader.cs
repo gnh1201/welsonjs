@@ -5,6 +5,7 @@
 // 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
@@ -919,21 +920,46 @@ namespace Catswords.Phantomizer
 
             var memory = new MemoryStream();
 
-            // Read stdout fully; this completes when stdout is closed (EOF)
-            process.StandardOutput.BaseStream.CopyTo(memory);
-
-            // Enforce a hard timeout so we never wait forever
-            if (!process.WaitForExit(60000))
+            try
             {
-                try { process.Kill(); } catch { }
-                throw new TimeoutException("curl.exe did not exit within the hard timeout.");
+                // Read stdout fully; this completes when stdout is closed (EOF)
+                process.StandardOutput.BaseStream.CopyTo(memory);
+
+                // Enforce a hard timeout so we never wait forever
+                if (!process.WaitForExit(60000))
+                {
+                    try
+                    {
+                        process.Kill();
+                    }
+                    catch (InvalidOperationException ex)
+                    {
+                        // The process already exited between the check and the kill.
+                        Trace.TraceWarning("curl.exe could not be killed: {0}", ex.Message);
+                    }
+                    catch (Win32Exception ex)
+                    {
+                        // e.g. access denied; the timeout is still reported to the caller.
+                        Trace.TraceWarning("curl.exe could not be killed: {0}", ex.Message);
+                    }
+                    throw new TimeoutException("curl.exe did not exit within the hard timeout.");
+                }
+
+                if (process.ExitCode != 0)
+                    throw new InvalidOperationException("curl.exe failed with exit code " + process.ExitCode + ".");
+
+                memory.Position = 0;
+                return memory; // Caller must dispose the stream
             }
-
-            if (process.ExitCode != 0)
-                throw new InvalidOperationException("curl.exe failed with exit code " + process.ExitCode + ".");
-
-            memory.Position = 0;
-            return memory; // Caller must dispose the stream
+            catch
+            {
+                memory.Dispose();
+                throw;
+            }
+            finally
+            {
+                process.Dispose();
+            }
         }
 
         private static T ExecuteWithFallback<T>(Func<T> primaryAction, Func<Exception, bool> shouldFallback, Func<T> fallbackAction)

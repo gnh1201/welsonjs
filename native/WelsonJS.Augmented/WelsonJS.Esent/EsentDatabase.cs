@@ -223,7 +223,7 @@ namespace WelsonJS.Esent
                 catch (Exception ex)
                 {
                     Api.JetRollback(_session, RollbackTransactionGrbit.None);
-                    throw new InvalidOperationException($"[ESENT] Operation failed: {ex.Message}");
+                    throw new InvalidOperationException($"[ESENT] Operation failed: {ex.Message}", ex);
                 }
             }
         }

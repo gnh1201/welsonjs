@@ -243,7 +243,8 @@ namespace WelsonJS.Launcher
             catch (Exception ex)
             {
                 _logger?.Error($"Request failed: {ex.Message}");
-                try { context.Response.StatusCode = 500; context.Response.Close(); } catch { }
+                try { context.Response.StatusCode = 500; context.Response.Close(); }
+                catch { /* the client may be gone; the failure is logged above */ }
             }
         }
 

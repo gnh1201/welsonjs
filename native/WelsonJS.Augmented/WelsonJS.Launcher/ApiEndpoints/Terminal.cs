@@ -142,7 +142,8 @@ namespace WelsonJS.Launcher.ApiEndpoints
             catch (Exception ex)
             {
                 _logger.Error("[Terminal] Request failed", ex);
-                try { await Write(context, new { error = ex.Message }, 400); } catch { }
+                try { await Write(context, new { error = ex.Message }, 400); }
+                catch { /* the response may already be sent; the error is logged above */ }
             }
         }
 
@@ -190,7 +191,8 @@ namespace WelsonJS.Launcher.ApiEndpoints
             {
                 subscription.Dispose();
                 cts.Cancel();
-                try { await sender; } catch { }
+                try { await sender; }
+                catch { /* the send loop was cancelled; its error is logged above */ }
                 socket.Dispose();
                 cts.Dispose();
             }

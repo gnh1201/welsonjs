@@ -212,8 +212,10 @@ namespace WelsonJS.Launcher.ApiEndpoints
             }
             finally
             {
-                try { context.Response.OutputStream.Flush(); } catch { }
-                try { context.Response.OutputStream.Close(); } catch { }
+                try { context.Response.OutputStream.Flush(); }
+                catch { /* the client may have closed the connection */ }
+                try { context.Response.OutputStream.Close(); }
+                catch { /* the client may have closed the connection */ }
             }
         }
 
