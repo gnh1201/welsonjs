@@ -16,6 +16,18 @@ Notes on the tags:
 
 ## [Unreleased]
 
+### Added
+
+- `lib/is.js`, a checks module written for this framework. It keeps the method names and the meaning of is.js 0.9.0, which `app.js` used to load as the global `is`, without third-party code: the type, presence, arithmetic, format, string, date, object and array checks, and the `not`, `all` and `any` interfaces. The browser and device detection group is left out, because the runtime is Windows Script Host; `is.windows()`, `is.linux()`, `is.mac()`, `is.online()` and `is.offline()` answer for the host instead, and `lib/browser.js` covers an embedded browser (related to [#434]).
+  - `is.url()` and `is.email()` are parsed once from left to right over a length limited value instead of being matched by a regular expression, so no input can make them backtrack; the other format checks use anchored patterns and a length limit.
+- `is_test` in `data/test-misc.json` and `testloader.js`, which checks the module and the response time of `is.url()` on hostile input: `cscript app.js testloader is_test data\test-misc.json` (related to [#434]).
+
+### Security
+
+- Removed the assembly binding redirects for Google.Protobuf and the five gRPC assemblies from `WelsonJS.Service/app.config`. Their packages left the build in 0.2.7.62 with the heartbeat gRPC client, so only the redirects remained (related to [#434]).
+- Removed the `is.js` 0.9.0 dependency, which has no patched release for CVE-2020-26302 (ReDoS in `is.url()`): its two integrity sidecars and its entries in `app/assets/integrity.json` are gone, so the library is no longer downloaded or loaded. The global `is` stays, published from `lib/is.js`, so an application that called `is` keeps working (related to [#434]).
+- Added `docs/third-party-dependencies.md`, which records the state of the three components reported by the Open Source Software Assessment of 2026-08-05, including why the jQuery 1.11.3 fallback that IE 6 to 8 needs cannot be dropped yet (related to [#434]).
+
 ## [0.2.7.62] - 2026-11-16
 
 Changes since 0.2.7.62-rc1, a pre-release without an installer. When upgrading from 0.2.7.61, see [0.2.7.62-rc1](#0262-rc1---2026-11-01) as well.
@@ -947,6 +959,7 @@ Pre-release.
 [#424]: https://github.com/gnh1201/welsonjs/issues/424
 [#427]: https://github.com/gnh1201/welsonjs/issues/427
 [#429]: https://github.com/gnh1201/welsonjs/issues/429
+[#434]: https://github.com/gnh1201/welsonjs/issues/434
 [#440]: https://github.com/gnh1201/welsonjs/issues/440
 [#449]: https://github.com/gnh1201/welsonjs/issues/449
 [#474]: https://github.com/gnh1201/welsonjs/issues/474

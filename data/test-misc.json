@@ -1,6 +1,6 @@
 {
     "description": "WelsonJS test profile (test-misc.json)",
-    "updated_on": "2025-01-15",
+    "updated_on": "2026-11-17",
     "dependencies": {
         "welsonjs": "0.2.7"
     },
@@ -135,6 +135,11 @@
             "id": "wmi_method_parameters",
             "description": "WMI method call with input parameters (starts notepad.exe)",
             "tags": ["WMI", "Process"]
+        },
+        {
+            "id": "is_test",
+            "description": "Type, presence and format checks from lib/is.js, including the response time of is.url() on hostile input",
+            "tags": ["Standards"]
         }
     ]
 }
