@@ -16,6 +16,12 @@
 
 ## [Unreleased]
 
+### 보안
+
+- `WelsonJS.Service/app.config`에서 Google.Protobuf와 gRPC 어셈블리 5개의 바인딩 리디렉션을 제거했습니다. 해당 패키지들은 0.2.7.62에서 하트비트 gRPC 클라이언트와 함께 빌드에서 빠졌으므로 리디렉션만 남아 있었습니다([#434] 관련).
+- 패치 버전이 없는 is.js 0.9.0(CVE-2020-26302, `is.url()`의 ReDoS)을 제거했습니다. `app.js`의 require 줄, 무결성 사이드카 2개, `app/assets/integrity.json`의 항목 2개입니다. 프레임워크는 이 라이브러리를 쓰지 않았으며, 애플리케이션에 제공하던 전역 `is`도 사라졌으므로 기본 문법으로 확인하도록 바꾸세요([#434] 관련).
+- 2026-08-05 오픈소스SW 검증에서 보고된 구성 요소 3개의 현황을 `docs/third-party-dependencies.md`에 정리했습니다. IE 6~8에 필요한 jQuery 1.11.3 폴백을 아직 제거할 수 없는 이유도 함께 적었습니다([#434] 관련).
+
 ## [0.2.7.62] - 2026-11-16
 
 설치 파일 없이 배포한 사전 릴리스 0.2.7.62-rc1 이후의 변경 사항입니다. 0.2.7.61에서 업그레이드한다면 [0.2.7.62-rc1](#0262-rc1---2026-11-01)도 함께 확인하세요.
@@ -947,6 +953,7 @@
 [#424]: https://github.com/gnh1201/welsonjs/issues/424
 [#427]: https://github.com/gnh1201/welsonjs/issues/427
 [#429]: https://github.com/gnh1201/welsonjs/issues/429
+[#434]: https://github.com/gnh1201/welsonjs/issues/434
 [#440]: https://github.com/gnh1201/welsonjs/issues/440
 [#449]: https://github.com/gnh1201/welsonjs/issues/449
 [#474]: https://github.com/gnh1201/welsonjs/issues/474

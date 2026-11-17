@@ -16,6 +16,12 @@ Notes on the tags:
 
 ## [Unreleased]
 
+### Security
+
+- Removed the assembly binding redirects for Google.Protobuf and the five gRPC assemblies from `WelsonJS.Service/app.config`. Their packages left the build in 0.2.7.62 with the heartbeat gRPC client, so only the redirects remained (related to [#434]).
+- Removed `is.js` 0.9.0, which has no patched release for CVE-2020-26302 (ReDoS in `is.url()`): the require line in `app.js`, its two integrity sidecars and its entries in `app/assets/integrity.json`. The framework did not use it; the global `is` it created for applications is gone, so use native checks instead (related to [#434]).
+- Added `docs/third-party-dependencies.md`, which records the state of the three components reported by the Open Source Software Assessment of 2026-08-05, including why the jQuery 1.11.3 fallback that IE 6 to 8 needs cannot be dropped yet (related to [#434]).
+
 ## [0.2.7.62] - 2026-11-16
 
 Changes since 0.2.7.62-rc1, a pre-release without an installer. When upgrading from 0.2.7.61, see [0.2.7.62-rc1](#0262-rc1---2026-11-01) as well.
@@ -947,6 +953,7 @@ Pre-release.
 [#424]: https://github.com/gnh1201/welsonjs/issues/424
 [#427]: https://github.com/gnh1201/welsonjs/issues/427
 [#429]: https://github.com/gnh1201/welsonjs/issues/429
+[#434]: https://github.com/gnh1201/welsonjs/issues/434
 [#440]: https://github.com/gnh1201/welsonjs/issues/440
 [#449]: https://github.com/gnh1201/welsonjs/issues/449
 [#474]: https://github.com/gnh1201/welsonjs/issues/474
