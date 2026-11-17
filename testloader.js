@@ -113,6 +113,73 @@ var test_implements = {
         console.log("정상적으로 명령행이 만들어졌는지 확인하세요.");
     },
 
+    "shell_build_operator_quoting": function() {
+        var SHELL = require("lib/shell");
+        console.log("앰퍼샌드(&)와 파이프(|)가 든 인자가 인용되어 명령이 이어서 실행되지 않는지 테스트합니다.");
+
+        var results = [];
+        (function(args) {
+            for (var i = 0; i < args.length; i++) {
+                results.push([args[i], SHELL.build(["echo", args[i]])]);
+            }
+        })(["x&calc", "a|b", "plain", "hello world", "https://example.com/?a=1&b=2"]);
+
+        var passed = true;
+        for (var i = 0; i < results.length; i++) {
+            var arg = results[i][0];
+            var built = results[i][1];
+            console.log("입력 인자: " + arg + " / 출력 문자열: " + built);
+            if (arg == "x&calc" || arg == "a|b") {
+                if (built.indexOf("\"" + arg + "\"") < 0) passed = false;
+            }
+        }
+
+        console.log(passed ? "PASS" : "FAILED");
+    },
+
+    "fsm_transition": function() {
+        var FSM = require("lib/fsm");
+        console.log("유한 상태 기계(FSM) 모듈을 적재하고 상태 전이를 확인합니다.");
+
+        var machine = new FSM.FSM();
+        var events = [];
+        machine.addState("idle");
+        machine.addState("running");
+        machine.setState("idle");
+        machine.addTransition("idle", "running", "start", function(e) {
+            events.push(e.type);
+        });
+        machine.tryTransition("running", "start");
+
+        var passed = (machine.currentState.name == "running" && machine.previousState.name == "idle" && events.length == 1);
+        console.log("현재 상태: " + machine.currentState.name + " / 이전 상태: " + machine.previousState.name + " / 이벤트: " + events.join(","));
+        console.log(passed ? "PASS" : "FAILED");
+    },
+
+    "httpserver_module_exports": function() {
+        var HTTPSERVER = require("lib/httpserver");
+        console.log("HTTP 서버 모듈이 require() 결과로 API를 내보내는지 확인합니다.");
+
+        var passed = (typeof HTTPSERVER.HTTPServer === "object"
+            && typeof HTTPSERVER.CreateServer === "function"
+            && typeof HTTPSERVER.Bind === "function");
+        console.log("HTTPServer: " + typeof HTTPSERVER.HTTPServer + " / CreateServer: " + typeof HTTPSERVER.CreateServer + " / Bind: " + typeof HTTPSERVER.Bind);
+        console.log(passed ? "PASS" : "FAILED");
+    },
+
+    "wmi_method_parameters": function() {
+        var WMI = require("lib/wmi");
+        console.log("WMI 메서드 호출에 입력 인자가 전달되는지 확인합니다.");
+        console.log("관리자 권한이 필요할 수 있으며, 메모장(notepad.exe)이 실행됩니다.");
+
+        var processId = WMI.setClass("Win32_Process").setMethod("Create").setParameters({
+            "CommandLine": "notepad.exe"
+        }).execute().get("ProcessID");
+
+        console.log("프로세스 ID: " + processId);
+        console.log(processId > 0 ? "PASS" : "FAILED");
+    },
+
     "shell_set_charset": function() {
         var SHELL = require("lib/shell");
 

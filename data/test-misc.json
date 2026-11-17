@@ -115,6 +115,26 @@
             "id": "backup_vmware_esxi",
             "description": "Open Virtualization Format (OVF) Tool for Broadcom/VMware virtualization infrastructures",
             "tags": ["Virtualization"]
+        },
+        {
+            "id": "shell_build_operator_quoting",
+            "description": "Shell command line quoting for arguments that carry & or |",
+            "tags": ["Shell", "Security"]
+        },
+        {
+            "id": "fsm_transition",
+            "description": "Finite state machine module loading and state transition",
+            "tags": ["Runtime"]
+        },
+        {
+            "id": "httpserver_module_exports",
+            "description": "HTTP server module exports",
+            "tags": ["Network", "HTTP"]
+        },
+        {
+            "id": "wmi_method_parameters",
+            "description": "WMI method call with input parameters (starts notepad.exe)",
+            "tags": ["WMI", "Process"]
         }
     ]
 }
