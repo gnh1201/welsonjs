@@ -968,7 +968,7 @@ require._msie9 = function(FN, params, callback) {
     else if (FN.substring(FN.length - 3) !== '.js') FN += ".js";
 
     return UseObject("htmlfile", function(htmlfile) {
-        var text = require._load("app/assets/js/core-js-3.26.1.minified.js")
+        var text = require._load("app/assets/js/core-js-3.49.0.wsh.js")
             + "\n\n" + require._load("app/assets/js/html5shiv-printshiv-3.7.3.min.js")
             + "\n\n" + require._load("app/assets/js/modernizr-2.8.3.min.js")
             + "\n\n" + require._load(FN);
@@ -1005,12 +1005,12 @@ require._modernie = function(FN, params, callback) {
         ua = htmlfile.parentWindow.__getUserAgent__();
 
         if (ua.indexOf('Trident/ ')) {
-            text = require._load("app/assets/js/core-js-3.26.1.minified.js")
+            text = require._load("app/assets/js/core-js-3.49.0.wsh.js")
                 + "\n\n" + require._load("app/assets/js/modernizr-2.8.3.min.js")
                 + "\n\n" + require._load("app/assets/js/babel-standalone-7.20.6.min.js")
                 + "\n\n" + require._load(FN);
         } else {
-            text = require._load("app/assets/js/core-js-3.26.1.minified.js")
+            text = require._load("app/assets/js/core-js-3.49.0.wsh.js")
                 + "\n\n" + require._load("app/assets/js/html5shiv-printshiv-3.7.3.min.js")
                 + "\n\n" + require._load("app/assets/js/modernizr-2.8.3.min.js")
                 + "\n\n" + require._load(FN);
