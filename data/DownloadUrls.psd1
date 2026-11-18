@@ -287,7 +287,7 @@
     # earlier version of the component left in %APPDATA%\welsonjs\microsoft_jdk is
     # removed once the new JDK is registered.
     # Both vendors serve the file behind a redirect that keeps the file name.
-    microsoft_jdk = @{
+    jdk = @{
         x64   = "https://aka.ms/download-jdk/microsoft-jdk-25.0.5.0.2-windows-x64.zip"
         arm64 = "https://aka.ms/download-jdk/microsoft-jdk-25.0.5.0.2-windows-aarch64.zip"
         x86   = "https://cdn.azul.com/zulu/bin/zulu17.70.201-ca-jdk17.0.21.1-win_i686.zip"

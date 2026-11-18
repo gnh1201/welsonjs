@@ -1308,7 +1308,7 @@ function Find-JdkHome {
 $GtkRuntimeInstaller     = Join-Path $TmpDir "gtk-runtime.exe"
 $NpcapInstaller          = Join-Path $TmpDir "npcap-setup.exe"
 $NmapInstaller           = Join-Path $TmpDir "nmap-setup.exe"
-$MicrosoftJdkArchive     = $null  # set in the download phase: the .zip named in the URL table
+$JdkArchive             = $null  # set in the download phase: the .zip named in the URL table
 $HwpAutomationCompressed = Join-Path $TmpDir "FilePathCheckerModuleExample.dll.gz"
 
 # ================================
@@ -1316,7 +1316,7 @@ $HwpAutomationCompressed = Join-Path $TmpDir "FilePathCheckerModuleExample.dll.g
 # ================================
 try {
     # Download archive/file components through one shared path.
-    # Nmap/Npcap, GTK runtime, Microsoft OpenJDK and HWP keep dedicated
+    # Nmap/Npcap, GTK runtime, OpenJDK (jdk) and HWP keep dedicated
     # installation handling.
     $downloadComponents = @(
         "python", "curl", "hy_mt2_1_8b_1_25bit", "frognano_4b_2609", "bitnet_b1_58_2b_4t", "qwen3guard_06b", "yara", "wamr", "websocat", "artifacts",
@@ -1350,12 +1350,12 @@ try {
         if ($nmapUrl) { Download-File -Url $nmapUrl -DestinationPath $NmapInstaller }
     }
 
-    # OpenJDK (component: microsoft_jdk) – the vendor's .zip archive is downloaded
+    # OpenJDK (component: jdk) – the vendor's .zip archive is downloaded
     # here and unpacked in the installation phase. All three architectures are a
     # .zip: the Microsoft Build of OpenJDK (x64, ARM64) and Azul Zulu 17 (32-bit
     # Windows), so the file name comes from the URL.
-    if (Test-ComponentSelected -Name "microsoft_jdk") {
-        $url = Get-DownloadUrl -Component "microsoft_jdk" -Arch $arch
+    if (Test-ComponentSelected -Name "jdk") {
+        $url = Get-DownloadUrl -Component "jdk" -Arch $arch
         if ($url) {
             $jdkFileName = [System.IO.Path]::GetFileName(([uri]$url).AbsolutePath)
             if (-not $jdkFileName) { $jdkFileName = "openjdk.zip" }
@@ -1363,23 +1363,23 @@ try {
             # A directory of its own for this run: the archive is unpacked into the
             # user's AppData while the script may be elevated, so it must not sit at
             # a path that an earlier run, or a second run at the same time, also writes.
-            $jdkDownloadDirectory = Join-Path $TmpDir "microsoft_jdk-$([guid]::NewGuid().ToString('N'))"
+            $jdkDownloadDirectory = Join-Path $TmpDir "jdk-$([guid]::NewGuid().ToString('N'))"
             New-Item -ItemType Directory -Path $jdkDownloadDirectory -Force | Out-Null
-            $MicrosoftJdkArchive = Join-Path $jdkDownloadDirectory $jdkFileName
+            $JdkArchive = Join-Path $jdkDownloadDirectory $jdkFileName
 
             try {
-                Download-File -Url $url -DestinationPath $MicrosoftJdkArchive
+                Download-File -Url $url -DestinationPath $JdkArchive
             }
             catch {
                 # An optional component that cannot be fetched must not stop the rest.
                 Write-Host "[WARN] Failed to download the OpenJDK archive: $($_.Exception.Message)"
                 Write-Host "[WARN] The OpenJDK component is skipped for this run."
                 Remove-Item -LiteralPath $jdkDownloadDirectory -Recurse -Force -ErrorAction SilentlyContinue
-                $MicrosoftJdkArchive = $null
+                $JdkArchive = $null
             }
         }
         else {
-            Write-Host "[*] microsoft_jdk has no archive in the URL table for arch: $arch. Skipping download."
+            Write-Host "[*] jdk has no archive in the URL table for arch: $arch. Skipping download."
             Write-Host "    Microsoft publishes Windows builds of JDK 25 for x64 and ARM64; the 32-bit Windows build in the table is Azul Zulu 17 for x86."
         }
     }
@@ -1531,14 +1531,14 @@ try {
         Write-Host "[*] nmap component not selected. Skipping Npcap/Nmap installation."
     }
 
-    # Unpack an OpenJDK build (component: microsoft_jdk)
+    # Unpack an OpenJDK build (component: jdk)
     # The component unpacks a vendor .zip into the WelsonJS AppData directory and
     # registers it itself:
     #   %APPDATA%\welsonjs\jdk\<the archive's own top folder>\
-    # The folder is `jdk` and not the component's name: what sits under it is a JDK,
-    # and the build's own version folder is what keeps two builds apart. A folder
-    # that this component wrote under its earlier name,
-    # %APPDATA%\welsonjs\microsoft_jdk, is removed once the new JDK is registered.
+    # The folder carries the component's own name, `jdk`, and the build's own
+    # version folder inside it is what keeps two builds apart. A folder that this
+    # component wrote under its earlier name, %APPDATA%\welsonjs\microsoft_jdk,
+    # is removed once the new JDK is registered.
     # The archive holds Microsoft Build of OpenJDK 25 on x64 and ARM64, and Azul
     # Zulu 17 LTS on 32-bit Windows. Unpacking instead of installing leaves nothing
     # in Program Files and creates no Programs and Features entry: the JDK lives in
@@ -1546,7 +1546,7 @@ try {
     # downloads, and deleting that directory removes it. This is an optional
     # component: a download, hash, extraction or registration failure is reported
     # and the other components run.
-    if (Test-ComponentSelected -Name "microsoft_jdk") {
+    if (Test-ComponentSelected -Name "jdk") {
         $jdkTargetDirectory = Join-Path $TargetDir "jdk"
         $jdkUnpacked = $false
 
@@ -1556,11 +1556,11 @@ try {
         # this script runs for, so an archive replaced between the download and the
         # extraction would otherwise write files of someone else's choosing into
         # the user's AppData. A file that is not listed skips this component only.
-        if ($MicrosoftJdkArchive) {
+        if ($JdkArchive) {
             $jdkAllowedHashes = Get-DownloadHashes
             if ($jdkAllowedHashes.Count -gt 0) {
                 try {
-                    $jdkHashActual = Get-Sha256Hash -Path $MicrosoftJdkArchive
+                    $jdkHashActual = Get-Sha256Hash -Path $JdkArchive
                 }
                 catch {
                     $jdkHashActual = $null
@@ -1570,20 +1570,20 @@ try {
                     Write-Host "[ERROR] The OpenJDK archive is not a file listed in data\DownloadHashes.txt, so it will not be unpacked."
                     Write-Host "        SHA-256: $jdkHashActual"
                     Write-Host "[WARN] The OpenJDK component is skipped for this run."
-                    Remove-Item -LiteralPath $MicrosoftJdkArchive -Force -ErrorAction SilentlyContinue
-                    $MicrosoftJdkArchive = $null
+                    Remove-Item -LiteralPath $JdkArchive -Force -ErrorAction SilentlyContinue
+                    $JdkArchive = $null
                 }
             }
         }
 
-        if ($MicrosoftJdkArchive -and (Test-Path -LiteralPath $MicrosoftJdkArchive -PathType Leaf)) {
+        if ($JdkArchive -and (Test-Path -LiteralPath $JdkArchive -PathType Leaf)) {
             # Unpack into a directory of this run first: an archive that fails to
             # unpack, or holds no bin\java.exe, then leaves the JDK of an earlier
             # run untouched instead of replacing it with a half-written tree.
-            $jdkStagingDirectory = Join-Path $TmpDir "microsoft_jdk-extract-$([guid]::NewGuid().ToString('N'))"
+            $jdkStagingDirectory = Join-Path $TmpDir "jdk-extract-$([guid]::NewGuid().ToString('N'))"
 
             try {
-                Extract-CompressedFile -CompressedPath $MicrosoftJdkArchive -DestinationDirectory $jdkStagingDirectory -KeepArchiveRoot
+                Extract-CompressedFile -CompressedPath $JdkArchive -DestinationDirectory $jdkStagingDirectory -KeepArchiveRoot
                 $jdkStagedHome = Find-JdkHome -Path $jdkStagingDirectory
                 if (-not $jdkStagedHome) {
                     throw "The archive holds no bin\java.exe. The layout of the vendor package may have changed."
@@ -1594,7 +1594,7 @@ try {
                 # An archive that holds the JDK at its root (no folder of its own) is
                 # named after the archive file instead, so the target keeps a stable name.
                 if ($jdkStagedHome -ieq $jdkStagingDirectory) {
-                    $jdkFolderName = [System.IO.Path]::GetFileNameWithoutExtension($MicrosoftJdkArchive)
+                    $jdkFolderName = [System.IO.Path]::GetFileNameWithoutExtension($JdkArchive)
                 }
                 else {
                     $jdkFolderName = Split-Path -Leaf $jdkStagedHome
@@ -1683,7 +1683,7 @@ try {
             catch {
                 Write-Host "[ERROR] The OpenJDK archive could not be unpacked and registered: $($_.Exception.Message)"
                 Write-Host "[WARN] The OpenJDK component is skipped for this run."
-                Write-Host "[WARN] The archive is left here, and can be unpacked by hand: $MicrosoftJdkArchive"
+                Write-Host "[WARN] The archive is left here, and can be unpacked by hand: $JdkArchive"
             }
             finally {
                 Remove-Item -LiteralPath $jdkStagingDirectory -Recurse -Force -ErrorAction SilentlyContinue
@@ -1692,7 +1692,7 @@ try {
             if ($jdkUnpacked) {
                 # The archive is up to 221 MB and has done its job; the directory is
                 # this run's own.
-                $jdkDownloadDirectory = Split-Path -Parent $MicrosoftJdkArchive
+                $jdkDownloadDirectory = Split-Path -Parent $JdkArchive
                 Remove-Item -LiteralPath $jdkDownloadDirectory -Recurse -Force -ErrorAction SilentlyContinue
             }
         }
@@ -1701,7 +1701,7 @@ try {
         }
     }
     else {
-        Write-Host "[*] microsoft_jdk component not selected. Skipping installation."
+        Write-Host "[*] jdk component not selected. Skipping installation."
     }
 
     # Install HWP Automation (component: hwp_automation)
