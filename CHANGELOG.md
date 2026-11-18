@@ -22,6 +22,11 @@ Notes on the tags:
   - `is.url()` and `is.email()` are parsed once from left to right over a length limited value instead of being matched by a regular expression, so no input can make them backtrack; the other format checks use anchored patterns and a length limit.
 - `is_test` in `data/test-misc.json` and `testloader.js`, which checks the module and the response time of `is.url()` on hostile input: `cscript app.js testloader is_test data\test-misc.json` (related to [#434]).
 
+### Changed
+
+- The `microsoft_jdk` installer component installs the JDK instead of only staging its installer. `postInstall.ps1` downloads the vendor installer, runs it unattended (`/VERYSILENT /SUPPRESSMSGBOXES /NORESTART`, plus `/ALLUSERS` when the script is elevated and `/CURRENTUSER` otherwise, and `/TASKS="FeatureEnvironment,FeatureJarFileRunWith"`), reports the exit code (including 3010, a pending restart), and leaves `JAVA_HOME` alone, because the vendor installer sets it only for the optional `FeatureJavaHome` task. The component description in `setup.iss` says that it installs.
+- `data/DownloadUrls.psd1`: the Microsoft Build of OpenJDK links point at 25.0.5.0.2, the current Windows patch of JDK 25 LTS. `arm64` has a URL where it was `$null`, and `x86` is empty instead of pointing at the AArch64 installer, because Microsoft publishes no 32-bit build of JDK 25 (JEP 503 removed the x86 port).
+
 ### Security
 
 - Removed the assembly binding redirects for Google.Protobuf and the five gRPC assemblies from `WelsonJS.Service/app.config`. Their packages left the build in 0.2.7.62 with the heartbeat gRPC client, so only the redirects remained (related to [#434]).

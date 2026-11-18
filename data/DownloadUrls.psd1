@@ -252,10 +252,16 @@
     # ===========================
     # Microsoft OpenJDK build
     # ===========================
+    # Microsoft Build of OpenJDK 25 LTS, at the current Windows patch level
+    # (25.0.5.0.2, the build carrying the October 2026 CPU fixes). Windows builds
+    # exist for x64 and AArch64 only: the 32-bit x86 port was removed with JDK 25
+    # (JEP 503), so the x86 key stays empty instead of pointing at another
+    # architecture's file.
+    # https://learn.microsoft.com/en-us/java/openjdk/download
     microsoft_jdk = @{
-        x64   = "https://aka.ms/download-jdk/microsoft-jdk-25.0.4-windows-x64.exe"
-        arm64 = $null  # no official ARM64 build
-        x86   = "https://aka.ms/download-jdk/microsoft-jdk-25.0.4-windows-aarch64.exe"
+        x64   = "https://aka.ms/download-jdk/microsoft-jdk-25.0.5.0.2-windows-x64.exe"
+        arm64 = "https://aka.ms/download-jdk/microsoft-jdk-25.0.5.0.2-windows-aarch64.exe"
+        x86   = $null  # no 32-bit x86 build (JEP 503)
     }
     
     # ===========================

@@ -22,6 +22,11 @@
   - `is.url()`과 `is.email()`은 정규식 대신 길이를 제한한 값을 왼쪽에서 오른쪽으로 한 번만 훑어 해석하므로 악의적인 입력으로 되감기(backtracking)가 일어나지 않습니다. 나머지 형식 검사는 되감기가 없는 고정 패턴과 길이 제한을 씁니다.
 - `data/test-misc.json`과 `testloader.js`에 `is_test`를 추가했습니다. 모듈 동작과 악의적인 입력에 대한 `is.url()` 응답 시간을 확인합니다: `cscript app.js testloader is_test data\test-misc.json`([#434] 관련).
 
+### 변경
+
+- 설치 프로그램의 `microsoft_jdk` 구성 요소가 설치 파일을 받아 두기만 하지 않고 JDK를 설치합니다. `postInstall.ps1`이 배포사 설치 파일을 내려받아 무인으로 실행하고(`/VERYSILENT /SUPPRESSMSGBOXES /NORESTART`, 스크립트가 관리자 권한이면 `/ALLUSERS`, 아니면 `/CURRENTUSER`, `/TASKS="FeatureEnvironment,FeatureJarFileRunWith"`), 종료 코드(다시 시작이 필요한 3010 포함)를 기록합니다. `JAVA_HOME`은 건드리지 않습니다. 배포사 설치 파일은 선택 작업 `FeatureJavaHome`을 골랐을 때만 이 값을 설정합니다. `setup.iss`의 구성 요소 설명도 설치한다는 뜻으로 바뀌었습니다.
+- `data/DownloadUrls.psd1`: Microsoft Build of OpenJDK 링크를 JDK 25 LTS의 현재 Windows 패치인 25.0.5.0.2로 올렸습니다. `$null`이던 `arm64`에 주소를 채우고, JDK 25에 32비트 빌드가 없으므로(JEP 503으로 x86 포트 제거) `x86`은 AArch64 설치 파일을 가리키던 것을 비워 두었습니다.
+
 ### 보안
 
 - `WelsonJS.Service/app.config`에서 Google.Protobuf와 gRPC 어셈블리 5개의 바인딩 리디렉션을 제거했습니다. 해당 패키지들은 0.2.7.62에서 하트비트 gRPC 클라이언트와 함께 빌드에서 빠졌으므로 리디렉션만 남아 있었습니다([#434] 관련).

@@ -519,6 +519,23 @@ function Get-NativeArchitecture {
     return $arch
 }
 
+# ================================
+# PRIVILEGE LEVEL
+# ================================
+# The installer runs elevated (PrivilegesRequired=admin in setup.iss), but this
+# script can also be started by hand, so a component that needs a machine-wide
+# installation asks first.
+function Test-Administrator {
+    try {
+        $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
+        $principal = New-Object Security.Principal.WindowsPrincipal($identity)
+        return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    }
+    catch {
+        return $false
+    }
+}
+
 $arch = Get-NativeArchitecture
 
 Write-Host "[*] Detected architecture: $arch"
@@ -1022,6 +1039,7 @@ function Extract-GZipFile {
 $GtkRuntimeInstaller     = Join-Path $TmpDir "gtk-runtime.exe"
 $NpcapInstaller          = Join-Path $TmpDir "npcap-setup.exe"
 $NmapInstaller           = Join-Path $TmpDir "nmap-setup.exe"
+$MicrosoftJdkInstaller   = Join-Path $TmpDir "microsoft-jdk-setup.exe"
 $HwpAutomationCompressed = Join-Path $TmpDir "FilePathCheckerModuleExample.dll.gz"
 
 # ================================
@@ -1029,14 +1047,15 @@ $HwpAutomationCompressed = Join-Path $TmpDir "FilePathCheckerModuleExample.dll.g
 # ================================
 try {
     # Download archive/file components through one shared path.
-    # Nmap/Npcap, GTK runtime and HWP keep dedicated installation handling.
+    # Nmap/Npcap, GTK runtime, Microsoft OpenJDK and HWP keep dedicated
+    # installation handling.
     $downloadComponents = @(
         "python", "curl", "hy_mt2_1_8b_1_25bit", "frognano_4b_2609", "bitnet_b1_58_2b_4t", "qwen3guard_06b", "yara", "wamr", "websocat", "artifacts",
         "gtkserver", "tessdata", "tessdata_best", "tessdata_fast",
         "windivert", "android_platform_tools", "tun2socks", "sendboxie",
         "ldplayer", "tap_windows6", "thc_hydra", "shadowsocks_libev",
         "winlibs_mingw", "golang", "x86dbg", "w7zip", "hashcat",
-        "microsoft_jdk", "nuget", "ripgrep"
+        "nuget", "ripgrep"
     )
 
     foreach ($component in $downloadComponents) {
@@ -1062,6 +1081,18 @@ try {
         if ($npcapUrl) { Download-File -Url $npcapUrl -DestinationPath $NpcapInstaller }
         $nmapUrl = Get-DownloadUrl -Component "nmap" -Arch $arch
         if ($nmapUrl) { Download-File -Url $nmapUrl -DestinationPath $NmapInstaller }
+    }
+
+    # Microsoft Build of OpenJDK (component: microsoft_jdk) – the vendor .exe
+    # installer is downloaded here and run in the installation phase.
+    if (Test-ComponentSelected -Name "microsoft_jdk") {
+        $url = Get-DownloadUrl -Component "microsoft_jdk" -Arch $arch
+        if ($url) {
+            Download-File -Url $url -DestinationPath $MicrosoftJdkInstaller
+        }
+        else {
+            Write-Host "[*] microsoft_jdk has no installer for arch: $arch. Microsoft publishes this build for Windows x64 and ARM64 only. Skipping download."
+        }
     }
 
     if (Test-ComponentSelected -Name "hwp_automation") {
@@ -1228,6 +1259,62 @@ try {
     }
     else {
         Write-Host "[*] nmap component not selected. Skipping Npcap/Nmap installation."
+    }
+
+    # Install the Microsoft Build of OpenJDK (component: microsoft_jdk)
+    # The vendor installer is an Inno Setup package; the unattended form below is
+    # the one documented in https://learn.microsoft.com/en-us/java/openjdk/install
+    # (/VERYSILENT instead of /SILENT suppresses the progress window).
+    if (Test-ComponentSelected -Name "microsoft_jdk") {
+        if (Test-Path $MicrosoftJdkInstaller) {
+            # FeatureEnvironment puts the JDK on PATH, FeatureJarFileRunWith
+            # associates .jar files: both are the vendor installer's defaults.
+            # FeatureJavaHome (JAVA_HOME) is left out, because it is not a default
+            # and would repoint an existing JAVA_HOME to this build.
+            $installScope = if (Test-Administrator) { "/ALLUSERS" } else { "/CURRENTUSER" }
+            $jdkArguments = @(
+                "/VERYSILENT",
+                "/SUPPRESSMSGBOXES",
+                "/NORESTART",
+                $installScope,
+                '/TASKS="FeatureEnvironment,FeatureJarFileRunWith"'
+            )
+
+            Write-Host "[*] Running Microsoft OpenJDK installer (silent, wait, $installScope): $MicrosoftJdkInstaller"
+            $jdkInstaller = Start-Process `
+                -FilePath $MicrosoftJdkInstaller `
+                -ArgumentList $jdkArguments `
+                -Wait `
+                -PassThru `
+                -ErrorAction Stop
+
+            switch ($jdkInstaller.ExitCode) {
+                0 {
+                    Write-Host "[*] Microsoft OpenJDK installed. PATH is updated for new processes; JAVA_HOME is unchanged."
+                }
+                3010 {
+                    Write-Host "[!] Microsoft OpenJDK installed. A restart is required to finish."
+                }
+                default {
+                    Write-Host "[WARN] Microsoft OpenJDK installer exited with code $($jdkInstaller.ExitCode)."
+                    Write-Host "[WARN] The JDK was not installed. Run the installer by hand if you need it: $MicrosoftJdkInstaller"
+                }
+            }
+
+            # Earlier versions only staged the vendor installer under the target
+            # directory; nothing reads it any more.
+            $legacyJdkDir = Join-Path $TargetDir "microsoft_jdk"
+            if (Test-Path $legacyJdkDir) {
+                Write-Host "[*] An installer file staged by an earlier version remains in: $legacyJdkDir"
+                Write-Host "    It is no longer used and can be deleted."
+            }
+        }
+        else {
+            Write-Host "[WARN] Microsoft OpenJDK installer not found. Skipping installation."
+        }
+    }
+    else {
+        Write-Host "[*] microsoft_jdk component not selected. Skipping installation."
     }
 
     # Install HWP Automation (component: hwp_automation)
