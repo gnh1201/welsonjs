@@ -118,6 +118,14 @@ JsonRpc2.register("tools/list", function (rpc, params, id, callback) {
                     + "Do not rely on runtime conversion after the script is received, because non-ASCII characters may already have become question marks. "
                     + "Use require(\"lib/shell\") for shell access. "
                     + "Use require(\"lib/msoffice\") to access Microsoft Excel. "
+                    + "For math, use the global `numbers` (numbers.js 0.7.0, no require needed): "
+                    + "numbers.basic (sum, product, max, min, range, factorial, binomial, permutation, gcd, lcm, egcd, divMod, powerMod, modInverse, numbersEqual), "
+                    + "numbers.statistic (mean, median, mode, quantile, standardDev and covariance (population), correlation, report, linearRegression, exponentialRegression, rSquared), "
+                    + "numbers.matrix on 2D arrays (addition, subtraction, scalar, multiply, transpose, identity, zeros, dotproduct, determinant, inverse, lupDecomposition, rowReduce, vectorNorm, matrixNorm), "
+                    + "numbers.prime (simple, factorization, sieve, coprime, millerRabin), "
+                    + "numbers.calculus (adaptiveSimpson, Riemann, MonteCarlo, limit, pointDiff, LanczosGamma), "
+                    + "new numbers.complex(re, im), numbers.dsp.fft (length a power of 2), numbers.generate (fibonacci, collatz), numbers.random (sample, distribution.normal). "
+                    + "Integers are exact only up to 2^53; compare non-integers with a tolerance. "
                     + "Use `_notify(message)` instead of `console.log` when logging is needed. "
                     + "If the outcome cannot be determined programmatically, ask the user for confirmation.",
                 "inputSchema": {

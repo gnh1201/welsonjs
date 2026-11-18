@@ -1,0 +1,315 @@
+From: WelsonJS contributors
+Subject: [PATCH] numbers.js: WelsonJS modifications
+
+Turns the original numbers.js (numbers.js 0.7.0, the browserified build
+https://github.com/numbers/numbers.js/blob/master/src/numbers.js) into
+app/assets/js/numbers-0.7.0.wsh.js, which app.js loads as the global
+"numbers". numbers.js is licensed under the Apache License, Version 2.0;
+the file header records these modifications.
+
+- matrix.determinant: cofactor expansion along the first row
+  (numbers/numbers.js#161, for issue #160).
+- basic.powerMod: exact for every modulus up to 2^53 (no intermediate sum
+  exceeds the modulus), and halves the exponent without the 32-bit >>
+  operator (exponents of 2^31 and above gave wrong results).
+  prime.millerRabin depends on it.
+- basic.modInverse: returns the inverse in [0, m), not a negative number.
+- calculus.adaptiveSimpson: splits each interval at its midpoint and passes
+  the recursive arguments in order, with a rounding-error floor and a depth
+  limit (it computed one Simpson step, or recursed without bound), and
+  stops at once on a NaN error estimate.
+- calculus.limit: approaches the point with shrinking steps, reports
+  divergence, and uses "middle" by default (it evaluated f once at
+  point +/- 1e-15).
+- calculus.MonteCarlo: samples with random.sample (statistic.randomSample
+  does not exist) and passes every coordinate to the function.
+- generate.collatz: the result array is optional and returned, and the
+  sequence is built in a loop.
+- matrix.transpose: turns a one-dimensional array into a column vector.
+
+Apply from the repository root to the original file saved as
+app/assets/js/numbers-0.7.0.wsh.js:
+
+    git apply app/assets/js/numbers-0.7.0.wsh.js.patch
+
+---
+--- a/app/assets/js/numbers-0.7.0.wsh.js
++++ b/app/assets/js/numbers-0.7.0.wsh.js
+@@ -19,6 +19,21 @@
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
++ *
++ * Modified by WelsonJS contributors (https://github.com/gnh1201/welsonjs), 2026:
++ * - basic.powerMod: exact for every modulus up to 2^53 (the product a * a lost
++ *   precision above 2^26.5; the modular additions never exceed the modulus), and
++ *   halves the exponent without the 32-bit >> operator.
++ * - basic.modInverse: returns the inverse in [0, m), not a negative number.
++ * - calculus.adaptiveSimpson: splits each interval at its midpoint and passes the
++ *   arguments in order (it computed one Simpson step, or recursed without bound),
++ *   with a depth limit, and stops on a NaN error estimate.
++ * - calculus.limit: approaches the point with shrinking steps (it evaluated f once
++ *   at point +/- 1e-15), reports divergence, and uses "middle" by default.
++ * - calculus.MonteCarlo: samples with random.sample (statistic.randomSample does
++ *   not exist) and passes every coordinate to the function.
++ * - generate.collatz: the result array is optional, and the function returns it.
++ * - matrix.transpose: turns a one-dimensional array into a column vector.
+  */
+ 
+ 
+@@ -422,14 +437,37 @@
+   if (b < -1) return Math.pow(a, b) % m;
+   if (b === 0) return 1 % m;
+   if (b >= 1) {
+-    var result = 1;
++    // (x * y) % m for 0 <= x, y < m, exact while m <= 2^53: the product is used
++    // directly when it is below 2^53, and built by doubling otherwise. Each
++    // addition is done as r - (m - x) when r + x would reach m, so no
++    // intermediate value exceeds m and every step stays an exact integer.
++    var addMod = function (r, x) {
++      return (r >= m - x) ? r - (m - x) : r + x;
++    };
++    var mulMod = function (x, y) {
++      if (x * y <= 9007199254740991) return (x * y) % m;
++      var r = 0;
++      while (y > 0) {
++        if (y % 2 === 1) {
++          r = addMod(r, x);
++        }
++        x = addMod(x, x);
++        y = Math.floor(y / 2);
++      }
++      return r;
++    };
++    var result = 1 % m;
++    // m is added only to a negative remainder, so the sum stays below m (adding it
++    // to every remainder could pass 2^53 and round).
++    a = a % m;
++    if (a < 0) a += m;
+     while (b > 0) {
+       if ((b % 2) === 1) {
+-        result = (result * a) % m;
++        result = mulMod(result, a);
+       }
+ 
+-      a = (a * a) % m;
+-      b = b >> 1;
++      a = mulMod(a, a);
++      b = Math.floor(b / 2);
+     }
+     return result;
+   }
+@@ -496,7 +534,8 @@
+ basic.modInverse = function (a, m) {
+   var r = basic.egcd(a, m);
+   if (r[0] !== 1) throw new Error('No modular inverse exists');
+-  return r[1] % m;
++  var inverse = r[1] % m;
++  return inverse < 0 ? inverse + m : inverse;
+ };
+ 
+ 
+@@ -656,15 +695,21 @@
+  * @param {Number} Error bound (epsilon).
+  * @return {Number} recursive evaluation of left and right side.
+  */
+-function SimpsonRecursive(func, a, b, whole, eps) {
+-  var c = a + b;
++function SimpsonRecursive(func, a, b, whole, eps, depth) {
++  var c = (a + b) / 2;
+   var left = SimpsonDef(func, a, c);
+   var right = SimpsonDef(func, c, b);
+ 
+-  if (Math.abs(left + right - whole) <= 15 * eps) {
++  // The bound is never tighter than the rounding error of the sum, and the depth
++  // limit stops a function that never meets it (a singularity) from recursing
++  // without end. A NaN error (the function returned NaN, or Infinity minus
++  // Infinity) can never meet the bound, so it ends the recursion at once instead
++  // of splitting both halves down to the depth limit.
++  var error = Math.abs(left + right - whole);
++  if (depth <= 0 || error !== error || error <= Math.max(15 * eps, 1e-14 * Math.abs(left + right))) {
+     return left + right + (left + right - whole) / 15;
+   } else {
+-    return SimpsonRecursive(func, a, c, eps / 2, left) + SimpsonRecursive(func, c, b, eps / 2, right);
++    return SimpsonRecursive(func, a, c, left, eps / 2, depth - 1) + SimpsonRecursive(func, c, b, right, eps / 2, depth - 1);
+   }
+ }
+ 
+@@ -681,7 +726,7 @@
+ calculus.adaptiveSimpson = function (func, a, b, eps) {
+   eps = (typeof eps === 'undefined') ? numbers.EPSILON : eps;
+ 
+-  return SimpsonRecursive(func, a, b, SimpsonDef(func, a, b), eps);
++  return SimpsonRecursive(func, a, b, SimpsonDef(func, a, b), eps, 50);
+ };
+ 
+ /**
+@@ -690,18 +735,56 @@
+  *
+  * @param {Function} math function to be evaluated.
+  * @param {Number} point to evaluate.
+- * @param {String} approach to limit.
+- * @return {Number} limit.
++ * @param {String} approach to limit: 'left', 'right' or 'middle' (the default).
++ * @return {Number} limit; Infinity or -Infinity when the function diverges, and
++ *   NaN when the left and right limits differ.
+  */
+ calculus.limit = function (func, point, approach) {
++  // Evaluates f at point + sign * h for h = 10^-1 ... 10^-12 (scaled by |point|).
++  // Successive results first converge, then drift apart again once rounding error
++  // dominates (cancellation can even collapse them to 0), so the value returned is
++  // the one where they agree best before the differences start to grow.
++  var side = function (sign) {
++    var scale = Math.max(1, Math.abs(point));
++    var values = [];
++    var k, best = -1, bestDiff = Infinity, diff, growing = true;
++
++    for (k = 1; k <= 12; k++) {
++      values.push(func(point + sign * Math.pow(10, -k) * scale));
++    }
++    for (k = 1; k < values.length; k++) {
++      if (Math.abs(values[k]) <= Math.abs(values[k - 1])) growing = false;
++    }
++    for (k = 1; k < values.length; k++) {
++      diff = Math.abs(values[k] - values[k - 1]);
++      if (diff < bestDiff) {
++        bestDiff = diff;
++        best = k;
++      } else if (diff > bestDiff) {
++        break;
++      }
++    }
++    // Values whose size grows at every step (as 1/x does near 0) diverge.
++    if (growing && Math.abs(values[values.length - 1]) > 1e6) {
++      return values[values.length - 1] > 0 ? Infinity : -Infinity;
++    }
++    return best < 0 ? values[values.length - 1] : values[best];
++  };
++
+   if (approach === 'left') {
+-    return func(point - 1e-15);
++    return side(-1);
+   } else if (approach === 'right') {
+-    return func(point + 1e-15);
+-  } else if (approach === 'middle') {
+-    return (calculus.limit(func, point, 'left') + calculus.limit(func, point, 'right')) / 2;
++    return side(1);
++  } else if (approach === 'middle' || typeof approach === 'undefined') {
++    var left = side(-1);
++    var right = side(1);
++    if (left === right) return left;
++    if (Math.abs(left - right) <= numbers.EPSILON * Math.max(1, Math.abs(left), Math.abs(right))) {
++      return (left + right) / 2;
++    }
++    return NaN;
+   } else {
+-    throw new Error('Approach not provided');
++    throw new Error("Approach must be 'left', 'right' or 'middle'.");
+   }
+ };
+ 
+@@ -784,10 +867,10 @@
+     //generate an array of arrays, each nested array being N
+     //random values in each interval - N-by-3 array, and then
+     //transpose it to get a 3-by-N array
+-    return numbers.statistic.randomSample(l[0], l[1], N);
++    return numbers.random.sample(l[0], l[1], N);
+   })).map(function (l) {
+     //evaluate func at each set of points
+-    return func.apply(null, [l[0], l[1], l[2]]);
++    return func.apply(null, l);
+   });
+ 
+   return coeff * fvals.reduce(function (a, b) {
+@@ -1150,20 +1233,22 @@
+ /**
+  * Populate the given array with a Collatz Sequence.
+  *
+- * @param {Number} first number.
+- * @param {Array} arrary to be populated.
++ * @param {Number} first number (a positive integer).
++ * @param {Array} (Optional) array to be populated.
+  * @return {Array} array populated with Collatz sequence
+  */
+ generate.collatz = function (n, result) {
+-  result.push(n);
++  if (typeof result === 'undefined') result = [];
++  if (n < 1 || n % 1 !== 0) throw new Error('Input must be a positive integer.');
+ 
+-  if (n === 1) {
+-    return;
+-  } else if (n % 2 === 0) {
+-    generate.collatz(n / 2, result);
+-  } else {
+-    generate.collatz(3 * n + 1, result);
++  // A loop rather than recursion, so long sequences do not exhaust the stack.
++  result.push(n);
++  while (n !== 1) {
++    n = (n % 2 === 0) ? n / 2 : 3 * n + 1;
++    result.push(n);
+   }
++
++  return result;
+ };
+ 
+ },{}],8:[function(require,module,exports){
+@@ -1333,10 +1418,18 @@
+ /**
+  * Transpose a matrix.
+  *
+- * @param {Array} matrix.
+- * @return {Array} transposed matrix.
++ * @param {Array} matrix, or a one-dimensional array (a row vector).
++ * @return {Array} transposed matrix; a column vector for a one-dimensional array.
+  */
+ matrix.transpose = function (arr) {
++  if (arr.length > 0 && !(arr[0] instanceof Array)) {
++    var column = new Array(arr.length);
++    for (var k = 0; k < arr.length; k++) {
++      column[k] = [arr[k]];
++    }
++    return column;
++  }
++
+   var result = new Array(arr[0].length);
+ 
+   for (var i = 0; i < arr[0].length; i++) {
+@@ -1443,6 +1536,7 @@
+     return m[0][0] * m[1][1] - m[0][1] * m[1][0];
+   }
+ 
++  /*
+   for (col = 0; col < numCol; col++) {
+     diagLeft = m[0][col];
+     diagRight = m[0][col];
+@@ -1454,8 +1548,29 @@
+ 
+     det += diagRight - diagLeft;
+   }
+-
++  
+   return det;
++  */
++  
++  // new algorithm for matrix determinant #161 @youngbizman
++  // https://github.com/numbers/numbers.js/pull/161
++  // https://github.com/numbers/numbers.js/issues/160
++  var indexColumn = 0;
++  var result = 0;
++  var numberOfAddedRows = 0;
++  while (indexColumn < numCol) {
++    numberOfAddedRows = 0;
++    var newArray = new Array();
++    while (numberOfAddedRows < numRow - 1) {
++      newArray.push(m[numberOfAddedRows + 1].slice(0, indexColumn).concat(m[numberOfAddedRows + 1].slice(indexColumn + 1)));
++      numberOfAddedRows++;
++    }
++    
++    result += Math.pow(-1, indexColumn) * m[0][indexColumn] * matrix.determinant(newArray);
++    indexColumn++;
++  }
++  
++  return result;
+ };
+ 
+ /**

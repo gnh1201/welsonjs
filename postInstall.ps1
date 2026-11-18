@@ -70,6 +70,15 @@ else {
     $DownloadUrls = @{}
 }
 
+# ================================
+# LOAD DOWNLOAD HASHES (DownloadHashes.txt in /data folder)
+# ================================
+# Every file this script downloads must hash to one of the SHA-256 values listed
+# in this file. The file holds nothing else: one lowercase hex hash per line, no
+# component name and no URL, so allowing a download means adding its hash.
+$DownloadHashesPath = Join-Path $ScriptRoot "data/DownloadHashes.txt"
+$script:DownloadHashes = $null
+
 function Get-DownloadUrl {
     param(
         [Parameter(Mandatory = $true)]
@@ -97,6 +106,63 @@ function Get-DownloadUrl {
     }
 
     return $null
+}
+
+# The name a component's download is saved under. It comes from the URL, and both
+# the download and the extraction phase ask here, so an archive is unpacked from the
+# name it was saved as. Every entry of data\DownloadUrls.psd1 ends in a file name
+# now that curl, the Android platform-tools and NuGet are pinned to versioned files;
+# one that has none falls back to <component>.download.
+function Get-DownloadFileName {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Component,
+        [Parameter(Mandatory = $true)]
+        [string]$Url
+    )
+
+    $fileName = [System.IO.Path]::GetFileName(([uri]$Url).AbsolutePath)
+    if (-not $fileName) {
+        $fileName = "$Component.download"
+    }
+
+    return $fileName
+}
+
+function Get-DownloadHashes {
+    # The SHA-256 values a downloaded file is allowed to have, read from
+    # data\DownloadHashes.txt: one hash per line, blank lines and surrounding
+    # spaces ignored. The set is case-insensitive, because a hash written in upper
+    # case is still the same hash. The file is read once per run.
+    # Every return wraps the set in a one-element array (the comma operator):
+    # PowerShell would otherwise unroll it into an object[] (or a single string for
+    # one hash), and Contains would no longer be the set's case-insensitive lookup.
+    if ($null -ne $script:DownloadHashes) {
+        return ,$script:DownloadHashes
+    }
+
+    $hashes = New-Object -TypeName 'System.Collections.Generic.HashSet[string]' -ArgumentList ([System.StringComparer]::OrdinalIgnoreCase)
+
+    if (-not (Test-Path -LiteralPath $DownloadHashesPath -PathType Leaf)) {
+        Write-Host "[WARN] data\DownloadHashes.txt not found at: $DownloadHashesPath"
+        Write-Host "[WARN] No download can be verified in this run."
+        $script:DownloadHashes = $hashes
+        return ,$hashes
+    }
+
+    foreach ($line in @(Get-Content -LiteralPath $DownloadHashesPath -ErrorAction SilentlyContinue)) {
+        $hash = ""
+        if ($null -ne $line) { $hash = ([string]$line).Trim() }
+        if ($hash -eq "") { continue }
+        [void]$hashes.Add($hash)
+    }
+
+    if ($hashes.Count -eq 0) {
+        Write-Host "[WARN] data\DownloadHashes.txt lists no hash. No download can be verified in this run."
+    }
+
+    $script:DownloadHashes = $hashes
+    return ,$hashes
 }
 
 # ================================
@@ -204,9 +270,18 @@ New-Item -ItemType Directory -Path $TmpDir    -Force | Out-Null
 $SelectedComponents    = @()
 $AllComponentsSelected = $true
 
-if ($Components -and $Components.Trim() -ne "") {
+# Setup passes the components the user ticked, and "none" when that selection is
+# empty: WizardSelectedComponents returns an empty string, which would otherwise
+# read as "no filter" and select every component. A run started by hand without
+# -Components keeps meaning every component.
+$componentList = if ($Components) { $Components.Trim() } else { "" }
+
+if ($componentList -eq "none") {
+    $AllComponentsSelected = $false
+}
+elseif ($componentList -ne "") {
     $SelectedComponents =
-        $Components.Split(",") |
+        $componentList.Split(",") |
         ForEach-Object { $_.Trim().ToLowerInvariant() }
 
     $AllComponentsSelected = $false
@@ -507,12 +582,28 @@ function Get-NativeArchitecture {
         }
     }
     catch {
-        # Fallback: only 32/64 bit detection if WMI/CIM is not available
-        if ([System.Environment]::Is64BitOperatingSystem) {
-            $arch = "x64"
+        # Fallback when the processor query is unavailable. The environment names
+        # the native architecture, which a plain 64-bit check cannot: it would
+        # answer x64 on an ARM64 machine and download the emulated build.
+        $processorArchitecture = if ($env:PROCESSOR_ARCHITEW6432) {
+            $env:PROCESSOR_ARCHITEW6432
         }
         else {
-            $arch = "x86"
+            $env:PROCESSOR_ARCHITECTURE
+        }
+
+        switch ($processorArchitecture) {
+            "ARM64" { $arch = "arm64" }
+            "AMD64" { $arch = "x64"   }
+            "x86"   { $arch = "x86"   }
+            default {
+                if ([System.Environment]::Is64BitOperatingSystem) {
+                    $arch = "x64"
+                }
+                else {
+                    $arch = "x86"
+                }
+            }
         }
     }
 
@@ -629,6 +720,40 @@ function Ensure-EmptyDirectory {
     }
 }
 
+function Get-Sha256Hash {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
+
+    if (Get-Command Get-FileHash -ErrorAction SilentlyContinue) {
+        return (Get-FileHash -LiteralPath $Path -Algorithm SHA256 -ErrorAction Stop).Hash.ToLowerInvariant()
+    }
+
+    # Get-FileHash arrived with PowerShell 4.0 (Windows 8.1); the .NET class is
+    # there on every version this script runs on.
+    $stream = [System.IO.File]::OpenRead($Path)
+    try {
+        $sha256 = [System.Security.Cryptography.SHA256]::Create()
+        try {
+            $bytes = $sha256.ComputeHash($stream)
+        }
+        finally {
+            $sha256.Dispose()
+        }
+    }
+    finally {
+        $stream.Dispose()
+    }
+
+    $hex = New-Object System.Text.StringBuilder
+    foreach ($byte in $bytes) {
+        [void]$hex.Append($byte.ToString("x2"))
+    }
+
+    return $hex.ToString()
+}
+
 function Download-File {
     param(
         [Parameter(Mandatory = $true)]
@@ -677,7 +802,9 @@ function Download-File {
     while (-not $success -and $attempt -lt $maxRetries) {
         $attempt++
         try {
-            Invoke-WebRequest -Uri $Url -OutFile $DestinationPath -UseBasicParsing
+            # A connection that stays open but stops delivering would otherwise
+            # hold the whole installation here.
+            Invoke-WebRequest -Uri $Url -OutFile $DestinationPath -UseBasicParsing -TimeoutSec 900
             $success = $true
         }
         catch {
@@ -701,14 +828,47 @@ function Download-File {
             "--fail"
             "--retry", "3"
             "--retry-delay", "5"
+            "--connect-timeout", "30"
+            # A transfer that delivers nothing for 5 minutes is abandoned; a total
+            # time limit would cut off the multi-gigabyte model downloads.
+            "--speed-limit", "1"
+            "--speed-time", "300"
             "-o", $DestinationPath
             $Url
         )
 
-        $proc = Start-Process -FilePath $curlPath -ArgumentList $curlArgs -NoNewWindow -Wait -PassThru
-        if ($proc.ExitCode -ne 0 -or -not (Test-Path $DestinationPath)) {
-            throw "curl download failed with exit code $($proc.ExitCode)."
+        $curlProcess = Start-Process -FilePath $curlPath -ArgumentList $curlArgs -NoNewWindow -Wait -PassThru
+        if ($curlProcess.ExitCode -ne 0 -or -not (Test-Path $DestinationPath)) {
+            throw "curl download failed with exit code $($curlProcess.ExitCode)."
         }
+    }
+
+    # Every download must be a file whose SHA-256 is listed in
+    # data\DownloadHashes.txt. One that is not is deleted here, before a component
+    # can run or unpack it, and the error names the hash it did have so the file
+    # can be identified and the list updated deliberately.
+    $allowedHashes = Get-DownloadHashes
+    if ($allowedHashes.Count -gt 0) {
+        try {
+            $actual = Get-Sha256Hash -Path $DestinationPath
+        }
+        catch {
+            Remove-Item -LiteralPath $DestinationPath -Force -ErrorAction SilentlyContinue
+            throw "Could not hash the downloaded file: $($_.Exception.Message)"
+        }
+
+        if (-not $allowedHashes.Contains($actual)) {
+            Remove-Item -LiteralPath $DestinationPath -Force -ErrorAction SilentlyContinue
+            Write-Host "[ERROR] The downloaded file is not listed in data\DownloadHashes.txt, so it was deleted:"
+            Write-Host "        $Url"
+            Write-Host "        SHA-256: $actual"
+            throw "SHA-256 $actual, for $DestinationPath, is not listed in data\DownloadHashes.txt."
+        }
+
+        Write-Host "[+] SHA-256 verified: $actual"
+    }
+    else {
+        Write-Host "[WARN] data\DownloadHashes.txt lists no hash, so this download is not verified."
     }
 }
 
@@ -741,7 +901,12 @@ function Extract-CompressedFile {
         [string]$CompressedPath,
 
         [Parameter(Mandatory = $true)]
-        [string]$DestinationDirectory
+        [string]$DestinationDirectory,
+
+        # A vendor package whose own top folder carries meaning (a JDK names the
+        # folder after its build) is unpacked as it is; the default unwraps a
+        # single root folder, because most archives here only use one as a wrapper.
+        [switch]$KeepArchiveRoot
     )
 
     Write-Host "[*] Extracting compressed file:"
@@ -779,13 +944,16 @@ function Extract-CompressedFile {
     $entries    = Get-ChildItem -Path $tmpExtractDir -Force
     $SourceRoot = $tmpExtractDir
 
-    while ($entries.Count -eq 1 -and $entries[0].PSIsContainer) {
+    while (-not $KeepArchiveRoot -and $entries.Count -eq 1 -and $entries[0].PSIsContainer) {
         $SourceRoot = $entries[0].FullName
         Write-Host "[*] Detected single root folder inside archive: $($entries[0].Name)"
         Write-Host "[*] Unwrapping folder content..."
         $entries = Get-ChildItem -Path $SourceRoot -Force
     }
-    if ($SourceRoot -eq $tmpExtractDir) {
+    if ($KeepArchiveRoot) {
+        Write-Host "[*] Keeping the archive's own top folder."
+    }
+    elseif ($SourceRoot -eq $tmpExtractDir) {
         Write-Host "[*] Extracting multi-item archive (no root folder unwrapping needed)."
     }
 
@@ -1016,27 +1184,162 @@ function Extract-GZipFile {
 }
 
 
+function Add-UserPathEntry {
+    # Adds a directory to the current user's PATH when it is not there yet, and
+    # says whether it added it. Entries are compared as resolved paths, so a
+    # trailing backslash or a change of case does not add the same directory twice.
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Directory
+    )
+
+    $userPath   = [Environment]::GetEnvironmentVariable("Path", "User")
+    $pathEntries = @($userPath -split ";" | Where-Object { $_ -and $_.Trim() -ne "" })
+    $normalizedDirectory = [System.IO.Path]::GetFullPath($Directory).TrimEnd("\")
+
+    foreach ($pathEntry in $pathEntries) {
+        try {
+            if ([System.IO.Path]::GetFullPath($pathEntry).TrimEnd("\") -ieq $normalizedDirectory) {
+                return $false
+            }
+        }
+        catch { }
+    }
+
+    $pathEntries += $normalizedDirectory
+    $newUserPath  = $pathEntries -join ";"
+    [Environment]::SetEnvironmentVariable("Path", $newUserPath, "User")
+    $env:Path = "$newUserPath;$env:Path"
+    return $true
+}
+
+function Remove-UserPathEntriesUnder {
+    # Removes the current user's PATH entries that point into a directory which is
+    # being deleted, and answers how many it removed. Entries are compared as
+    # resolved paths, so a trailing backslash or a change of case still counts as
+    # inside the directory. The copy of PATH in this process is left as it is: an
+    # entry into a directory that no longer exists does nothing, and the value saved
+    # for later shells is what has to be right.
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Directory
+    )
+
+    $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+    if (-not $userPath) { return 0 }
+
+    $removed       = 0
+    $keptEntries   = @()
+    $rootDirectory = [System.IO.Path]::GetFullPath($Directory).TrimEnd("\") + "\"
+
+    foreach ($pathEntry in ($userPath -split ";")) {
+        $trimmedEntry = $pathEntry.Trim()
+        if ($trimmedEntry -eq "") { continue }
+
+        $resolvedEntry = $trimmedEntry
+        try { $resolvedEntry = [System.IO.Path]::GetFullPath($trimmedEntry) }
+        catch { }
+
+        if ($resolvedEntry.StartsWith($rootDirectory, [System.StringComparison]::OrdinalIgnoreCase)) {
+            $removed++
+            continue
+        }
+
+        $keptEntries += $trimmedEntry
+    }
+
+    if ($removed -gt 0) {
+        [Environment]::SetEnvironmentVariable("Path", ($keptEntries -join ";"), "User")
+    }
+
+    return $removed
+}
+
+function Find-JdkHome {
+    # The JDK root is the directory whose bin\java.exe is the launcher. A vendor
+    # archive puts it in one folder named after the build, but the depth is not
+    # guaranteed, so the search goes down a few levels and answers the shallowest
+    # directory that has bin\java.exe. $null means the archive holds no JDK.
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Container)) {
+        return $null
+    }
+
+    $level = @((Get-Item -LiteralPath $Path).FullName)
+
+    for ($depth = 0; $depth -lt 3; $depth++) {
+        $nextLevel = @()
+
+        foreach ($directory in $level) {
+            if (Test-Path -LiteralPath (Join-Path $directory "bin\java.exe") -PathType Leaf) {
+                return $directory
+            }
+
+            $nextLevel += @(Get-ChildItem -LiteralPath $directory -Force -ErrorAction SilentlyContinue |
+                Where-Object { $_.PSIsContainer } |
+                ForEach-Object { $_.FullName })
+        }
+
+        if ($nextLevel.Count -eq 0) { break }
+        $level = $nextLevel
+    }
+
+    return $null
+}
+
+
 # ================================
 # COMPRESSED / INSTALLER PATHS
 # ================================
 $GtkRuntimeInstaller     = Join-Path $TmpDir "gtk-runtime.exe"
 $NpcapInstaller          = Join-Path $TmpDir "npcap-setup.exe"
 $NmapInstaller           = Join-Path $TmpDir "nmap-setup.exe"
+$JdkArchive             = $null  # set in the download phase: the .zip named in the URL table
 $HwpAutomationCompressed = Join-Path $TmpDir "FilePathCheckerModuleExample.dll.gz"
+
+# Downloads one optional component. A failure (a network error, or a file whose
+# SHA-256 is not in data\DownloadHashes.txt, which Download-File has already
+# deleted) skips that component only: the installation phase finds no file and
+# skips it, and the other components still run. Five URLs in the table serve
+# whatever is current, so a vendor update must not end the whole installation.
+function Save-ComponentDownload {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Component,
+        [Parameter(Mandatory = $true)]
+        [string]$Url,
+        [Parameter(Mandatory = $true)]
+        [string]$DestinationPath
+    )
+
+    try {
+        Download-File -Url $Url -DestinationPath $DestinationPath
+    }
+    catch {
+        Write-Host "[ERROR] Failed to download the $Component component: $($_.Exception.Message)"
+        Write-Host "[WARN] The $Component component is skipped for this run."
+        Remove-Item -LiteralPath $DestinationPath -Force -ErrorAction SilentlyContinue
+    }
+}
 
 # ================================
 # DOWNLOAD PHASE
 # ================================
 try {
     # Download archive/file components through one shared path.
-    # Nmap/Npcap, GTK runtime and HWP keep dedicated installation handling.
+    # Nmap/Npcap, GTK runtime, OpenJDK (jdk) and HWP keep dedicated
+    # installation handling.
     $downloadComponents = @(
         "python", "curl", "hy_mt2_1_8b_1_25bit", "frognano_4b_2609", "bitnet_b1_58_2b_4t", "qwen3guard_06b", "yara", "wamr", "websocat", "artifacts",
         "gtkserver", "tessdata", "tessdata_best", "tessdata_fast",
         "windivert", "android_platform_tools", "tun2socks", "sendboxie",
         "ldplayer", "tap_windows6", "thc_hydra", "shadowsocks_libev",
         "winlibs_mingw", "golang", "x86dbg", "w7zip", "hashcat",
-        "microsoft_jdk", "nuget", "ripgrep"
+        "nuget", "ripgrep"
     )
 
     foreach ($component in $downloadComponents) {
@@ -1046,27 +1349,59 @@ try {
             Write-Host "[*] $component URL not available for arch: $arch. Skipping download."
             continue
         }
-        $fileName = [System.IO.Path]::GetFileName(([uri]$url).AbsolutePath)
-        if ($component -eq "curl") { $fileName = "curl.zip" }
-        if (-not $fileName) { $fileName = "$component.download" }
-        Download-File -Url $url -DestinationPath (Join-Path $TmpDir "$component-$fileName")
+        $fileName = Get-DownloadFileName -Component $component -Url $url
+        Save-ComponentDownload -Component $component -Url $url -DestinationPath (Join-Path $TmpDir "$component-$fileName")
     }
 
     if (Test-ComponentSelected -Name "gtk3runtime") {
         $url = Get-DownloadUrl -Component "gtk3runtime" -Arch $arch
-        if ($url) { Download-File -Url $url -DestinationPath $GtkRuntimeInstaller }
+        if ($url) { Save-ComponentDownload -Component "gtk3runtime" -Url $url -DestinationPath $GtkRuntimeInstaller }
     }
 
     if (Test-ComponentSelected -Name "nmap") {
         $npcapUrl = Get-DownloadUrl -Component "npcap" -Arch $arch
-        if ($npcapUrl) { Download-File -Url $npcapUrl -DestinationPath $NpcapInstaller }
+        if ($npcapUrl) { Save-ComponentDownload -Component "npcap" -Url $npcapUrl -DestinationPath $NpcapInstaller }
         $nmapUrl = Get-DownloadUrl -Component "nmap" -Arch $arch
-        if ($nmapUrl) { Download-File -Url $nmapUrl -DestinationPath $NmapInstaller }
+        if ($nmapUrl) { Save-ComponentDownload -Component "nmap" -Url $nmapUrl -DestinationPath $NmapInstaller }
+    }
+
+    # OpenJDK (component: jdk) – the vendor's .zip archive is downloaded
+    # here and unpacked in the installation phase. All three architectures are a
+    # .zip: the Microsoft Build of OpenJDK (x64, ARM64) and Azul Zulu 17 (32-bit
+    # Windows), so the file name comes from the URL.
+    if (Test-ComponentSelected -Name "jdk") {
+        $url = Get-DownloadUrl -Component "jdk" -Arch $arch
+        if ($url) {
+            $jdkFileName = [System.IO.Path]::GetFileName(([uri]$url).AbsolutePath)
+            if (-not $jdkFileName) { $jdkFileName = "openjdk.zip" }
+
+            # A directory of its own for this run: the archive is unpacked into the
+            # user's AppData while the script may be elevated, so it must not sit at
+            # a path that an earlier run, or a second run at the same time, also writes.
+            $jdkDownloadDirectory = Join-Path $TmpDir "jdk-$([guid]::NewGuid().ToString('N'))"
+            New-Item -ItemType Directory -Path $jdkDownloadDirectory -Force | Out-Null
+            $JdkArchive = Join-Path $jdkDownloadDirectory $jdkFileName
+
+            try {
+                Download-File -Url $url -DestinationPath $JdkArchive
+            }
+            catch {
+                # An optional component that cannot be fetched must not stop the rest.
+                Write-Host "[WARN] Failed to download the OpenJDK archive: $($_.Exception.Message)"
+                Write-Host "[WARN] The OpenJDK component is skipped for this run."
+                Remove-Item -LiteralPath $jdkDownloadDirectory -Recurse -Force -ErrorAction SilentlyContinue
+                $JdkArchive = $null
+            }
+        }
+        else {
+            Write-Host "[*] jdk has no archive in the URL table for arch: $arch. Skipping download."
+            Write-Host "    Microsoft publishes Windows builds of JDK 25 for x64 and ARM64; the 32-bit Windows build in the table is Azul Zulu 17 for x86."
+        }
     }
 
     if (Test-ComponentSelected -Name "hwp_automation") {
         $url = Get-DownloadUrl -Component "hwp_automation" -Arch $arch
-        if ($url) { Download-File -Url $url -DestinationPath $HwpAutomationCompressed }
+        if ($url) { Save-ComponentDownload -Component "hwp_automation" -Url $url -DestinationPath $HwpAutomationCompressed }
     }
 
     if (Test-ComponentSelected -Name "tls13") {
@@ -1092,8 +1427,7 @@ try {
         if (-not (Test-ComponentSelected -Name $component)) { continue }
         $url = Get-DownloadUrl -Component $component -Arch $arch
         if (-not $url) { continue }
-        $fileName = [System.IO.Path]::GetFileName(([uri]$url).AbsolutePath)
-        if (-not $fileName) { $fileName = "$component.download" }
+        $fileName = Get-DownloadFileName -Component $component -Url $url
         $archivePath = Join-Path $TmpDir "$component-$fileName"
         if (-not (Test-Path $archivePath)) {
             Write-Host "[WARN] $component download not found. Skipping installation."
@@ -1130,26 +1464,8 @@ try {
             $toolDirectory = Join-Path $TargetDir $tool.Name
             $toolExecutable = Join-Path $toolDirectory $tool.Executable
             if (Test-Path $toolExecutable) {
-                $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
-                $pathEntries = @($userPath -split ";" | Where-Object { $_ -and $_.Trim() -ne "" })
-                $normalizedToolDirectory = [System.IO.Path]::GetFullPath($toolDirectory).TrimEnd("\")
-                $alreadyRegistered = $false
-                foreach ($pathEntry in $pathEntries) {
-                    try {
-                        if ([System.IO.Path]::GetFullPath($pathEntry).TrimEnd("\") -ieq $normalizedToolDirectory) {
-                            $alreadyRegistered = $true
-                            break
-                        }
-                    }
-                    catch { }
-                }
-
-                if (-not $alreadyRegistered) {
-                    $pathEntries += $normalizedToolDirectory
-                    $newUserPath = $pathEntries -join ";"
-                    [Environment]::SetEnvironmentVariable("Path", $newUserPath, "User")
-                    $env:Path = "$newUserPath;$env:Path"
-                    Write-Host "[*] Added $($tool.Name) to the current user's PATH: $normalizedToolDirectory"
+                if (Add-UserPathEntry -Directory $toolDirectory) {
+                    Write-Host "[*] Added $($tool.Name) to the current user's PATH: $toolDirectory"
                 }
                 else {
                     Write-Host "[*] $($tool.Name) is already present in the current user's PATH."
@@ -1228,6 +1544,197 @@ try {
     }
     else {
         Write-Host "[*] nmap component not selected. Skipping Npcap/Nmap installation."
+    }
+
+    # Unpack an OpenJDK build (component: jdk)
+    # The component unpacks a vendor .zip into the WelsonJS AppData directory and
+    # registers it itself:
+    #   %APPDATA%\welsonjs\jdk\<the archive's own top folder>\
+    # The folder carries the component's own name, `jdk`, and the build's own
+    # version folder inside it is what keeps two builds apart. A folder that this
+    # component wrote under its earlier name, %APPDATA%\welsonjs\microsoft_jdk,
+    # is removed once the new JDK is registered.
+    # The archive holds Microsoft Build of OpenJDK 25 on x64 and ARM64, and Azul
+    # Zulu 17 LTS on 32-bit Windows. Unpacking instead of installing leaves nothing
+    # in Program Files and creates no Programs and Features entry: the JDK lives in
+    # WelsonJS's own data directory, next to the components postInstall.ps1
+    # downloads, and deleting that directory removes it. This is an optional
+    # component: a download, hash, extraction or registration failure is reported
+    # and the other components run.
+    if (Test-ComponentSelected -Name "jdk") {
+        $jdkTargetDirectory = Join-Path $TargetDir "jdk"
+        $jdkUnpacked = $false
+
+        # The hash was checked once after the download and is checked again here,
+        # immediately before the archive is unpacked, against the same list in
+        # data\DownloadHashes.txt. The temporary directory is writable by the user
+        # this script runs for, so an archive replaced between the download and the
+        # extraction would otherwise write files of someone else's choosing into
+        # the user's AppData. A file that is not listed skips this component only.
+        if ($JdkArchive) {
+            $jdkAllowedHashes = Get-DownloadHashes
+            if ($jdkAllowedHashes.Count -gt 0) {
+                try {
+                    $jdkHashActual = Get-Sha256Hash -Path $JdkArchive
+                }
+                catch {
+                    $jdkHashActual = $null
+                }
+
+                if (-not $jdkHashActual -or -not $jdkAllowedHashes.Contains($jdkHashActual)) {
+                    Write-Host "[ERROR] The OpenJDK archive is not a file listed in data\DownloadHashes.txt, so it will not be unpacked."
+                    Write-Host "        SHA-256: $jdkHashActual"
+                    Write-Host "[WARN] The OpenJDK component is skipped for this run."
+                    Remove-Item -LiteralPath $JdkArchive -Force -ErrorAction SilentlyContinue
+                    $JdkArchive = $null
+                }
+            }
+        }
+
+        if ($JdkArchive -and (Test-Path -LiteralPath $JdkArchive -PathType Leaf)) {
+            # Unpack into a directory of this run first: an archive that fails to
+            # unpack, or holds no bin\java.exe, then leaves the JDK of an earlier
+            # run untouched instead of replacing it with a half-written tree.
+            $jdkStagingDirectory = Join-Path $TmpDir "jdk-extract-$([guid]::NewGuid().ToString('N'))"
+
+            try {
+                Extract-CompressedFile -CompressedPath $JdkArchive -DestinationDirectory $jdkStagingDirectory -KeepArchiveRoot
+                $jdkStagedHome = Find-JdkHome -Path $jdkStagingDirectory
+                if (-not $jdkStagedHome) {
+                    throw "The archive holds no bin\java.exe. The layout of the vendor package may have changed."
+                }
+
+                # The archive's own folder name carries the build, so the unpacked JDK
+                # keeps its version in the path: jdk\jdk-25.0.5.0.2+1\bin.
+                # An archive that holds the JDK at its root (no folder of its own) is
+                # named after the archive file instead, so the target keeps a stable name.
+                if ($jdkStagedHome -ieq $jdkStagingDirectory) {
+                    $jdkFolderName = [System.IO.Path]::GetFileNameWithoutExtension($JdkArchive)
+                }
+                else {
+                    $jdkFolderName = Split-Path -Leaf $jdkStagedHome
+                }
+                $jdkHome = Join-Path $jdkTargetDirectory $jdkFolderName
+
+                # The same build may already be unpacked here. It is renamed aside, not
+                # deleted, until this copy is in place: if the move fails, it is put
+                # back, so JAVA_HOME and PATH never point at a deleted folder. A
+                # java.exe still running from it holds the folder open, and the rename
+                # fails with an error that says so. The renamed copy is removed with the
+                # other leftovers below.
+                New-Item -ItemType Directory -Path $jdkTargetDirectory -Force | Out-Null
+                $jdkPreviousHome = $null
+                if (Test-Path -LiteralPath $jdkHome) {
+                    $jdkPreviousHome = "$jdkHome.previous-$([guid]::NewGuid().ToString('N'))"
+                    Rename-Item -LiteralPath $jdkHome -NewName (Split-Path -Leaf $jdkPreviousHome) -ErrorAction Stop
+                }
+                try {
+                    Move-Item -LiteralPath $jdkStagedHome -Destination $jdkHome -Force -ErrorAction Stop
+                }
+                catch {
+                    if ($jdkPreviousHome -and -not (Test-Path -LiteralPath $jdkHome)) {
+                        Rename-Item -LiteralPath $jdkPreviousHome -NewName (Split-Path -Leaf $jdkHome) -ErrorAction SilentlyContinue
+                    }
+                    throw
+                }
+
+                # A JDK of an earlier version, or the installer file that earlier
+                # versions of this component only staged here, is no longer used. What
+                # cannot be removed is reported, not fatal.
+                foreach ($jdkLeftover in @(Get-ChildItem -LiteralPath $jdkTargetDirectory -Force -ErrorAction SilentlyContinue)) {
+                    if ($jdkLeftover.FullName -ieq $jdkHome) { continue }
+                    try {
+                        Remove-Item -LiteralPath $jdkLeftover.FullName -Recurse -Force -ErrorAction Stop
+                        Write-Host "[*] Removed a file of an earlier installation: $($jdkLeftover.Name)"
+                    }
+                    catch {
+                        Write-Host "[WARN] Could not remove $($jdkLeftover.FullName). Close any program using it and delete it by hand."
+                    }
+                }
+
+                # JAVA_HOME and PATH are written for the current user, not the machine,
+                # even when the setup runs elevated: the JDK is under this user's
+                # %APPDATA%, so a machine-wide value would point every account at one
+                # user's profile.
+                $previousJavaHome = [Environment]::GetEnvironmentVariable("JAVA_HOME", "User")
+                [Environment]::SetEnvironmentVariable("JAVA_HOME", $jdkHome, "User")
+                $env:JAVA_HOME = $jdkHome
+
+                # A PATH entry for another JDK under jdk\ (an earlier version whose
+                # folder could not be removed above) would come before the new entry
+                # and make new shells run that java.exe while JAVA_HOME names this one,
+                # so every entry under jdk\ is dropped before this JDK's bin is added.
+                $jdkBinDirectory = Join-Path $jdkHome "bin"
+                [void](Remove-UserPathEntriesUnder -Directory $jdkTargetDirectory)
+                $jdkPathAdded = Add-UserPathEntry -Directory $jdkBinDirectory
+
+                Write-Host "[*] OpenJDK unpacked to: $jdkHome"
+                if ($previousJavaHome -and ($previousJavaHome -ine $jdkHome)) {
+                    Write-Host "    JAVA_HOME for the current user pointed at $previousJavaHome and now points at this JDK."
+                }
+                else {
+                    Write-Host "    JAVA_HOME for the current user now points at this JDK."
+                }
+                if ($jdkPathAdded) {
+                    Write-Host "    Added $jdkBinDirectory to the current user's PATH."
+                }
+                else {
+                    Write-Host "    $jdkBinDirectory is already on the current user's PATH."
+                }
+                Write-Host "    New shells and processes see both; open ones keep the environment they started with."
+
+                # What this component left under its earlier name is no longer used:
+                # a JDK unpacked into %APPDATA%\welsonjs\microsoft_jdk by an earlier
+                # build, or the installer file even earlier versions only staged there.
+                # JAVA_HOME was just pointed at the new folder, so a PATH entry into
+                # the old one is dropped with it. A folder that cannot be removed (a
+                # java.exe still running from it, for instance) is reported and the
+                # component still counts as installed.
+                $jdkLegacyDirectory = Join-Path $TargetDir "microsoft_jdk"
+                if ($jdkTargetDirectory -ine $jdkLegacyDirectory) {
+                    $jdkLegacyPathEntries = Remove-UserPathEntriesUnder -Directory $jdkLegacyDirectory
+                    if ($jdkLegacyPathEntries -eq 1) {
+                        Write-Host "    Removed a PATH entry that pointed into $jdkLegacyDirectory."
+                    }
+                    elseif ($jdkLegacyPathEntries -gt 1) {
+                        Write-Host "    Removed $jdkLegacyPathEntries PATH entries that pointed into $jdkLegacyDirectory."
+                    }
+
+                    if (Test-Path -LiteralPath $jdkLegacyDirectory) {
+                        try {
+                            Remove-Item -LiteralPath $jdkLegacyDirectory -Recurse -Force -ErrorAction Stop
+                            Write-Host "[*] Removed what earlier versions left in $jdkLegacyDirectory"
+                        }
+                        catch {
+                            Write-Host "[WARN] Could not remove $jdkLegacyDirectory. Close any program using it and delete it by hand."
+                        }
+                    }
+                }
+
+                $jdkUnpacked = $true
+            }
+            catch {
+                Write-Host "[ERROR] The OpenJDK archive could not be unpacked and registered: $($_.Exception.Message)"
+                Write-Host "[WARN] The OpenJDK component is skipped for this run."
+                Write-Host "[WARN] The archive is left here, and can be unpacked by hand: $JdkArchive"
+            }
+            finally {
+                Remove-Item -LiteralPath $jdkStagingDirectory -Recurse -Force -ErrorAction SilentlyContinue
+            }
+
+            if ($jdkUnpacked) {
+                # The archive is up to 221 MB and has done its job; the directory is
+                # this run's own.
+                $jdkDownloadDirectory = Split-Path -Parent $JdkArchive
+                Remove-Item -LiteralPath $jdkDownloadDirectory -Recurse -Force -ErrorAction SilentlyContinue
+            }
+        }
+        else {
+            Write-Host "[WARN] No verified OpenJDK archive is available for this run. Skipping installation."
+        }
+    }
+    else {
+        Write-Host "[*] jdk component not selected. Skipping installation."
     }
 
     # Install HWP Automation (component: hwp_automation)

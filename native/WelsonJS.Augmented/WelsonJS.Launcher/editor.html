@@ -987,7 +987,9 @@
                         {
                             // The language specification is in the instruction only: WelsonJS
                             // scripts run in the Windows Script Host JScript engine (ES3), and
-                            // app.js provides console.log, info, warn, error and debug.
+                            // app.js provides console.log, info, warn, error and debug, and the
+                            // global numbers (numbers.js 0.7.0, patched by WelsonJS). The math note
+                            // lists frequently used numbers.js functions.
                             id: 'writeCode',
                             label: 'Write Code',
                             precondition: 'editorHasSelection',
@@ -995,6 +997,11 @@
                                 message: 'Write this as JavaScript for WSH JScript, ES3 only: no let, const, arrow functions, ' +
                                     'classes, template literals, destructuring, default parameters, spread, for...of, Promise, ' +
                                     'async/await, import/export, getters/setters or trailing commas. console API, require and module.exports are available. ' +
+                                    'For math, use the global numbers (numbers.js, no require): numbers.basic (sum, max, min, range, factorial, binomial, gcd, lcm, powerMod, modInverse), ' +
+                                    'numbers.statistic (mean, median, mode, quantile, standardDev, correlation, linearRegression), ' +
+                                    'numbers.matrix (multiply, transpose, determinant, inverse, identity), numbers.prime (simple, factorization, sieve, millerRabin), ' +
+                                    'numbers.calculus (adaptiveSimpson, Riemann, MonteCarlo, limit), numbers.generate (fibonacci, collatz), new numbers.complex(re, im), numbers.dsp.fft. ' +
+                                    'Integers are exact only up to 2^53; compare non-integers with a tolerance. ' +
                                     'Output only the code.\n\n' + fence(context),
                                 summary: 'Write code for the selection'
                             })
