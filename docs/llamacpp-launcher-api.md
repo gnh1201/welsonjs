@@ -33,6 +33,8 @@ The router reads models from `%APPDATA%\WelsonJS` (`--models-dir`). Each folder 
 | `LlamaCppTranslatedModels` | `frognano_4b_2609,bitnet_b1_58_2b_4t` | Models that work best in English: their prompts are translated first (see [Chat](#chat)) |
 | `LlamaCppTranslationModel` | `hy_mt2_1_8b_1_25bit` | The model that translates those prompts; empty turns the translation off |
 | `LlamaCppContextSize` | `8192` | Context size of every model instance (`--ctx-size`) |
+| `LlamaCppEmbeddingModelsMax` | `1` | Embedding servers running at once (see [Embeddings](#embeddings)) |
+| `LlamaCppEmbeddingContextSize` | `2048` | Context of an embedding server, which is also the longest input in tokens (up to `8192` for EmbeddingGemma 2) |
 
 With the default of 3, the model in use, the translation model, and the LLM guard stay loaded together; switching between FrogNano and BitNet in the editor swaps them.
 
@@ -130,6 +132,30 @@ The same models are also available through the launcher's OpenAI-compatible API 
 
 Clients may also send OpenAI-compatible requests to the router itself, at the `baseUrl` from `/llamacpp/status` (or `/llamacpp/start`), for example `POST {baseUrl}/v1/chat/completions`. The router requires `"model"` in POST bodies and `?model=` in GET requests, and loads the model on demand. `lib/language-inference-engine.js` does this for the `llamacpp` provider.
 
+## Embeddings
+
+Embedding models run in the same WelsonJS llama.cpp build, but not in the router: every model instance of the router shares its options, and embedding mode cannot be mixed with chat models. Each embedding model gets a `llama-server --embedding` of its own, started on the first request that names it (at most `LlamaCppEmbeddingModelsMax`, stopping the least recently used idle one), with `--ctx-size`, `--batch-size` and `--ubatch-size` set to `LlamaCppEmbeddingContextSize`, since an input is embedded in one batch.
+
+The models are read from `%APPDATA%\WelsonJS\llamacpp_embedding_models`, outside the router's folder:
+
+```
+%APPDATA%\WelsonJS\llamacpp_embedding_models
+ └─ embeddinggemma_2\embeddinggemma-2-Q8_0.gguf   → model "embeddinggemma_2"
+```
+
+| Component | Model |
+| --- | --- |
+| `llamacpp\embeddinggemma_2` | [google/embeddinggemma-2](https://huggingface.co/google/embeddinggemma-2) (Apache-2.0), the text model of [ggml-org/embeddinggemma-2-GGUF](https://huggingface.co/ggml-org/embeddinggemma-2-GGUF) in Q8_0 (310 MB), pinned to a repository revision. 768 dimensions, mean pooling. It needs the build's `0004-embeddinggemma2.patch` |
+
+```http
+POST /llamacpp/embed
+{"model": "embeddinggemma_2", "input": ["task: search result | query: capital of France", "title: none | text: Paris is the capital of France."]}
+```
+
+The body is the OpenAI embeddings request and the response is the OpenAI embeddings object (`data[i].embedding`); the same request is accepted at `POST /v1/embeddings`. `dimensions` keeps the first values of every vector and normalizes it again (Matryoshka truncation, which llama-server does not do); EmbeddingGemma 2 is trained for 768, 512, 256 and 128. `/llamacpp/status` reports the embedding models and servers as `embeddings`.
+
+EmbeddingGemma 2 expects a task prompt in the text, as its model card describes: `task: search result | query: {query}` for a search query and `title: {title or none} | text: {content}` for a document, `task: classification | query: {content}`, `task: clustering | query: {content}`, `task: sentence similarity | query: {content}`, and so on. Embed queries and documents with the same dimensions.
+
 ## LLM guard
 
 The Qwen3Guard classifier runs in the same router as the model `LlmGuardModel`, behind its own endpoint:
@@ -156,6 +182,7 @@ console.log(reply.choices[0].message.content);
 llama.listModels();                      // GET /llamacpp/models
 llama.getConfiguredModels();             // LlamaCppModels, from GET /llamacpp/status
 llama.getBaseUrl();                      // the router, for direct requests with "model"
+llama.embed(["task: search result | query: capital of France"], {"model": "embeddinggemma_2"});  // POST /llamacpp/embed
 ```
 
 See [examples/open_llamacpp.js](../examples/open_llamacpp.js).
@@ -165,5 +192,5 @@ See [examples/open_llamacpp.js](../examples/open_llamacpp.js).
 - Only local callers may use the API.
 - JavaScript clients must go through this API; they must not launch `llama-server.exe` directly.
 - Only the installed `%APPDATA%\WelsonJS\llamacpp\llama-server.exe` is run, with a fixed command line; arbitrary arguments and model paths are not accepted. A model is selected by name, and the name is checked before it is used.
-- The router binds to `127.0.0.1` on a launcher-allocated port.
+- The router binds to `127.0.0.1` on a launcher-allocated port. Its process is run like every local server of the launcher (`LocalServerProcess`, shared with the CrispEmbed servers, see [crispembed-launcher-api.md](crispembed-launcher-api.md)): the start waits for `/health` and is retried once on a new port if the process exits while starting, the process is in the launcher's job object, and the last lines of its output appear in start errors and in `GET /localservers/status`.
 - The router and its model instances are stopped when the launcher exits normally.

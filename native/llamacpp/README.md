@@ -296,6 +296,7 @@ The patches are applied in name order. Each one groups related changes as number
 | `0001-stq1_0.patch` | 1. STQ1_0 (PR #22836), 2. x86 SIMD vec_dot for STQ1_0, 3. STQ1_0 files with type 42 |
 | `0002-bitnet-i2s.patch` | 1. build without the BitNet repository, 2. I2_S reference quantization in ggml-base, 3. I2_S fast path without llamafile, 4. non-AVX2 I2_S fallbacks, 5. squared ReLU, 6. chat template, 7. pre-tokenizer (5-7 for BitNet b1.58 2B-4T), 8. I2_S type traits, 9. llama-quantize for I2_S |
 | `0003-windows-build.patch` | 1. Windows icon and version information for every executable and DLL, 2. unsupported MSVC options, 3. MSVC conversion warnings, 4. jinja with the Visual Studio 2019 STL |
+| `0004-embeddinggemma2.patch` | 1. the `gemma-embedding2` architecture, 2. the EmbeddingGemma 2 text encoder (backport of upstream #30054) |
 
 ## 0001-stq1_0.patch
 
@@ -596,6 +597,25 @@ This part changes `value_func_t` in `common/jinja/value.h`, which called `std::f
 
 The patch adds `function_pointer()`, which asks for `target<func_hptr *>()` and returns the stored function pointer (`nullptr` for another callable). `unique_hash()` and `equivalent()` use it; their comments describe comparing function pointers. Both are unused for now.
 
+## 0004-embeddinggemma2.patch
+
+The fork predates EmbeddingGemma 2 ([google/embeddinggemma-2](https://huggingface.co/google/embeddinggemma-2), Apache-2.0), whose GGUF files (for example [ggml-org/embeddinggemma-2-GGUF](https://huggingface.co/ggml-org/embeddinggemma-2-GGUF)) have the architecture `gemma-embedding2`. This patch backports the C++ part of upstream llama.cpp `4fbc76dec5` ([ggml-org/llama.cpp#30054](https://github.com/ggml-org/llama.cpp/pull/30054), MIT), so `llama-server --embedding` serves its text embeddings. The launcher runs it that way for the setup component `llamacpp\embeddinggemma_2` (see [docs/llamacpp-launcher-api.md](../../docs/llamacpp-launcher-api.md#embeddings)).
+
+### Part 1: the gemma-embedding2 architecture
+
+`LLM_ARCH_GEMMA_EMBEDDING2` is registered next to `LLM_ARCH_GEMMA_EMBEDDING`: its name in `llama-arch`, its model class in `llama_model_mapping`, the models without a KV cache (`create_memory`) and the NEOX rope models (`llama_model_rope_type`).
+
+### Part 2: the EmbeddingGemma 2 text encoder
+
+`src/models/gemma-embedding2.cpp` and `llama_model_gemma_embedding2` in `models.h`: a bidirectional Gemma 4-style encoder (24 layers, hidden size 512) with symmetric sliding window attention on five of every six layers, per-layer head sizes and KV heads, Q/K/V RMS norms, per-layer inputs from a projection only, a learned output scale per layer, and a projection of the final hidden state to the 768-dimensional embedding. The pooling (mean) comes from the GGUF. The fork already has everything else the model uses: the `gemma4` tokenizer, per-layer inputs and per-layer head sizes (Gemma 3n and Gemma 4).
+
+The file is upstream's, with two changes for the fork's API:
+
+- The fork has no `llama_model_base::load_swa_pattern`. The sliding window pattern is read as one flag per layer, as the GGUF stores it (`get_arr`), or as a period, 6 by default (`set_swa_pattern`), which is what `load_swa_pattern` does upstream.
+- The fork's `build_inp_embd` takes no scale. The token embeddings are scaled by `sqrt(n_embd)` afterwards, for token input only, as the fork's `gemma-embedding.cpp` does.
+
+`models/*.cpp` is collected by `file(GLOB)` in `src/CMakeLists.txt`, so the new file needs no CMake change. The vision and audio encoders (the mmproj files) and the Python conversion are not part of the patch; the GGUF files are converted upstream.
+
 ## Updating
 
 1. Find the llama.cpp commit that the new BitNet commit uses: `git ls-tree <BitNet sha> 3rdparty/llama.cpp` and BitNet's `.gitmodules`. Set `commit.txt` to it, and `RepositoryUrl` in the script if the fork URL changed. Update `version.txt`.
@@ -604,5 +624,6 @@ The patch adds `function_pointer()`, which asks for `target<func_hptr *>()` and 
 4. Check that the fork still keeps every use of the BitNet repository behind the TL1/TL2 options (`0002-bitnet-i2s.patch`, part 1), and that the `I2_S` sources are compiled into every CPU variant.
 5. Build locally with the script, for x64 and arm64. Check that:
    - `llama-quantize --help` lists STQ1_0,
-   - `llama-server` answers a chat request with one of the installed models and with an `I2_S` model.
+   - `llama-server` answers a chat request with one of the installed models and with an `I2_S` model,
+   - `llama-server --embedding -m embeddinggemma-2-Q8_0.gguf` answers `POST /v1/embeddings` with 768 values per input.
 6. Commit. The AppVeyor cache is invalidated by the changed files.

@@ -22,6 +22,9 @@ namespace WelsonJS.Launcher.ApiEndpoints
     ///   POST llamacpp/stop      stop the router and all models     {}
     ///   POST llamacpp/load      load a model and wait until ready {"model": "..."}
     ///   POST llamacpp/unload    unload a model                     {"model": "..."}
+    ///   POST llamacpp/embed     OpenAI-style embeddings with an embedding model
+    ///                           (LlamaCppEmbeddingServers)         {"model": "...", "input": "..." or [...], "dimensions"?: n}
+    ///                           (also POST v1/embeddings)
     ///   POST llamacpp/chat      OpenAI-compatible chat completion  {"model": "...", "messages": [...]}
     ///                           (LlamaCppChat; also POST v1/chat/completions).
     ///                           For LlamaCppTranslatedModels the user messages are first
@@ -39,16 +42,18 @@ namespace WelsonJS.Launcher.ApiEndpoints
         private static readonly TimeSpan ControlRequestTimeout = TimeSpan.FromMinutes(4);
         private static readonly TimeSpan ChatRequestTimeout = TimeSpan.FromMinutes(10);
         private static readonly string[] ReadPaths = { "status", "models" };
-        private static readonly string[] WritePaths = { "start", "stop", "load", "unload", "chat" };
+        private static readonly string[] WritePaths = { "start", "stop", "load", "unload", "chat", "embed" };
 
         private readonly LlamaCppRouter _router;
         private readonly LlamaCppChat _chat;
+        private readonly LlamaCppEmbeddingServers _embeddings;
         private readonly ILogger _logger;
 
         public LlamaCpp(ResourceServer server, System.Net.Http.HttpClient httpClient, ILogger logger)
         {
             _router = server.LlamaCppRouter;
             _chat = server.LlamaCppChat;
+            _embeddings = server.LlamaCppEmbeddingServers;
             _logger = logger;
         }
 
@@ -107,6 +112,11 @@ namespace WelsonJS.Launcher.ApiEndpoints
                 await HandleChatAsync(context);
                 return;
             }
+            if (action == "embed")
+            {
+                await HandleEmbedAsync(context);
+                return;
+            }
 
             try
             {
@@ -120,7 +130,8 @@ namespace WelsonJS.Launcher.ApiEndpoints
                                 ["server"] = _router.Status(),
                                 ["models"] = ConfiguredModelInfo(),
                                 ["translationModel"] = LlamaCppPromptTranslator.TranslationModel,
-                                ["translatedModels"] = LlamaCppPromptTranslator.TranslatedModels
+                                ["translatedModels"] = LlamaCppPromptTranslator.TranslatedModels,
+                                ["embeddings"] = _embeddings.Status()
                             });
                             return;
                         case "models":
@@ -217,6 +228,42 @@ namespace WelsonJS.Launcher.ApiEndpoints
             }
         }
 
+        // The body is sent to the embedding model's llama-server as it was received.
+        private async Task HandleEmbedAsync(HttpListenerContext context)
+        {
+            try
+            {
+                string body = await ReadBody(context, MaxChatRequestBodyBytes);
+                Dictionary<string, object> input = string.IsNullOrWhiteSpace(body) ? null : JsonCodec.DeserializeObject(body);
+                if (input == null) throw new ArgumentException("The request body must be a JSON object.");
+                string model = LlamaCppEmbeddingServers.ValidateModelName(GetString(input, "model"));
+                object value;
+                if (!input.TryGetValue("input", out value) || value == null) throw new ArgumentException("\"input\" is required.");
+                using (var cts = new CancellationTokenSource(ChatRequestTimeout))
+                {
+                    KeyValuePair<int, string> result = await _embeddings.EmbedAsync(model, body, cts.Token);
+                    await WriteRaw(context, result.Value, result.Key);
+                }
+            }
+            catch (ArgumentException ex)
+            {
+                await Write(context, new { error = ex.Message }, 400);
+            }
+            catch (InvalidDataException ex)
+            {
+                await Write(context, new { error = ex.Message }, 400);
+            }
+            catch (FileNotFoundException ex)
+            {
+                await Write(context, new { error = ex.Message }, 404);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("[LlamaCpp] Embedding request failed", ex);
+                await Write(context, new { error = "llama.cpp is unavailable: " + ex.Message }, 503);
+            }
+        }
+
         private static string Action(string path)
         {
             if (!path.StartsWith(Prefix + "/", StringComparison.OrdinalIgnoreCase)) return null;
@@ -238,7 +285,7 @@ namespace WelsonJS.Launcher.ApiEndpoints
             return input;
         }
 
-        private static async Task<string> ReadBody(HttpListenerContext context, long maxBytes)
+        internal static async Task<string> ReadBody(HttpListenerContext context, long maxBytes)
         {
             if (context.Request.ContentLength64 > maxBytes)
                 throw new InvalidDataException("Request body is too large.");

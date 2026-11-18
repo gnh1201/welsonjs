@@ -18,6 +18,8 @@ namespace WelsonJS.Launcher.ApiEndpoints
     /// An OpenAI-compatible API for the launcher's models:
     ///
     ///   POST v1/chat/completions   {"model": "...", "messages": [...], "stream": false}
+    ///   POST v1/embeddings         {"model": "...", "input": "..." or [...], "dimensions"?: n}
+    ///   POST v1/decisions          {"model": "...", "state": {...}, "questions": {...}, "workflow"?: "..."}
     ///   GET  v1/models             the models below
     ///
     /// The model is either
@@ -26,6 +28,12 @@ namespace WelsonJS.Launcher.ApiEndpoints
     ///   LlamaCppTranslatedModels and its optional "language" and "translate" fields), or
     /// - a web chat service in webchat.js (copilot, chatgpt, claude, ...), answered in the
     ///   launcher's browser (WebChatRunner). Generation parameters do not apply to them.
+    ///
+    /// Embeddings come from an installed llama.cpp embedding model (LlamaCppEmbeddingServers,
+    /// for example embeddinggemma_2, the original google/embeddinggemma-2) or a CrispEmbed
+    /// embedding model; typed decisions (a WelsonJS extension; OpenAI has no such API) from a
+    /// CrispEmbed decision model such as embeddinggemma_2_typed_decision. The model's server
+    /// answers the request body unchanged.
     ///
     /// Responses are not streamed: with "stream": true the finished answer is sent as one
     /// server-sent event chunk, then [DONE]. Errors use the OpenAI error object.
@@ -40,18 +48,25 @@ namespace WelsonJS.Launcher.ApiEndpoints
     {
         private const string ChatPath = "v1/chat/completions";
         private const string ModelsPath = "v1/models";
+        private const string EmbeddingsPath = "v1/embeddings";
+        private const string DecisionsPath = "v1/decisions";
+        private static readonly TimeSpan CrispEmbedTimeout = TimeSpan.FromMinutes(5);
         private const long MaxRequestBodyBytes = 1024 * 1024;
         private static readonly TimeSpan LlamaCppTimeout = TimeSpan.FromMinutes(10);
         private static readonly TimeSpan WebChatTimeout = TimeSpan.FromMinutes(15);
         private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         private readonly LlamaCppChat _llamaCpp;
+        private readonly CrispEmbedServers _crispEmbed;
+        private readonly LlamaCppEmbeddingServers _llamaCppEmbeddings;
         private readonly WebChatRunner _webChat;
         private readonly ILogger _logger;
 
         public OpenAiCompatible(ResourceServer server, System.Net.Http.HttpClient httpClient, ILogger logger)
         {
             _llamaCpp = server.LlamaCppChat;
+            _crispEmbed = server.CrispEmbedServers;
+            _llamaCppEmbeddings = server.LlamaCppEmbeddingServers;
             _webChat = server.WebChatRunner;
             _logger = logger;
         }
@@ -60,7 +75,10 @@ namespace WelsonJS.Launcher.ApiEndpoints
         {
             if (context == null || path == null) return false;
             string method = context.Request.HttpMethod;
-            return (string.Equals(path, ChatPath, StringComparison.OrdinalIgnoreCase) && string.Equals(method, "POST", StringComparison.OrdinalIgnoreCase)) ||
+            return ((string.Equals(path, ChatPath, StringComparison.OrdinalIgnoreCase) ||
+                     string.Equals(path, EmbeddingsPath, StringComparison.OrdinalIgnoreCase) ||
+                     string.Equals(path, DecisionsPath, StringComparison.OrdinalIgnoreCase)) &&
+                    string.Equals(method, "POST", StringComparison.OrdinalIgnoreCase)) ||
                 (string.Equals(path, ModelsPath, StringComparison.OrdinalIgnoreCase) && string.Equals(method, "GET", StringComparison.OrdinalIgnoreCase));
         }
 
@@ -75,6 +93,16 @@ namespace WelsonJS.Launcher.ApiEndpoints
             if (string.Equals(path, ModelsPath, StringComparison.OrdinalIgnoreCase))
             {
                 await HandleModelsAsync(context);
+                return;
+            }
+            if (string.Equals(path, EmbeddingsPath, StringComparison.OrdinalIgnoreCase))
+            {
+                await HandleCrispEmbedAsync(context, "embedding");
+                return;
+            }
+            if (string.Equals(path, DecisionsPath, StringComparison.OrdinalIgnoreCase))
+            {
+                await HandleCrispEmbedAsync(context, "decision");
                 return;
             }
 
@@ -146,6 +174,18 @@ namespace WelsonJS.Launcher.ApiEndpoints
             var data = new List<object>();
             foreach (string name in LlamaCpp.ConfiguredModels.Where(m => LlamaCppRouter.FindModelFile(m) != null))
                 data.Add(Model(name, name, "llamacpp"));
+            foreach (string name in LlamaCppEmbeddingServers.InstalledModels)
+            {
+                Dictionary<string, object> model = Model(name, name, "llamacpp");
+                model["type"] = "embedding";
+                data.Add(model);
+            }
+            foreach (string name in CrispEmbedServers.InstalledModels)
+            {
+                Dictionary<string, object> model = Model(name, name, "crispembed");
+                model["type"] = CrispEmbedServers.ModelKind(name);   // "embedding" (v1/embeddings) or "decision" (v1/decisions)
+                data.Add(model);
+            }
             try
             {
                 foreach (KeyValuePair<string, object> service in _webChat.Services)
@@ -159,6 +199,132 @@ namespace WelsonJS.Launcher.ApiEndpoints
                 _logger.Error("[OpenAI] Could not read the web chat services", ex);
             }
             await LlamaCpp.WriteRaw(context, JsonCodec.Serialize(new Dictionary<string, object> { ["object"] = "list", ["data"] = data }), 200);
+        }
+
+        // Embeddings (kind "embedding") or typed decisions (kind "decision") with a CrispEmbed
+        // model of that kind. The body is sent to the model's crispembed-server as it was
+        // received: the server ignores "model", and a decision renders the state and questions
+        // in their JSON key order, which parsing and serializing the body again could change.
+        private async Task HandleCrispEmbedAsync(HttpListenerContext context, string kind)
+        {
+            bool decision = kind == "decision";
+            string body;
+            string model;
+            try
+            {
+                body = await LlamaCpp.ReadBody(context, MaxRequestBodyBytes);
+                Dictionary<string, object> input = string.IsNullOrWhiteSpace(body) ? null : JsonCodec.DeserializeObject(body);
+                if (input == null) throw new ArgumentException("The request body must be a JSON object.");
+                object value;
+                model = input.TryGetValue("model", out value) ? value as string : null;
+                if (string.IsNullOrWhiteSpace(model)) throw new ArgumentException("\"model\" is required.");
+                if (decision)
+                {
+                    if (!input.TryGetValue("state", out value) || value == null) throw new ArgumentException("\"state\" is required.");
+                    if (!input.TryGetValue("questions", out value) || !(value is Dictionary<string, object>)) throw new ArgumentException("\"questions\" must be an object.");
+                }
+                else if (!input.TryGetValue("input", out value) || value == null)
+                {
+                    throw new ArgumentException("\"input\" is required.");
+                }
+            }
+            catch (Exception ex)
+            {
+                await WriteError(context, 400, "Invalid request: " + ex.Message, "invalid_request_error");
+                return;
+            }
+
+            // A llama.cpp embedding model (the WelsonJS llama.cpp build in embedding mode).
+            if (!decision && LlamaCppEmbeddingServers.IsModel(model))
+            {
+                try
+                {
+                    KeyValuePair<int, string> embedded;
+                    using (var cts = new CancellationTokenSource(CrispEmbedTimeout))
+                        embedded = await _llamaCppEmbeddings.EmbedAsync(model, body, cts.Token);
+                    if (embedded.Key >= 200 && embedded.Key <= 299)
+                        await LlamaCpp.WriteRaw(context, embedded.Value, embedded.Key);
+                    else
+                        await WriteError(context, embedded.Key, ServerError(embedded.Value), embedded.Key >= 500 ? "server_error" : "invalid_request_error");
+                }
+                catch (ArgumentException ex)
+                {
+                    await WriteError(context, 400, ex.Message, "invalid_request_error");
+                }
+                catch (FileNotFoundException ex)
+                {
+                    await WriteError(context, 404, ex.Message, "invalid_request_error", "model_not_found");
+                }
+                catch (Exception ex) when (ex is TimeoutException || ex is OperationCanceledException)
+                {
+                    await WriteError(context, 504, ex is TimeoutException ? ex.Message : "The model did not answer in time.", "timeout");
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error("[OpenAI] Embeddings request failed (" + model + ")", ex);
+                    await WriteError(context, 503, ex.Message, "server_error");
+                }
+                return;
+            }
+
+            if (!CrispEmbedServers.IsModel(model))
+            {
+                await WriteError(context, 404, "The " + kind + " model '" + model + "' is not installed. See GET /v1/models (type \"" + kind + "\").",
+                    "invalid_request_error", "model_not_found");
+                return;
+            }
+
+            try
+            {
+                CrispEmbedServers.EnsureKind(model, kind);
+                KeyValuePair<int, string> result;
+                using (var cts = new CancellationTokenSource(CrispEmbedTimeout))
+                    result = await _crispEmbed.PostAsync(model, decision ? "/decide" : "/v1/embeddings", body, cts.Token);
+                if (result.Key >= 200 && result.Key <= 299)
+                    await LlamaCpp.WriteRaw(context, result.Value, result.Key);
+                else
+                    await WriteError(context, result.Key, ServerError(result.Value), result.Key >= 500 ? "server_error" : "invalid_request_error");
+            }
+            catch (ArgumentException ex)
+            {
+                await WriteError(context, 400, ex.Message, "invalid_request_error", "model_not_supported");
+            }
+            catch (FileNotFoundException ex)
+            {
+                await WriteError(context, 404, ex.Message, "invalid_request_error", "model_not_found");
+            }
+            catch (Exception ex) when (ex is TimeoutException || ex is OperationCanceledException)
+            {
+                await WriteError(context, 504, ex is TimeoutException ? ex.Message : "The model did not answer in time.", "timeout");
+            }
+            catch (Exception ex)
+            {
+                _logger.Error("[OpenAI] " + (decision ? "Decision" : "Embeddings") + " request failed (" + model + ")", ex);
+                await WriteError(context, 503, ex.Message, "server_error");
+            }
+        }
+
+        // The message of a crispembed-server error ({"error": "..."}) or a llama-server error
+        // ({"error": {"message": "..."}}), or the body itself.
+        private static string ServerError(string body)
+        {
+            try
+            {
+                Dictionary<string, object> error = JsonCodec.DeserializeObject(body);
+                object message;
+                if (error != null && error.TryGetValue("error", out message))
+                {
+                    if (message is string) return (string)message;
+                    var detail = message as Dictionary<string, object>;
+                    object text;
+                    if (detail != null && detail.TryGetValue("message", out text) && text is string) return (string)text;
+                }
+            }
+            catch (Exception)
+            {
+                // Not JSON.
+            }
+            return string.IsNullOrWhiteSpace(body) ? "CrispEmbed returned an error." : body;
         }
 
         // Accepts content given as an array of parts ([{"type": "text", "text": "..."}]),

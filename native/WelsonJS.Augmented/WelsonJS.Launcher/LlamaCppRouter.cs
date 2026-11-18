@@ -5,7 +5,6 @@
 //
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -27,22 +26,41 @@ namespace WelsonJS.Launcher
     /// demand and unloads the least recently used model when more than
     /// LlamaCppModelsMax models are loaded. The editor, the LLM guard and
     /// lib/llamacpp.js all share this one router.
+    ///
+    /// The process itself (port, start, readiness, job object, output, stop) is a
+    /// LocalServerProcess, the same as every local server the launcher runs.
     /// </summary>
     public sealed class LlamaCppRouter
     {
-        private static readonly TimeSpan ReadyTimeout = TimeSpan.FromSeconds(60);
         private static readonly TimeSpan LoadTimeout = TimeSpan.FromSeconds(180);
         private static readonly Regex ModelNamePattern = new Regex(@"^[A-Za-z0-9][A-Za-z0-9_.\-]{0,127}$");
 
         // Generation on a CPU can take minutes; each call is bounded by the caller's token.
         private static readonly HttpClient Http = new HttpClient { Timeout = Timeout.InfiniteTimeSpan };
 
-        private readonly object _sync = new object();
-        private readonly SemaphoreSlim _startLock = new SemaphoreSlim(1, 1);
-        private Process _process;
-        private string _host;
-        private int _port;
-        private DateTime _startedAtUtc;
+        private readonly LocalServerProcess _server;
+
+        public LlamaCppRouter(LocalServerRegistry registry)
+        {
+            _server = new LocalServerProcess(new LocalServerOptions
+            {
+                Name = "llama-server",
+                ExecutablePath = ExecutablePath,
+                MissingExecutableMessage = "llama-server.exe was not found (install the setup component llamacpp).",
+                // Read at every start, so changed settings apply after a restart of the router.
+                BuildArguments = (host, port) => new List<string>
+                {
+                    "--host", host,
+                    "--port", port.ToString(),
+                    "--models-dir", ModelsDirectory,
+                    "--models-max", ModelsMax.ToString(),
+                    "--ctx-size", ContextSize.ToString()
+                },
+                ReadyPath = "/health",
+                ReadyTimeout = TimeSpan.FromSeconds(60)
+            });
+            if (registry != null) registry.Register(_server);
+        }
 
         /// <summary>The folder the router reads models from (%APPDATA%\WelsonJS).</summary>
         public static string ModelsDirectory
@@ -50,7 +68,7 @@ namespace WelsonJS.Launcher
             get { return Program.GetAppDataPath(); }
         }
 
-        /// <summary>The installed llama-server.exe; the only executable the launcher runs.</summary>
+        /// <summary>The installed llama-server.exe.</summary>
         public static string ExecutablePath
         {
             get { return Path.Combine(Program.GetAppDataPath(), "llamacpp", "llama-server.exe"); }
@@ -107,70 +125,17 @@ namespace WelsonJS.Launcher
         /// <summary>The router process state (null values when it is not running).</summary>
         public Dictionary<string, object> Status()
         {
-            lock (_sync)
-            {
-                bool running = IsRunning();
-                return new Dictionary<string, object>
-                {
-                    ["running"] = running,
-                    ["pid"] = running ? (object)_process.Id : null,
-                    ["host"] = running ? _host : null,
-                    ["port"] = running ? (object)_port : null,
-                    ["baseUrl"] = running ? BaseUrl : null,
-                    ["startedAtUtc"] = running ? _startedAtUtc.ToString("o") : null,
-                    ["executablePath"] = ExecutablePath,
-                    ["modelsDirectory"] = ModelsDirectory,
-                    ["modelsMax"] = ModelsMax,
-                    ["contextSize"] = ContextSize
-                };
-            }
+            Dictionary<string, object> status = _server.Status();
+            status["modelsDirectory"] = ModelsDirectory;
+            status["modelsMax"] = ModelsMax;
+            status["contextSize"] = ContextSize;
+            return status;
         }
 
         /// <summary>Starts the router if needed and returns its base URL.</summary>
-        public async Task<string> EnsureStartedAsync(CancellationToken token)
+        public Task<string> EnsureStartedAsync(CancellationToken token)
         {
-            await _startLock.WaitAsync(token);
-            try
-            {
-                lock (_sync)
-                {
-                    if (IsRunning()) return BaseUrl;
-                    StartProcess();
-                }
-
-                string baseUrl = BaseUrl;
-                DateTime deadline = DateTime.UtcNow + ReadyTimeout;
-                while (true)
-                {
-                    token.ThrowIfCancellationRequested();
-                    lock (_sync)
-                    {
-                        if (!IsRunning())
-                            throw new InvalidOperationException("The llama-server router exited during startup.");
-                    }
-                    try
-                    {
-                        using (HttpResponseMessage health = await Http.GetAsync(baseUrl + "/health", token))
-                        {
-                            if (health.IsSuccessStatusCode) return baseUrl;
-                        }
-                    }
-                    catch (HttpRequestException)
-                    {
-                        // Not listening yet.
-                    }
-                    if (DateTime.UtcNow > deadline)
-                    {
-                        Stop();
-                        throw new TimeoutException("The llama-server router did not become ready in " + ReadyTimeout.TotalSeconds + " seconds.");
-                    }
-                    await Task.Delay(300, token);
-                }
-            }
-            finally
-            {
-                _startLock.Release();
-            }
+            return _server.EnsureStartedAsync(token);
         }
 
         /// <summary>The router's model list (GET /models), as returned by llama-server.</summary>
@@ -227,10 +192,7 @@ namespace WelsonJS.Launcher
         public async Task<bool> UnloadAsync(string name, CancellationToken token)
         {
             name = ValidateModelName(name);
-            lock (_sync)
-            {
-                if (!IsRunning()) return false;
-            }
+            if (!_server.IsRunning) return false;
             Dictionary<string, object> model = await FindModelAsync(name, token);
             if (model == null || StatusValue(model) == "unloaded") return false;
             await PostAsync(BaseUrl + "/models/unload", new Dictionary<string, object> { ["model"] = name }, token, allowAlreadyRunning: false);
@@ -256,33 +218,10 @@ namespace WelsonJS.Launcher
             }
         }
 
-        /// <summary>Stops the router and every model instance it started.</summary>
+        /// <summary>Stops the router and every model instance it started (its child processes).</summary>
         public void Stop()
         {
-            Process process;
-            lock (_sync)
-            {
-                process = _process;
-                _process = null;
-            }
-            if (process == null) return;
-            try
-            {
-                if (!process.HasExited)
-                {
-                    // The model instances are child processes of the router.
-                    KillTree(process.Id);
-                    process.WaitForExit(5000);
-                }
-            }
-            catch (InvalidOperationException)
-            {
-                // Already exited.
-            }
-            finally
-            {
-                process.Dispose();
-            }
+            _server.Stop();
         }
 
         public void Shutdown()
@@ -290,58 +229,15 @@ namespace WelsonJS.Launcher
             Stop();
         }
 
+        // The running router's address; requests are sent after EnsureStartedAsync.
         private string BaseUrl
         {
-            get { return "http://" + _host + ":" + _port; }
-        }
-
-        private bool IsRunning()
-        {
-            if (_process == null) return false;
-            try { if (!_process.HasExited) return true; }
-            catch (InvalidOperationException) { }
-            _process.Dispose();
-            _process = null;
-            return false;
-        }
-
-        private void StartProcess()
-        {
-            string executable = ExecutablePath;
-            if (!File.Exists(executable))
-                throw new FileNotFoundException("llama-server.exe was not found (install the setup component llamacpp).", executable);
-
-            string modelsDirectory = ModelsDirectory;
-            _host = LocalPorts.Host;
-            _port = LocalPorts.FindAvailable(_host);
-
-            var arguments = new List<string>
+            get
             {
-                "--host", _host,
-                "--port", _port.ToString(),
-                "--models-dir", Quote(modelsDirectory),
-                "--models-max", ModelsMax.ToString(),
-                "--ctx-size", ContextSize.ToString()
-            };
-
-            var process = new Process
-            {
-                StartInfo = new ProcessStartInfo
-                {
-                    FileName = executable,
-                    Arguments = string.Join(" ", arguments),
-                    WorkingDirectory = Path.GetDirectoryName(executable),
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                }
-            };
-            if (!process.Start()) throw new InvalidOperationException("Failed to start llama-server.exe.");
-            // End the router and its model instances with the launcher, however it ends. The
-            // router starts model instances only on request, after this.
-            try { ChildProcessJob.Add(process); }
-            catch (Exception ex) { Trace.TraceWarning("llama-server is not in the launcher's job: " + ex.Message); }
-            _process = process;
-            _startedAtUtc = DateTime.UtcNow;
+                string baseUrl = _server.BaseUrl;
+                if (baseUrl == null) throw new InvalidOperationException("The llama-server router is not running.");
+                return baseUrl;
+            }
         }
 
         private async Task<Dictionary<string, object>> FindModelAsync(string name, CancellationToken token)
@@ -400,26 +296,6 @@ namespace WelsonJS.Launcher
         {
             int value;
             return int.TryParse(Program.GetAppConfig(key), out value) && value >= minimum ? value : fallback;
-        }
-
-        private static void KillTree(int pid)
-        {
-            using (var taskkill = Process.Start(new ProcessStartInfo
-            {
-                FileName = Path.Combine(Environment.SystemDirectory, "taskkill.exe"),
-                Arguments = "/PID " + pid + " /T /F",
-                UseShellExecute = false,
-                CreateNoWindow = true
-            }))
-            {
-                if (taskkill != null) taskkill.WaitForExit(5000);
-            }
-        }
-
-        private static string Quote(string value)
-        {
-            // A trailing backslash would escape the closing quote.
-            return "\"" + value.TrimEnd('\\') + "\"";
         }
     }
 }

@@ -67,6 +67,33 @@
     }
 
     # ===========================
+    # EmbeddingGemma 2 GGUF model (google/embeddinggemma-2, Apache-2.0), text
+    # embeddings with the WelsonJS llama.cpp build (native\llamacpp, patch 0004)
+    # in embedding mode. The ggml-org conversion, pinned to a revision of the
+    # repository so the file and its hash stay the same; only the text model
+    # (the mmproj files hold the vision and audio encoders). postInstall.ps1 puts
+    # it in llamacpp_embedding_models\embeddinggemma_2\, outside the folder the
+    # llama.cpp router reads chat models from.
+    # ===========================
+    embeddinggemma_2 = @{
+        any   = "https://huggingface.co/ggml-org/embeddinggemma-2-GGUF/resolve/6ea3e3a309d12a4779cfda98b8c19800d2d5da71/embeddinggemma-2-Q8_0.gguf"
+    }
+
+    # CrispEmbed is not downloaded: postInstall.ps1 installs the WelsonJS build
+    # from the artifacts package (artifacts\crispembed\x64, native\crispembed).
+
+    # ===========================
+    # EmbeddingGemma 2 typed-decision GGUF model for CrispEmbed (Q8_0, Apache-2.0;
+    # fine-tune of google/embeddinggemma-2 by mrm8488). Pinned to a revision of the
+    # repository, so the file and its hash stay the same. postInstall.ps1 puts it in
+    # crispembed_models\embeddinggemma_2_typed_decision\, outside the folder the
+    # llama.cpp router reads models from.
+    # ===========================
+    embeddinggemma_2_typed_decision = @{
+        any   = "https://huggingface.co/cstr/embeddinggemma-2-ft-typed-decision-GGUF/resolve/7a093624993386b42e0b99d0cc3e7f25f9534fa4/embeddinggemma-2-ft-typed-decision-q8_0.gguf"
+    }
+
+    # ===========================
     # YARA
     # ===========================
     yara = @{

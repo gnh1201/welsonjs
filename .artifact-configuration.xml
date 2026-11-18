@@ -53,6 +53,14 @@
       <include path="artifacts/llamacpp/arm64/ggml.dll" />
       <include path="artifacts/llamacpp/arm64/ggml-base.dll" />
       <include path="artifacts/llamacpp/arm64/ggml-cpu.dll" />
+      <!-- CrispEmbed (native/crispembed/build-crispembed.ps1, built in the Release job; x64 only);
+           build-crispembed.ps1 fails when a built executable or DLL is not listed here -->
+      <include path="artifacts/crispembed/x64/crispembed-server.exe" />
+      <include path="artifacts/crispembed/x64/crispembed.exe" />
+      <include path="artifacts/crispembed/x64/crispembed-quantize.exe" />
+      <include path="artifacts/crispembed/x64/ggml.dll" />
+      <include path="artifacts/crispembed/x64/ggml-base.dll" />
+      <include path="artifacts/crispembed/x64/ggml-cpu.dll" />
       <for-each>
         <authenticode-sign />
       </for-each>

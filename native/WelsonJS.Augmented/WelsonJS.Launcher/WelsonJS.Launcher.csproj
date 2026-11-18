@@ -93,6 +93,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiEndpoints\LlamaCpp.cs" />
+    <Compile Include="ApiEndpoints\CrispEmbed.cs" />
+    <Compile Include="ApiEndpoints\LocalServers.cs" />
     <Compile Include="ApiEndpoints\OpenAiCompatible.cs" />
     <Compile Include="ApiEndpoints\LlmGuard.cs" />
     <Compile Include="ApiEndpoints\Terminal.cs" />
@@ -148,6 +150,9 @@
     <Compile Include="LlamaCppChat.cs" />
     <Compile Include="LlamaCppPromptTranslator.cs" />
     <Compile Include="LlamaCppRouter.cs" />
+    <Compile Include="LlamaCppEmbeddingServers.cs" />
+    <Compile Include="CrispEmbedServers.cs" />
+    <Compile Include="LocalServerProcess.cs" />
     <Compile Include="LocalPorts.cs" />
     <Compile Include="LlmGuardService.cs" />
     <Compile Include="JsrtInstanceProcessManager.cs" />

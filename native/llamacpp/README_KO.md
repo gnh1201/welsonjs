@@ -296,6 +296,7 @@ Hy-MT2(번역)는 모델 README의 기본 프롬프트("Translate the following 
 | `0001-stq1_0.patch` | 1. STQ1_0(PR #22836), 2. STQ1_0용 x86 SIMD vec_dot, 3. 타입 42를 쓰는 STQ1_0 파일 |
 | `0002-bitnet-i2s.patch` | 1. BitNet 저장소 없이 빌드, 2. ggml-base의 I2_S 기준 양자화, 3. llamafile 없는 I2_S 빠른 경로, 4. 비 AVX2 I2_S 대체 코드, 5. squared ReLU, 6. 채팅 템플릿, 7. 프리토크나이저(5~7은 BitNet b1.58 2B-4T용), 8. I2_S 타입 특성, 9. I2_S용 llama-quantize |
 | `0003-windows-build.patch` | 1. 모든 실행 파일과 DLL의 Windows 아이콘과 버전 정보, 2. 지원되지 않는 MSVC 옵션, 3. MSVC 변환 경고, 4. Visual Studio 2019 STL에서의 jinja |
+| `0004-embeddinggemma2.patch` | 1. `gemma-embedding2` 아키텍처, 2. EmbeddingGemma 2 텍스트 인코더(업스트림 #30054 백포트) |
 
 ## 0001-stq1_0.patch
 
@@ -596,6 +597,25 @@ Copyright (c) 2023-2026 The ggml authors (llama.cpp), Copyright (c) Microsoft Co
 
 패치는 `target<func_hptr *>()`을 요청해 저장된 함수 포인터를 돌려주는(다른 호출 가능 객체면 `nullptr`) `function_pointer()`를 추가합니다. `unique_hash()`와 `equivalent()`가 이를 씁니다. 두 함수의 주석은 함수 포인터 비교를 설명합니다. 둘 다 지금은 쓰이지 않습니다.
 
+## 0004-embeddinggemma2.patch
+
+포크는 EmbeddingGemma 2([google/embeddinggemma-2](https://huggingface.co/google/embeddinggemma-2), Apache-2.0)보다 오래되었습니다. 이 모델의 GGUF 파일(예: [ggml-org/embeddinggemma-2-GGUF](https://huggingface.co/ggml-org/embeddinggemma-2-GGUF))은 아키텍처가 `gemma-embedding2`입니다. 이 패치는 업스트림 llama.cpp `4fbc76dec5`([ggml-org/llama.cpp#30054](https://github.com/ggml-org/llama.cpp/pull/30054), MIT)의 C++ 부분을 백포트해 `llama-server --embedding`이 이 모델의 텍스트 임베딩을 제공하게 합니다. 런처는 설치 구성 요소 `llamacpp\embeddinggemma_2`를 이렇게 실행합니다([docs/llamacpp-launcher-api.md](../../docs/llamacpp-launcher-api.md#embeddings) 참고).
+
+### 파트 1: gemma-embedding2 아키텍처
+
+`LLM_ARCH_GEMMA_EMBEDDING2`를 `LLM_ARCH_GEMMA_EMBEDDING` 옆에 등록합니다. `llama-arch`의 이름, `llama_model_mapping`의 모델 클래스, KV 캐시가 없는 모델(`create_memory`), NEOX rope 모델(`llama_model_rope_type`)입니다.
+
+### 파트 2: EmbeddingGemma 2 텍스트 인코더
+
+`src/models/gemma-embedding2.cpp`와 `models.h`의 `llama_model_gemma_embedding2`입니다. 양방향 Gemma 4 계열 인코더(24층, 은닉 크기 512)로, 여섯 층 중 다섯 층에 대칭 슬라이딩 윈도 어텐션을 쓰고, 층마다 헤드 크기와 KV 헤드 수가 다르며, Q/K/V RMS 정규화, 투영만으로 만드는 층별 입력, 층마다 학습된 출력 배율, 마지막 은닉 상태를 768차원 임베딩으로 바꾸는 투영을 씁니다. 풀링(평균)은 GGUF에서 읽습니다. 모델이 쓰는 나머지(`gemma4` 토크나이저, 층별 입력, 층별 헤드 크기)는 포크에 이미 있습니다(Gemma 3n, Gemma 4).
+
+파일은 업스트림 그대로이며, 포크 API에 맞춘 두 가지만 다릅니다.
+
+- 포크에는 `llama_model_base::load_swa_pattern`이 없습니다. 슬라이딩 윈도 패턴을 GGUF에 저장된 대로 층마다 하나씩인 플래그로 읽거나(`get_arr`), 주기(기본 6)로 읽습니다(`set_swa_pattern`). 업스트림의 `load_swa_pattern`이 하는 일과 같습니다.
+- 포크의 `build_inp_embd`는 배율을 받지 않습니다. 토큰 임베딩을 그 뒤에 `sqrt(n_embd)`로 곱하며, 포크의 `gemma-embedding.cpp`처럼 토큰 입력일 때만 곱합니다.
+
+`models/*.cpp`는 `src/CMakeLists.txt`의 `file(GLOB)`로 모이므로 새 파일에 CMake 변경이 필요 없습니다. 비전·오디오 인코더(mmproj 파일)와 Python 변환은 패치에 들어 있지 않습니다. GGUF 파일은 업스트림에서 변환합니다.
+
 ## 업데이트 방법
 
 1. 새 BitNet 커밋이 쓰는 llama.cpp 커밋을 찾습니다: `git ls-tree <BitNet sha> 3rdparty/llama.cpp`와 BitNet의 `.gitmodules`. `commit.txt`를 그 커밋으로 설정하고, 포크 URL이 바뀌었으면 스크립트의 `RepositoryUrl`도 바꿉니다. `version.txt`를 업데이트합니다.
@@ -604,5 +624,6 @@ Copyright (c) 2023-2026 The ggml authors (llama.cpp), Copyright (c) Microsoft Co
 4. 포크가 여전히 BitNet 저장소의 모든 사용을 TL1/TL2 옵션 뒤에 두는지(`0002-bitnet-i2s.patch` 파트 1), 그리고 `I2_S` 소스가 모든 CPU 변형에 컴파일되는지 확인합니다.
 5. 스크립트로 x64와 arm64를 로컬에서 빌드합니다. 다음을 확인합니다:
    - `llama-quantize --help`가 STQ1_0을 보여 줌,
-   - `llama-server`가 설치되는 모델 중 하나와 `I2_S` 모델로 채팅 요청에 답함.
+   - `llama-server`가 설치되는 모델 중 하나와 `I2_S` 모델로 채팅 요청에 답함,
+   - `llama-server --embedding -m embeddinggemma-2-Q8_0.gguf`가 `POST /v1/embeddings`에 입력마다 768개 값으로 답함.
 6. 커밋합니다. 바뀐 파일 때문에 AppVeyor 캐시가 무효화됩니다.
