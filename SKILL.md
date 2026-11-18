@@ -37,6 +37,18 @@ When writing an `evaluate_js` script:
 - Use `_notify(message)` for progress or diagnostic output. Avoid `console.log`; the loader supplies `_notify` to the script and separately returns collected console messages.
 - Use ASCII source text. Encode non-ASCII string content with JavaScript Unicode escapes such as `"\\uC548\\uB155"`, as required by the MCP tool guidance in `mcploader.js`.
 - Use `require("lib/shell")` for supported shell operations and `require("lib/msoffice")` for Office automation; inspect those modules before selecting methods.
+- For math, use the global `numbers` that `app.js` loads (numbers.js 0.7.0 with WelsonJS fixes, from `app/assets/js/numbers-0.7.0.wsh.js`, after the core-js polyfills it needs); no `require` is needed. The fixes are listed in the file header. The functions below return correct results in WelsonJS:
+
+  | Namespace | Functions |
+  | --- | --- |
+  | `numbers.basic` | `sum`, `product`, `max`, `min`, `range(start, stop, step)`, `factorial`, `binomial`, `permutation`, `fallingFactorial`, `gcd`, `lcm`, `egcd`, `divMod`, `powerMod`, `modInverse`, `isInt`, `numbersEqual(a, b, epsilon)`, `shuffle`, `random(arr, quantity)` |
+  | `numbers.statistic` | `mean`, `median`, `mode`, `quantile(arr, k, q)`, `standardDev` and `covariance` (population, divided by n), `correlation`, `report`, `linearRegression(xs, ys)` and `exponentialRegression(ys)` (both return a function of x), `rSquared(source, regression)` |
+  | `numbers.matrix` (2D arrays) | `addition`, `subtraction`, `scalar`, `multiply`, `transpose`, `identity`, `zeros`, `dotproduct`, `determinant`, `inverse`, `lupDecomposition`, `rowReduce`, `vectorNorm(v, p)`, `matrixNorm(M, p)` (`p` a number, or `null` for Frobenius), `isSquare` |
+  | `numbers.prime` | `simple`, `factorization`, `sieve`, `coprime`, `millerRabin`, `getPerfectPower`, `getPrimePower` |
+  | `numbers.calculus` | `adaptiveSimpson(f, a, b, epsilon)` (`epsilon` defaults to `numbers.EPSILON`, 0.001), `Riemann(f, a, b, n)`, `MonteCarlo(f, n, [a1, b1], [a2, b2], ...)` (one interval per argument of `f`), `limit(f, x, approach)` (`'left'`, `'right'` or `'middle'`, the default; returns `Infinity` or `-Infinity` when f diverges and `NaN` when the two sides differ), `pointDiff(f, x)`, `LanczosGamma`, `StirlingGamma` (an approximation) |
+  | Others | `new numbers.complex(re, im)` (`add`, `subtract`, `multiply`, `divide`, `magnitude`, `phase`, `conjugate`, `pow`), `numbers.dsp.fft` (length a power of 2), `numbers.generate.fibonacci`, `numbers.generate.collatz(n)`, `numbers.random.sample(lower, upper, n)`, `numbers.random.distribution.normal(n, mu, sigma)` |
+
+  `matrix.transpose` turns a one-dimensional array into a column vector. `limit` is numerical: it samples f down to a step of 1e-12, so a slowly converging limit (such as `Math.sqrt` at 0) is approximate. `adaptiveSimpson` evaluates the endpoints, so it returns `NaN` for a function that is infinite at an endpoint. Numbers are IEEE 754 doubles: integers are exact only up to 2^53 (`powerMod`, `modInverse` and `millerRabin` stay exact for moduli up to that bound), and `factorial` only up to 18. Compare non-integers with a tolerance. `numbers.random` and `Math.random` are not cryptographically secure.
 - The schema's `timeout` field is not currently enforced by `mcploader.js`; keep scripts bounded and do not claim that a timeout will stop execution.
 - If the result cannot be established from returned output, describe the uncertainty and ask the user to confirm the visible outcome.
 
