@@ -1093,7 +1093,14 @@ try {
             $jdkFileName = [System.IO.Path]::GetFileName(([uri]$url).AbsolutePath)
             if (-not $jdkFileName) { $jdkFileName = "openjdk-installer" }
             $MicrosoftJdkInstaller = Join-Path $TmpDir "microsoft_jdk-$jdkFileName"
-            Download-File -Url $url -DestinationPath $MicrosoftJdkInstaller
+            try {
+                Download-File -Url $url -DestinationPath $MicrosoftJdkInstaller
+            }
+            catch {
+                # An optional component that cannot be fetched must not stop the rest.
+                Write-Host "[WARN] Failed to download the OpenJDK installer: $($_.Exception.Message)"
+                $MicrosoftJdkInstaller = $null
+            }
         }
         else {
             Write-Host "[*] microsoft_jdk has no installer for arch: $arch. Microsoft publishes JDK 25 for Windows x64 and ARM64, and the 32-bit x86 URL is missing from the table. Skipping download."
@@ -1272,78 +1279,90 @@ try {
     #          https://learn.microsoft.com/en-us/java/openjdk/install
     #   .msi – Azul Zulu (32-bit Windows), a Windows Installer package;
     #          https://docs.azul.com/core/install/windows
-    # Both are run unattended and waited for, and both change the machine only in the
-    # ways described below.
+    # Both are run unattended and waited for. This is an optional component, so a
+    # download or launch failure is reported and the other components still run.
     if (Test-ComponentSelected -Name "microsoft_jdk") {
         if ($MicrosoftJdkInstaller -and (Test-Path $MicrosoftJdkInstaller)) {
             $jdkExtension = [System.IO.Path]::GetExtension($MicrosoftJdkInstaller).ToLowerInvariant()
             $isElevated = Test-Administrator
             $jdkLog = $null
+            $jdkInstaller = $null
 
-            if ($jdkExtension -eq ".msi") {
-                # ZuluInstallation unpacks the JDK and FeatureEnvironment puts
-                # <install dir>\bin on PATH. JAVA_HOME and the JavaSoft registry keys
-                # are separate features in this package and are not selected, so an
-                # existing JAVA_HOME stays as the user set it. Without elevation the
-                # package installs for the current user only (MSIINSTALLPERUSER).
-                $jdkLog = Join-Path $TmpDir "microsoft-jdk-install.log"
-                $jdkArguments = @(
-                    "/i",
-                    ('"{0}"' -f $MicrosoftJdkInstaller),
-                    "/qn",
-                    "/norestart",
-                    "/l*v",
-                    ('"{0}"' -f $jdkLog),
-                    "ADDLOCAL=ZuluInstallation,FeatureEnvironment"
-                )
-                if (-not $isElevated) { $jdkArguments += "MSIINSTALLPERUSER=1" }
+            try {
+                if ($jdkExtension -eq ".msi") {
+                    # ZuluInstallation unpacks the JDK and FeatureEnvironment puts
+                    # <install dir>\bin on PATH. JAVA_HOME and the JavaSoft registry
+                    # keys are separate features in this package and are not selected,
+                    # so an existing JAVA_HOME stays as the user set it. Without
+                    # elevation the package installs for the current user only.
+                    $jdkLog = Join-Path $TmpDir "microsoft-jdk-install.log"
+                    $jdkArguments = @(
+                        "/i",
+                        ('"{0}"' -f $MicrosoftJdkInstaller),
+                        "/qn",
+                        "/norestart",
+                        "/l*v",
+                        ('"{0}"' -f $jdkLog),
+                        "ADDLOCAL=ZuluInstallation,FeatureEnvironment"
+                    )
+                    if (-not $isElevated) { $jdkArguments += "MSIINSTALLPERUSER=1" }
 
-                Write-Host "[*] Running OpenJDK MSI installer (silent, wait): $MicrosoftJdkInstaller"
-                $jdkInstaller = Start-Process `
-                    -FilePath (Join-Path $env:SystemRoot "System32\msiexec.exe") `
-                    -ArgumentList $jdkArguments `
-                    -Wait `
-                    -PassThru `
-                    -ErrorAction Stop
+                    Write-Host "[*] Running OpenJDK MSI installer (silent, wait): $MicrosoftJdkInstaller"
+                    $jdkInstaller = Start-Process `
+                        -FilePath (Join-Path $env:SystemRoot "System32\msiexec.exe") `
+                        -ArgumentList $jdkArguments `
+                        -Wait `
+                        -PassThru `
+                        -ErrorAction Stop
+                }
+                else {
+                    # FeatureEnvironment puts the JDK on PATH, FeatureJarFileRunWith
+                    # associates .jar files: both are the vendor installer's defaults.
+                    # FeatureJavaHome (JAVA_HOME) is left out, because it is not a
+                    # default and would repoint an existing JAVA_HOME to this build.
+                    $installScope = if ($isElevated) { "/ALLUSERS" } else { "/CURRENTUSER" }
+                    $jdkArguments = @(
+                        "/VERYSILENT",
+                        "/SUPPRESSMSGBOXES",
+                        "/NORESTART",
+                        $installScope,
+                        '/TASKS="FeatureEnvironment,FeatureJarFileRunWith"'
+                    )
+
+                    Write-Host "[*] Running OpenJDK installer (silent, wait, $installScope): $MicrosoftJdkInstaller"
+                    $jdkInstaller = Start-Process `
+                        -FilePath $MicrosoftJdkInstaller `
+                        -ArgumentList $jdkArguments `
+                        -Wait `
+                        -PassThru `
+                        -ErrorAction Stop
+                }
             }
-            else {
-                # FeatureEnvironment puts the JDK on PATH, FeatureJarFileRunWith
-                # associates .jar files: both are the vendor installer's defaults.
-                # FeatureJavaHome (JAVA_HOME) is left out, because it is not a default
-                # and would repoint an existing JAVA_HOME to this build.
-                $installScope = if ($isElevated) { "/ALLUSERS" } else { "/CURRENTUSER" }
-                $jdkArguments = @(
-                    "/VERYSILENT",
-                    "/SUPPRESSMSGBOXES",
-                    "/NORESTART",
-                    $installScope,
-                    '/TASKS="FeatureEnvironment,FeatureJarFileRunWith"'
-                )
-
-                Write-Host "[*] Running OpenJDK installer (silent, wait, $installScope): $MicrosoftJdkInstaller"
-                $jdkInstaller = Start-Process `
-                    -FilePath $MicrosoftJdkInstaller `
-                    -ArgumentList $jdkArguments `
-                    -Wait `
-                    -PassThru `
-                    -ErrorAction Stop
+            catch {
+                # Starting the installer can fail without an exit code: a damaged
+                # download, a file blocked by policy, a file that is not a program.
+                Write-Host "[WARN] Failed to start the OpenJDK installer: $($_.Exception.Message)"
+                Write-Host "[WARN] Run the installer by hand if you need it: $MicrosoftJdkInstaller"
+                $jdkInstaller = $null
             }
 
-            switch ($jdkInstaller.ExitCode) {
-                0 {
-                    Write-Host "[*] OpenJDK installed. PATH is updated for new processes; JAVA_HOME is unchanged."
-                }
-                1641 {
-                    Write-Host "[!] OpenJDK installed. The installer restarted Windows to finish."
-                }
-                3010 {
-                    Write-Host "[!] OpenJDK installed. A restart is required to finish."
-                }
-                default {
-                    Write-Host "[WARN] OpenJDK installer exited with code $($jdkInstaller.ExitCode)."
-                    Write-Host "[WARN] The JDK was not installed. Run the installer by hand if you need it: $MicrosoftJdkInstaller"
-                    if ($jdkLog) {
-                        Write-Host "[WARN] Windows Installer log: $jdkLog"
+            if ($jdkInstaller) {
+                switch ($jdkInstaller.ExitCode) {
+                    0 {
+                        Write-Host "[*] OpenJDK installed. PATH is updated for new processes; JAVA_HOME is unchanged."
+                    }
+                    1641 {
+                        Write-Host "[!] OpenJDK installed. The installer restarted Windows to finish."
+                    }
+                    3010 {
+                        Write-Host "[!] OpenJDK installed. A restart is required to finish."
+                    }
+                    default {
+                        Write-Host "[WARN] OpenJDK installer exited with code $($jdkInstaller.ExitCode)."
+                        Write-Host "[WARN] The JDK was not installed. Run the installer by hand if you need it: $MicrosoftJdkInstaller"
+                        if ($jdkLog) {
+                            Write-Host "[WARN] Windows Installer log: $jdkLog"
+                        }
                     }
                 }
             }
