@@ -1189,6 +1189,48 @@ function Add-UserPathEntry {
     return $true
 }
 
+function Remove-UserPathEntriesUnder {
+    # Removes the current user's PATH entries that point into a directory which is
+    # being deleted, and answers how many it removed. Entries are compared as
+    # resolved paths, so a trailing backslash or a change of case still counts as
+    # inside the directory. The copy of PATH in this process is left as it is: an
+    # entry into a directory that no longer exists does nothing, and the value saved
+    # for later shells is what has to be right.
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Directory
+    )
+
+    $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
+    if (-not $userPath) { return 0 }
+
+    $removed       = 0
+    $keptEntries   = @()
+    $rootDirectory = [System.IO.Path]::GetFullPath($Directory).TrimEnd("\") + "\"
+
+    foreach ($pathEntry in ($userPath -split ";")) {
+        $trimmedEntry = $pathEntry.Trim()
+        if ($trimmedEntry -eq "") { continue }
+
+        $resolvedEntry = $trimmedEntry
+        try { $resolvedEntry = [System.IO.Path]::GetFullPath($trimmedEntry) }
+        catch { }
+
+        if ($resolvedEntry.StartsWith($rootDirectory, [System.StringComparison]::OrdinalIgnoreCase)) {
+            $removed++
+            continue
+        }
+
+        $keptEntries += $trimmedEntry
+    }
+
+    if ($removed -gt 0) {
+        [Environment]::SetEnvironmentVariable("Path", ($keptEntries -join ";"), "User")
+    }
+
+    return $removed
+}
+
 function Find-JdkHome {
     # The JDK root is the directory whose bin\java.exe is the launcher. A vendor
     # archive puts it in one folder named after the build, but the depth is not
@@ -1468,7 +1510,11 @@ try {
     # Unpack an OpenJDK build (component: microsoft_jdk)
     # The component unpacks a vendor .zip into the WelsonJS AppData directory and
     # registers it itself:
-    #   %APPDATA%\welsonjs\microsoft_jdk\<the archive's own top folder>\
+    #   %APPDATA%\welsonjs\jdk\<the archive's own top folder>\
+    # The folder is `jdk` and not the component's name: what sits under it is a JDK,
+    # and the build's own version folder is what keeps two builds apart. A folder
+    # that this component wrote under its earlier name,
+    # %APPDATA%\welsonjs\microsoft_jdk, is removed once the new JDK is registered.
     # The archive holds Microsoft Build of OpenJDK 25 on x64 and ARM64, and Azul
     # Zulu 17 LTS on 32-bit Windows. Unpacking instead of installing leaves nothing
     # in Program Files and creates no Programs and Features entry: the JDK lives in
@@ -1477,7 +1523,7 @@ try {
     # component: a download, hash, extraction or registration failure is reported
     # and the other components run.
     if (Test-ComponentSelected -Name "microsoft_jdk") {
-        $jdkTargetDirectory = Join-Path $TargetDir "microsoft_jdk"
+        $jdkTargetDirectory = Join-Path $TargetDir "jdk"
         $jdkUnpacked = $false
 
         # The hash was checked once after the download and is checked again here,
@@ -1518,7 +1564,7 @@ try {
                 }
 
                 # The archive's own folder name carries the build, so the unpacked JDK
-                # keeps its version in the path: microsoft_jdk\jdk-25.0.5.0.2+1\bin.
+                # keeps its version in the path: jdk\jdk-25.0.5.0.2+1\bin.
                 # An archive that holds the JDK at its root (no folder of its own) is
                 # named after the archive file instead, so the target keeps a stable name.
                 if ($jdkStagedHome -ieq $jdkStagingDirectory) {
@@ -1577,6 +1623,34 @@ try {
                     Write-Host "    $jdkBinDirectory is already on the current user's PATH."
                 }
                 Write-Host "    New shells and processes see both; open ones keep the environment they started with."
+
+                # What this component left under its earlier name is no longer used:
+                # a JDK unpacked into %APPDATA%\welsonjs\microsoft_jdk by an earlier
+                # build, or the installer file even earlier versions only staged there.
+                # JAVA_HOME was just pointed at the new folder, so a PATH entry into
+                # the old one is dropped with it. A folder that cannot be removed (a
+                # java.exe still running from it, for instance) is reported and the
+                # component still counts as installed.
+                $jdkLegacyDirectory = Join-Path $TargetDir "microsoft_jdk"
+                if ($jdkTargetDirectory -ine $jdkLegacyDirectory) {
+                    $jdkLegacyPathEntries = Remove-UserPathEntriesUnder -Directory $jdkLegacyDirectory
+                    if ($jdkLegacyPathEntries -eq 1) {
+                        Write-Host "    Removed a PATH entry that pointed into $jdkLegacyDirectory."
+                    }
+                    elseif ($jdkLegacyPathEntries -gt 1) {
+                        Write-Host "    Removed $jdkLegacyPathEntries PATH entries that pointed into $jdkLegacyDirectory."
+                    }
+
+                    if (Test-Path -LiteralPath $jdkLegacyDirectory) {
+                        try {
+                            Remove-Item -LiteralPath $jdkLegacyDirectory -Recurse -Force -ErrorAction Stop
+                            Write-Host "[*] Removed what earlier versions left in $jdkLegacyDirectory"
+                        }
+                        catch {
+                            Write-Host "[WARN] Could not remove $jdkLegacyDirectory. Close any program using it and delete it by hand."
+                        }
+                    }
+                }
 
                 $jdkUnpacked = $true
             }

@@ -261,12 +261,14 @@
     # ships 32-bit Windows builds. It is at the patch level the JDK 17 fixes in the
     # November 2026 CPU land in.
     # All three are the vendor's .zip package rather than its installer:
-    # postInstall.ps1 unpacks it under %APPDATA%\welsonjs\microsoft_jdk instead of
+    # postInstall.ps1 unpacks it under %APPDATA%\welsonjs\jdk instead of
     # installing it, so nothing is left in Program Files and no Programs and Features
     # entry is created; the JDK goes away with that directory, as the other
     # components the script downloads do. Each .zip holds one
     # top folder named after the build, and postInstall.ps1 keeps that folder, so the
-    # JDK sits at microsoft_jdk\jdk-25.0.5.0.2+1\ (or microsoft_jdk\zulu17...-win_i686\).
+    # JDK sits at jdk\jdk-25.0.5.0.2+1\ (or jdk\zulu17...-win_i686\), and what an
+    # earlier version of the component left in %APPDATA%\welsonjs\microsoft_jdk is
+    # removed once the new JDK is registered.
     # Both vendors serve the file behind a redirect that keeps the file name.
     microsoft_jdk = @{
         x64   = "https://aka.ms/download-jdk/microsoft-jdk-25.0.5.0.2-windows-x64.zip"
