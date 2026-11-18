@@ -3,7 +3,7 @@
 # The SHA-256 of every file listed here is in data/DownloadHashes.txt; postInstall.ps1
 # downloads nothing that is not on that list.
 # Namhyeon Go <gnh1201@catswords.re.kr>
-# Last updated: 2026-08-06
+# Last updated: 2026-11-18
 # https://github.com/gnh1201/welsonjs
 # 
 @{
@@ -19,9 +19,17 @@
     # ===========================
     # cURL
     # ===========================
+    # x64 and ARM64: curl 8.23.0, build 8.23.0_9 of curl-for-win, the build the
+    # download page links to (https://curl.se/windows/). Pinned to the versioned
+    # file instead of its latest.cgi redirect, so the SHA-256 in
+    # data/DownloadHashes.txt belongs to the exact file this table names.
+    # x86: the WelsonJS build (catswords blob), unchanged.
+    # The archive holds one top folder (curl-8.23.0_9-win64-mingw\, or
+    # curl-8.23.0_9-win64a-mingw\ for ARM64), which postInstall.ps1 unwraps, so
+    # curl sits at curl\bin\curl.exe.
     curl = @{
-        x64   = "https://curl.se/windows/latest.cgi?p=win64-mingw.zip"
-        arm64 = "https://curl.se/windows/latest.cgi?p=win64a-mingw.zip"
+        x64   = "https://curl.se/windows/dl-8.23.0_9/curl-8.23.0_9-win64-mingw.zip"
+        arm64 = "https://curl.se/windows/dl-8.23.0_9/curl-8.23.0_9-win64a-mingw.zip"
         x86   = "https://catswords.blob.core.windows.net/welsonjs/packages/native/curl/8.20.0-x86/curl-8.20.0-win-x86-full.2026-05-02.zip"
     }
 
@@ -154,8 +162,15 @@
     # ===========================
     # Android Platform Tools (e.g., ADB)
     # ===========================
+    # platform-tools r37.0.1 for Windows, the release in the stable channel
+    # (channel-0, android-sdk-license) of
+    # https://dl.google.com/android/repository/repository2-3.xml, as the versioned
+    # archive instead of platform-tools-latest-windows.zip. r37.0.3 is only in the
+    # preview channel (channel-2, android-sdk-preview-license). The archive holds
+    # one platform-tools\ folder, which postInstall.ps1 unwraps, so adb.exe lands at
+    # android_platform_tools\adb.exe where lib/adb.js looks for it.
     android_platform_tools = @{
-        x64   = "https://dl.google.com/android/repository/platform-tools-latest-windows.zip"
+        x64   = "https://dl.google.com/android/repository/platform-tools_r37.0.1-win.zip"
         arm64 = $null  # no official ARM64 build
         x86   = $null  # no official X86 build
     }
@@ -288,8 +303,11 @@
     # ===========================
     # Nuget
     # ===========================
+    # NuGet 8.0.0, the build dist.nuget.org/win-x86-commandline/latest/nuget.exe
+    # serves, named by version; it used to be that latest link. postInstall.ps1
+    # keeps nuget\nuget.exe and puts that folder on the user PATH.
     nuget = @{
-        any = "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe"
+        any = "https://dist.nuget.org/win-x86-commandline/v8.0.0/nuget.exe"
     }
     
     # ===========================

@@ -108,6 +108,27 @@ function Get-DownloadUrl {
     return $null
 }
 
+# The name a component's download is saved under. It comes from the URL, and both
+# the download and the extraction phase ask here, so an archive is unpacked from the
+# name it was saved as. Every entry of data\DownloadUrls.psd1 ends in a file name
+# now that curl, the Android platform-tools and NuGet are pinned to versioned files;
+# one that has none falls back to <component>.download.
+function Get-DownloadFileName {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Component,
+        [Parameter(Mandatory = $true)]
+        [string]$Url
+    )
+
+    $fileName = [System.IO.Path]::GetFileName(([uri]$Url).AbsolutePath)
+    if (-not $fileName) {
+        $fileName = "$Component.download"
+    }
+
+    return $fileName
+}
+
 function Get-DownloadHashes {
     # The SHA-256 values a downloaded file is allowed to have, read from
     # data\DownloadHashes.txt: one hash per line, blank lines and surrounding
@@ -1313,9 +1334,7 @@ try {
             Write-Host "[*] $component URL not available for arch: $arch. Skipping download."
             continue
         }
-        $fileName = [System.IO.Path]::GetFileName(([uri]$url).AbsolutePath)
-        if ($component -eq "curl") { $fileName = "curl.zip" }
-        if (-not $fileName) { $fileName = "$component.download" }
+        $fileName = Get-DownloadFileName -Component $component -Url $url
         Download-File -Url $url -DestinationPath (Join-Path $TmpDir "$component-$fileName")
     }
 
@@ -1393,8 +1412,7 @@ try {
         if (-not (Test-ComponentSelected -Name $component)) { continue }
         $url = Get-DownloadUrl -Component $component -Arch $arch
         if (-not $url) { continue }
-        $fileName = [System.IO.Path]::GetFileName(([uri]$url).AbsolutePath)
-        if (-not $fileName) { $fileName = "$component.download" }
+        $fileName = Get-DownloadFileName -Component $component -Url $url
         $archivePath = Join-Path $TmpDir "$component-$fileName"
         if (-not (Test-Path $archivePath)) {
             Write-Host "[WARN] $component download not found. Skipping installation."
