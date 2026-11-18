@@ -1568,10 +1568,16 @@ var test_implements = {
             ["is.url('mailto:a@b.com')", is.url("mailto:a@b.com"), false],
             ["is.email('user@example.com')", is.email("user@example.com"), true],
             ["is.email('user@localhost')", is.email("user@localhost"), false],
+            ["is.email('user@\\u4F8B\\u3048.jp')", is.email("user@例え.jp"), false],
             ["is.ipv4('1.2.3.4')", is.ipv4("1.2.3.4"), true],
             ["is.ipv4('256.1.1.1')", is.ipv4("256.1.1.1"), false],
             ["is.ipv6('2001:db8::1')", is.ipv6("2001:db8::1"), true],
+            ["is.ipv6('::ffff:1.2.3.4')", is.ipv6("::ffff:1.2.3.4"), true],
+            ["is.ipv6('1.2.3.4::')", is.ipv6("1.2.3.4::"), false],
             ["is.ip('::1')", is.ip("::1"), true],
+            ["is.weekday(null)", is.weekday(null), false],
+            ["is.weekday(new Date(2026, 10, 18))", is.weekday(new Date(2026, 10, 18)), true],
+            ["is.weekday(new Date(2026, 10, 21))", is.weekday(new Date(2026, 10, 21)), false],
             ["is.alphaNumeric('abc123')", is.alphaNumeric("abc123"), true],
             ["is.numeric('-1.5')", is.numeric("-1.5"), true],
             ["is.usZipCode('12345')", is.usZipCode("12345"), true],
@@ -1598,9 +1604,12 @@ var test_implements = {
         var result = is.url(hostile);
         var elapsed = new Date().getTime() - started;
         console.log("is.url() on a " + hostile.length + " byte hostile value: " + String(result) + " in " + elapsed + " ms");
-        console.log(elapsed < 1000 ?
-            "The URL check does not backtrack on hostile input." :
-            "The URL check took too long on hostile input.");
+        if (elapsed < 1000) {
+            console.log("The URL check does not backtrack on hostile input.");
+        } else {
+            failures++;
+            console.log("FAIL The URL check took too long on hostile input.");
+        }
 
         console.log(failures === 0 ?
             "lib/is.js를 정상적으로 확인하였습니다." :

@@ -9,13 +9,15 @@ the file header records these modifications.
 
 - matrix.determinant: cofactor expansion along the first row
   (numbers/numbers.js#161, for issue #160).
-- basic.powerMod: exact for every modulus up to 2^53, and halves the
-  exponent without the 32-bit >> operator (exponents of 2^31 and above
-  gave wrong results). prime.millerRabin depends on it.
+- basic.powerMod: exact for every modulus up to 2^53 (no intermediate sum
+  exceeds the modulus), and halves the exponent without the 32-bit >>
+  operator (exponents of 2^31 and above gave wrong results).
+  prime.millerRabin depends on it.
 - basic.modInverse: returns the inverse in [0, m), not a negative number.
 - calculus.adaptiveSimpson: splits each interval at its midpoint and passes
   the recursive arguments in order, with a rounding-error floor and a depth
-  limit (it computed one Simpson step, or recursed without bound).
+  limit (it computed one Simpson step, or recursed without bound), and
+  stops at once on a NaN error estimate.
 - calculus.limit: approaches the point with shrinking steps, reports
   divergence, and uses "middle" by default (it evaluated f once at
   point +/- 1e-15).
@@ -33,18 +35,19 @@ app/assets/js/numbers-0.7.0.wsh.js:
 ---
 --- a/app/assets/js/numbers-0.7.0.wsh.js
 +++ b/app/assets/js/numbers-0.7.0.wsh.js
-@@ -19,6 +19,20 @@
+@@ -19,6 +19,21 @@
   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   * See the License for the specific language governing permissions and
   * limitations under the License.
 + *
 + * Modified by WelsonJS contributors (https://github.com/gnh1201/welsonjs), 2026:
 + * - basic.powerMod: exact for every modulus up to 2^53 (the product a * a lost
-+ *   precision above 2^26.5), and halves the exponent without the 32-bit >> operator.
++ *   precision above 2^26.5; the modular additions never exceed the modulus), and
++ *   halves the exponent without the 32-bit >> operator.
 + * - basic.modInverse: returns the inverse in [0, m), not a negative number.
 + * - calculus.adaptiveSimpson: splits each interval at its midpoint and passes the
 + *   arguments in order (it computed one Simpson step, or recursed without bound),
-+ *   with a depth limit.
++ *   with a depth limit, and stops on a NaN error estimate.
 + * - calculus.limit: approaches the point with shrinking steps (it evaluated f once
 + *   at point +/- 1e-15), reports divergence, and uses "middle" by default.
 + * - calculus.MonteCarlo: samples with random.sample (statistic.randomSample does
@@ -54,29 +57,35 @@ app/assets/js/numbers-0.7.0.wsh.js:
   */
  
  
-@@ -422,14 +436,31 @@
+@@ -422,14 +437,37 @@
    if (b < -1) return Math.pow(a, b) % m;
    if (b === 0) return 1 % m;
    if (b >= 1) {
 -    var result = 1;
 +    // (x * y) % m for 0 <= x, y < m, exact while m <= 2^53: the product is used
-+    // directly when it is below 2^53, and built by doubling otherwise.
++    // directly when it is below 2^53, and built by doubling otherwise. Each
++    // addition is done as r - (m - x) when r + x would reach m, so no
++    // intermediate value exceeds m and every step stays an exact integer.
++    var addMod = function (r, x) {
++      return (r >= m - x) ? r - (m - x) : r + x;
++    };
 +    var mulMod = function (x, y) {
 +      if (x * y <= 9007199254740991) return (x * y) % m;
 +      var r = 0;
 +      while (y > 0) {
 +        if (y % 2 === 1) {
-+          r += x;
-+          if (r >= m) r -= m;
++          r = addMod(r, x);
 +        }
-+        x += x;
-+        if (x >= m) x -= m;
++        x = addMod(x, x);
 +        y = Math.floor(y / 2);
 +      }
 +      return r;
 +    };
 +    var result = 1 % m;
-+    a = ((a % m) + m) % m;
++    // m is added only to a negative remainder, so the sum stays below m (adding it
++    // to every remainder could pass 2^53 and round).
++    a = a % m;
++    if (a < 0) a += m;
      while (b > 0) {
        if ((b % 2) === 1) {
 -        result = (result * a) % m;
@@ -90,16 +99,17 @@ app/assets/js/numbers-0.7.0.wsh.js:
      }
      return result;
    }
-@@ -496,7 +527,7 @@
+@@ -496,7 +534,8 @@
  basic.modInverse = function (a, m) {
    var r = basic.egcd(a, m);
    if (r[0] !== 1) throw new Error('No modular inverse exists');
 -  return r[1] % m;
-+  return ((r[1] % m) + m) % m;
++  var inverse = r[1] % m;
++  return inverse < 0 ? inverse + m : inverse;
  };
  
  
-@@ -656,15 +687,19 @@
+@@ -656,15 +695,21 @@
   * @param {Number} Error bound (epsilon).
   * @return {Number} recursive evaluation of left and right side.
   */
@@ -113,9 +123,11 @@ app/assets/js/numbers-0.7.0.wsh.js:
 -  if (Math.abs(left + right - whole) <= 15 * eps) {
 +  // The bound is never tighter than the rounding error of the sum, and the depth
 +  // limit stops a function that never meets it (a singularity) from recursing
-+  // without end.
++  // without end. A NaN error (the function returned NaN, or Infinity minus
++  // Infinity) can never meet the bound, so it ends the recursion at once instead
++  // of splitting both halves down to the depth limit.
 +  var error = Math.abs(left + right - whole);
-+  if (depth <= 0 || error <= Math.max(15 * eps, 1e-14 * Math.abs(left + right))) {
++  if (depth <= 0 || error !== error || error <= Math.max(15 * eps, 1e-14 * Math.abs(left + right))) {
      return left + right + (left + right - whole) / 15;
    } else {
 -    return SimpsonRecursive(func, a, c, eps / 2, left) + SimpsonRecursive(func, c, b, eps / 2, right);
@@ -123,7 +135,7 @@ app/assets/js/numbers-0.7.0.wsh.js:
    }
  }
  
-@@ -681,7 +716,7 @@
+@@ -681,7 +726,7 @@
  calculus.adaptiveSimpson = function (func, a, b, eps) {
    eps = (typeof eps === 'undefined') ? numbers.EPSILON : eps;
  
@@ -132,7 +144,7 @@ app/assets/js/numbers-0.7.0.wsh.js:
  };
  
  /**
-@@ -690,18 +725,56 @@
+@@ -690,18 +735,56 @@
   *
   * @param {Function} math function to be evaluated.
   * @param {Number} point to evaluate.
@@ -196,7 +208,7 @@ app/assets/js/numbers-0.7.0.wsh.js:
    }
  };
  
-@@ -784,10 +857,10 @@
+@@ -784,10 +867,10 @@
      //generate an array of arrays, each nested array being N
      //random values in each interval - N-by-3 array, and then
      //transpose it to get a 3-by-N array
@@ -209,7 +221,7 @@ app/assets/js/numbers-0.7.0.wsh.js:
    });
  
    return coeff * fvals.reduce(function (a, b) {
-@@ -1150,20 +1223,22 @@
+@@ -1150,20 +1233,22 @@
  /**
   * Populate the given array with a Collatz Sequence.
   *
@@ -241,7 +253,7 @@ app/assets/js/numbers-0.7.0.wsh.js:
  };
  
  },{}],8:[function(require,module,exports){
-@@ -1333,10 +1408,18 @@
+@@ -1333,10 +1418,18 @@
  /**
   * Transpose a matrix.
   *
@@ -262,7 +274,7 @@ app/assets/js/numbers-0.7.0.wsh.js:
    var result = new Array(arr[0].length);
  
    for (var i = 0; i < arr[0].length; i++) {
-@@ -1443,6 +1526,7 @@
+@@ -1443,6 +1536,7 @@
      return m[0][0] * m[1][1] - m[0][1] * m[1][0];
    }
  
@@ -270,7 +282,7 @@ app/assets/js/numbers-0.7.0.wsh.js:
    for (col = 0; col < numCol; col++) {
      diagLeft = m[0][col];
      diagRight = m[0][col];
-@@ -1454,8 +1538,29 @@
+@@ -1454,8 +1548,29 @@
  
      det += diagRight - diagLeft;
    }

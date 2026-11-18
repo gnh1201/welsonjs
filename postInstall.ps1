@@ -134,8 +134,11 @@ function Get-DownloadHashes {
     # data\DownloadHashes.txt: one hash per line, blank lines and surrounding
     # spaces ignored. The set is case-insensitive, because a hash written in upper
     # case is still the same hash. The file is read once per run.
+    # Every return wraps the set in a one-element array (the comma operator):
+    # PowerShell would otherwise unroll it into an object[] (or a single string for
+    # one hash), and Contains would no longer be the set's case-insensitive lookup.
     if ($null -ne $script:DownloadHashes) {
-        return $script:DownloadHashes
+        return ,$script:DownloadHashes
     }
 
     $hashes = New-Object -TypeName 'System.Collections.Generic.HashSet[string]' -ArgumentList ([System.StringComparer]::OrdinalIgnoreCase)
@@ -144,7 +147,7 @@ function Get-DownloadHashes {
         Write-Host "[WARN] data\DownloadHashes.txt not found at: $DownloadHashesPath"
         Write-Host "[WARN] No download can be verified in this run."
         $script:DownloadHashes = $hashes
-        return $hashes
+        return ,$hashes
     }
 
     foreach ($line in @(Get-Content -LiteralPath $DownloadHashesPath -ErrorAction SilentlyContinue)) {
@@ -159,7 +162,7 @@ function Get-DownloadHashes {
     }
 
     $script:DownloadHashes = $hashes
-    return $hashes
+    return ,$hashes
 }
 
 # ================================
@@ -607,23 +610,6 @@ function Get-NativeArchitecture {
     return $arch
 }
 
-# ================================
-# PRIVILEGE LEVEL
-# ================================
-# The installer runs elevated (PrivilegesRequired=admin in setup.iss), but this
-# script can also be started by hand, so a component that needs a machine-wide
-# installation asks first.
-function Test-Administrator {
-    try {
-        $identity = [Security.Principal.WindowsIdentity]::GetCurrent()
-        $principal = New-Object Security.Principal.WindowsPrincipal($identity)
-        return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-    }
-    catch {
-        return $false
-    }
-}
-
 $arch = Get-NativeArchitecture
 
 Write-Host "[*] Detected architecture: $arch"
@@ -843,6 +829,10 @@ function Download-File {
             "--retry", "3"
             "--retry-delay", "5"
             "--connect-timeout", "30"
+            # A transfer that delivers nothing for 5 minutes is abandoned; a total
+            # time limit would cut off the multi-gigabyte model downloads.
+            "--speed-limit", "1"
+            "--speed-time", "300"
             "-o", $DestinationPath
             $Url
         )
@@ -1311,6 +1301,31 @@ $NmapInstaller           = Join-Path $TmpDir "nmap-setup.exe"
 $JdkArchive             = $null  # set in the download phase: the .zip named in the URL table
 $HwpAutomationCompressed = Join-Path $TmpDir "FilePathCheckerModuleExample.dll.gz"
 
+# Downloads one optional component. A failure (a network error, or a file whose
+# SHA-256 is not in data\DownloadHashes.txt, which Download-File has already
+# deleted) skips that component only: the installation phase finds no file and
+# skips it, and the other components still run. Five URLs in the table serve
+# whatever is current, so a vendor update must not end the whole installation.
+function Save-ComponentDownload {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Component,
+        [Parameter(Mandatory = $true)]
+        [string]$Url,
+        [Parameter(Mandatory = $true)]
+        [string]$DestinationPath
+    )
+
+    try {
+        Download-File -Url $Url -DestinationPath $DestinationPath
+    }
+    catch {
+        Write-Host "[ERROR] Failed to download the $Component component: $($_.Exception.Message)"
+        Write-Host "[WARN] The $Component component is skipped for this run."
+        Remove-Item -LiteralPath $DestinationPath -Force -ErrorAction SilentlyContinue
+    }
+}
+
 # ================================
 # DOWNLOAD PHASE
 # ================================
@@ -1335,19 +1350,19 @@ try {
             continue
         }
         $fileName = Get-DownloadFileName -Component $component -Url $url
-        Download-File -Url $url -DestinationPath (Join-Path $TmpDir "$component-$fileName")
+        Save-ComponentDownload -Component $component -Url $url -DestinationPath (Join-Path $TmpDir "$component-$fileName")
     }
 
     if (Test-ComponentSelected -Name "gtk3runtime") {
         $url = Get-DownloadUrl -Component "gtk3runtime" -Arch $arch
-        if ($url) { Download-File -Url $url -DestinationPath $GtkRuntimeInstaller }
+        if ($url) { Save-ComponentDownload -Component "gtk3runtime" -Url $url -DestinationPath $GtkRuntimeInstaller }
     }
 
     if (Test-ComponentSelected -Name "nmap") {
         $npcapUrl = Get-DownloadUrl -Component "npcap" -Arch $arch
-        if ($npcapUrl) { Download-File -Url $npcapUrl -DestinationPath $NpcapInstaller }
+        if ($npcapUrl) { Save-ComponentDownload -Component "npcap" -Url $npcapUrl -DestinationPath $NpcapInstaller }
         $nmapUrl = Get-DownloadUrl -Component "nmap" -Arch $arch
-        if ($nmapUrl) { Download-File -Url $nmapUrl -DestinationPath $NmapInstaller }
+        if ($nmapUrl) { Save-ComponentDownload -Component "nmap" -Url $nmapUrl -DestinationPath $NmapInstaller }
     }
 
     # OpenJDK (component: jdk) – the vendor's .zip archive is downloaded
@@ -1386,7 +1401,7 @@ try {
 
     if (Test-ComponentSelected -Name "hwp_automation") {
         $url = Get-DownloadUrl -Component "hwp_automation" -Arch $arch
-        if ($url) { Download-File -Url $url -DestinationPath $HwpAutomationCompressed }
+        if ($url) { Save-ComponentDownload -Component "hwp_automation" -Url $url -DestinationPath $HwpAutomationCompressed }
     }
 
     if (Test-ComponentSelected -Name "tls13") {
@@ -1601,14 +1616,27 @@ try {
                 }
                 $jdkHome = Join-Path $jdkTargetDirectory $jdkFolderName
 
-                if (Test-Path -LiteralPath $jdkHome) {
-                    # The same build is already unpacked here: replace it with this copy.
-                    # A java.exe still running from it holds the folder open, and the
-                    # error below says so instead of leaving a mixed tree behind.
-                    Remove-Item -LiteralPath $jdkHome -Recurse -Force -ErrorAction Stop
-                }
+                # The same build may already be unpacked here. It is renamed aside, not
+                # deleted, until this copy is in place: if the move fails, it is put
+                # back, so JAVA_HOME and PATH never point at a deleted folder. A
+                # java.exe still running from it holds the folder open, and the rename
+                # fails with an error that says so. The renamed copy is removed with the
+                # other leftovers below.
                 New-Item -ItemType Directory -Path $jdkTargetDirectory -Force | Out-Null
-                Move-Item -LiteralPath $jdkStagedHome -Destination $jdkHome -Force -ErrorAction Stop
+                $jdkPreviousHome = $null
+                if (Test-Path -LiteralPath $jdkHome) {
+                    $jdkPreviousHome = "$jdkHome.previous-$([guid]::NewGuid().ToString('N'))"
+                    Rename-Item -LiteralPath $jdkHome -NewName (Split-Path -Leaf $jdkPreviousHome) -ErrorAction Stop
+                }
+                try {
+                    Move-Item -LiteralPath $jdkStagedHome -Destination $jdkHome -Force -ErrorAction Stop
+                }
+                catch {
+                    if ($jdkPreviousHome -and -not (Test-Path -LiteralPath $jdkHome)) {
+                        Rename-Item -LiteralPath $jdkPreviousHome -NewName (Split-Path -Leaf $jdkHome) -ErrorAction SilentlyContinue
+                    }
+                    throw
+                }
 
                 # A JDK of an earlier version, or the installer file that earlier
                 # versions of this component only staged here, is no longer used. What
@@ -1632,7 +1660,12 @@ try {
                 [Environment]::SetEnvironmentVariable("JAVA_HOME", $jdkHome, "User")
                 $env:JAVA_HOME = $jdkHome
 
+                # A PATH entry for another JDK under jdk\ (an earlier version whose
+                # folder could not be removed above) would come before the new entry
+                # and make new shells run that java.exe while JAVA_HOME names this one,
+                # so every entry under jdk\ is dropped before this JDK's bin is added.
                 $jdkBinDirectory = Join-Path $jdkHome "bin"
+                [void](Remove-UserPathEntriesUnder -Directory $jdkTargetDirectory)
                 $jdkPathAdded = Add-UserPathEntry -Directory $jdkBinDirectory
 
                 Write-Host "[*] OpenJDK unpacked to: $jdkHome"
