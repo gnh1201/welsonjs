@@ -250,18 +250,22 @@
     }
     
     # ===========================
-    # Microsoft OpenJDK build
+    # OpenJDK build
     # ===========================
-    # Microsoft Build of OpenJDK 25 LTS, at the current Windows patch level
-    # (25.0.5.0.2, the build carrying the October 2026 CPU fixes). Windows builds
-    # exist for x64 and AArch64 only: the 32-bit x86 port was removed with JDK 25
-    # (JEP 503), so the x86 key stays empty instead of pointing at another
-    # architecture's file.
-    # https://learn.microsoft.com/en-us/java/openjdk/download
+    # x64 and ARM64: Microsoft Build of OpenJDK 25 LTS, at the current Windows patch
+    # level (25.0.5.0.2, the build carrying the October 2026 CPU fixes). Microsoft
+    # publishes Windows builds for these two architectures only: the 32-bit x86 port
+    # was removed with JDK 25 (JEP 503).
+    #   https://learn.microsoft.com/en-us/java/openjdk/download
+    # x86: Azul Zulu 17 LTS (17.0.21.1) for Windows i686, an OpenJDK build that still
+    # ships 32-bit Windows installers. It is at the patch level the JDK 17 fixes in the
+    # November 2026 CPU land in, and it is an MSI, so postInstall.ps1 runs it with
+    # msiexec instead of the Inno Setup switches the Microsoft .exe takes.
+    # Both vendors serve the file behind a redirect that keeps the file name.
     microsoft_jdk = @{
         x64   = "https://aka.ms/download-jdk/microsoft-jdk-25.0.5.0.2-windows-x64.exe"
         arm64 = "https://aka.ms/download-jdk/microsoft-jdk-25.0.5.0.2-windows-aarch64.exe"
-        x86   = $null  # no 32-bit x86 build (JEP 503)
+        x86   = "https://cdn.azul.com/zulu/bin/zulu17.70.201-ca-jdk17.0.21.1-win_i686.msi"
     }
     
     # ===========================

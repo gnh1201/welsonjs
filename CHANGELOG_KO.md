@@ -24,8 +24,8 @@
 
 ### 변경
 
-- 설치 프로그램의 `microsoft_jdk` 구성 요소가 설치 파일을 받아 두기만 하지 않고 JDK를 설치합니다. `postInstall.ps1`이 배포사 설치 파일을 내려받아 무인으로 실행하고(`/VERYSILENT /SUPPRESSMSGBOXES /NORESTART`, 스크립트가 관리자 권한이면 `/ALLUSERS`, 아니면 `/CURRENTUSER`, `/TASKS="FeatureEnvironment,FeatureJarFileRunWith"`), 종료 코드(다시 시작이 필요한 3010 포함)를 기록합니다. `JAVA_HOME`은 건드리지 않습니다. 배포사 설치 파일은 선택 작업 `FeatureJavaHome`을 골랐을 때만 이 값을 설정합니다. `setup.iss`의 구성 요소 설명도 설치한다는 뜻으로 바뀌었습니다.
-- `data/DownloadUrls.psd1`: Microsoft Build of OpenJDK 링크를 JDK 25 LTS의 현재 Windows 패치인 25.0.5.0.2로 올렸습니다. `$null`이던 `arm64`에 주소를 채우고, JDK 25에 32비트 빌드가 없으므로(JEP 503으로 x86 포트 제거) `x86`은 AArch64 설치 파일을 가리키던 것을 비워 두었습니다.
+- 설치 프로그램의 `microsoft_jdk` 구성 요소가 설치 파일을 받아 두기만 하지 않고 JDK를 설치합니다. `postInstall.ps1`이 배포사 설치 파일을 무인으로 실행하고 종료 코드(다시 시작이 필요한 3010, 다시 시작이 시작된 1641 포함)를 기록합니다. `JAVA_HOME`은 건드리지 않습니다. 선택 작업으로 골라야만 설정되는 값이기 때문입니다. 파일 형식에 따라 명령이 다릅니다. Microsoft Build of OpenJDK `.exe`(x64, ARM64)는 `/VERYSILENT /SUPPRESSMSGBOXES /NORESTART`와, 스크립트가 관리자 권한이면 `/ALLUSERS`, 아니면 `/CURRENTUSER`, `/TASKS="FeatureEnvironment,FeatureJarFileRunWith"`로 실행합니다. Azul Zulu `.msi`(32비트 Windows)는 `msiexec /i … /qn /norestart`와 `ADDLOCAL=ZuluInstallation,FeatureEnvironment`로 실행하며, 관리자 권한이 아니면 `MSIINSTALLPERUSER=1`을 더합니다. 두 경우 모두 JDK를 `PATH`에 등록합니다. `setup.iss`의 구성 요소 설명도 설치한다는 뜻으로 바뀌었습니다.
+- `data/DownloadUrls.psd1`: `microsoft_jdk`의 x64·ARM64는 JDK 25 LTS의 현재 Windows 패치인 Microsoft Build of OpenJDK 25.0.5.0.2이고, x86은 Windows i686용 Azul Zulu 17 LTS 17.0.21.1입니다. JDK 25에는 32비트 빌드가 없기 때문입니다(JEP 503으로 x86 포트 제거). Zulu 17.0.21.1은 2026년 11월 CPU에서 JDK 17 수정이 반영되는 패치 수준입니다. 주소가 비어 있던 `arm64`를 채우고, AArch64 설치 파일을 가리키던 `x86`을 바로잡았습니다.
 
 ### 보안
 
