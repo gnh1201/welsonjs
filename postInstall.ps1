@@ -877,7 +877,12 @@ function Extract-CompressedFile {
         [string]$CompressedPath,
 
         [Parameter(Mandatory = $true)]
-        [string]$DestinationDirectory
+        [string]$DestinationDirectory,
+
+        # A vendor package whose own top folder carries meaning (a JDK names the
+        # folder after its build) is unpacked as it is; the default unwraps a
+        # single root folder, because most archives here only use one as a wrapper.
+        [switch]$KeepArchiveRoot
     )
 
     Write-Host "[*] Extracting compressed file:"
@@ -915,13 +920,16 @@ function Extract-CompressedFile {
     $entries    = Get-ChildItem -Path $tmpExtractDir -Force
     $SourceRoot = $tmpExtractDir
 
-    while ($entries.Count -eq 1 -and $entries[0].PSIsContainer) {
+    while (-not $KeepArchiveRoot -and $entries.Count -eq 1 -and $entries[0].PSIsContainer) {
         $SourceRoot = $entries[0].FullName
         Write-Host "[*] Detected single root folder inside archive: $($entries[0].Name)"
         Write-Host "[*] Unwrapping folder content..."
         $entries = Get-ChildItem -Path $SourceRoot -Force
     }
-    if ($SourceRoot -eq $tmpExtractDir) {
+    if ($KeepArchiveRoot) {
+        Write-Host "[*] Keeping the archive's own top folder."
+    }
+    elseif ($SourceRoot -eq $tmpExtractDir) {
         Write-Host "[*] Extracting multi-item archive (no root folder unwrapping needed)."
     }
 
@@ -1152,14 +1160,80 @@ function Extract-GZipFile {
 }
 
 
+function Add-UserPathEntry {
+    # Adds a directory to the current user's PATH when it is not there yet, and
+    # says whether it added it. Entries are compared as resolved paths, so a
+    # trailing backslash or a change of case does not add the same directory twice.
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Directory
+    )
+
+    $userPath   = [Environment]::GetEnvironmentVariable("Path", "User")
+    $pathEntries = @($userPath -split ";" | Where-Object { $_ -and $_.Trim() -ne "" })
+    $normalizedDirectory = [System.IO.Path]::GetFullPath($Directory).TrimEnd("\")
+
+    foreach ($pathEntry in $pathEntries) {
+        try {
+            if ([System.IO.Path]::GetFullPath($pathEntry).TrimEnd("\") -ieq $normalizedDirectory) {
+                return $false
+            }
+        }
+        catch { }
+    }
+
+    $pathEntries += $normalizedDirectory
+    $newUserPath  = $pathEntries -join ";"
+    [Environment]::SetEnvironmentVariable("Path", $newUserPath, "User")
+    $env:Path = "$newUserPath;$env:Path"
+    return $true
+}
+
+function Find-JdkHome {
+    # The JDK root is the directory whose bin\java.exe is the launcher. A vendor
+    # archive puts it in one folder named after the build, but the depth is not
+    # guaranteed, so the search goes down a few levels and answers the shallowest
+    # directory that has bin\java.exe. $null means the archive holds no JDK.
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
+
+    if (-not (Test-Path -LiteralPath $Path -PathType Container)) {
+        return $null
+    }
+
+    $level = @((Get-Item -LiteralPath $Path).FullName)
+
+    for ($depth = 0; $depth -lt 3; $depth++) {
+        $nextLevel = @()
+
+        foreach ($directory in $level) {
+            if (Test-Path -LiteralPath (Join-Path $directory "bin\java.exe") -PathType Leaf) {
+                return $directory
+            }
+
+            $nextLevel += @(Get-ChildItem -LiteralPath $directory -Force -ErrorAction SilentlyContinue |
+                Where-Object { $_.PSIsContainer } |
+                ForEach-Object { $_.FullName })
+        }
+
+        if ($nextLevel.Count -eq 0) { break }
+        $level = $nextLevel
+    }
+
+    return $null
+}
+
+
 # ================================
 # COMPRESSED / INSTALLER PATHS
 # ================================
 $GtkRuntimeInstaller     = Join-Path $TmpDir "gtk-runtime.exe"
 $NpcapInstaller          = Join-Path $TmpDir "npcap-setup.exe"
 $NmapInstaller           = Join-Path $TmpDir "nmap-setup.exe"
-$MicrosoftJdkInstaller   = $null  # set in the download phase: name follows the resolved file type
-$MicrosoftJdkSha256      = $null  # the hash this run verified the installer against
+$MicrosoftJdkArchive     = $null  # set in the download phase: the .zip named in the URL table
+$MicrosoftJdkSha256      = $null  # the hash this run verified the archive against
 $HwpAutomationCompressed = Join-Path $TmpDir "FilePathCheckerModuleExample.dll.gz"
 
 # ================================
@@ -1203,22 +1277,22 @@ try {
         if ($nmapUrl) { Download-File -Url $nmapUrl -DestinationPath $NmapInstaller }
     }
 
-    # OpenJDK (component: microsoft_jdk) – the vendor installer is downloaded here
-    # and run in the installation phase. The file type differs by architecture: the
-    # Microsoft builds are Inno Setup .exe files, and the 32-bit Windows build in the
-    # URL table is an Azul Zulu .msi, so the name comes from the URL.
+    # OpenJDK (component: microsoft_jdk) – the vendor's .zip archive is downloaded
+    # here and unpacked in the installation phase. All three architectures are a
+    # .zip: the Microsoft Build of OpenJDK (x64, ARM64) and Azul Zulu 17 (32-bit
+    # Windows), so the file name comes from the URL.
     if (Test-ComponentSelected -Name "microsoft_jdk") {
         $url = Get-DownloadUrl -Component "microsoft_jdk" -Arch $arch
         if ($url) {
             $jdkFileName = [System.IO.Path]::GetFileName(([uri]$url).AbsolutePath)
-            if (-not $jdkFileName) { $jdkFileName = "openjdk-installer" }
+            if (-not $jdkFileName) { $jdkFileName = "openjdk.zip" }
 
-            # A directory of its own for this run: the file in it is launched with
-            # the installer's privileges, so it must not sit at a path that an
-            # earlier run, or a second run at the same time, also writes.
-            $jdkDirectory = Join-Path $TmpDir "microsoft_jdk-$([guid]::NewGuid().ToString('N'))"
-            New-Item -ItemType Directory -Path $jdkDirectory -Force | Out-Null
-            $MicrosoftJdkInstaller = Join-Path $jdkDirectory $jdkFileName
+            # A directory of its own for this run: the archive is unpacked into the
+            # user's AppData while the script may be elevated, so it must not sit at
+            # a path that an earlier run, or a second run at the same time, also writes.
+            $jdkDownloadDirectory = Join-Path $TmpDir "microsoft_jdk-$([guid]::NewGuid().ToString('N'))"
+            New-Item -ItemType Directory -Path $jdkDownloadDirectory -Force | Out-Null
+            $MicrosoftJdkArchive = Join-Path $jdkDownloadDirectory $jdkFileName
             $MicrosoftJdkSha256 = Get-DownloadSha256 -Component "microsoft_jdk" -Arch $arch
 
             if (-not $MicrosoftJdkSha256) {
@@ -1226,19 +1300,19 @@ try {
             }
 
             try {
-                Download-File -Url $url -DestinationPath $MicrosoftJdkInstaller -ExpectedHash $MicrosoftJdkSha256
+                Download-File -Url $url -DestinationPath $MicrosoftJdkArchive -ExpectedHash $MicrosoftJdkSha256
             }
             catch {
                 # An optional component that cannot be fetched must not stop the rest.
-                Write-Host "[WARN] Failed to download the OpenJDK installer: $($_.Exception.Message)"
+                Write-Host "[WARN] Failed to download the OpenJDK archive: $($_.Exception.Message)"
                 Write-Host "[WARN] The OpenJDK component is skipped for this run."
-                Remove-Item -LiteralPath $jdkDirectory -Recurse -Force -ErrorAction SilentlyContinue
-                $MicrosoftJdkInstaller = $null
+                Remove-Item -LiteralPath $jdkDownloadDirectory -Recurse -Force -ErrorAction SilentlyContinue
+                $MicrosoftJdkArchive = $null
                 $MicrosoftJdkSha256 = $null
             }
         }
         else {
-            Write-Host "[*] microsoft_jdk has no installer in the URL table for arch: $arch. Skipping download."
+            Write-Host "[*] microsoft_jdk has no archive in the URL table for arch: $arch. Skipping download."
             Write-Host "    Microsoft publishes Windows builds of JDK 25 for x64 and ARM64; the 32-bit Windows build in the table is Azul Zulu 17 for x86."
         }
     }
@@ -1309,26 +1383,8 @@ try {
             $toolDirectory = Join-Path $TargetDir $tool.Name
             $toolExecutable = Join-Path $toolDirectory $tool.Executable
             if (Test-Path $toolExecutable) {
-                $userPath = [Environment]::GetEnvironmentVariable("Path", "User")
-                $pathEntries = @($userPath -split ";" | Where-Object { $_ -and $_.Trim() -ne "" })
-                $normalizedToolDirectory = [System.IO.Path]::GetFullPath($toolDirectory).TrimEnd("\")
-                $alreadyRegistered = $false
-                foreach ($pathEntry in $pathEntries) {
-                    try {
-                        if ([System.IO.Path]::GetFullPath($pathEntry).TrimEnd("\") -ieq $normalizedToolDirectory) {
-                            $alreadyRegistered = $true
-                            break
-                        }
-                    }
-                    catch { }
-                }
-
-                if (-not $alreadyRegistered) {
-                    $pathEntries += $normalizedToolDirectory
-                    $newUserPath = $pathEntries -join ";"
-                    [Environment]::SetEnvironmentVariable("Path", $newUserPath, "User")
-                    $env:Path = "$newUserPath;$env:Path"
-                    Write-Host "[*] Added $($tool.Name) to the current user's PATH: $normalizedToolDirectory"
+                if (Add-UserPathEntry -Directory $toolDirectory) {
+                    Write-Host "[*] Added $($tool.Name) to the current user's PATH: $toolDirectory"
                 }
                 else {
                     Write-Host "[*] $($tool.Name) is already present in the current user's PATH."
@@ -1409,146 +1465,139 @@ try {
         Write-Host "[*] nmap component not selected. Skipping Npcap/Nmap installation."
     }
 
-    # Install an OpenJDK build (component: microsoft_jdk)
-    # Two vendors sit behind this component, so the file type decides the command:
-    #   .exe – Microsoft Build of OpenJDK (x64, ARM64), an Inno Setup package;
-    #          https://learn.microsoft.com/en-us/java/openjdk/install
-    #   .msi – Azul Zulu (32-bit Windows), a Windows Installer package;
-    #          https://docs.azul.com/core/install/windows
-    # Both are run unattended and waited for. This is an optional component, so a
-    # download or launch failure is reported and the other components still run.
+    # Unpack an OpenJDK build (component: microsoft_jdk)
+    # The component unpacks a vendor .zip into the WelsonJS AppData directory and
+    # registers it itself:
+    #   %APPDATA%\welsonjs\microsoft_jdk\<the archive's own top folder>\
+    # The archive holds Microsoft Build of OpenJDK 25 on x64 and ARM64, and Azul
+    # Zulu 17 LTS on 32-bit Windows. Unpacking instead of installing leaves nothing
+    # in Program Files and creates no Programs and Features entry: the JDK lives in
+    # WelsonJS's own data directory, next to the components postInstall.ps1
+    # downloads, and deleting that directory removes it. This is an optional
+    # component: a download, hash, extraction or registration failure is reported
+    # and the other components run.
     if (Test-ComponentSelected -Name "microsoft_jdk") {
+        $jdkTargetDirectory = Join-Path $TargetDir "microsoft_jdk"
+        $jdkUnpacked = $false
+
         # The hash was checked once after the download and is checked again here,
-        # immediately before the file is launched. The temporary directory is
-        # writable by the user this script runs for, so a file replaced between
-        # the download and the launch would otherwise run with the installer's
-        # privileges. A mismatch skips this component only.
-        if ($MicrosoftJdkInstaller -and $MicrosoftJdkSha256) {
+        # immediately before the archive is unpacked. The temporary directory is
+        # writable by the user this script runs for, so an archive replaced between
+        # the download and the extraction would otherwise write files of someone
+        # else's choosing into the user's AppData. A mismatch skips this component
+        # only.
+        if ($MicrosoftJdkArchive -and $MicrosoftJdkSha256) {
             try {
-                $jdkHashActual = Get-Sha256Hash -Path $MicrosoftJdkInstaller
+                $jdkHashActual = Get-Sha256Hash -Path $MicrosoftJdkArchive
             }
             catch {
                 $jdkHashActual = $null
             }
 
             if ($jdkHashActual -ne $MicrosoftJdkSha256) {
-                Write-Host "[ERROR] The OpenJDK installer does not match its published SHA-256, so it will not run."
+                Write-Host "[ERROR] The OpenJDK archive does not match its published SHA-256, so it will not be unpacked."
                 Write-Host "        expected: $MicrosoftJdkSha256"
                 Write-Host "        actual  : $jdkHashActual"
                 Write-Host "[WARN] The OpenJDK component is skipped for this run."
-                Remove-Item -LiteralPath $MicrosoftJdkInstaller -Force -ErrorAction SilentlyContinue
-                $MicrosoftJdkInstaller = $null
+                Remove-Item -LiteralPath $MicrosoftJdkArchive -Force -ErrorAction SilentlyContinue
+                $MicrosoftJdkArchive = $null
             }
         }
 
-        if ($MicrosoftJdkInstaller -and (Test-Path -LiteralPath $MicrosoftJdkInstaller -PathType Leaf)) {
-            $jdkExtension = [System.IO.Path]::GetExtension($MicrosoftJdkInstaller).ToLowerInvariant()
-            $isElevated = Test-Administrator
-            $jdkScope = if ($isElevated) { "for all users" } else { "for this user" }
-            $jdkLog = $null
-            $jdkInstaller = $null
+        if ($MicrosoftJdkArchive -and (Test-Path -LiteralPath $MicrosoftJdkArchive -PathType Leaf)) {
+            # Unpack into a directory of this run first: an archive that fails to
+            # unpack, or holds no bin\java.exe, then leaves the JDK of an earlier
+            # run untouched instead of replacing it with a half-written tree.
+            $jdkStagingDirectory = Join-Path $TmpDir "microsoft_jdk-extract-$([guid]::NewGuid().ToString('N'))"
 
             try {
-                if ($jdkExtension -eq ".msi") {
-                    # ZuluInstallation unpacks the JDK and FeatureEnvironment puts
-                    # <install dir>\bin on PATH. JAVA_HOME and the JavaSoft registry
-                    # keys are separate features in this package and are not selected,
-                    # so an existing JAVA_HOME stays as the user set it. Without
-                    # elevation the package installs for the current user only.
-                    $jdkLog = Join-Path $TmpDir "microsoft-jdk-install.log"
-                    $jdkArguments = @(
-                        "/i",
-                        ('"{0}"' -f $MicrosoftJdkInstaller),
-                        "/qn",
-                        "/norestart",
-                        "/l*v",
-                        ('"{0}"' -f $jdkLog),
-                        "ADDLOCAL=ZuluInstallation,FeatureEnvironment"
-                    )
-                    if (-not $isElevated) { $jdkArguments += "MSIINSTALLPERUSER=1" }
+                Extract-CompressedFile -CompressedPath $MicrosoftJdkArchive -DestinationDirectory $jdkStagingDirectory -KeepArchiveRoot
+                $jdkStagedHome = Find-JdkHome -Path $jdkStagingDirectory
+                if (-not $jdkStagedHome) {
+                    throw "The archive holds no bin\java.exe. The layout of the vendor package may have changed."
+                }
 
-                    Write-Host "[*] Running OpenJDK MSI installer (silent, wait): $MicrosoftJdkInstaller"
-                    $jdkInstaller = Start-Process `
-                        -FilePath (Join-Path $env:SystemRoot "System32\msiexec.exe") `
-                        -ArgumentList $jdkArguments `
-                        -Wait `
-                        -PassThru `
-                        -ErrorAction Stop
+                # The archive's own folder name carries the build, so the unpacked JDK
+                # keeps its version in the path: microsoft_jdk\jdk-25.0.5.0.2+1\bin.
+                # An archive that holds the JDK at its root (no folder of its own) is
+                # named after the archive file instead, so the target keeps a stable name.
+                if ($jdkStagedHome -ieq $jdkStagingDirectory) {
+                    $jdkFolderName = [System.IO.Path]::GetFileNameWithoutExtension($MicrosoftJdkArchive)
                 }
                 else {
-                    # FeatureEnvironment puts the JDK on PATH, FeatureJarFileRunWith
-                    # associates .jar files: both are the vendor installer's defaults.
-                    # FeatureJavaHome (JAVA_HOME) is left out, because it is not a
-                    # default and would repoint an existing JAVA_HOME to this build.
-                    $installScope = if ($isElevated) { "/ALLUSERS" } else { "/CURRENTUSER" }
-                    $jdkArguments = @(
-                        "/VERYSILENT",
-                        "/SUPPRESSMSGBOXES",
-                        "/NORESTART",
-                        $installScope,
-                        '/TASKS="FeatureEnvironment,FeatureJarFileRunWith"'
-                    )
-
-                    Write-Host "[*] Running OpenJDK installer (silent, wait, $installScope): $MicrosoftJdkInstaller"
-                    $jdkInstaller = Start-Process `
-                        -FilePath $MicrosoftJdkInstaller `
-                        -ArgumentList $jdkArguments `
-                        -Wait `
-                        -PassThru `
-                        -ErrorAction Stop
+                    $jdkFolderName = Split-Path -Leaf $jdkStagedHome
                 }
+                $jdkHome = Join-Path $jdkTargetDirectory $jdkFolderName
+
+                if (Test-Path -LiteralPath $jdkHome) {
+                    # The same build is already unpacked here: replace it with this copy.
+                    # A java.exe still running from it holds the folder open, and the
+                    # error below says so instead of leaving a mixed tree behind.
+                    Remove-Item -LiteralPath $jdkHome -Recurse -Force -ErrorAction Stop
+                }
+                New-Item -ItemType Directory -Path $jdkTargetDirectory -Force | Out-Null
+                Move-Item -LiteralPath $jdkStagedHome -Destination $jdkHome -Force -ErrorAction Stop
+
+                # A JDK of an earlier version, or the installer file that earlier
+                # versions of this component only staged here, is no longer used. What
+                # cannot be removed is reported, not fatal.
+                foreach ($jdkLeftover in @(Get-ChildItem -LiteralPath $jdkTargetDirectory -Force -ErrorAction SilentlyContinue)) {
+                    if ($jdkLeftover.FullName -ieq $jdkHome) { continue }
+                    try {
+                        Remove-Item -LiteralPath $jdkLeftover.FullName -Recurse -Force -ErrorAction Stop
+                        Write-Host "[*] Removed a file of an earlier installation: $($jdkLeftover.Name)"
+                    }
+                    catch {
+                        Write-Host "[WARN] Could not remove $($jdkLeftover.FullName). Close any program using it and delete it by hand."
+                    }
+                }
+
+                # JAVA_HOME and PATH are written for the current user, not the machine,
+                # even when the setup runs elevated: the JDK is under this user's
+                # %APPDATA%, so a machine-wide value would point every account at one
+                # user's profile.
+                $previousJavaHome = [Environment]::GetEnvironmentVariable("JAVA_HOME", "User")
+                [Environment]::SetEnvironmentVariable("JAVA_HOME", $jdkHome, "User")
+                $env:JAVA_HOME = $jdkHome
+
+                $jdkBinDirectory = Join-Path $jdkHome "bin"
+                $jdkPathAdded = Add-UserPathEntry -Directory $jdkBinDirectory
+
+                Write-Host "[*] OpenJDK unpacked to: $jdkHome"
+                if ($previousJavaHome -and ($previousJavaHome -ine $jdkHome)) {
+                    Write-Host "    JAVA_HOME for the current user pointed at $previousJavaHome and now points at this JDK."
+                }
+                else {
+                    Write-Host "    JAVA_HOME for the current user now points at this JDK."
+                }
+                if ($jdkPathAdded) {
+                    Write-Host "    Added $jdkBinDirectory to the current user's PATH."
+                }
+                else {
+                    Write-Host "    $jdkBinDirectory is already on the current user's PATH."
+                }
+                Write-Host "    New shells and processes see both; open ones keep the environment they started with."
+
+                $jdkUnpacked = $true
             }
             catch {
-                # Starting the installer can fail without an exit code: a damaged
-                # download, a file blocked by policy, a file that is not a program.
-                Write-Host "[WARN] Failed to start the OpenJDK installer: $($_.Exception.Message)"
-                Write-Host "[WARN] Run the installer by hand if you need it: $MicrosoftJdkInstaller"
-                $jdkInstaller = $null
+                Write-Host "[ERROR] The OpenJDK archive could not be unpacked and registered: $($_.Exception.Message)"
+                Write-Host "[WARN] The OpenJDK component is skipped for this run."
+                Write-Host "[WARN] The archive is left here, and can be unpacked by hand: $MicrosoftJdkArchive"
+            }
+            finally {
+                Remove-Item -LiteralPath $jdkStagingDirectory -Recurse -Force -ErrorAction SilentlyContinue
             }
 
-            if ($jdkInstaller) {
-                $jdkInstalled = $false
-
-                switch ($jdkInstaller.ExitCode) {
-                    0 {
-                        Write-Host "[*] OpenJDK installed $jdkScope. PATH is updated for new processes and .jar files open with this JDK; JAVA_HOME is unchanged."
-                        $jdkInstalled = $true
-                    }
-                    1641 {
-                        Write-Host "[!] OpenJDK installed $jdkScope. The installer restarted Windows to finish."
-                        $jdkInstalled = $true
-                    }
-                    3010 {
-                        Write-Host "[!] OpenJDK installed $jdkScope. A restart is required to finish."
-                        $jdkInstalled = $true
-                    }
-                    default {
-                        Write-Host "[WARN] OpenJDK installer exited with code $($jdkInstaller.ExitCode)."
-                        Write-Host "[WARN] The JDK was not installed. Run the installer by hand if you need it: $MicrosoftJdkInstaller"
-                        if ($jdkLog) {
-                            Write-Host "[WARN] Windows Installer log: $jdkLog"
-                        }
-                    }
-                }
-
-                if ($jdkInstalled) {
-                    # The installer file has done its job and is up to 190 MB; the
-                    # directory is this run's own.
-                    $jdkInstallerDirectory = Split-Path -Parent $MicrosoftJdkInstaller
-                    Remove-Item -LiteralPath $jdkInstallerDirectory -Recurse -Force -ErrorAction SilentlyContinue
-                }
-            }
-
-            # Earlier versions only staged the vendor installer under the target
-            # directory; nothing reads it any more.
-            $legacyJdkDir = Join-Path $TargetDir "microsoft_jdk"
-            if (Test-Path $legacyJdkDir) {
-                Write-Host "[*] An installer file staged by an earlier version remains in: $legacyJdkDir"
-                Write-Host "    It is no longer used and can be deleted."
+            if ($jdkUnpacked) {
+                # The archive is up to 221 MB and has done its job; the directory is
+                # this run's own.
+                $jdkDownloadDirectory = Split-Path -Parent $MicrosoftJdkArchive
+                Remove-Item -LiteralPath $jdkDownloadDirectory -Recurse -Force -ErrorAction SilentlyContinue
             }
         }
         else {
-            Write-Host "[WARN] No verified OpenJDK installer is available for this run. Skipping installation."
+            Write-Host "[WARN] No verified OpenJDK archive is available for this run. Skipping installation."
         }
     }
     else {

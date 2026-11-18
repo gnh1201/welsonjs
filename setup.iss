@@ -63,7 +63,7 @@ Name: "golang"; Description: "Download Go language archives"; Types: custom;
 Name: "x86dbg"; Description: "Download x64dbg snapshot"; Types: custom;
 Name: "w7zip"; Description: "Download 7-Zip installer"; Types: custom;
 Name: "hashcat"; Description: "Download hashcat archive"; Types: custom;
-Name: "microsoft_jdk"; Description: "Download and install OpenJDK (Microsoft Build 25; Azul Zulu 17 on 32-bit Windows)"; Types: custom;
+Name: "microsoft_jdk"; Description: "Download the OpenJDK archive into the app data folder and set JAVA_HOME (Microsoft Build 25; Azul Zulu 17 on 32-bit Windows)"; Types: custom;
 Name: "nuget"; Description: "Download NuGet command-line tool"; Types: custom;
 Name: "ripgrep"; Description: "Download ripgrep (fast text search tool)"; Types: custom;
 

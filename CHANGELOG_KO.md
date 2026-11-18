@@ -24,8 +24,8 @@
 
 ### 변경
 
-- 설치 프로그램의 `microsoft_jdk` 구성 요소가 설치 파일을 받아 두기만 하지 않고 JDK를 설치합니다. `postInstall.ps1`이 배포사 설치 파일을 무인으로 실행하고 종료 코드(다시 시작이 필요한 3010, 다시 시작이 시작된 1641 포함)를 기록합니다. `JAVA_HOME`은 건드리지 않습니다. 선택 작업으로 골라야만 설정되는 값이기 때문입니다. 파일 형식에 따라 명령이 다릅니다. Microsoft Build of OpenJDK `.exe`(x64, ARM64)는 `/VERYSILENT /SUPPRESSMSGBOXES /NORESTART`와, 스크립트가 관리자 권한이면 `/ALLUSERS`, 아니면 `/CURRENTUSER`, `/TASKS="FeatureEnvironment,FeatureJarFileRunWith"`로 실행합니다. Azul Zulu `.msi`(32비트 Windows)는 `msiexec /i … /qn /norestart`와 `ADDLOCAL=ZuluInstallation,FeatureEnvironment`로 실행하며, 관리자 권한이 아니면 `MSIINSTALLPERUSER=1`을 더합니다. 두 경우 모두 JDK를 `PATH`에 등록하고, Microsoft 패키지는 `.jar` 파일을 이 JDK로 열도록 연결합니다. 관리자 권한으로 실행하면 모든 사용자용, 아니면 현재 사용자용으로 설치됩니다. 따라서 설치 관리자가 실행되는 관리자 권한이 필요하고, WelsonJS를 제거해도 JDK는 프로그램 및 기능 항목으로 남습니다. `setup.iss`의 구성 요소 설명도 설치한다는 뜻으로 바뀌었습니다.
-- `data/DownloadUrls.psd1`: `microsoft_jdk`의 x64·ARM64는 JDK 25 LTS의 현재 Windows 패치인 Microsoft Build of OpenJDK 25.0.5.0.2이고, x86은 Windows i686용 Azul Zulu 17 LTS 17.0.21.1입니다. JDK 25에는 32비트 빌드가 없기 때문입니다(JEP 503으로 x86 포트 제거). Zulu 17.0.21.1은 2026년 11월 CPU에서 JDK 17 수정이 반영되는 패치 수준입니다. 주소가 비어 있던 `arm64`를 채우고, AArch64 설치 파일을 가리키던 `x86`을 바로잡았습니다.
+- 설치 프로그램의 `microsoft_jdk` 구성 요소가 JDK를 설치하는 대신 압축을 풀어 둡니다. `postInstall.ps1`이 배포사의 `.zip`을 내려받아 `%APPDATA%\welsonjs\microsoft_jdk\` 아래에 zip 안의 최상위 폴더(`jdk-25.0.5.0.2+1` 또는 Zulu 패키지 이름)를 그대로 두고 풉니다. 이어서 현재 사용자용 `JAVA_HOME`을 그 폴더로 등록하고, 그 폴더의 `bin`을 사용자 `PATH`에 같은 항목이 두 번 들어가지 않도록 추가합니다. 프로그램 파일에는 아무것도 쓰지 않고 프로그램 및 기능 항목도 생기지 않으며, JDK는 스크립트가 내려받는 다른 구성 요소들과 같은 폴더에 있어 그 폴더를 지우면 함께 사라집니다. `%APPDATA%`는 사용자별 경로이므로 설치 관리자가 관리자 권한으로 돌아도 두 값은 사용자 범위에 씁니다. 압축은 먼저 임시 폴더에 풀고 `bin\java.exe`를 확인한 뒤에야 기존 JDK를 바꾸므로, 압축이 실패하면 이전 설치가 그대로 남습니다. 임시 폴더와 압축 파일은 뒤에 정리합니다. 무인 설치 스위치·종료 코드·다시 시작 처리를 쓰던 `.exe`·`.msi` 분기는 없앴고, Microsoft 패키지가 만들던 `.jar` 연결도 함께 없어졌습니다. `setup.iss`의 구성 요소 설명도 하는 일을 그대로 적습니다.
+- `data/DownloadUrls.psd1`: `microsoft_jdk`의 세 아키텍처 주소가 모두 배포사 설치 파일이 아니라 `.zip` 패키지입니다. x64·ARM64는 JDK 25 LTS의 현재 Windows 패치인 Microsoft Build of OpenJDK 25.0.5.0.2이고, x86은 Windows i686용 Azul Zulu 17 LTS 17.0.21.1입니다. JDK 25에는 32비트 빌드가 없기 때문입니다(JEP 503으로 x86 포트 제거). Zulu 17.0.21.1은 2026년 11월 CPU에서 JDK 17 수정이 반영되는 패치 수준입니다. 주소가 비어 있던 `arm64`를 채우고, AArch64 설치 파일을 가리키던 `x86`을 바로잡았습니다.
 
 ### 수정
 
@@ -34,7 +34,7 @@
 
 ### 보안
 
-- `postInstall.ps1`이 `data/DownloadUrls.psd1`에 적힌 SHA-256과 내려받은 파일을 대조할 수 있게 되었고, `microsoft_jdk`는 x64·ARM64·x86의 배포사 값을 적었습니다. Microsoft은 내려받기 링크 옆에 공개하고, Azul은 메타데이터 API로 제공합니다. `Download-File`이 기대 해시를 받아 `Get-FileHash`(없는 PowerShell에서는 .NET 클래스)로 파일을 해싱하고, 값이 다르면 파일을 지우고 오류를 호출한 구성 요소에 넘깁니다. JDK 설치 파일은 실행 직전에 해시를 다시 확인합니다. 파일이 사용자 `%TEMP%`에 있는 동안 스크립트가 관리자 권한으로 도는 경우가 있기 때문입니다. 두 확인 중 하나라도 실패하면 그 구성 요소를 실행하지 않고 로그에 오류를 남깁니다. 해시를 적지 않은 구성 요소는 예전과 같이 검증 없이 내려받습니다.
+- `postInstall.ps1`이 `data/DownloadUrls.psd1`에 적힌 SHA-256과 내려받은 파일을 대조할 수 있게 되었고, `microsoft_jdk`는 x64·ARM64·x86의 배포사 값을 적었습니다. Microsoft은 내려받기 링크 옆에 공개하고, Azul은 메타데이터 API로 제공합니다. `Download-File`이 기대 해시를 받아 `Get-FileHash`(없는 PowerShell에서는 .NET 클래스)로 파일을 해싱하고, 값이 다르면 파일을 지우고 오류를 호출한 구성 요소에 넘깁니다. JDK 압축 파일은 압축을 풀기 직전에 해시를 다시 확인합니다. 파일이 사용자 `%TEMP%`에 있는 동안 스크립트가 관리자 권한으로 도는 경우가 있기 때문입니다. 두 확인 중 하나라도 실패하면 그 구성 요소의 압축을 풀지 않고 로그에 오류를 남깁니다. 해시를 적지 않은 구성 요소는 예전과 같이 검증 없이 내려받습니다.
 - `WelsonJS.Service/app.config`에서 Google.Protobuf와 gRPC 어셈블리 5개의 바인딩 리디렉션을 제거했습니다. 해당 패키지들은 0.2.7.62에서 하트비트 gRPC 클라이언트와 함께 빌드에서 빠졌으므로 리디렉션만 남아 있었습니다([#434] 관련).
 - 패치 버전이 없는 is.js 0.9.0(CVE-2020-26302, `is.url()`의 ReDoS) 의존성을 제거했습니다. 무결성 사이드카 2개와 `app/assets/integrity.json`의 항목 2개를 없애 더 이상 내려받거나 불러오지 않습니다. 전역 `is`는 `lib/is.js`가 계속 제공하므로 `is`를 쓰던 애플리케이션은 그대로 동작합니다([#434] 관련).
 - 2026-08-05 오픈소스SW 검증에서 보고된 구성 요소 3개의 현황을 `docs/third-party-dependencies.md`에 정리했습니다. IE 6~8에 필요한 jQuery 1.11.3 폴백을 아직 제거할 수 없는 이유도 함께 적었습니다([#434] 관련).

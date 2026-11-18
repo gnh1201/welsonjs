@@ -258,28 +258,34 @@
     # was removed with JDK 25 (JEP 503).
     #   https://learn.microsoft.com/en-us/java/openjdk/download
     # x86: Azul Zulu 17 LTS (17.0.21.1) for Windows i686, an OpenJDK build that still
-    # ships 32-bit Windows installers. It is at the patch level the JDK 17 fixes in the
-    # November 2026 CPU land in, and it is an MSI, so postInstall.ps1 runs it with
-    # msiexec instead of the Inno Setup switches the Microsoft .exe takes.
+    # ships 32-bit Windows builds. It is at the patch level the JDK 17 fixes in the
+    # November 2026 CPU land in.
+    # All three are the vendor's .zip package rather than its installer:
+    # postInstall.ps1 unpacks it under %APPDATA%\welsonjs\microsoft_jdk instead of
+    # installing it, so nothing is left in Program Files and no Programs and Features
+    # entry is created; the JDK goes away with that directory, as the other
+    # components the script downloads do. Each .zip holds one
+    # top folder named after the build, and postInstall.ps1 keeps that folder, so the
+    # JDK sits at microsoft_jdk\jdk-25.0.5.0.2+1\ (or microsoft_jdk\zulu17...-win_i686\).
     # Both vendors serve the file behind a redirect that keeps the file name.
     microsoft_jdk = @{
-        x64   = "https://aka.ms/download-jdk/microsoft-jdk-25.0.5.0.2-windows-x64.exe"
-        arm64 = "https://aka.ms/download-jdk/microsoft-jdk-25.0.5.0.2-windows-aarch64.exe"
-        x86   = "https://cdn.azul.com/zulu/bin/zulu17.70.201-ca-jdk17.0.21.1-win_i686.msi"
+        x64   = "https://aka.ms/download-jdk/microsoft-jdk-25.0.5.0.2-windows-x64.zip"
+        arm64 = "https://aka.ms/download-jdk/microsoft-jdk-25.0.5.0.2-windows-aarch64.zip"
+        x86   = "https://cdn.azul.com/zulu/bin/zulu17.70.201-ca-jdk17.0.21.1-win_i686.zip"
     }
 
     # SHA-256 of each file in the entry above, as the vendor publishes it:
     # Microsoft beside the download link (<link>.sha256sum.txt), Azul in its
-    # metadata API (sha256_hash of package 335972ff-1ebd-48f2-9c43-e72126c6d0e4).
-    # postInstall.ps1 verifies a download against this value before it runs the
-    # file, so a component that pins a hash here cannot install bytes other than
+    # metadata API (sha256_hash of package 80af84a2-ab24-4036-8836-700e2f55a534).
+    # postInstall.ps1 verifies a download against this value before it unpacks the
+    # file, so a component that pins a hash here cannot unpack bytes other than
     # the vendor's. The key is the component name plus "_sha256", with the same
     # architecture keys as its URL entry ("any" works for one hash); a component
     # without such an entry is downloaded unverified, as before.
     microsoft_jdk_sha256 = @{
-        x64   = "486fc21c94f230bb8915348810e41672bdf6784ddc8b482b3f3300fc8fcf6279"
-        arm64 = "02b14ac26641034c94dfef242ad138edba08e9b1aa9f99a7114605e0444aa7fd"
-        x86   = "d6433aaa075ebc233e1385a7ac0bdbeedfdba8f75f778cfadec611bcfd9b7482"
+        x64   = "5da7525c8268a10a66bd76a39f4e9af24d4ebc974d42800a609852c498a68460"
+        arm64 = "f227cc459fbd65a42c1b28123d68e207eb500899c1c78238f21a038cd33688a3"
+        x86   = "bd8304a6160a431ac790c5ebb34992167ae0c049590470807961e3d9326d9311"
     }
     
     # ===========================
