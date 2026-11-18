@@ -234,4 +234,19 @@
   <data name="LlamaCppContextSize" xml:space="preserve">
     <value>8192</value>
   </data>
+  <data name="LlamaCppEmbeddingModelsMax" xml:space="preserve">
+    <value>1</value>
+  </data>
+  <data name="LlamaCppEmbeddingContextSize" xml:space="preserve">
+    <value>2048</value>
+  </data>
+  <data name="CrispEmbedModels" xml:space="preserve">
+    <value>embeddinggemma_2_typed_decision</value>
+  </data>
+  <data name="CrispEmbedDecisionModels" xml:space="preserve">
+    <value>embeddinggemma_2_typed_decision</value>
+  </data>
+  <data name="CrispEmbedModelsMax" xml:space="preserve">
+    <value>2</value>
+  </data>
 </root>

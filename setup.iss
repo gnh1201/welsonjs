@@ -39,6 +39,9 @@ Name: "llamacpp\hy_mt2_1_8b_1_25bit"; Description: "Hy-MT2 1.8B 1.25-bit GGUF (m
 Name: "llamacpp\frognano_4b_2609"; Description: "FrogNano 4B 2609 Q4_K_M GGUF (SWE specialized)"; Types: full; Flags: dontinheritcheck;
 Name: "llamacpp\bitnet_b1_58_2b_4t"; Description: "BitNet b1.58 2B-4T I2_S GGUF (Microsoft, 1.58-bit)"; Types: full; Flags: dontinheritcheck;
 Name: "llamacpp\qwen3guard_06b"; Description: "Qwen3Guard-Gen-0.6B GGUF (local safety model)"; Types: full; Flags: dontinheritcheck;
+Name: "llamacpp\embeddinggemma_2"; Description: "EmbeddingGemma 2 Q8_0 GGUF (Google, text embeddings, 310 MB)"; Types: custom; Flags: dontinheritcheck;
+Name: "crispembed"; Description: "CrispEmbed Windows x64 CPU binaries (WelsonJS build, from the artifacts package; text embeddings and typed decisions)"; Types: custom;
+Name: "crispembed\embeddinggemma_2_typed_decision"; Description: "EmbeddingGemma 2 typed-decision Q8_0 GGUF (CrispEmbed, 308 MB)"; Types: custom; Flags: dontinheritcheck;
 Name: "websocat"; Description: "Download websocat (Command-line WebSocket client)"; Types: full;
 Name: "yara"; Description: "Download YARA (Binary pattern matching library)"; Types: custom;
 Name: "wamr"; Description: "Download WebAssembly Micro Runtime (Add support *.wasm file)"; Types: custom;

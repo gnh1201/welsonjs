@@ -1,6 +1,6 @@
 # WelsonJS Launcher OpenAI-compatible API
 
-WelsonJS.Launcher answers OpenAI-style chat completions for its local llama.cpp models and for the web chat services that it drives in its browser. OpenAI clients and SDKs can use it with the base URL `http://localhost:3000/v1` (the launcher's `ResourceServerPrefix` plus `v1`).
+WelsonJS.Launcher answers OpenAI-style chat completions for its local llama.cpp models and for the web chat services that it drives in its browser, embeddings for its local embedding models, and typed decisions for its local CrispEmbed decision models. OpenAI clients and SDKs can use it with the base URL `http://localhost:3000/v1` (the launcher's `ResourceServerPrefix` plus `v1`).
 
 ## Access
 
@@ -23,6 +23,8 @@ The API runs local processes and the user's signed-in chat sessions, so only cal
 | --- | --- | --- |
 | llama.cpp | The models in `LlamaCppModels` that are installed, and any other installed model folder (see [llamacpp-launcher-api.md](llamacpp-launcher-api.md)) | The launcher's llama.cpp router, with the prompt translation for `LlamaCppTranslatedModels` (FrogNano, BitNet) |
 | Web chat | `copilot`, `chatgpt`, `grok`, `gemini`, `deepseek`, `perplexity`, `metaai`, `claude`, `mistral`, `qwen`, `kimi`, `zai` (from `webchat.js`) | The service's page in the launcher's browser, through the DevTools protocol |
+| llama.cpp embeddings | The installed llama.cpp embedding models, such as `embeddinggemma_2` (the original google/embeddinggemma-2; `"type": "embedding"`) | The model's own `llama-server --embedding` (see [llamacpp-launcher-api.md](llamacpp-launcher-api.md#embeddings)) |
+| CrispEmbed | The installed CrispEmbed models (see [crispembed-launcher-api.md](crispembed-launcher-api.md)): decision models such as `embeddinggemma_2_typed_decision` for `/v1/decisions`, embedding models for `/v1/embeddings` (`"type": "decision"` or `"embedding"` in `GET /v1/models`) | The model's `crispembed-server` |
 
 `GET /v1/models` lists them:
 
@@ -53,6 +55,28 @@ The response is an OpenAI `chat.completion` object; the answer is `choices[0].me
 - Responses are not streamed. With `"stream": true` the finished answer is sent as one server-sent event chunk, a chunk with the finish reason, and `data: [DONE]`.
 
 Errors use the OpenAI error object, `{"error": {"message", "type", "param", "code"}}`: `400` for an invalid request, `404` (`model_not_found`) for an unknown or missing model, `504` when the model does not answer in time, and `503` for other failures (for example a chat page that could not be used).
+
+## Decisions
+
+```
+POST /v1/decisions
+{"model": "embeddinggemma_2_typed_decision",
+ "state": {"task": "Delete old branches", "constraint_violations": 1},
+ "questions": {"review": {"type": "noul", "instructions": "Does this require human review?"}}}
+```
+
+A WelsonJS extension in the style of this API (OpenAI has no decisions endpoint) for typed-decision models (`"type": "decision"` in `GET /v1/models`). `questions` maps a name to a `choice`, `score` or `noul` (yes or no) question, and `workflow` is optional. The response is `crispembed-server`'s answer, with `kind`, `label`, `value`, `confidence`, `probabilities` and `expected_level` for each question; see [crispembed-launcher-api.md](crispembed-launcher-api.md#typed-decisions).
+
+## Embeddings
+
+```
+POST /v1/embeddings
+{"model": "embeddinggemma_2", "input": ["task: search result | query: capital of France", "title: none | text: Paris is the capital of France."]}
+```
+
+The model must be an installed embedding model (`"type": "embedding"` in `GET /v1/models`): a llama.cpp embedding model such as `embeddinggemma_2`, the original google/embeddinggemma-2 in the WelsonJS llama.cpp build, or a CrispEmbed embedding model. A decision model is answered with `400` (`model_not_supported`), because its encoder is fine-tuned for its decision head. The response is the OpenAI embeddings object, with `data[i].embedding`; `input` is a string or an array of strings, and `dimensions` asks for a smaller output size (for `embeddinggemma_2`: 768, 512, 256 or 128, applied by the launcher). EmbeddingGemma 2 expects its task prompts in the text; see [llamacpp-launcher-api.md](llamacpp-launcher-api.md#embeddings).
+
+Decision and embedding bodies are passed to the model's server as they were sent (it is started on demand). Errors use the OpenAI error object, as above.
 
 ## Examples
 

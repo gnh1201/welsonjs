@@ -287,13 +287,30 @@ elseif ($componentList -ne "") {
     $AllComponentsSelected = $false
 }
 
-# All GGUF models in this installer are served by llama.cpp. Accept both
-# short names and nested Inno Setup component paths for every model.
+# The GGUF models of this installer are served by llama.cpp, except the
+# CrispEmbed models below. Accept both short names and nested Inno Setup
+# component paths for every model.
 $llamaModelComponents = @(
     "hy_mt2_1_8b_1_25bit",
     "frognano_4b_2609",
     "bitnet_b1_58_2b_4t",
-    "qwen3guard_06b"
+    "qwen3guard_06b",
+    "embeddinggemma_2"
+)
+
+# llama.cpp embedding models: served by llama-server in embedding mode, one
+# process per model, so they are installed in llamacpp_embedding_models\<component>,
+# not where the llama.cpp router reads its chat models from.
+$llamaEmbeddingModelComponents = @(
+    "embeddinggemma_2"
+)
+
+# GGUF models served by CrispEmbed (crispembed-server). They are installed in
+# crispembed_models\<component>, not next to the llama.cpp models: the llama.cpp
+# router reads every folder of the app data directory that holds a .gguf file as
+# one of its models.
+$crispEmbedModelComponents = @(
+    "embeddinggemma_2_typed_decision"
 )
 
 if (-not $AllComponentsSelected) {
@@ -319,6 +336,31 @@ if (-not $AllComponentsSelected) {
     if ($SelectedComponents -contains "llamacpp" -and $SelectedComponents -notcontains "artifacts") {
         $SelectedComponents += "artifacts"
         Write-Host "[*] llamacpp selected: artifacts dependency enabled (the llama.cpp build is in the artifacts package)."
+    }
+
+    # A CrispEmbed model needs crispembed-server (component crispembed).
+    $crispEmbedModelSelected = $false
+    foreach ($modelComponent in $crispEmbedModelComponents) {
+        $nestedComponent = "crispembed\$modelComponent"
+        if ($SelectedComponents -contains $modelComponent -or
+            $SelectedComponents -contains $nestedComponent) {
+            $crispEmbedModelSelected = $true
+            if ($SelectedComponents -contains $nestedComponent -and
+                $SelectedComponents -notcontains $modelComponent) {
+                $SelectedComponents += $modelComponent
+            }
+        }
+    }
+
+    if ($crispEmbedModelSelected -and $SelectedComponents -notcontains "crispembed") {
+        $SelectedComponents += "crispembed"
+        Write-Host "[*] CrispEmbed model selected: crispembed dependency enabled."
+    }
+
+    # CrispEmbed is the WelsonJS build in the artifacts package, like llama.cpp.
+    if ($SelectedComponents -contains "crispembed" -and $SelectedComponents -notcontains "artifacts") {
+        $SelectedComponents += "artifacts"
+        Write-Host "[*] crispembed selected: artifacts dependency enabled (the CrispEmbed build is in the artifacts package)."
     }
 }
 
@@ -970,12 +1012,14 @@ function Extract-CompressedFile {
     Remove-Item -Path $tmpExtractDir -Recurse -Force
 }
 
-# Installs the artifacts package (artifacts.zip). It holds the WelsonJS binaries
-# and the llama.cpp build (llamacpp\<arch>, native\llamacpp\build-llamacpp.ps1),
-# which CI puts there so that it is signed with the rest. The package is
-# extracted to a staging folder; llamacpp\<arch> is copied to llamacpp\ (the
-# only place the launcher runs llama-server.exe from) when the llamacpp
-# component is selected, and everything else goes to bin\ as before.
+# Installs the artifacts package (artifacts.zip). It holds the WelsonJS binaries,
+# the llama.cpp build (llamacpp\<arch>, native\llamacpp\build-llamacpp.ps1) and
+# the CrispEmbed build (crispembed\<arch>, native\crispembed\build-crispembed.ps1),
+# which CI puts there so that they are signed with the rest. The package is
+# extracted to a staging folder; llamacpp\<arch> is copied to llamacpp\ and
+# crispembed\<arch> to crispembed\ (the only places the launcher runs
+# llama-server.exe and crispembed-server.exe from) when their components are
+# selected, and everything else goes to bin\ as before.
 function Install-ArtifactsPackage {
     param(
         [Parameter(Mandatory = $true)]
@@ -1009,6 +1053,30 @@ function Install-ArtifactsPackage {
         }
     }
     if (Test-Path $llamaBuildRoot) { Remove-Item -Path $llamaBuildRoot -Recurse -Force }
+
+    # CrispEmbed: x64 only. On ARM64 Windows the x64 build runs under emulation,
+    # which must provide AVX2 (the build's CPU baseline).
+    $crispBuildRoot = Join-Path $staging "crispembed"
+    if (Test-ComponentSelected -Name "crispembed") {
+        $crispSource = $null
+        foreach ($crispArch in @($arch, "x64") | Select-Object -Unique) {
+            $candidate = Join-Path $crispBuildRoot $crispArch
+            if (Test-Path (Join-Path $candidate "crispembed-server.exe")) { $crispSource = $candidate; break }
+        }
+
+        if ($crispSource -and $arch -ne "x86") {
+            $crispDestination = Join-Path $TargetDir "crispembed"
+            Ensure-EmptyDirectory -Path $crispDestination
+            # Remove files of a previous installation (for example, the release package).
+            Get-ChildItem -Path $crispDestination -Force | Remove-Item -Recurse -Force
+            Copy-Item -Path (Join-Path $crispSource "*") -Destination $crispDestination -Recurse -Force
+            Write-Host "[*] Installed CrispEmbed from the artifacts package: crispembed\$(Split-Path $crispSource -Leaf) -> $crispDestination"
+        }
+        else {
+            Write-Host "[WARN] The artifacts package has no CrispEmbed build for $arch (crispembed\x64 runs on x64 and ARM64 Windows). Skipping CrispEmbed."
+        }
+    }
+    if (Test-Path $crispBuildRoot) { Remove-Item -Path $crispBuildRoot -Recurse -Force }
 
     # The rest of the package goes to bin\, replacing items of the same name.
     $binDestination = Join-Path $TargetDir "bin"
@@ -1339,7 +1407,7 @@ try {
         "windivert", "android_platform_tools", "tun2socks", "sendboxie",
         "ldplayer", "tap_windows6", "thc_hydra", "shadowsocks_libev",
         "winlibs_mingw", "golang", "x86dbg", "w7zip", "hashcat",
-        "nuget", "ripgrep"
+        "nuget", "ripgrep", "embeddinggemma_2", "embeddinggemma_2_typed_decision"
     )
 
     foreach ($component in $downloadComponents) {
@@ -1440,6 +1508,12 @@ try {
         }
 
         $destination = Join-Path $TargetDir $component
+        if ($crispEmbedModelComponents -contains $component) {
+            $destination = Join-Path (Join-Path $TargetDir "crispembed_models") $component
+        }
+        elseif ($llamaEmbeddingModelComponents -contains $component) {
+            $destination = Join-Path (Join-Path $TargetDir "llamacpp_embedding_models") $component
+        }
         $lowerPath = $archivePath.ToLowerInvariant()
         if ($lowerPath.EndsWith(".tar.gz")) {
             Extract-TarGzArchive -ArchivePath $archivePath -DestinationDirectory $destination

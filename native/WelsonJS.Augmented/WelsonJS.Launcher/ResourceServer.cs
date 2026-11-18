@@ -28,8 +28,15 @@ namespace WelsonJS.Launcher
         private string _resourceName;
         private readonly List<IApiEndpoint> _apis = new List<IApiEndpoint>();
         private readonly SemaphoreSlim _requestSlots = new SemaphoreSlim(32, 32);
+        // Every local server the launcher runs (LocalServerProcess), for one status report
+        // and one shutdown.
+        private readonly LocalServerRegistry _localServers = new LocalServerRegistry();
         // One llama-server in router mode, shared by the llama.cpp API and the LLM guard.
-        private readonly LlamaCppRouter _llamaCppRouter = new LlamaCppRouter();
+        private readonly LlamaCppRouter _llamaCppRouter;
+        // One crispembed-server per CrispEmbed model, started on demand.
+        private readonly CrispEmbedServers _crispEmbedServers;
+        // One llama-server in embedding mode per llama.cpp embedding model, started on demand.
+        private readonly LlamaCppEmbeddingServers _llamaCppEmbeddingServers;
         private readonly LlamaCppChat _llamaCppChat;
         private readonly WebChatRunner _webChatRunner;
         private readonly ApiEndpoints.JsrtInstance _jsrtInstanceEndpoint;
@@ -67,7 +74,10 @@ namespace WelsonJS.Launcher
             // Fetch a blob config from Internet (in the background; GetBlobConfigAsync waits for it)
             _blobConfigFetch = FetchBlobConfig();
 
-            // Shared by the llama.cpp and OpenAI-compatible endpoints
+            // The local servers, shared by the llama.cpp, CrispEmbed and OpenAI-compatible endpoints
+            _llamaCppRouter = new LlamaCppRouter(_localServers);
+            _crispEmbedServers = new CrispEmbedServers(_localServers);
+            _llamaCppEmbeddingServers = new LlamaCppEmbeddingServers(_localServers);
             _llamaCppChat = new LlamaCppChat(_llamaCppRouter, _logger);
             _webChatRunner = new WebChatRunner(_logger);
 
@@ -81,6 +91,8 @@ namespace WelsonJS.Launcher
             _apis.Add(new ApiEndpoints.Whois(this, _httpClient, _logger));
             _apis.Add(new ApiEndpoints.ImageColorPicker(this, _httpClient, _logger));
             _apis.Add(new ApiEndpoints.LlamaCpp(this, _httpClient, _logger));
+            _apis.Add(new ApiEndpoints.CrispEmbed(this, _httpClient, _logger));
+            _apis.Add(new ApiEndpoints.LocalServers(this, _httpClient, _logger));
             _apis.Add(new ApiEndpoints.LlmGuard(this, _httpClient, _logger));
             _apis.Add(new ApiEndpoints.OpenAiCompatible(this, _httpClient, _logger));
             _jsrtInstanceEndpoint = new ApiEndpoints.JsrtInstance(this, _httpClient, _logger);
@@ -98,7 +110,24 @@ namespace WelsonJS.Launcher
             get { return _llamaCppRouter; }
         }
 
-        /// <summary>Chat completions with the llama.cpp router (see LlamaCppChat).</summary>
+        /// <summary>The launcher's CrispEmbed servers, one per model (see CrispEmbedServers).</summary>
+        public CrispEmbedServers CrispEmbedServers
+        {
+            get { return _crispEmbedServers; }
+        }
+
+        /// <summary>The llama.cpp embedding models, one llama-server each (see LlamaCppEmbeddingServers).</summary>
+        public LlamaCppEmbeddingServers LlamaCppEmbeddingServers
+        {
+            get { return _llamaCppEmbeddingServers; }
+        }
+
+        /// <summary>Every local server the launcher runs (see LocalServerProcess).</summary>
+        public LocalServerRegistry LocalServers
+        {
+            get { return _localServers; }
+        }
+
         /// <summary>
         /// The blob config (BlobConfigUrl): the blob routes and the third-party service
         /// settings. Waits for the fetch started with the server; when it failed, fetches it
@@ -120,6 +149,7 @@ namespace WelsonJS.Launcher
             return _blobConfig;
         }
 
+        /// <summary>Chat completions with the llama.cpp router (see LlamaCppChat).</summary>
         public LlamaCppChat LlamaCppChat
         {
             get { return _llamaCppChat; }
@@ -188,13 +218,14 @@ namespace WelsonJS.Launcher
         }
 
         /// <summary>
-        /// Stops the processes the endpoints started (the llama.cpp router with its model
-        /// instances, including the LLM guard, JSRT instances and terminal sessions).
-        /// Called when the launcher exits.
+        /// Stops the processes the endpoints started (the local servers: the llama.cpp router
+        /// with its model instances, including the LLM guard, the llama.cpp embedding servers
+        /// and the CrispEmbed servers; JSRT
+        /// instances and terminal sessions). Called when the launcher exits.
         /// </summary>
         public void ShutdownChildProcesses()
         {
-            _llamaCppRouter.Shutdown();
+            _localServers.StopAll();
             _jsrtInstanceEndpoint.Shutdown();
             _terminalEndpoint.Shutdown();
         }

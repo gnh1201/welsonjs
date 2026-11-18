@@ -336,6 +336,51 @@ namespace WelsonJS.Launcher.Properties {
         }
 
         /// <summary>
+        ///   1과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string LlamaCppEmbeddingModelsMax {
+            get {
+                return ResourceManager.GetString("LlamaCppEmbeddingModelsMax", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   2048과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string LlamaCppEmbeddingContextSize {
+            get {
+                return ResourceManager.GetString("LlamaCppEmbeddingContextSize", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   embeddinggemma_2_typed_decision과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string CrispEmbedModels {
+            get {
+                return ResourceManager.GetString("CrispEmbedModels", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   embeddinggemma_2_typed_decision과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string CrispEmbedDecisionModels {
+            get {
+                return ResourceManager.GetString("CrispEmbedDecisionModels", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   2과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string CrispEmbedModelsMax {
+            get {
+                return ResourceManager.GetString("CrispEmbedModelsMax", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   3과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string LlamaCppModelsMax {
