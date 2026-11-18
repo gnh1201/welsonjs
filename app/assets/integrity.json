@@ -315,9 +315,14 @@
       "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/modernizr-2.8.3.min.js",
       "size": 11084
     },
-    "sha384-+ckgeX4fJjfI7OWjdck+xOO7gr2uHem5IoG+eR9sxINeVQsAv0Y/JwzkZCvARqhS": {
-      "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/numbers-0.7.0.wsh.js",
-      "size": 79616
+    "sha384-IDhWnSEgLrt9bL+3SZDeLvsvOpH+4r/Ft/CsEDejT+OOtgy8szk2GwensTvZ5rBN": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/ajax/libs/numbers/0.7.0/numbers.js",
+      "size": 83430,
+      "source": {
+        "integrity": "sha384-SkZBybQ2Co+dcQQotKqcRyETNrPQiyioytIgfvmTRCay2prTjmbpTzVtTIsYY1R3",
+        "size": 78930
+      },
+      "patch": "app/assets/js/numbers-0.7.0.wsh.js.patch"
     },
     "sha384-sr5QFlRiCuVS+Zqn1y90flhr3QL/e+G5aNKW7qr68s0PMttRFHUkbOynU7Lwi4aQ": {
       "url": "https://catswords.blob.core.windows.net/welsonjs/snapshots/2ce70a3ae00a333edcba2b9e69665b137bd9a218/app/assets/js/peg-0.10.0.js",

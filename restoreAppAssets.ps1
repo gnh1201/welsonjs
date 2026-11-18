@@ -12,6 +12,21 @@
 # up in app/assets/integrity.json to find the download URL. A downloaded file is saved
 # only if its digest matches; an existing file is kept if it already matches.
 #
+# An asset that WelsonJS modifies is downloaded as the unmodified upstream file and
+# patched here. Its index entry names the upstream file's digest and the patch:
+#
+#   "sha384-<digest of the patched file>": {
+#     "url": "https://.../numbers.js",
+#     "size": <size of the patched file>,
+#     "source": { "integrity": "sha384-<digest of the download>", "size": <size> },
+#     "patch": "app/assets/js/<file name>.patch"
+#   }
+#
+# The download must match "source.integrity" before the patch (a unified diff for one
+# file, relative to the application root) is applied, and the result must match the
+# digest of the entry. Patching needs no external tool, and every hunk must match the
+# file exactly.
+#
 # Usage:
 #   powershell -ExecutionPolicy Bypass -NoProfile -File restoreAppAssets.ps1
 #   powershell -ExecutionPolicy Bypass -NoProfile -File restoreAppAssets.ps1 -Force
@@ -82,6 +97,87 @@ function Test-AssetFile {
     return (Get-Digest $normalized $algorithm) -ceq $Integrity
 }
 
+# Applies a unified diff for one file to $Bytes and returns the patched bytes, with
+# LF line endings (the line endings digests are computed over). Text is handled as
+# ISO-8859-1, so every byte is kept as it is. Hunks are applied at the line numbers
+# they state, and every context and removed line must match exactly.
+function Invoke-AssetPatch {
+    param([byte[]]$Bytes, [string]$PatchPath)
+
+    $text = $Latin1.GetString($Bytes).Replace("`r`n", "`n")
+    $newlineAtEnd = $text.EndsWith("`n")
+    if ($newlineAtEnd) { $text = $text.Substring(0, $text.Length - 1) }
+    $source = $text.Split("`n")
+
+    $patch = $Latin1.GetString([IO.File]::ReadAllBytes($PatchPath)).Replace("`r`n", "`n").Split("`n")
+    $output = New-Object 'Collections.Generic.List[string]'
+    $pos = 0
+
+    # Skip the description up to the file header ("--- " and "+++ ").
+    $i = 0
+    while ($i -lt $patch.Length -and -not $patch[$i].StartsWith("--- ")) { $i++ }
+    if ($i + 1 -ge $patch.Length -or -not $patch[$i + 1].StartsWith("+++ ")) {
+        throw "The patch has no file header: $PatchPath"
+    }
+    $i += 2
+
+    while ($i -lt $patch.Length) {
+        $line = $patch[$i]
+        if ($line.Length -eq 0 -and $i -eq $patch.Length - 1) { break }
+        if ($line -notmatch '^@@ -(\d+)(?:,(\d+))? \+\d+(?:,\d+)? @@') {
+            throw "Unexpected line $($i + 1) in the patch (one file per patch): $PatchPath"
+        }
+
+        $oldStart = [int]$Matches[1]
+        $oldCount = if ($Matches[2]) { [int]$Matches[2] } else { 1 }
+        $index = if ($oldCount -eq 0) { $oldStart } else { $oldStart - 1 }
+        if ($index -lt $pos -or $index -gt $source.Length) {
+            throw "The hunk at line $($i + 1) of the patch is out of order or out of range: $PatchPath"
+        }
+        while ($pos -lt $index) { $output.Add($source[$pos]); $pos++ }
+        $i++
+
+        $lastTag = $null
+        while ($i -lt $patch.Length -and -not $patch[$i].StartsWith("@@")) {
+            $line = $patch[$i]
+            if ($line.Length -eq 0) {
+                if ($i -eq $patch.Length - 1) { break }
+                throw "Empty line $($i + 1) in the patch: $PatchPath"
+            }
+
+            $tag = $line[0]
+            $body = $line.Substring(1)
+            switch ($tag) {
+                ' ' {
+                    if ($pos -ge $source.Length -or $source[$pos] -cne $body) {
+                        throw "The patch does not match the file at line $($pos + 1) (patch line $($i + 1)): $PatchPath"
+                    }
+                    $output.Add($body); $pos++
+                }
+                '-' {
+                    if ($pos -ge $source.Length -or $source[$pos] -cne $body) {
+                        throw "The patch does not match the file at line $($pos + 1) (patch line $($i + 1)): $PatchPath"
+                    }
+                    $pos++
+                }
+                '+' { $output.Add($body) }
+                '\' {
+                    # "\ No newline at end of file" after a line of the new file.
+                    if ($lastTag -eq '+' -or $lastTag -eq ' ') { $newlineAtEnd = $false }
+                }
+                default { throw "Unexpected line $($i + 1) in the patch: $PatchPath" }
+            }
+            if ($tag -ne '\') { $lastTag = [string]$tag }
+            $i++
+        }
+    }
+    while ($pos -lt $source.Length) { $output.Add($source[$pos]); $pos++ }
+
+    $result = [string]::Join("`n", $output.ToArray())
+    if ($newlineAtEnd) { $result += "`n" }
+    return ,$Latin1.GetBytes($result)
+}
+
 function Get-RemoteBytes {
     param([string]$Url)
 
@@ -148,6 +244,25 @@ foreach ($sidecar in $sidecars) {
 
         $url    = $entry.Value.url
         $bytes  = Get-RemoteBytes $url
+
+        if ($entry.Value.patch) {
+            $sourceIntegrity = if ($entry.Value.source) { [string]$entry.Value.source.integrity } else { "" }
+            if (-not $sourceIntegrity) {
+                throw "The entry has a patch but no source.integrity: $integrity"
+            }
+            $sourceActual = Get-Digest $bytes (Get-Algorithm $sourceIntegrity)
+            if ($sourceActual -cne $sourceIntegrity) {
+                throw "Integrity verification failed for the upstream file (expected $sourceIntegrity, got $sourceActual): $url"
+            }
+
+            $patchPath = [IO.Path]::GetFullPath((Join-Path $rootFull ($entry.Value.patch -replace '/', '\')))
+            if (-not $patchPath.StartsWith($rootFull + "\", [StringComparison]::OrdinalIgnoreCase) -or
+                -not (Test-Path -LiteralPath $patchPath -PathType Leaf)) {
+                throw "The patch was not found under the application root: $($entry.Value.patch)"
+            }
+            $bytes = Invoke-AssetPatch $bytes $patchPath
+        }
+
         $actual = Get-Digest $bytes (Get-Algorithm $integrity)
         if ($actual -cne $integrity) {
             throw "Integrity verification failed (expected $integrity, got $actual): $url"
@@ -155,7 +270,12 @@ foreach ($sidecar in $sidecars) {
 
         [IO.File]::WriteAllBytes($target, $bytes)
         $downloaded++
-        Write-Host "[*] Downloaded: $name"
+        if ($entry.Value.patch) {
+            Write-Host "[*] Downloaded and patched: $name"
+        }
+        else {
+            Write-Host "[*] Downloaded: $name"
+        }
     }
     catch {
         $failed++
