@@ -1,0 +1,228 @@
+From: WelsonJS
+Subject: [PATCH] cmake : Windows icon and version information for every executable and DLL
+
+CrispEmbed has no Windows resource files, so its executables and DLLs have no
+icon and no version information (the "Description" in the file properties is
+empty).
+
+Add cmake/win-resources.cmake, included at the end of the top-level
+CMakeLists.txt, after all targets are defined. It collects every executable,
+shared library and module library of the build (the CrispEmbed tools, the
+ggml libraries and the CPU backend) and gives each its own resource script.
+Cache options:
+
+  - CRISPEMBED_WIN_ICON: an .ico file, embedded as the application icon of the
+    executables. It is copied next to the resource scripts, which start with
+    #pragma code_page(65001), so a build folder with non-ASCII characters
+    works regardless of the ANSI code page.
+  - CRISPEMBED_WIN_DESCRIPTION: a text for the version information, which is
+    added when it is set. FileDescription is "<file> - <role> (<text>)", where
+    <file> is the output name (crispembed for the CLI) and <role> says what
+    the binary is (for example "embedding and document processing server";
+    omitted for a target it does not know), ProductName is "CrispEmbed",
+    InternalName comes from the target, OriginalFilename from the output name,
+    and Comments gives the text, the CrispEmbed version and
+    CRISPEMBED_WIN_COMMIT.
+  - CRISPEMBED_WIN_VERSION: FileVersion and ProductVersion (a.b.c.d); without
+    it, the CrispEmbed version (VERSION) with .0.
+  - CRISPEMBED_WIN_COMPANY, CRISPEMBED_WIN_COPYRIGHT: CompanyName and
+    LegalCopyright, when set.
+
+The resource uses numeric FILEOS/FILETYPE values (VFT_APP for executables,
+VFT_DLL for DLLs) instead of the winver.h names, so no include path is needed.
+The scripts are written through configure_file, which only touches a file when
+its content changes, so a new CMake run does not relink. With
+CRISPEMBED_WIN_ICON and CRISPEMBED_WIN_DESCRIPTION empty (the default) the
+build is unchanged.
+
+This is the same mechanism as part 1 of native/llamacpp/patches/
+0003-windows-build.patch, with CrispEmbed's names.
+
+---
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 8d0d57c..0b603f4 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -1993,3 +1993,7 @@ target_include_directories(test-lighton4b-physical-rope PRIVATE src ggml/include
+ target_link_libraries(test-lighton4b-physical-rope PRIVATE crispembed-qwen35-delta crispembed-core)
+ 
+ endif() # NOT iOS: LightOn4B/Qwen3.5 validation executables
++
++# Windows icon and version information for the executables and DLLs; after all
++# targets are defined.
++include(cmake/win-resources.cmake)
+diff --git a/cmake/win-resources.cmake b/cmake/win-resources.cmake
+new file mode 100644
+index 0000000..b8df944
+--- /dev/null
++++ b/cmake/win-resources.cmake
+@@ -0,0 +1,169 @@
++# Windows resources for every executable and DLL of the build: an icon for the
++# executables and version information for all of them. Included at the end of
++# the top-level CMakeLists.txt, after all targets are defined.
++#
++#   CRISPEMBED_WIN_ICON         .ico file embedded as the application icon of the executables
++#   CRISPEMBED_WIN_DESCRIPTION  text for the version information, for example "CrispEmbed built
++#                               for WelsonJS": the description becomes "<target> - <role> (<text>)"
++#   CRISPEMBED_WIN_VERSION      file and product version (a.b.c.d); default <CrispEmbed version>.0
++#   CRISPEMBED_WIN_COMPANY      CompanyName
++#   CRISPEMBED_WIN_COPYRIGHT    LegalCopyright
++#   CRISPEMBED_WIN_COMMIT       the source commit, for the comments (optional)
++#
++# The version information is added when CRISPEMBED_WIN_DESCRIPTION is set.
++
++set(CRISPEMBED_WIN_ICON        "" CACHE FILEPATH "CrispEmbed: .ico file embedded in the Windows executables")
++set(CRISPEMBED_WIN_DESCRIPTION "" CACHE STRING   "CrispEmbed: text for the version information of the Windows executables and DLLs")
++set(CRISPEMBED_WIN_VERSION     "" CACHE STRING   "CrispEmbed: version (a.b.c.d) in the version information (default: <CrispEmbed version>.0)")
++set(CRISPEMBED_WIN_COMPANY     "" CACHE STRING   "CrispEmbed: CompanyName in the version information")
++set(CRISPEMBED_WIN_COPYRIGHT   "" CACHE STRING   "CrispEmbed: LegalCopyright in the version information")
++set(CRISPEMBED_WIN_COMMIT      "" CACHE STRING   "CrispEmbed: source commit in the comments of the version information")
++
++# Executables and DLLs (shared and module libraries) defined in dir and below.
++function(crispembed_win_collect_binaries dir out)
++    get_property(targets DIRECTORY "${dir}" PROPERTY BUILDSYSTEM_TARGETS)
++    set(result "")
++    foreach (target IN LISTS targets)
++        get_target_property(type ${target} TYPE)
++        if (type STREQUAL "EXECUTABLE" OR type STREQUAL "SHARED_LIBRARY" OR type STREQUAL "MODULE_LIBRARY")
++            list(APPEND result ${target})
++        endif()
++    endforeach()
++    get_property(subdirs DIRECTORY "${dir}" PROPERTY SUBDIRECTORIES)
++    foreach (subdir IN LISTS subdirs)
++        crispembed_win_collect_binaries("${subdir}" sub)
++        list(APPEND result ${sub})
++    endforeach()
++    set(${out} ${result} PARENT_SCOPE)
++endfunction()
++
++# What a binary is, for its file description ("" when not known).
++function(crispembed_win_role target out)
++    set(role "")
++    if (target STREQUAL "ggml")
++        set(role "ggml tensor library")
++    elseif (target STREQUAL "ggml-base")
++        set(role "ggml base library")
++    elseif (target STREQUAL "ggml-cpu")
++        set(role "ggml CPU backend")
++    elseif (target MATCHES "^ggml-cpu-(.+)$")
++        set(role "ggml CPU backend, ${CMAKE_MATCH_1} variant")
++    elseif (target MATCHES "^ggml-(.+)$")
++        set(role "ggml ${CMAKE_MATCH_1} backend")
++    elseif (target STREQUAL "crispembed-shared")
++        set(role "CrispEmbed library")
++    elseif (target STREQUAL "crispembed-server")
++        set(role "embedding and document processing server")
++    elseif (target STREQUAL "crispembed-cli")
++        set(role "command-line interface")
++    elseif (target STREQUAL "crispembed-quantize")
++        set(role "GGUF model quantizer")
++    endif()
++    set(${out} "${role}" PARENT_SCOPE)
++endfunction()
++
++if (WIN32 AND (CRISPEMBED_WIN_ICON OR CRISPEMBED_WIN_DESCRIPTION))
++    set(crispembed_win_res_dir "${CMAKE_BINARY_DIR}/win-resources")
++    file(MAKE_DIRECTORY "${crispembed_win_res_dir}")
++
++    if (CRISPEMBED_WIN_ICON)
++        if (NOT EXISTS "${CRISPEMBED_WIN_ICON}")
++            message(FATAL_ERROR "CRISPEMBED_WIN_ICON does not exist: ${CRISPEMBED_WIN_ICON}")
++        endif()
++        # Copy the icon next to the resource scripts, which are UTF-8, so a path
++        # with non-ASCII characters does not depend on the ANSI code page.
++        configure_file("${CRISPEMBED_WIN_ICON}" "${crispembed_win_res_dir}/crispembed-icon.ico" COPYONLY)
++    endif()
++
++    if (CRISPEMBED_WIN_VERSION)
++        if (NOT CRISPEMBED_WIN_VERSION MATCHES "^[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+$")
++            message(FATAL_ERROR "CRISPEMBED_WIN_VERSION must be a.b.c.d: ${CRISPEMBED_WIN_VERSION}")
++        endif()
++        set(crispembed_win_version "${CRISPEMBED_WIN_VERSION}")
++    elseif (CRISPEMBED_VERSION_RAW MATCHES "^([0-9]+)\\.([0-9]+)\\.([0-9]+)")
++        set(crispembed_win_version "${CMAKE_MATCH_1}.${CMAKE_MATCH_2}.${CMAKE_MATCH_3}.0")
++    else()
++        set(crispembed_win_version "0.0.0.0")
++    endif()
++    string(REPLACE "." "," crispembed_win_version_numbers "${crispembed_win_version}")
++
++    # A double quote inside a resource string is written as two.
++    string(REPLACE "\"" "\"\"" crispembed_win_desc      "${CRISPEMBED_WIN_DESCRIPTION}")
++    string(REPLACE "\"" "\"\"" crispembed_win_company   "${CRISPEMBED_WIN_COMPANY}")
++    string(REPLACE "\"" "\"\"" crispembed_win_copyright "${CRISPEMBED_WIN_COPYRIGHT}")
++    string(REPLACE "\"" "\"\"" crispembed_win_source    "${CRISPEMBED_VERSION_RAW} ${CRISPEMBED_WIN_COMMIT}")
++    string(STRIP "${crispembed_win_source}" crispembed_win_source)
++
++    crispembed_win_collect_binaries("${CMAKE_SOURCE_DIR}" crispembed_win_binaries)
++    foreach (target IN LISTS crispembed_win_binaries)
++        get_target_property(type ${target} TYPE)
++        get_target_property(output_name ${target} OUTPUT_NAME)
++        if (NOT output_name)
++            set(output_name ${target})
++        endif()
++        if (type STREQUAL "EXECUTABLE")
++            set(file_name "${output_name}.exe")
++            set(file_type "0x1")    # VFT_APP
++        else()
++            set(file_name "${output_name}.dll")
++            set(file_type "0x2")    # VFT_DLL
++        endif()
++
++        set(rc "#pragma code_page(65001)\n")
++        if (CRISPEMBED_WIN_ICON AND type STREQUAL "EXECUTABLE")
++            string(APPEND rc "1 ICON \"${crispembed_win_res_dir}/crispembed-icon.ico\"\n")
++        endif()
++        if (CRISPEMBED_WIN_DESCRIPTION)
++            crispembed_win_role(${target} role)
++            if (role)
++                set(description "${output_name} - ${role} (${crispembed_win_desc})")
++            else()
++                set(description "${output_name} (${crispembed_win_desc})")
++            endif()
++            # Numeric values instead of winver.h names (0x40004 = VOS_NT_WINDOWS32),
++            # so no include path is needed (rc.exe and llvm-rc).
++            string(APPEND rc
++                "1 VERSIONINFO\n"
++                "FILEVERSION ${crispembed_win_version_numbers}\n"
++                "PRODUCTVERSION ${crispembed_win_version_numbers}\n"
++                "FILEFLAGSMASK 0x3F\n"
++                "FILEFLAGS 0x0\n"
++                "FILEOS 0x40004\n"
++                "FILETYPE ${file_type}\n"
++                "FILESUBTYPE 0x0\n"
++                "BEGIN\n"
++                "    BLOCK \"StringFileInfo\"\n"
++                "    BEGIN\n"
++                "        BLOCK \"040904B0\"\n"
++                "        BEGIN\n")
++            if (CRISPEMBED_WIN_COMPANY)
++                string(APPEND rc "            VALUE \"CompanyName\", \"${crispembed_win_company}\"\n")
++            endif()
++            string(APPEND rc
++                "            VALUE \"FileDescription\", \"${description}\"\n"
++                "            VALUE \"FileVersion\", \"${crispembed_win_version}\"\n"
++                "            VALUE \"InternalName\", \"${target}\"\n")
++            if (CRISPEMBED_WIN_COPYRIGHT)
++                string(APPEND rc "            VALUE \"LegalCopyright\", \"${crispembed_win_copyright}\"\n")
++            endif()
++            string(APPEND rc
++                "            VALUE \"OriginalFilename\", \"${file_name}\"\n"
++                "            VALUE \"ProductName\", \"CrispEmbed\"\n"
++                "            VALUE \"ProductVersion\", \"${crispembed_win_version}\"\n"
++                "            VALUE \"Comments\", \"${crispembed_win_desc}. CrispEmbed ${crispembed_win_source}.\"\n"
++                "        END\n"
++                "    END\n"
++                "    BLOCK \"VarFileInfo\"\n"
++                "    BEGIN\n"
++                "        VALUE \"Translation\", 0x409, 1200\n"
++                "    END\n"
++                "END\n")
++        endif()
++        # Write through configure_file, which only touches the file when it
++        # changes, so a new CMake run does not relink every binary.
++        file(WRITE "${crispembed_win_res_dir}/${target}.rc.in" "${rc}")
++        configure_file("${crispembed_win_res_dir}/${target}.rc.in" "${crispembed_win_res_dir}/${target}.rc" COPYONLY)
++        target_sources(${target} PRIVATE "${crispembed_win_res_dir}/${target}.rc")
++    endforeach()
++    message(STATUS "Windows resources (version ${crispembed_win_version}; icon: ${CRISPEMBED_WIN_ICON}; description: ${CRISPEMBED_WIN_DESCRIPTION}): ${crispembed_win_binaries}")
++endif()

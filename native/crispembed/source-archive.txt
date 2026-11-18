@@ -1,0 +1,4 @@
+# Fallback source for build-crispembed.ps1 when git cannot fetch the pinned commit (commit.txt).
+# CrispEmbed and its ggml submodule in one folder CrispEmbed-<commit> (see README.md); used only if its SHA-256 matches.
+url=https://catswords.blob.core.windows.net/welsonjs/packages/archive/CrispEmbed-ad01b21a23d884d197686aa508f78f11d1505925.zip
+sha256=38dd2eda8cf794391e346ca86c9af35e43accd3b9d65c3d5f76075fdc0ffe72e
