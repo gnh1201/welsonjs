@@ -1,5 +1,7 @@
 # DownloadUrls.psd1
 # External download urls for WelsonJS post-install script
+# The SHA-256 of every file listed here is in data/DownloadHashes.txt; postInstall.ps1
+# downloads nothing that is not on that list.
 # Namhyeon Go <gnh1201@catswords.re.kr>
 # Last updated: 2026-08-06
 # https://github.com/gnh1201/welsonjs
@@ -274,20 +276,6 @@
         x64   = "https://aka.ms/download-jdk/microsoft-jdk-25.0.5.0.2-windows-x64.zip"
         arm64 = "https://aka.ms/download-jdk/microsoft-jdk-25.0.5.0.2-windows-aarch64.zip"
         x86   = "https://cdn.azul.com/zulu/bin/zulu17.70.201-ca-jdk17.0.21.1-win_i686.zip"
-    }
-
-    # SHA-256 of each file in the entry above, as the vendor publishes it:
-    # Microsoft beside the download link (<link>.sha256sum.txt), Azul in its
-    # metadata API (sha256_hash of package 80af84a2-ab24-4036-8836-700e2f55a534).
-    # postInstall.ps1 verifies a download against this value before it unpacks the
-    # file, so a component that pins a hash here cannot unpack bytes other than
-    # the vendor's. The key is the component name plus "_sha256", with the same
-    # architecture keys as its URL entry ("any" works for one hash); a component
-    # without such an entry is downloaded unverified, as before.
-    microsoft_jdk_sha256 = @{
-        x64   = "5da7525c8268a10a66bd76a39f4e9af24d4ebc974d42800a609852c498a68460"
-        arm64 = "f227cc459fbd65a42c1b28123d68e207eb500899c1c78238f21a038cd33688a3"
-        x86   = "bd8304a6160a431ac790c5ebb34992167ae0c049590470807961e3d9326d9311"
     }
     
     # ===========================

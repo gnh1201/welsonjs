@@ -70,6 +70,15 @@ else {
     $DownloadUrls = @{}
 }
 
+# ================================
+# LOAD DOWNLOAD HASHES (DownloadHashes.txt in /data folder)
+# ================================
+# Every file this script downloads must hash to one of the SHA-256 values listed
+# in this file. The file holds nothing else: one lowercase hex hash per line, no
+# component name and no URL, so allowing a download means adding its hash.
+$DownloadHashesPath = Join-Path $ScriptRoot "data/DownloadHashes.txt"
+$script:DownloadHashes = $null
+
 function Get-DownloadUrl {
     param(
         [Parameter(Mandatory = $true)]
@@ -99,38 +108,37 @@ function Get-DownloadUrl {
     return $null
 }
 
-function Get-DownloadSha256 {
-    # The expected hash of a component's download, or $null when the table does
-    # not pin one. It lives in the "<component>_sha256" entry, with the same
-    # architecture keys as the URL entry, so a component keeps both together.
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$Component,
-        [Parameter(Mandatory = $true)]
-        [string]$Arch  # x64, arm64, x86
-    )
-
-    $hashKey = $Component.ToLowerInvariant() + "_sha256"
-
-    if (-not $DownloadUrls.ContainsKey($hashKey)) {
-        return $null
+function Get-DownloadHashes {
+    # The SHA-256 values a downloaded file is allowed to have, read from
+    # data\DownloadHashes.txt: one hash per line, blank lines and surrounding
+    # spaces ignored. The set is case-insensitive, because a hash written in upper
+    # case is still the same hash. The file is read once per run.
+    if ($null -ne $script:DownloadHashes) {
+        return $script:DownloadHashes
     }
 
-    $entry = $DownloadUrls[$hashKey]
+    $hashes = New-Object -TypeName 'System.Collections.Generic.HashSet[string]' -ArgumentList ([System.StringComparer]::OrdinalIgnoreCase)
 
-    if (-not ($entry -is [System.Collections.IDictionary])) {
-        return $null
+    if (-not (Test-Path -LiteralPath $DownloadHashesPath -PathType Leaf)) {
+        Write-Host "[WARN] data\DownloadHashes.txt not found at: $DownloadHashesPath"
+        Write-Host "[WARN] No download can be verified in this run."
+        $script:DownloadHashes = $hashes
+        return $hashes
     }
 
-    if ($entry.Contains($Arch) -and $entry[$Arch]) {
-        return ([string]$entry[$Arch]).Trim().ToLowerInvariant()
+    foreach ($line in @(Get-Content -LiteralPath $DownloadHashesPath -ErrorAction SilentlyContinue)) {
+        $hash = ""
+        if ($null -ne $line) { $hash = ([string]$line).Trim() }
+        if ($hash -eq "") { continue }
+        [void]$hashes.Add($hash)
     }
 
-    if ($entry.Contains("any") -and $entry["any"]) {
-        return ([string]$entry["any"]).Trim().ToLowerInvariant()
+    if ($hashes.Count -eq 0) {
+        Write-Host "[WARN] data\DownloadHashes.txt lists no hash. No download can be verified in this run."
     }
 
-    return $null
+    $script:DownloadHashes = $hashes
+    return $hashes
 }
 
 # ================================
@@ -744,10 +752,7 @@ function Download-File {
         [Parameter(Mandatory = $true)]
         [string]$Url,
         [Parameter(Mandatory = $true)]
-        [string]$DestinationPath,
-        # When set, the downloaded bytes must hash to this SHA-256 or nothing
-        # keeps the file. Empty means the table pins no hash for the component.
-        [string]$ExpectedHash = ""
+        [string]$DestinationPath
     )
 
     $OriginalUrl = $Url
@@ -827,8 +832,12 @@ function Download-File {
         }
     }
 
-    if ($ExpectedHash) {
-        $expected = $ExpectedHash.Trim().ToLowerInvariant()
+    # Every download must be a file whose SHA-256 is listed in
+    # data\DownloadHashes.txt. One that is not is deleted here, before a component
+    # can run or unpack it, and the error names the hash it did have so the file
+    # can be identified and the list updated deliberately.
+    $allowedHashes = Get-DownloadHashes
+    if ($allowedHashes.Count -gt 0) {
         try {
             $actual = Get-Sha256Hash -Path $DestinationPath
         }
@@ -837,14 +846,18 @@ function Download-File {
             throw "Could not hash the downloaded file: $($_.Exception.Message)"
         }
 
-        if ($actual -ne $expected) {
-            # The file is not the vendor's build: drop it so that nothing later in
-            # this run can mistake it for the download and run it.
+        if (-not $allowedHashes.Contains($actual)) {
             Remove-Item -LiteralPath $DestinationPath -Force -ErrorAction SilentlyContinue
-            throw "SHA-256 mismatch for $DestinationPath. Expected $expected, got $actual."
+            Write-Host "[ERROR] The downloaded file is not listed in data\DownloadHashes.txt, so it was deleted:"
+            Write-Host "        $Url"
+            Write-Host "        SHA-256: $actual"
+            throw "SHA-256 $actual, for $DestinationPath, is not listed in data\DownloadHashes.txt."
         }
 
         Write-Host "[+] SHA-256 verified: $actual"
+    }
+    else {
+        Write-Host "[WARN] data\DownloadHashes.txt lists no hash, so this download is not verified."
     }
 }
 
@@ -1275,7 +1288,6 @@ $GtkRuntimeInstaller     = Join-Path $TmpDir "gtk-runtime.exe"
 $NpcapInstaller          = Join-Path $TmpDir "npcap-setup.exe"
 $NmapInstaller           = Join-Path $TmpDir "nmap-setup.exe"
 $MicrosoftJdkArchive     = $null  # set in the download phase: the .zip named in the URL table
-$MicrosoftJdkSha256      = $null  # the hash this run verified the archive against
 $HwpAutomationCompressed = Join-Path $TmpDir "FilePathCheckerModuleExample.dll.gz"
 
 # ================================
@@ -1335,14 +1347,9 @@ try {
             $jdkDownloadDirectory = Join-Path $TmpDir "microsoft_jdk-$([guid]::NewGuid().ToString('N'))"
             New-Item -ItemType Directory -Path $jdkDownloadDirectory -Force | Out-Null
             $MicrosoftJdkArchive = Join-Path $jdkDownloadDirectory $jdkFileName
-            $MicrosoftJdkSha256 = Get-DownloadSha256 -Component "microsoft_jdk" -Arch $arch
-
-            if (-not $MicrosoftJdkSha256) {
-                Write-Host "[WARN] The URL table pins no SHA-256 for microsoft_jdk on $arch. The download will not be verified."
-            }
 
             try {
-                Download-File -Url $url -DestinationPath $MicrosoftJdkArchive -ExpectedHash $MicrosoftJdkSha256
+                Download-File -Url $url -DestinationPath $MicrosoftJdkArchive
             }
             catch {
                 # An optional component that cannot be fetched must not stop the rest.
@@ -1350,7 +1357,6 @@ try {
                 Write-Host "[WARN] The OpenJDK component is skipped for this run."
                 Remove-Item -LiteralPath $jdkDownloadDirectory -Recurse -Force -ErrorAction SilentlyContinue
                 $MicrosoftJdkArchive = $null
-                $MicrosoftJdkSha256 = $null
             }
         }
         else {
@@ -1527,26 +1533,28 @@ try {
         $jdkUnpacked = $false
 
         # The hash was checked once after the download and is checked again here,
-        # immediately before the archive is unpacked. The temporary directory is
-        # writable by the user this script runs for, so an archive replaced between
-        # the download and the extraction would otherwise write files of someone
-        # else's choosing into the user's AppData. A mismatch skips this component
-        # only.
-        if ($MicrosoftJdkArchive -and $MicrosoftJdkSha256) {
-            try {
-                $jdkHashActual = Get-Sha256Hash -Path $MicrosoftJdkArchive
-            }
-            catch {
-                $jdkHashActual = $null
-            }
+        # immediately before the archive is unpacked, against the same list in
+        # data\DownloadHashes.txt. The temporary directory is writable by the user
+        # this script runs for, so an archive replaced between the download and the
+        # extraction would otherwise write files of someone else's choosing into
+        # the user's AppData. A file that is not listed skips this component only.
+        if ($MicrosoftJdkArchive) {
+            $jdkAllowedHashes = Get-DownloadHashes
+            if ($jdkAllowedHashes.Count -gt 0) {
+                try {
+                    $jdkHashActual = Get-Sha256Hash -Path $MicrosoftJdkArchive
+                }
+                catch {
+                    $jdkHashActual = $null
+                }
 
-            if ($jdkHashActual -ne $MicrosoftJdkSha256) {
-                Write-Host "[ERROR] The OpenJDK archive does not match its published SHA-256, so it will not be unpacked."
-                Write-Host "        expected: $MicrosoftJdkSha256"
-                Write-Host "        actual  : $jdkHashActual"
-                Write-Host "[WARN] The OpenJDK component is skipped for this run."
-                Remove-Item -LiteralPath $MicrosoftJdkArchive -Force -ErrorAction SilentlyContinue
-                $MicrosoftJdkArchive = $null
+                if (-not $jdkHashActual -or -not $jdkAllowedHashes.Contains($jdkHashActual)) {
+                    Write-Host "[ERROR] The OpenJDK archive is not a file listed in data\DownloadHashes.txt, so it will not be unpacked."
+                    Write-Host "        SHA-256: $jdkHashActual"
+                    Write-Host "[WARN] The OpenJDK component is skipped for this run."
+                    Remove-Item -LiteralPath $MicrosoftJdkArchive -Force -ErrorAction SilentlyContinue
+                    $MicrosoftJdkArchive = $null
+                }
             }
         }
 
