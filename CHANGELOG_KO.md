@@ -22,8 +22,21 @@
   - `is.url()`과 `is.email()`은 정규식 대신 길이를 제한한 값을 왼쪽에서 오른쪽으로 한 번만 훑어 해석하므로 악의적인 입력으로 되감기(backtracking)가 일어나지 않습니다. 나머지 형식 검사는 되감기가 없는 고정 패턴과 길이 제한을 씁니다.
 - `data/test-misc.json`과 `testloader.js`에 `is_test`를 추가했습니다. 모듈 동작과 악의적인 입력에 대한 `is.url()` 응답 시간을 확인합니다: `cscript app.js testloader is_test data\test-misc.json`([#434] 관련).
 
+### 변경
+
+- 설치 프로그램의 JDK 구성 요소는 이제 `jdk`(이전 이름 `microsoft_jdk`)이고, JDK를 설치하는 대신 압축을 풀어 둡니다. `postInstall.ps1`이 배포사의 `.zip`을 내려받아 `%APPDATA%\welsonjs\jdk\` 아래에 zip 안의 최상위 폴더(`jdk-25.0.5.0.2+1` 또는 Zulu 패키지 이름)를 그대로 두고 풉니다. 이어서 현재 사용자용 `JAVA_HOME`을 그 폴더로 등록하고, 그 폴더의 `bin`을 사용자 `PATH`에 같은 항목이 두 번 들어가지 않도록 추가합니다. 프로그램 파일에는 아무것도 쓰지 않고 프로그램 및 기능 항목도 생기지 않으며, JDK는 스크립트가 내려받는 다른 구성 요소들과 같은 폴더에 있어 그 폴더를 지우면 함께 사라집니다. `%APPDATA%`는 사용자별 경로이므로 설치 관리자가 관리자 권한으로 돌아도 두 값은 사용자 범위에 씁니다. 압축은 먼저 임시 폴더에 풀고 `bin\java.exe`를 확인한 뒤에야 기존 JDK를 바꾸므로, 압축이 실패하면 이전 설치가 그대로 남습니다. 임시 폴더와 압축 파일은 뒤에 정리합니다. 이 구성 요소의 이전 버전이 `%APPDATA%\welsonjs\microsoft_jdk\`에 남긴 것(그 아래에 풀어 둔 JDK, 또는 설치 파일만 두던 시절의 파일)과 그 폴더를 가리키던 `PATH` 항목도 새 JDK를 등록한 뒤에 함께 지웁니다. 무인 설치 스위치·종료 코드·다시 시작 처리를 쓰던 `.exe`·`.msi` 분기는 없앴고, Microsoft 패키지가 만들던 `.jar` 연결도 함께 없어졌습니다. `setup.iss`의 구성 요소 설명도 하는 일을 그대로 적습니다.
+- `data/DownloadUrls.psd1`: `jdk`의 세 아키텍처 주소가 모두 배포사 설치 파일이 아니라 `.zip` 패키지입니다. x64·ARM64는 JDK 25 LTS의 현재 Windows 패치인 Microsoft Build of OpenJDK 25.0.5.0.2이고, x86은 Windows i686용 Azul Zulu 17 LTS 17.0.21.1입니다. JDK 25에는 32비트 빌드가 없기 때문입니다(JEP 503으로 x86 포트 제거). Zulu 17.0.21.1은 2026년 11월 CPU에서 JDK 17 수정이 반영되는 패치 수준입니다. 주소가 비어 있던 `arm64`를 채우고, AArch64 설치 파일을 가리키던 `x86`을 바로잡았습니다. 이 파일은 주소만 담고, 이 구성 요소를 포함한 모든 해시는 `data/DownloadHashes.txt`에 있습니다.
+- `data/DownloadUrls.psd1`: `curl`(x64·ARM64), `android_platform_tools`, `nuget` 주소를 항상 최신을 가리키는 링크 대신 버전이 박힌 파일로 바꿨습니다. `curl.se/windows/dl-8.23.0_9/curl-8.23.0_9-win64-mingw.zip`·`...-win64a-mingw.zip`은 curl 8.23.0(curl-for-win 빌드 8.23.0_9), `dl.google.com/android/repository/platform-tools_r37.0.1-win.zip`은 Android platform-tools r37.0.1(Google SDK 저장소의 안정 채널 릴리스이며, r37.0.3은 미리보기 채널에만 있습니다), `dist.nuget.org/win-x86-commandline/v8.0.0/nuget.exe`는 NuGet 8.0.0입니다. 네 주소 모두 2026-11-18에 `data/DownloadHashes.txt`를 만들 때 이전 링크가 내려주던 바이트와 같으므로 해시 목록은 55개 값을 그대로 유지하지만, 이제 해시는 배포사가 다음에 올릴 파일이 아니라 그대로 남는 파일을 가리킵니다. 아직 최신을 가리키는 주소는 5개입니다. Hugging Face `resolve/main` GGUF 모델 4개와 LDPlayer의 `LDPlayer9.exe?n=…`입니다.
+
+### 수정
+
+- 커스텀 설치에서 구성 요소를 하나도 고르지 않으면 모든 구성 요소를 설치하던 문제를 고쳤습니다. 이 선택에서 `WizardSelectedComponents`는 빈 문자열을 돌려주고, `postInstall.ps1`은 이를 "필터 없음"으로 읽어 전체 선택으로 처리했습니다. 이제 `setup.iss`가 `none`을 넘기고 스크립트는 빈 선택으로 읽습니다. `-Components` 없이 직접 실행하는 경우는 예전처럼 전체 구성 요소를 뜻합니다.
+- 프로세서 조회가 실패할 때 `Get-NativeArchitecture`가 64비트 운영체제를 모두 x64로 답하던 대신 프로세스 환경에서 아키텍처를 읽습니다. ARM64 기기에서 x64용 빌드를 내려받지 않습니다.
+- `curl` 구성 요소가 다시 압축을 풉니다. `postInstall.ps1`은 압축 파일을 `curl.zip`으로 저장했는데 압축 해제 단계는 주소에서 이름을 뽑아(`curl-latest.cgi`) 그 이름으로 파일을 찾다가 없다고 판단해 구성 요소를 건너뛰었습니다. 그래서 2026-10-05(`73d1de98`) 이후 이 구성 요소는 내려받고 해시를 확인한 뒤에도 설치되지 않았습니다. 이제 두 단계가 새 `Get-DownloadFileName` 하나로 주소에서 이름을 정하므로 저장한 이름 그대로 압축을 풀고, `curl`은 `%APPDATA%\welsonjs\curl\`에 `bin\curl.exe`와 함께 다시 설치됩니다(그 리팩터링 전과 같은 위치).
+
 ### 보안
 
+- `postInstall.ps1`이 내려받는 모든 파일을 `data/DownloadHashes.txt`와 대조합니다. 이 새 파일은 SHA-256 값만 한 줄에 하나씩 담습니다. `Download-File`이 `Get-FileHash`(없는 PowerShell에서는 .NET 클래스)로 파일을 해싱하고, 값이 목록에 없으면 파일을 즉시 지우고 실제 해시를 로그에 남긴 뒤 오류를 발생시키므로 목록에 없는 파일은 실행되거나 압축이 풀리지 않습니다. 목록에는 `data/DownloadUrls.psd1`에 있는 55개 다운로드(모든 구성 요소·모든 아키텍처)의 해시가 들어 있고, 2026-11-18에 각 주소가 실제로 내려준 바이트에서 계산했습니다. 그래서 검사가 JDK 하나가 아니라 표 전체를 덮습니다. 목록은 실행할 때 한 번 읽어 대소문자를 구분하지 않는 집합으로 만들고, `data/DownloadUrls.psd1`에는 주소만 남습니다. JDK 압축 파일은 압축을 풀기 직전에 다시 확인합니다. 파일이 사용자 `%TEMP%`에 있는 동안 스크립트가 관리자 권한으로 도는 경우가 있기 때문입니다. 해시 파일이 없는 실행은 그 사실을 알리고 검증 없이 내려받습니다.
 - `WelsonJS.Service/app.config`에서 Google.Protobuf와 gRPC 어셈블리 5개의 바인딩 리디렉션을 제거했습니다. 해당 패키지들은 0.2.7.62에서 하트비트 gRPC 클라이언트와 함께 빌드에서 빠졌으므로 리디렉션만 남아 있었습니다([#434] 관련).
 - 패치 버전이 없는 is.js 0.9.0(CVE-2020-26302, `is.url()`의 ReDoS) 의존성을 제거했습니다. 무결성 사이드카 2개와 `app/assets/integrity.json`의 항목 2개를 없애 더 이상 내려받거나 불러오지 않습니다. 전역 `is`는 `lib/is.js`가 계속 제공하므로 `is`를 쓰던 애플리케이션은 그대로 동작합니다([#434] 관련).
 - 2026-08-05 오픈소스SW 검증에서 보고된 구성 요소 3개의 현황을 `docs/third-party-dependencies.md`에 정리했습니다. IE 6~8에 필요한 jQuery 1.11.3 폴백을 아직 제거할 수 없는 이유도 함께 적었습니다([#434] 관련).

@@ -1,7 +1,9 @@
 # DownloadUrls.psd1
 # External download urls for WelsonJS post-install script
+# The SHA-256 of every file listed here is in data/DownloadHashes.txt; postInstall.ps1
+# downloads nothing that is not on that list.
 # Namhyeon Go <gnh1201@catswords.re.kr>
-# Last updated: 2026-08-06
+# Last updated: 2026-11-18
 # https://github.com/gnh1201/welsonjs
 # 
 @{
@@ -17,9 +19,17 @@
     # ===========================
     # cURL
     # ===========================
+    # x64 and ARM64: curl 8.23.0, build 8.23.0_9 of curl-for-win, the build the
+    # download page links to (https://curl.se/windows/). Pinned to the versioned
+    # file instead of its latest.cgi redirect, so the SHA-256 in
+    # data/DownloadHashes.txt belongs to the exact file this table names.
+    # x86: the WelsonJS build (catswords blob), unchanged.
+    # The archive holds one top folder (curl-8.23.0_9-win64-mingw\, or
+    # curl-8.23.0_9-win64a-mingw\ for ARM64), which postInstall.ps1 unwraps, so
+    # curl sits at curl\bin\curl.exe.
     curl = @{
-        x64   = "https://curl.se/windows/latest.cgi?p=win64-mingw.zip"
-        arm64 = "https://curl.se/windows/latest.cgi?p=win64a-mingw.zip"
+        x64   = "https://curl.se/windows/dl-8.23.0_9/curl-8.23.0_9-win64-mingw.zip"
+        arm64 = "https://curl.se/windows/dl-8.23.0_9/curl-8.23.0_9-win64a-mingw.zip"
         x86   = "https://catswords.blob.core.windows.net/welsonjs/packages/native/curl/8.20.0-x86/curl-8.20.0-win-x86-full.2026-05-02.zip"
     }
 
@@ -152,8 +162,15 @@
     # ===========================
     # Android Platform Tools (e.g., ADB)
     # ===========================
+    # platform-tools r37.0.1 for Windows, the release in the stable channel
+    # (channel-0, android-sdk-license) of
+    # https://dl.google.com/android/repository/repository2-3.xml, as the versioned
+    # archive instead of platform-tools-latest-windows.zip. r37.0.3 is only in the
+    # preview channel (channel-2, android-sdk-preview-license). The archive holds
+    # one platform-tools\ folder, which postInstall.ps1 unwraps, so adb.exe lands at
+    # android_platform_tools\adb.exe where lib/adb.js looks for it.
     android_platform_tools = @{
-        x64   = "https://dl.google.com/android/repository/platform-tools-latest-windows.zip"
+        x64   = "https://dl.google.com/android/repository/platform-tools_r37.0.1-win.zip"
         arm64 = $null  # no official ARM64 build
         x86   = $null  # no official X86 build
     }
@@ -250,12 +267,30 @@
     }
     
     # ===========================
-    # Microsoft OpenJDK build
+    # OpenJDK build
     # ===========================
-    microsoft_jdk = @{
-        x64   = "https://aka.ms/download-jdk/microsoft-jdk-25.0.4-windows-x64.exe"
-        arm64 = $null  # no official ARM64 build
-        x86   = "https://aka.ms/download-jdk/microsoft-jdk-25.0.4-windows-aarch64.exe"
+    # x64 and ARM64: Microsoft Build of OpenJDK 25 LTS, at the current Windows patch
+    # level (25.0.5.0.2, the build carrying the October 2026 CPU fixes). Microsoft
+    # publishes Windows builds for these two architectures only: the 32-bit x86 port
+    # was removed with JDK 25 (JEP 503).
+    #   https://learn.microsoft.com/en-us/java/openjdk/download
+    # x86: Azul Zulu 17 LTS (17.0.21.1) for Windows i686, an OpenJDK build that still
+    # ships 32-bit Windows builds. It is at the patch level the JDK 17 fixes in the
+    # November 2026 CPU land in.
+    # All three are the vendor's .zip package rather than its installer:
+    # postInstall.ps1 unpacks it under %APPDATA%\welsonjs\jdk instead of
+    # installing it, so nothing is left in Program Files and no Programs and Features
+    # entry is created; the JDK goes away with that directory, as the other
+    # components the script downloads do. Each .zip holds one
+    # top folder named after the build, and postInstall.ps1 keeps that folder, so the
+    # JDK sits at jdk\jdk-25.0.5.0.2+1\ (or jdk\zulu17...-win_i686\), and what an
+    # earlier version of the component left in %APPDATA%\welsonjs\microsoft_jdk is
+    # removed once the new JDK is registered.
+    # Both vendors serve the file behind a redirect that keeps the file name.
+    jdk = @{
+        x64   = "https://aka.ms/download-jdk/microsoft-jdk-25.0.5.0.2-windows-x64.zip"
+        arm64 = "https://aka.ms/download-jdk/microsoft-jdk-25.0.5.0.2-windows-aarch64.zip"
+        x86   = "https://cdn.azul.com/zulu/bin/zulu17.70.201-ca-jdk17.0.21.1-win_i686.zip"
     }
     
     # ===========================
@@ -268,8 +303,11 @@
     # ===========================
     # Nuget
     # ===========================
+    # NuGet 8.0.0, the build dist.nuget.org/win-x86-commandline/latest/nuget.exe
+    # serves, named by version; it used to be that latest link. postInstall.ps1
+    # keeps nuget\nuget.exe and puts that folder on the user PATH.
     nuget = @{
-        any = "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe"
+        any = "https://dist.nuget.org/win-x86-commandline/v8.0.0/nuget.exe"
     }
     
     # ===========================

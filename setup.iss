@@ -63,7 +63,7 @@ Name: "golang"; Description: "Download Go language archives"; Types: custom;
 Name: "x86dbg"; Description: "Download x64dbg snapshot"; Types: custom;
 Name: "w7zip"; Description: "Download 7-Zip installer"; Types: custom;
 Name: "hashcat"; Description: "Download hashcat archive"; Types: custom;
-Name: "microsoft_jdk"; Description: "Download Microsoft OpenJDK installer"; Types: custom;
+Name: "jdk"; Description: "Download the OpenJDK archive into the app data folder and set JAVA_HOME (Microsoft Build 25; Azul Zulu 17 on 32-bit Windows)"; Types: custom;
 Name: "nuget"; Description: "Download NuGet command-line tool"; Types: custom;
 Name: "ripgrep"; Description: "Download ripgrep (fast text search tool)"; Types: custom;
 
@@ -162,6 +162,10 @@ var
 function GetSelectedComponents(Value: string): string;
 begin
   Result := WizardSelectedComponents(False);
+  // An empty selection would reach postInstall.ps1 as "-Components """, where it
+  // means "no filter" (every component). Say so instead.
+  if Result = '' then
+    Result := 'none';
 end;
 
 // Set elevation bit
