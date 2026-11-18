@@ -162,6 +162,10 @@ var
 function GetSelectedComponents(Value: string): string;
 begin
   Result := WizardSelectedComponents(False);
+  // An empty selection would reach postInstall.ps1 as "-Components """, where it
+  // means "no filter" (every component). Say so instead.
+  if Result = '' then
+    Result := 'none';
 end;
 
 // Set elevation bit

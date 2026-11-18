@@ -267,6 +267,20 @@
         arm64 = "https://aka.ms/download-jdk/microsoft-jdk-25.0.5.0.2-windows-aarch64.exe"
         x86   = "https://cdn.azul.com/zulu/bin/zulu17.70.201-ca-jdk17.0.21.1-win_i686.msi"
     }
+
+    # SHA-256 of each file in the entry above, as the vendor publishes it:
+    # Microsoft beside the download link (<link>.sha256sum.txt), Azul in its
+    # metadata API (sha256_hash of package 335972ff-1ebd-48f2-9c43-e72126c6d0e4).
+    # postInstall.ps1 verifies a download against this value before it runs the
+    # file, so a component that pins a hash here cannot install bytes other than
+    # the vendor's. The key is the component name plus "_sha256", with the same
+    # architecture keys as its URL entry ("any" works for one hash); a component
+    # without such an entry is downloaded unverified, as before.
+    microsoft_jdk_sha256 = @{
+        x64   = "486fc21c94f230bb8915348810e41672bdf6784ddc8b482b3f3300fc8fcf6279"
+        arm64 = "02b14ac26641034c94dfef242ad138edba08e9b1aa9f99a7114605e0444aa7fd"
+        x86   = "d6433aaa075ebc233e1385a7ac0bdbeedfdba8f75f778cfadec611bcfd9b7482"
+    }
     
     # ===========================
     # HWP Automation

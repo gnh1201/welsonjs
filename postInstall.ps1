@@ -99,6 +99,40 @@ function Get-DownloadUrl {
     return $null
 }
 
+function Get-DownloadSha256 {
+    # The expected hash of a component's download, or $null when the table does
+    # not pin one. It lives in the "<component>_sha256" entry, with the same
+    # architecture keys as the URL entry, so a component keeps both together.
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Component,
+        [Parameter(Mandatory = $true)]
+        [string]$Arch  # x64, arm64, x86
+    )
+
+    $hashKey = $Component.ToLowerInvariant() + "_sha256"
+
+    if (-not $DownloadUrls.ContainsKey($hashKey)) {
+        return $null
+    }
+
+    $entry = $DownloadUrls[$hashKey]
+
+    if (-not ($entry -is [System.Collections.IDictionary])) {
+        return $null
+    }
+
+    if ($entry.Contains($Arch) -and $entry[$Arch]) {
+        return ([string]$entry[$Arch]).Trim().ToLowerInvariant()
+    }
+
+    if ($entry.Contains("any") -and $entry["any"]) {
+        return ([string]$entry["any"]).Trim().ToLowerInvariant()
+    }
+
+    return $null
+}
+
 # ================================
 # TELEMETRY
 # ================================
@@ -204,9 +238,18 @@ New-Item -ItemType Directory -Path $TmpDir    -Force | Out-Null
 $SelectedComponents    = @()
 $AllComponentsSelected = $true
 
-if ($Components -and $Components.Trim() -ne "") {
+# Setup passes the components the user ticked, and "none" when that selection is
+# empty: WizardSelectedComponents returns an empty string, which would otherwise
+# read as "no filter" and select every component. A run started by hand without
+# -Components keeps meaning every component.
+$componentList = if ($Components) { $Components.Trim() } else { "" }
+
+if ($componentList -eq "none") {
+    $AllComponentsSelected = $false
+}
+elseif ($componentList -ne "") {
     $SelectedComponents =
-        $Components.Split(",") |
+        $componentList.Split(",") |
         ForEach-Object { $_.Trim().ToLowerInvariant() }
 
     $AllComponentsSelected = $false
@@ -507,12 +550,28 @@ function Get-NativeArchitecture {
         }
     }
     catch {
-        # Fallback: only 32/64 bit detection if WMI/CIM is not available
-        if ([System.Environment]::Is64BitOperatingSystem) {
-            $arch = "x64"
+        # Fallback when the processor query is unavailable. The environment names
+        # the native architecture, which a plain 64-bit check cannot: it would
+        # answer x64 on an ARM64 machine and download the emulated build.
+        $processorArchitecture = if ($env:PROCESSOR_ARCHITEW6432) {
+            $env:PROCESSOR_ARCHITEW6432
         }
         else {
-            $arch = "x86"
+            $env:PROCESSOR_ARCHITECTURE
+        }
+
+        switch ($processorArchitecture) {
+            "ARM64" { $arch = "arm64" }
+            "AMD64" { $arch = "x64"   }
+            "x86"   { $arch = "x86"   }
+            default {
+                if ([System.Environment]::Is64BitOperatingSystem) {
+                    $arch = "x64"
+                }
+                else {
+                    $arch = "x86"
+                }
+            }
         }
     }
 
@@ -646,12 +705,49 @@ function Ensure-EmptyDirectory {
     }
 }
 
+function Get-Sha256Hash {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Path
+    )
+
+    if (Get-Command Get-FileHash -ErrorAction SilentlyContinue) {
+        return (Get-FileHash -LiteralPath $Path -Algorithm SHA256 -ErrorAction Stop).Hash.ToLowerInvariant()
+    }
+
+    # Get-FileHash arrived with PowerShell 4.0 (Windows 8.1); the .NET class is
+    # there on every version this script runs on.
+    $stream = [System.IO.File]::OpenRead($Path)
+    try {
+        $sha256 = [System.Security.Cryptography.SHA256]::Create()
+        try {
+            $bytes = $sha256.ComputeHash($stream)
+        }
+        finally {
+            $sha256.Dispose()
+        }
+    }
+    finally {
+        $stream.Dispose()
+    }
+
+    $hex = New-Object System.Text.StringBuilder
+    foreach ($byte in $bytes) {
+        [void]$hex.Append($byte.ToString("x2"))
+    }
+
+    return $hex.ToString()
+}
+
 function Download-File {
     param(
         [Parameter(Mandatory = $true)]
         [string]$Url,
         [Parameter(Mandatory = $true)]
-        [string]$DestinationPath
+        [string]$DestinationPath,
+        # When set, the downloaded bytes must hash to this SHA-256 or nothing
+        # keeps the file. Empty means the table pins no hash for the component.
+        [string]$ExpectedHash = ""
     )
 
     $OriginalUrl = $Url
@@ -694,7 +790,9 @@ function Download-File {
     while (-not $success -and $attempt -lt $maxRetries) {
         $attempt++
         try {
-            Invoke-WebRequest -Uri $Url -OutFile $DestinationPath -UseBasicParsing
+            # A connection that stays open but stops delivering would otherwise
+            # hold the whole installation here.
+            Invoke-WebRequest -Uri $Url -OutFile $DestinationPath -UseBasicParsing -TimeoutSec 900
             $success = $true
         }
         catch {
@@ -718,14 +816,35 @@ function Download-File {
             "--fail"
             "--retry", "3"
             "--retry-delay", "5"
+            "--connect-timeout", "30"
             "-o", $DestinationPath
             $Url
         )
 
-        $proc = Start-Process -FilePath $curlPath -ArgumentList $curlArgs -NoNewWindow -Wait -PassThru
-        if ($proc.ExitCode -ne 0 -or -not (Test-Path $DestinationPath)) {
-            throw "curl download failed with exit code $($proc.ExitCode)."
+        $curlProcess = Start-Process -FilePath $curlPath -ArgumentList $curlArgs -NoNewWindow -Wait -PassThru
+        if ($curlProcess.ExitCode -ne 0 -or -not (Test-Path $DestinationPath)) {
+            throw "curl download failed with exit code $($curlProcess.ExitCode)."
         }
+    }
+
+    if ($ExpectedHash) {
+        $expected = $ExpectedHash.Trim().ToLowerInvariant()
+        try {
+            $actual = Get-Sha256Hash -Path $DestinationPath
+        }
+        catch {
+            Remove-Item -LiteralPath $DestinationPath -Force -ErrorAction SilentlyContinue
+            throw "Could not hash the downloaded file: $($_.Exception.Message)"
+        }
+
+        if ($actual -ne $expected) {
+            # The file is not the vendor's build: drop it so that nothing later in
+            # this run can mistake it for the download and run it.
+            Remove-Item -LiteralPath $DestinationPath -Force -ErrorAction SilentlyContinue
+            throw "SHA-256 mismatch for $DestinationPath. Expected $expected, got $actual."
+        }
+
+        Write-Host "[+] SHA-256 verified: $actual"
     }
 }
 
@@ -1040,6 +1159,7 @@ $GtkRuntimeInstaller     = Join-Path $TmpDir "gtk-runtime.exe"
 $NpcapInstaller          = Join-Path $TmpDir "npcap-setup.exe"
 $NmapInstaller           = Join-Path $TmpDir "nmap-setup.exe"
 $MicrosoftJdkInstaller   = $null  # set in the download phase: name follows the resolved file type
+$MicrosoftJdkSha256      = $null  # the hash this run verified the installer against
 $HwpAutomationCompressed = Join-Path $TmpDir "FilePathCheckerModuleExample.dll.gz"
 
 # ================================
@@ -1092,18 +1212,34 @@ try {
         if ($url) {
             $jdkFileName = [System.IO.Path]::GetFileName(([uri]$url).AbsolutePath)
             if (-not $jdkFileName) { $jdkFileName = "openjdk-installer" }
-            $MicrosoftJdkInstaller = Join-Path $TmpDir "microsoft_jdk-$jdkFileName"
+
+            # A directory of its own for this run: the file in it is launched with
+            # the installer's privileges, so it must not sit at a path that an
+            # earlier run, or a second run at the same time, also writes.
+            $jdkDirectory = Join-Path $TmpDir "microsoft_jdk-$([guid]::NewGuid().ToString('N'))"
+            New-Item -ItemType Directory -Path $jdkDirectory -Force | Out-Null
+            $MicrosoftJdkInstaller = Join-Path $jdkDirectory $jdkFileName
+            $MicrosoftJdkSha256 = Get-DownloadSha256 -Component "microsoft_jdk" -Arch $arch
+
+            if (-not $MicrosoftJdkSha256) {
+                Write-Host "[WARN] The URL table pins no SHA-256 for microsoft_jdk on $arch. The download will not be verified."
+            }
+
             try {
-                Download-File -Url $url -DestinationPath $MicrosoftJdkInstaller
+                Download-File -Url $url -DestinationPath $MicrosoftJdkInstaller -ExpectedHash $MicrosoftJdkSha256
             }
             catch {
                 # An optional component that cannot be fetched must not stop the rest.
                 Write-Host "[WARN] Failed to download the OpenJDK installer: $($_.Exception.Message)"
+                Write-Host "[WARN] The OpenJDK component is skipped for this run."
+                Remove-Item -LiteralPath $jdkDirectory -Recurse -Force -ErrorAction SilentlyContinue
                 $MicrosoftJdkInstaller = $null
+                $MicrosoftJdkSha256 = $null
             }
         }
         else {
-            Write-Host "[*] microsoft_jdk has no installer for arch: $arch. Microsoft publishes JDK 25 for Windows x64 and ARM64, and the 32-bit x86 URL is missing from the table. Skipping download."
+            Write-Host "[*] microsoft_jdk has no installer in the URL table for arch: $arch. Skipping download."
+            Write-Host "    Microsoft publishes Windows builds of JDK 25 for x64 and ARM64; the 32-bit Windows build in the table is Azul Zulu 17 for x86."
         }
     }
 
@@ -1282,9 +1418,33 @@ try {
     # Both are run unattended and waited for. This is an optional component, so a
     # download or launch failure is reported and the other components still run.
     if (Test-ComponentSelected -Name "microsoft_jdk") {
-        if ($MicrosoftJdkInstaller -and (Test-Path $MicrosoftJdkInstaller)) {
+        # The hash was checked once after the download and is checked again here,
+        # immediately before the file is launched. The temporary directory is
+        # writable by the user this script runs for, so a file replaced between
+        # the download and the launch would otherwise run with the installer's
+        # privileges. A mismatch skips this component only.
+        if ($MicrosoftJdkInstaller -and $MicrosoftJdkSha256) {
+            try {
+                $jdkHashActual = Get-Sha256Hash -Path $MicrosoftJdkInstaller
+            }
+            catch {
+                $jdkHashActual = $null
+            }
+
+            if ($jdkHashActual -ne $MicrosoftJdkSha256) {
+                Write-Host "[ERROR] The OpenJDK installer does not match its published SHA-256, so it will not run."
+                Write-Host "        expected: $MicrosoftJdkSha256"
+                Write-Host "        actual  : $jdkHashActual"
+                Write-Host "[WARN] The OpenJDK component is skipped for this run."
+                Remove-Item -LiteralPath $MicrosoftJdkInstaller -Force -ErrorAction SilentlyContinue
+                $MicrosoftJdkInstaller = $null
+            }
+        }
+
+        if ($MicrosoftJdkInstaller -and (Test-Path -LiteralPath $MicrosoftJdkInstaller -PathType Leaf)) {
             $jdkExtension = [System.IO.Path]::GetExtension($MicrosoftJdkInstaller).ToLowerInvariant()
             $isElevated = Test-Administrator
+            $jdkScope = if ($isElevated) { "for all users" } else { "for this user" }
             $jdkLog = $null
             $jdkInstaller = $null
 
@@ -1347,15 +1507,20 @@ try {
             }
 
             if ($jdkInstaller) {
+                $jdkInstalled = $false
+
                 switch ($jdkInstaller.ExitCode) {
                     0 {
-                        Write-Host "[*] OpenJDK installed. PATH is updated for new processes; JAVA_HOME is unchanged."
+                        Write-Host "[*] OpenJDK installed $jdkScope. PATH is updated for new processes and .jar files open with this JDK; JAVA_HOME is unchanged."
+                        $jdkInstalled = $true
                     }
                     1641 {
-                        Write-Host "[!] OpenJDK installed. The installer restarted Windows to finish."
+                        Write-Host "[!] OpenJDK installed $jdkScope. The installer restarted Windows to finish."
+                        $jdkInstalled = $true
                     }
                     3010 {
-                        Write-Host "[!] OpenJDK installed. A restart is required to finish."
+                        Write-Host "[!] OpenJDK installed $jdkScope. A restart is required to finish."
+                        $jdkInstalled = $true
                     }
                     default {
                         Write-Host "[WARN] OpenJDK installer exited with code $($jdkInstaller.ExitCode)."
@@ -1364,6 +1529,13 @@ try {
                             Write-Host "[WARN] Windows Installer log: $jdkLog"
                         }
                     }
+                }
+
+                if ($jdkInstalled) {
+                    # The installer file has done its job and is up to 190 MB; the
+                    # directory is this run's own.
+                    $jdkInstallerDirectory = Split-Path -Parent $MicrosoftJdkInstaller
+                    Remove-Item -LiteralPath $jdkInstallerDirectory -Recurse -Force -ErrorAction SilentlyContinue
                 }
             }
 
@@ -1376,7 +1548,7 @@ try {
             }
         }
         else {
-            Write-Host "[WARN] The OpenJDK installer was not downloaded. Skipping installation."
+            Write-Host "[WARN] No verified OpenJDK installer is available for this run. Skipping installation."
         }
     }
     else {
