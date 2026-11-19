@@ -118,7 +118,7 @@ JsonRpc2.register("tools/list", function (rpc, params, id, callback) {
                     + "Do not rely on runtime conversion after the script is received, because non-ASCII characters may already have become question marks. "
                     + "Use require(\"lib/shell\") for shell access. "
                     + "Use require(\"lib/msoffice\") to access Microsoft Excel. "
-                    + "For math, use the global `numbers` (numbers.js 0.7.0, no require needed): "
+                    + "For math, use the global `numbers` (numbers.js 0.7.0.1, no require needed): "
                     + "numbers.basic (sum, product, max, min, range, factorial, binomial, permutation, gcd, lcm, egcd, divMod, powerMod, modInverse, numbersEqual), "
                     + "numbers.statistic (mean, median, mode, quantile, standardDev and covariance (population), correlation, report, linearRegression, exponentialRegression, rSquared), "
                     + "numbers.matrix on 2D arrays (addition, subtraction, scalar, multiply, transpose, identity, zeros, dotproduct, determinant, inverse, lupDecomposition, rowReduce, vectorNorm, matrixNorm), "
