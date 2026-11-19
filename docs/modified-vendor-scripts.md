@@ -1,12 +1,13 @@
 # Modified vendor scripts
 
-Most files under `app/assets/js` are third-party scripts exactly as their authors published them. Seven are WelsonJS builds of a published version, changed so that they run in the Windows Script Host JScript engine (ES3) or work with local files, or to fix bugs. They are named after the version they come from with `.1` appended (`numbers-0.7.0.1.js` comes from numbers.js 0.7.0), each starts with a comment that names the version and lists the changes, and they are kept in the WelsonJS blob storage under `ajax/libs/<library>/<version>.1/` like a CDN release. `restoreAppAssets.ps1` downloads them as it downloads every other vendor file, from the URL that `app/assets/integrity.json` lists for the digest in the file's `.integrity` sidecar.
+Most files under `app/assets/js` are third-party scripts exactly as their authors published them. Eight are WelsonJS builds of a published version, changed so that they run in the Windows Script Host JScript engine (ES3) or work with local files, or to fix bugs. They are named after the version they come from with `.1` appended (`numbers-0.7.0.1.js` comes from numbers.js 0.7.0), each starts with a comment that names the version and lists the changes, and they are kept in the WelsonJS blob storage under `ajax/libs/<library>/<version>.1/` like a CDN release. `restoreAppAssets.ps1` downloads them as it downloads every other vendor file, from the URL that `app/assets/integrity.json` lists for the digest in the file's `.integrity` sidecar.
 
 Up to 0.2.7.62, the same files carried `.wsh` in their names (`core-js-3.49.0.wsh.js`) and were stored as snapshots of the repository. The `.1` files are those files with the header comment added; the code is unchanged.
 
 | File | Comes from | Loaded by |
 | --- | --- | --- |
 | `core-js-3.49.0.1.js` | core-js 3.49.0, `index.js` of the npm package `core-js-bundle` | `app.js` |
+| `is-0.9.0.1.js` | is.js 0.9.0, `is.js` of the release (npm package `is_js`, tag `v0.9.0`) | `app.js` (`is`) |
 | `js-yaml-4.1.0.1.js` | js-yaml 4.1.0, `dist/js-yaml.js` of the npm package | `app.js` (`yaml`) |
 | `linq-4.0.2.1.js` | linq.js 4.0.2, `linq.js` of the npm package `linq` | `app.js` (`Enumerable`) |
 | `numbers-0.7.0.1.js` | numbers.js 0.7.0, the browserified `src/numbers.js` | `app.js` (`numbers`) |
@@ -21,6 +22,7 @@ The changes below were found by comparing each file with these upstream files, i
 | Upstream file | Bytes | SHA-384 |
 | --- | --- | --- |
 | `https://registry.npmjs.org/core-js-bundle/-/core-js-bundle-3.49.0.tgz` → `package/index.js` | 887,730 | `sha384-ja+wc46KctKrEra0BQe9bGANaK9o5D9mxX+jqWi2r06sX0iJkHqrpZ06zkIOzvLo` |
+| `https://registry.npmjs.org/is_js/-/is_js-0.9.0.tgz` → `package/is.js` (the same file as `is.js` at the tag `v0.9.0`) | 32,813 | `sha384-r1rqAfJdNwo/sq+UOvPjgD9EOEuy1IpGN/LEUr4cF6gJeB6S/zqXyYXt1UF0CzKl` |
 | `https://registry.npmjs.org/js-yaml/-/js-yaml-4.1.0.tgz` → `package/dist/js-yaml.js` | 114,359 | `sha384-wnpIlY73zQKRQF/TqAFQ+A41ZkUYqXitl4hV5aLCxwVJAL+gC8wxg3p6+hRkYxkq` |
 | `https://registry.npmjs.org/linq/-/linq-4.0.2.tgz` → `package/linq.js` | 99,889 | `sha384-V7R4ik0ja96Aele/LkyQ6/3NgUgp6+iLDBlDljdWyY+mxw1WPghhppszor+x63iL` |
 | `https://catswords.blob.core.windows.net/welsonjs/ajax/libs/numbers/0.7.0/numbers.js` | 78,930 | `sha384-SkZBybQ2Co+dcQQotKqcRyETNrPQiyioytIgfvmTRCay2prTjmbpTzVtTIsYY1R3` |
@@ -41,6 +43,14 @@ The digests are of the files as downloaded. Squel.js at `afa1cb5` is not the `di
 3. a function that returns `{}`, when neither exists, so that the deletion of the `enumBugKeys` that follows does not fail.
 
 Nothing else is changed.
+
+### is.js 0.9.0.1
+
+- `is.url()`: the host name labels are matched with a pattern that has one way to match each label, instead of a quantified group inside a quantified group that backtracked exponentially (CVE-2020-26302). See `docs/third-party-dependencies.md`.
+- `is.email()`: the domain part is rewritten the same way; the 0.9.0 pattern backtracked exponentially on `a@` followed by `a.` repeated.
+- `is.VERSION` is `0.9.0.1` (the release said `0.8.0`).
+
+Both patterns accept and reject exactly the values the 0.9.0 patterns did; they were compared on about 6 million strings. WelsonJS used to load the release's `is.min.js`, the minified form of the same source; 0.9.0.1 is the readable `is.js`. The `is.js` on the default branch of the repository is newer than the release (2020, with `is.thenable` and `is.operaMini`) and is not used.
 
 ### js-yaml 4.1.0.1
 
