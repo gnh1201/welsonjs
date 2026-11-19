@@ -780,6 +780,9 @@ function require(pathname) {
 
         text = require._load(_filename);
 
+        // apply the module's patch (patches/<path>.patch) to the source in memory
+        text = require._applyPatch(_filename, text);
+
         // check the suffix again
         suffix = (function(pos, s) {
             return pos < 0 ? '.' : s.substring(pos);
@@ -874,6 +877,9 @@ function require(pathname) {
             _filename,
             _dirname
         );
+
+        // run the module's post-processing script (patches/<path>.post.js), if there is one
+        cache[FN] = require._applyPost(_filename, cache[FN], module, _filename, _dirname);
     } catch (e) {
         console.error("PARSE ERROR!", e.number + ",", e.description + ",", "FN=" + FN);
     }
@@ -924,7 +930,7 @@ require._getCurrentScriptDirectory = function() {
 
     return ".";
 };
-require._load = function(FN) {
+require._load = function(FN, skipIntegrity) {
     // if empty
     if (FN == '') return '';
     
@@ -941,8 +947,8 @@ require._load = function(FN) {
         stream.loadFromFile(_filename);
         text = stream.readText();
 
-        // integrity verification
-        if (STRICT_INTEGRITY) {
+        // integrity verification (a patch in patches/ is not listed there)
+        if (STRICT_INTEGRITY && !skipIntegrity) {
             var computed_hash = (function(algorithm) {
                 return algorithm == "default"
                     ? ("00000000" + __hash_adler32__(text).toString(16)).slice(-8)
@@ -963,6 +969,107 @@ require._load = function(FN) {
         console.error("LOAD ERROR!", code + ",", message + ",", "FN=" + FN);
     });
 };
+
+// Patches for the modules loaded from local files are kept in one place, patches/,
+// mirrored by the module's relative path: patches/<path>.patch is a unified diff
+// that require() applies to the source in memory before it is transpiled, and
+// patches/<path>.post.js runs after the module executed and may change its exports.
+// Neither file is copied into the application's own folder, so a module found under
+// lib/ or node_modules/ is a third-party file as it was downloaded.
+// See docs/require-patches.md.
+require._patchFiles = {};
+require._patchBusy = {};
+
+// Returns the path of patches/<module path><extension> when that module is in the
+// application's folder, or null. The answer is remembered for the next call.
+require._getPatchFile = function(FN, extension) {
+    // an absolute path or a URL has a colon; the parts "." and "" are dropped, and
+    // a part ".." is refused, so only a path inside the application folder is patched
+    if (typeof FN !== "string" || FN.length < 1 || FN.indexOf(":") > -1) return null;
+
+    var parts = FN.replace(/\\/g, "/").split("/");
+    var key = [];
+    var i = 0;
+
+    while (i < parts.length) {
+        var part = parts[i];
+        if (part === ".." || (part === "" && i === 0)) return null;
+        if (part !== "" && part !== ".") key.push(part);
+        i++;
+    }
+    if (key.length < 1) return null;
+
+    var cacheKey = key.join("/") + extension;
+    if (!(cacheKey in require._patchFiles)) {
+        var patchPath = "patches/" + cacheKey;
+        require._patchFiles[cacheKey] = require._fileExists(patchPath) ? patchPath : null;
+    }
+
+    return require._patchFiles[cacheKey];
+};
+
+// Applies a patch kept in patches/ to the source of a module and returns it. A patch
+// that does not match the source (for example, after the file was updated upstream)
+// leaves the module as it is, with an error, instead of stopping the application.
+require._applyPatch = function(filename, text) {
+    if (typeof text !== "string" || text.length < 1) return text;
+
+    var patchPath = require._getPatchFile(filename, ".patch");
+    if (patchPath === null || require._patchBusy[patchPath]) return text;
+
+    require._patchBusy[patchPath] = true;
+    try {
+        var diff = require._load(patchPath, true);
+        if (typeof diff !== "string" || diff.length < 1) {
+            throw new Error("The patch could not be read");
+        }
+
+        return require("lib/patch").apply(text, diff);
+    } catch (e) {
+        console.error("PATCH ERROR!", (e.description || e.message) + ",", "FN=" + patchPath, "- the module is used unpatched.");
+        return text;
+    } finally {
+        require._patchBusy[patchPath] = false;
+    }
+};
+
+// Runs the post-processing script kept in patches/ on a module that has executed.
+// It receives the module as the loader gives it to a module and may change what it exports.
+require._applyPost = function(filename, value, module, _filename, _dirname) {
+    var scriptPath = require._getPatchFile(filename, ".post.js");
+    if (scriptPath === null || require._patchBusy[scriptPath]) return value;
+
+    require._patchBusy[scriptPath] = true;
+    try {
+        var text = require._load(scriptPath, true);
+        if (typeof text !== "string" || text.length < 1) {
+            throw new Error("The post-processing script could not be read");
+        }
+
+        module.exports = value;
+        return require("lib/patch").run(text, require._global, module, require, _filename, _dirname);
+    } catch (e) {
+        console.error("POST-PROCESS ERROR!", (e.description || e.message) + ",", "FN=" + scriptPath, "- the module is used without it.");
+        return module ? module.exports : value;
+    } finally {
+        require._patchBusy[scriptPath] = false;
+    }
+};
+
+require._fileExists = function(FN) {
+    var filename = require._getCurrentScriptDirectory() + "\\" + FN;
+
+    try {
+        if (!require._fso) {
+            require._fso = CreateObject("Scripting.FileSystemObject");
+        }
+        return require._fso.FileExists(filename) === true;
+    } catch (e) {
+        require._fso = null;
+        return false;
+    }
+};
+
 require._msie9 = function(FN, params, callback) {
     if (typeof FN !== "string" || FN == null) FN = '';
     else if (FN.substring(FN.length - 3) !== '.js') FN += ".js";
@@ -1210,7 +1317,7 @@ var is = require("lib/is");
 //console.log(new Intl.NumberFormat().format(1234567890.123456));
 
 // numbers.js - Advanced Mathematics Library for Node.js and JavaScript
-var numbers = require("app/assets/js/numbers-0.7.0.wsh");
+var numbers = require("app/assets/js/numbers-0.7.0");
 
 // linq.js - LINQ for JavaScript
 var Enumerable = require("app/assets/js/linq-4.0.2.wsh")._default;

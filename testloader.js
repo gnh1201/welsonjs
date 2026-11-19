@@ -1217,6 +1217,46 @@ var test_implements = {
         console.log(numbers.statistic.correlation(array1, array2));
     },
 
+    "require_patch": function() {
+        var patch = require("lib/patch");
+        var failures = 0;
+
+        function check(name, actual, expected) {
+            var passed = actual === expected;
+            console.log((passed ? "OK   " : "FAIL ") + name + ": " + String(actual) + (passed ? "" : " (expected " + String(expected) + ")"));
+            if (!passed) failures++;
+        }
+
+        // the unified diff applied to a source in memory
+        var source = "a\nb\nc\n";
+        var diff = "--- a/x.js\n+++ b/x.js\n@@ -1,3 +1,3 @@\n a\n-b\n+B\n c\n";
+        check("diff", patch.apply(source, diff), "a\nB\nc\n");
+        check("diff keeps CRLF", patch.apply("a\r\nb\r\n", "--- a/x\n+++ b/x\n@@ -1,2 +1,2 @@\n a\n-b\n+B\n"), "a\r\nB\r\n");
+
+        var rejected = false;
+        try {
+            patch.apply(source, diff.replace("-b", "-d"));
+        } catch (e) {
+            rejected = String(e.message || e.description).indexOf("does not match") > -1;
+        }
+        check("a hunk that does not match is reported", rejected, true);
+
+        // the post-processing script run on a module that executed
+        var module = { exports: { value: 1 } };
+        var result = patch.run("module.exports.value = 10; module.exports.extra = 11;", {}, module, require, "test.post.js", ".");
+        check("post-processing", result.value + "," + result.extra, "10,11");
+
+        // the global numbers is app/assets/js/numbers-0.7.0.js with patches/app/assets/js/numbers-0.7.0.js.patch applied
+        check("numbers.basic.powerMod(2, 2^31, 1000003)", numbers.basic.powerMod(2, 2147483648, 1000003), 932614);
+        check("numbers.basic.modInverse(3, 7)", numbers.basic.modInverse(3, 7), 5);
+        check("numbers.matrix.transpose([1,2,3])", JSON.stringify(numbers.matrix.transpose([1, 2, 3])), "[[1],[2],[3]]");
+        check("numbers.generate.collatz(6)", JSON.stringify(numbers.generate.collatz(6)), "[6,3,10,5,16,8,4,2,1]");
+
+        console.log(failures === 0 ?
+            "require()의 패치와 후처리 스크립트를 정상적으로 확인하였습니다." :
+            "require() 패치 확인 중 " + failures + "건이 실패하였습니다.");
+    },
+
     "backup_vmware_esxi": function() {
         var OVFTool = require("lib/ovftool");
 

@@ -10,7 +10,7 @@ The runtime is not a general-purpose sandbox. Scripts can reach Windows faciliti
 
 ### JavaScript runtime and modules
 
-- `app.js` initializes the runtime, exposes the module loader, and dispatches application commands. `require()` resolves project modules, most commonly from `lib/`.
+- `app.js` initializes the runtime, exposes the module loader, and dispatches application commands. `require()` resolves project modules, most commonly from `lib/`. It also applies the changes kept for a module: `patches/<module path>.patch` to the source in memory before it is transpiled, and `patches/<module path>.post.js` after the module executed (`lib/patch.js`, `docs/require-patches.md`). A vendor file on disk is therefore the file as published, and a change to it belongs in `patches/`.
 - Root scripts such as `bootstrap.js`, `testloader.js`, `webloader.js`, and `uriloader.js` provide startup and task-specific entry points.
 - `lib/` contains the following feature groups. The names below are the current checked-in module names; consult each module for its exact API and runtime requirements.
 
