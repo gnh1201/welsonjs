@@ -102,6 +102,7 @@ Source: "restoreAppAssets.ps1"; DestDir: "{app}";
 Source: "helloworld.*"; DestDir: "{app}";
 Source: "app\*"; DestDir: "{app}/app"; Flags: ignoreversion recursesubdirs;
 Source: "lib\*"; DestDir: "{app}/lib"; Flags: ignoreversion recursesubdirs;
+Source: "patches\*"; DestDir: "{app}/patches"; Flags: ignoreversion recursesubdirs;
 ; Source: "bin\*"; Excludes: "installer\*"; DestDir: "{app}/bin"; Flags: ignoreversion recursesubdirs;
 Source: "bin\x86\7zr.exe"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
 Source: "bin\x86\curl.exe"; DestDir: "{app}/bin/x86"; Flags: ignoreversion recursesubdirs;
@@ -127,7 +128,14 @@ Source: "data\*"; Excludes: "*-apikey.txt,.pipe_*"; DestDir: "{app}/data"; Flags
 [Dirs]
 Name: "{app}\tmp";
 
-; [InstallDelete]
+[InstallDelete]
+; numbers.js is app/assets/js/numbers-0.7.0.js with patches/app/assets/js/numbers-0.7.0.js.patch
+; applied as it loads now; 0.2.7.62 and earlier installed the patched copy instead.
+Type: files; Name: "{app}\app\assets\js\numbers-0.7.0.wsh.js"
+Type: files; Name: "{app}\app\assets\js\numbers-0.7.0.wsh.js.integrity"
+Type: files; Name: "{app}\app\assets\js\numbers-0.7.0.wsh.js.patch"
+
+; A setting or service script to reset on upgrade belongs here:
 ; Type: files; Name: "{app}\settings.ini"
 ; Type: files; Name: "{app}\defaultService.js"
 

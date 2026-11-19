@@ -112,6 +112,11 @@
             "tags": ["Mathematics"]
         },
         {
+            "id": "require_patch",
+            "description": "Patches under patches/ applied by require(), and the numbers.js module they produce",
+            "tags": ["Library"]
+        },
+        {
             "id": "backup_vmware_esxi",
             "description": "Open Virtualization Format (OVF) Tool for Broadcom/VMware virtualization infrastructures",
             "tags": ["Virtualization"]

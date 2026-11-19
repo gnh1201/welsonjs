@@ -2,10 +2,12 @@ From: WelsonJS contributors
 Subject: [PATCH] numbers.js: WelsonJS modifications
 
 Turns the original numbers.js (numbers.js 0.7.0, the browserified build
-https://github.com/numbers/numbers.js/blob/master/src/numbers.js) into
-app/assets/js/numbers-0.7.0.wsh.js, which app.js loads as the global
-"numbers". numbers.js is licensed under the Apache License, Version 2.0;
-the file header records these modifications.
+https://github.com/numbers/numbers.js/blob/master/src/numbers.js) into the
+global "numbers". app.js loads app/assets/js/numbers-0.7.0.js, which keeps
+the upstream file that restoreAppAssets.ps1 downloads, and applies this
+patch to it in memory (docs/require-patches.md). numbers.js is licensed
+under the Apache License, Version 2.0; the file header records these
+modifications.
 
 - matrix.determinant: cofactor expansion along the first row
   (numbers/numbers.js#161, for issue #160).
@@ -27,14 +29,17 @@ the file header records these modifications.
   sequence is built in a loop.
 - matrix.transpose: turns a one-dimensional array into a column vector.
 
+The patched file is 84,126 bytes, SHA-384
+sha384-gZ3b+UKp735rDlzLa+Okb+J0nBSwjht3tIsJGUY29H5qmouPW+diziv/wG5kwcxt: the
+content that version 0.2.7.62 shipped as numbers-0.7.0.wsh.js.
+
 Apply from the repository root to the original file saved as
-app/assets/js/numbers-0.7.0.wsh.js:
+app/assets/js/numbers-0.7.0.js:
 
-    git apply app/assets/js/numbers-0.7.0.wsh.js.patch
+    git apply patches/app/assets/js/numbers-0.7.0.js.patch
 
----
---- a/app/assets/js/numbers-0.7.0.wsh.js
-+++ b/app/assets/js/numbers-0.7.0.wsh.js
+--- a/app/assets/js/numbers-0.7.0.js
++++ b/app/assets/js/numbers-0.7.0.js
 @@ -19,6 +19,21 @@
   * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   * See the License for the specific language governing permissions and

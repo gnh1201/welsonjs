@@ -37,7 +37,7 @@ When writing an `evaluate_js` script:
 - Use `_notify(message)` for progress or diagnostic output. Avoid `console.log`; the loader supplies `_notify` to the script and separately returns collected console messages.
 - Use ASCII source text. Encode non-ASCII string content with JavaScript Unicode escapes such as `"\\uC548\\uB155"`, as required by the MCP tool guidance in `mcploader.js`.
 - Use `require("lib/shell")` for supported shell operations and `require("lib/msoffice")` for Office automation; inspect those modules before selecting methods.
-- For math, use the global `numbers` that `app.js` loads (numbers.js 0.7.0 with WelsonJS fixes, from `app/assets/js/numbers-0.7.0.wsh.js`, after the core-js polyfills it needs); no `require` is needed. The fixes are listed in the file header. The functions below return correct results in WelsonJS:
+- For math, use the global `numbers` that `app.js` loads (numbers.js 0.7.0 with WelsonJS fixes, from `app/assets/js/numbers-0.7.0.js` with `patches/app/assets/js/numbers-0.7.0.js.patch` applied in memory, after the core-js polyfills it needs); no `require` is needed. The fixes are listed in the file header. The functions below return correct results in WelsonJS:
 
   | Namespace | Functions |
   | --- | --- |
