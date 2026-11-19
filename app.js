@@ -1193,26 +1193,27 @@ if (typeof JSON === "undefined") {
 }
 
 // core-js (polyfills)
-require("app/assets/js/core-js-3.49.0.wsh");
+require("app/assets/js/core-js-3.49.0.1");
 
 // Squel.js SQL query string builder for Javascript
-var squel = require("app/assets/js/squel-basic-5.13.0-afa1cb5.wsh");
+var squel = require("app/assets/js/squel-basic-5.13.0.1");
 
 // JavaScript YAML parser and dumper. 
-var yaml = require("app/assets/js/js-yaml-4.1.0.wsh");
+var yaml = require("app/assets/js/js-yaml-4.1.0.1");
 
-// is.js Micro check library
-var is = require("app/assets/js/is-0.9.0.min");
+// is.js Micro check library: the in-tree module that replaced is.js 0.9.0, which has no
+// patched release for CVE-2020-26302 (ReDoS in is.url())
+var is = require("lib/is");
 
 // Intl (ECMA-402) polyfill
 //var Intl = require("app/assets/js/Intl-1.2.5-e93b114.min");
 //console.log(new Intl.NumberFormat().format(1234567890.123456));
 
 // numbers.js - Advanced Mathematics Library for Node.js and JavaScript
-var numbers = require("app/assets/js/numbers-0.7.0.wsh");
+var numbers = require("app/assets/js/numbers-0.7.0.1");
 
 // linq.js - LINQ for JavaScript
-var Enumerable = require("app/assets/js/linq-4.0.2.wsh")._default;
+var Enumerable = require("app/assets/js/linq-4.0.2.1")._default;
 
 // PEG.js: Parser generator for JavaScript
 var PEG = require("app/assets/js/peg-0.10.0");

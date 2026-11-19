@@ -1531,6 +1531,89 @@ var test_implements = {
         var response_text = LIE.create().setProvider("openai").inference(prompt_text_completed, 0).join(' ');
         
         console.log(response_text);
+    },
+
+    // lib/is.js, the checks module that replaced is.js 0.9.0
+    "is_test": function() {
+        var is = require("lib/is");
+
+        var cases = [
+            ["is.string('abc')", is.string("abc"), true],
+            ["is.string(1)", is.string(1), false],
+            ["is.number(1)", is.number(1), true],
+            ["is.number('1')", is.number("1"), false],
+            ["is['boolean'](true)", is["boolean"](true), true],
+            ["is.array([])", is.array([]), true],
+            ["is.object({})", is.object({}), true],
+            ["is['function'](f)", is["function"](function() {}), true],
+            ["is['null'](null)", is["null"](null), true],
+            ["is.undefined(undefined)", is.undefined(undefined), true],
+            ["is.regexp(/a/)", is.regexp(/a/), true],
+            ["is.date(new Date())", is.date(new Date()), true],
+            ["is.error(new Error())", is.error(new Error("x")), true],
+            ["is.nan(NaN)", is.nan(NaN), true],
+            ["is.empty([])", is.empty([]), true],
+            ["is.empty({})", is.empty({}), true],
+            ["is.empty({a:1})", is.empty({ a: 1 }), false],
+            ["is.existy(0)", is.existy(0), true],
+            ["is.existy(null)", is.existy(null), false],
+            ["is.truthy(1)", is.truthy(1), true],
+            ["is.falsy('')", is.falsy(""), true],
+            ["is.positive(1)", is.positive(1), true],
+            ["is.integer(2)", is.integer(2), true],
+            ["is.decimal(1.5)", is.decimal(1.5), true],
+            ["is.url('http://example.com')", is.url("http://example.com"), true],
+            ["is.url('example.com:8080/x')", is.url("example.com:8080/x"), true],
+            ["is.url('not a url')", is.url("not a url"), false],
+            ["is.url('mailto:a@b.com')", is.url("mailto:a@b.com"), false],
+            ["is.email('user@example.com')", is.email("user@example.com"), true],
+            ["is.email('user@localhost')", is.email("user@localhost"), false],
+            ["is.email('user@\\u4F8B\\u3048.jp')", is.email("user@例え.jp"), false],
+            ["is.ipv4('1.2.3.4')", is.ipv4("1.2.3.4"), true],
+            ["is.ipv4('256.1.1.1')", is.ipv4("256.1.1.1"), false],
+            ["is.ipv6('2001:db8::1')", is.ipv6("2001:db8::1"), true],
+            ["is.ipv6('::ffff:1.2.3.4')", is.ipv6("::ffff:1.2.3.4"), true],
+            ["is.ipv6('1.2.3.4::')", is.ipv6("1.2.3.4::"), false],
+            ["is.ip('::1')", is.ip("::1"), true],
+            ["is.weekday(null)", is.weekday(null), false],
+            ["is.weekday(new Date(2026, 10, 18))", is.weekday(new Date(2026, 10, 18)), true],
+            ["is.weekday(new Date(2026, 10, 21))", is.weekday(new Date(2026, 10, 21)), false],
+            ["is.alphaNumeric('abc123')", is.alphaNumeric("abc123"), true],
+            ["is.numeric('-1.5')", is.numeric("-1.5"), true],
+            ["is.usZipCode('12345')", is.usZipCode("12345"), true],
+            ["is.not.string(1)", is.not.string(1), true],
+            ["is.all.string('a', 'b')", is.all.string("a", "b"), true],
+            ["is.any.number('a', 1)", is.any.number("a", 1), true]
+        ];
+
+        var failures = 0;
+        for (var i = 0; i < cases.length; i++) {
+            if (cases[i][1] !== cases[i][2]) {
+                failures++;
+                console.log("FAIL " + cases[i][0] + ": expected " + cases[i][2] + ", got " + cases[i][1]);
+            }
+        }
+        console.log("is.js checks: " + (cases.length - failures) + " of " + cases.length + " passed");
+
+        // A value that made is.js 0.9.0 backtrack for seconds must return at once.
+        var hostile = "http://";
+        for (var j = 0; j < 200; j++) {
+            hostile += "aa.";
+        }
+        var started = new Date().getTime();
+        var result = is.url(hostile);
+        var elapsed = new Date().getTime() - started;
+        console.log("is.url() on a " + hostile.length + " byte hostile value: " + String(result) + " in " + elapsed + " ms");
+        if (elapsed < 1000) {
+            console.log("The URL check does not backtrack on hostile input.");
+        } else {
+            failures++;
+            console.log("FAIL The URL check took too long on hostile input.");
+        }
+
+        console.log(failures === 0 ?
+            "lib/is.js를 정상적으로 확인하였습니다." :
+            "lib/is.js 확인 중 " + failures + "건이 실패하였습니다.");
     }
 };
 

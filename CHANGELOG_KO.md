@@ -16,6 +16,42 @@
 
 ## [Unreleased]
 
+### 추가
+
+- 프레임워크 자체 구현 검사 모듈 `lib/is.js`를 추가했습니다. `app.js`가 전역 `is`로 제공하던 is.js 0.9.0의 메서드 이름과 동작을 외부 코드 없이 유지합니다. 타입·존재·산술·형식·문자열·날짜·객체·배열 검사와 `not`·`all`·`any` 인터페이스를 제공합니다. 런타임이 Windows Script Host이므로 브라우저·기기 판별 묶음은 넣지 않았고, 그 자리에 호스트 기준의 `is.windows()`·`is.linux()`·`is.mac()`·`is.online()`·`is.offline()`을 두었습니다. 임베디드 브라우저는 `lib/browser.js`로 확인합니다([#434] 관련).
+  - `is.url()`과 `is.email()`은 정규식 대신 길이를 제한한 값을 왼쪽에서 오른쪽으로 한 번만 훑어 해석하므로 악의적인 입력으로 되감기(backtracking)가 일어나지 않습니다. 나머지 형식 검사는 되감기가 없는 고정 패턴과 길이 제한을 씁니다.
+- CrispEmbed(https://github.com/CrispStrobe/CrispEmbed, MIT)를 추가했습니다. GGUF 인코더 모델을 CPU에서 돌리는 ggml 엔진으로, 텍스트 임베딩과 타입 지정 판단(typed decision)을 제공합니다. CrispEmbed는 llama.cpp처럼 빌드합니다. `native/crispembed/build-crispembed.ps1`이 고정한 커밋(`ad01b21`, 그 커밋이 기록한 ggml 커밋 포함, git이 실패하면 WelsonJS blob 스토리지의 소스 압축 파일)의 0.17.20을 Windows x86_64용으로 MSVC와 고정한 AVX2 기준으로 빌드하며, 모든 실행 파일과 DLL에 WelsonJS 아이콘과 파일 정보를 넣고(`native/crispembed/patches/0001-windows-resources.patch`), AppVeyor Release 작업이 이를 빌드·캐시해 `artifacts\crispembed\x64`에 두며, 다른 바이너리와 함께 패키징하고 서명합니다. 설치 구성 요소 `crispembed`는 이를 artifacts 패키지에서 `%APPDATA%\welsonjs\crispembed\`로 설치합니다. `crispembed\embeddinggemma_2_typed_decision`은 타입 지정 판단용으로 미세 조정한 EmbeddingGemma 2(Q8_0, 308 MB, Apache-2.0)를 llama.cpp 라우터가 모델을 읽는 폴더 밖인 `crispembed_models\`에 설치합니다. 다운로드는 버전을 고정했고 `data/DownloadHashes.txt`에 해시를 넣었습니다. 런처는 모델마다 `crispembed-server`를 필요할 때 하나씩 띄우고(기본 2개까지인 `CrispEmbedModelsMax`를 넘으면 가장 오래 쓰지 않은 유휴 서버를 멈춤), `crispembed/status`, `models`, `start`, `stop`, `embed`, `decide`와 OpenAI 호환 API의 `POST /v1/decisions`, `POST /v1/embeddings`를 제공합니다. 전달하는 경로는 임베딩과 판단뿐입니다. 모델은 판단 모델(`CrispEmbedDecisionModels`, 판단만 응답)과 임베딩 모델(임베딩만 응답)로 나뉩니다. 판단 모델의 인코더는 판단 헤드에 맞춰 미세 조정되었으므로, EmbeddingGemma 2 임베딩은 원본 `google/embeddinggemma-2`로 만듭니다. 이 모델은 CrispEmbed 0.17.20에서 불러올 수 없어 WelsonJS llama.cpp 빌드로 실행합니다. JavaScript 클라이언트는 `lib/crispembed.js`, API 설명은 `docs/crispembed-launcher-api.md`입니다.
+- 원본 EmbeddingGemma 2(google/embeddinggemma-2, Apache-2.0)로 텍스트 임베딩을 만듭니다. WelsonJS llama.cpp 빌드를 씁니다. 포크가 이 모델보다 오래되어 `native/llamacpp/patches/0004-embeddinggemma2.patch`가 업스트림 llama.cpp의 `gemma-embedding2` 아키텍처(#30054)를 백포트하고, 설치 구성 요소 `llamacpp\embeddinggemma_2`가 ggml-org의 Q8_0 GGUF(310 MB, 버전 고정, `data/DownloadHashes.txt`에 해시 등록)를 `llamacpp_embedding_models\`에 설치합니다. 런처는 llama.cpp 임베딩 모델마다 별도의 `llama-server --embedding`을 띄우고(모델 인스턴스가 라우터의 옵션을 공유하므로 라우터에서는 돌리지 않음), `LlamaCppEmbeddingModelsMax`개까지 `LlamaCppEmbeddingContextSize` 컨텍스트로 실행하며, `POST /llamacpp/embed`와 `POST /v1/embeddings`로 제공합니다. `dimensions`(Matryoshka 차원 축소)는 런처가 직접 적용합니다. `lib/llamacpp.js`에 `embed()`를 추가했습니다.
+- `GET /localservers/status`가 런처가 실행하는 모든 로컬 서버의 프로세스 상태, 포트, 마지막 사용 시각, 처리 중인 요청 수, 마지막 종료 코드, 최근 출력을 보고합니다.
+- `data/test-misc.json`과 `testloader.js`에 `is_test`를 추가했습니다. 모듈 동작과 악의적인 입력에 대한 `is.url()` 응답 시간을 확인합니다: `cscript app.js testloader is_test data\test-misc.json`([#434] 관련).
+
+### 변경
+
+- 런처가 로컬 서버를 하나의 구현(`LocalServerProcess`)으로 실행하며, llama.cpp 라우터와 CrispEmbed 서버가 함께 씁니다. 포트는 런처가 할당하고, 서버가 준비될 때까지 기다리며, 시작 중에 프로세스가 끝나면 새 포트로 한 번 다시 시작합니다(할당과 바인드 사이에 포트를 다른 프로그램이 가져갈 수 있음). 프로세스는 런처의 Job 개체에 들어가고, 표준 출력과 오류를 계속 읽어 출력이 많은 서버가 파이프가 차서 멈추지 않으며, 시작에 실패하면 "종료됨" 대신 종료 코드와 마지막 출력을 알려 줍니다. 풀에 있는 서버는 그 서버를 쓰는 요청이 없을 때만 자리를 비우려고 멈춥니다.
+- 설치 프로그램의 JDK 구성 요소는 이제 `jdk`(이전 이름 `microsoft_jdk`)이고, JDK를 설치하는 대신 압축을 풀어 둡니다. `postInstall.ps1`이 배포사의 `.zip`을 내려받아 `%APPDATA%\welsonjs\jdk\` 아래에 zip 안의 최상위 폴더(`jdk-25.0.5.0.2+1` 또는 Zulu 패키지 이름)를 그대로 두고 풉니다. 이어서 현재 사용자용 `JAVA_HOME`을 그 폴더로 등록하고, 그 폴더의 `bin`을 사용자 `PATH`에 같은 항목이 두 번 들어가지 않도록 추가합니다. 프로그램 파일에는 아무것도 쓰지 않고 프로그램 및 기능 항목도 생기지 않으며, JDK는 스크립트가 내려받는 다른 구성 요소들과 같은 폴더에 있어 그 폴더를 지우면 함께 사라집니다. `%APPDATA%`는 사용자별 경로이므로 설치 관리자가 관리자 권한으로 돌아도 두 값은 사용자 범위에 씁니다. 압축은 먼저 임시 폴더에 풀고 `bin\java.exe`를 확인한 뒤에야 기존 JDK를 바꾸므로, 압축이 실패하면 이전 설치가 그대로 남습니다. 임시 폴더와 압축 파일은 뒤에 정리합니다. 이 구성 요소의 이전 버전이 `%APPDATA%\welsonjs\microsoft_jdk\`에 남긴 것(그 아래에 풀어 둔 JDK, 또는 설치 파일만 두던 시절의 파일)과 그 폴더를 가리키던 `PATH` 항목도 새 JDK를 등록한 뒤에 함께 지웁니다. 무인 설치 스위치·종료 코드·다시 시작 처리를 쓰던 `.exe`·`.msi` 분기는 없앴고, Microsoft 패키지가 만들던 `.jar` 연결도 함께 없어졌습니다. `setup.iss`의 구성 요소 설명도 하는 일을 그대로 적습니다.
+- `data/DownloadUrls.psd1`: `jdk`의 세 아키텍처 주소가 모두 배포사 설치 파일이 아니라 `.zip` 패키지입니다. x64·ARM64는 JDK 25 LTS의 현재 Windows 패치인 Microsoft Build of OpenJDK 25.0.5.0.2이고, x86은 Windows i686용 Azul Zulu 17 LTS 17.0.21.1입니다. JDK 25에는 32비트 빌드가 없기 때문입니다(JEP 503으로 x86 포트 제거). Zulu 17.0.21.1은 2026년 11월 CPU에서 JDK 17 수정이 반영되는 패치 수준입니다. 주소가 비어 있던 `arm64`를 채우고, AArch64 설치 파일을 가리키던 `x86`을 바로잡았습니다. 이 파일은 주소만 담고, 이 구성 요소를 포함한 모든 해시는 `data/DownloadHashes.txt`에 있습니다.
+- `data/DownloadUrls.psd1`: `curl`(x64·ARM64), `android_platform_tools`, `nuget` 주소를 항상 최신을 가리키는 링크 대신 버전이 박힌 파일로 바꿨습니다. `curl.se/windows/dl-8.23.0_9/curl-8.23.0_9-win64-mingw.zip`·`...-win64a-mingw.zip`은 curl 8.23.0(curl-for-win 빌드 8.23.0_9), `dl.google.com/android/repository/platform-tools_r37.0.1-win.zip`은 Android platform-tools r37.0.1(Google SDK 저장소의 안정 채널 릴리스이며, r37.0.3은 미리보기 채널에만 있습니다), `dist.nuget.org/win-x86-commandline/v8.0.0/nuget.exe`는 NuGet 8.0.0입니다. 네 주소 모두 2026-11-18에 `data/DownloadHashes.txt`를 만들 때 이전 링크가 내려주던 바이트와 같으므로 해시 목록은 55개 값을 그대로 유지하지만, 이제 해시는 배포사가 다음에 올릴 파일이 아니라 그대로 남는 파일을 가리킵니다. 아직 최신을 가리키는 주소는 5개입니다. Hugging Face `resolve/main` GGUF 모델 4개와 LDPlayer의 `LDPlayer9.exe?n=…`입니다.
+- numbers.js는 이제 WelsonJS가 따로 만든 `app/assets/js/numbers-0.7.0.1.js`입니다. numbers.js 0.7.0에 WelsonJS 수정 사항을 넣은 것이며, 수정 사항은 파일 머리말에 적혀 있습니다. 기존 `matrix.determinant` 변경(numbers/numbers.js#161)에 더해, `basic.powerMod`는 2^53까지의 모듈러와 2^31 이상의 지수에서도 정확하고(`prime.millerRabin`도 함께 고쳐짐), `basic.modInverse`는 [0, m) 범위의 역원을 돌려주며, `calculus.adaptiveSimpson`은 한 단계만 계산하거나 끝없이 재귀하는 대신 중점에서 나누고 깊이 제한을 두고, `calculus.limit`은 점점 줄어드는 간격으로 점에 다가가며, `calculus.MonteCarlo`는 `random.sample`로 표본을 뽑아 모든 좌표를 넘기고, `generate.collatz`는 결과를 돌려주며, `matrix.transpose`는 1차원 배열을 열 벡터로 바꿉니다. `restoreAppAssets.ps1`은 이 파일을 다른 벤더 파일처럼 WelsonJS blob 스토리지의 `ajax/libs/numbers/0.7.0.1/numbers.js`에서 내려받고, `app.js`가 전역 `numbers`로 불러옵니다. `numbers-0.7.0.wsh.js`는 더 이상 쓰지 않습니다.
+- WSH JScript용으로 고친 다른 벤더 스크립트도 같은 방식을 따릅니다. `core-js-3.49.0.1.js`, `js-yaml-4.1.0.1.js`, `linq-4.0.2.1.js`, `respond-1.4.2.1.js`, `selectivizr-1.0.2.1.js`, `squel-basic-5.13.0.1.js`가 같은 버전의 `.wsh.js` 파일을 대신합니다(`squel-basic-5.13.0.1.js`는 `squel-basic-5.13.0-afa1cb5.wsh.js`를 대신하며, 원본은 여전히 Squel.js 커밋 `afa1cb5`입니다). 코드는 그대로이고, 각 파일 맨 앞에 upstream 버전과 변경 사항을 적은 주석을 넣었으며, 저장소 스냅샷 대신 WelsonJS blob 스토리지의 `ajax/libs/<라이브러리>/<버전>.1/`에 둡니다. `docs/modified-vendor-scripts.md`에 일곱 파일 모두에 대해 원본 upstream 파일(해시 포함)과, 둘을 비교해 찾은 변경 사항을 모두 적었습니다.
+- `app/assets/js/json2.js`는 2017-06-12판 대신 json2.js 2023-05-10판(WelsonJS blob 스토리지의 `ajax/libs/json2/20230510/`)입니다. 두 판은 머리말의 날짜만 다릅니다.
+- 언어 모델에게 코드를 요청하는 프롬프트(`lib/language-inference-engine.js`의 시스템 메시지, 에디터의 Write Code, `mcploader.js`의 `evaluate_js` 설명, `SKILL.md`)가 전역 `numbers`로 쓸 수 있는 numbers.js 함수와 JavaScript 숫자의 정밀도 한계를 안내합니다.
+
+### 수정
+
+- 커스텀 설치에서 구성 요소를 하나도 고르지 않으면 모든 구성 요소를 설치하던 문제를 고쳤습니다. 이 선택에서 `WizardSelectedComponents`는 빈 문자열을 돌려주고, `postInstall.ps1`은 이를 "필터 없음"으로 읽어 전체 선택으로 처리했습니다. 이제 `setup.iss`가 `none`을 넘기고 스크립트는 빈 선택으로 읽습니다. `-Components` 없이 직접 실행하는 경우는 예전처럼 전체 구성 요소를 뜻합니다.
+- 프로세서 조회가 실패할 때 `Get-NativeArchitecture`가 64비트 운영체제를 모두 x64로 답하던 대신 프로세스 환경에서 아키텍처를 읽습니다. ARM64 기기에서 x64용 빌드를 내려받지 않습니다.
+- `curl` 구성 요소가 다시 압축을 풉니다. `postInstall.ps1`은 압축 파일을 `curl.zip`으로 저장했는데 압축 해제 단계는 주소에서 이름을 뽑아(`curl-latest.cgi`) 그 이름으로 파일을 찾다가 없다고 판단해 구성 요소를 건너뛰었습니다. 그래서 2026-10-05(`73d1de98`) 이후 이 구성 요소는 내려받고 해시를 확인한 뒤에도 설치되지 않았습니다. 이제 두 단계가 새 `Get-DownloadFileName` 하나로 주소에서 이름을 정하므로 저장한 이름 그대로 압축을 풀고, `curl`은 `%APPDATA%\welsonjs\curl\`에 `bin\curl.exe`와 함께 다시 설치됩니다(그 리팩터링 전과 같은 위치).
+- 다운로드에 실패하거나 파일이 `data/DownloadHashes.txt`에 없는 구성 요소는 건너뛰고 나머지 구성 요소는 계속 설치합니다. 이전에는 이런 실패가 다운로드 단계 전체를 `exit 1`로 끝냈습니다. curl 다운로드는 5분 동안 데이터가 오지 않으면 중단합니다. 해시 목록은 함수 사이에서 배열로 풀리지 않고 대소문자를 구분하지 않는 집합 그대로 전달됩니다(해시가 하나뿐이면 검사가 부분 문자열 비교가 되던 문제).
+- 이미 풀어 둔 OpenJDK 빌드를 다시 풀 때 기존 폴더를 먼저 지우지 않고 옆으로 이름을 바꿔 두었다가, 새 폴더를 옮기지 못하면 되돌립니다. `jdk\` 아래 다른 JDK의 `PATH` 항목은 지워 `java`와 `JAVA_HOME`이 같은 JDK를 가리키게 합니다.
+- numbers.js: `basic.powerMod`가 모듈러 2^53까지 정확합니다(약 2^26.5 이상에서 정밀도를 잃었고, 지수가 2^31 이상이면 틀렸습니다). 이로써 `prime.millerRabin`도 바로잡혔습니다. `basic.modInverse`가 음수를 돌려주지 않고, `calculus.adaptiveSimpson`이 구간을 중점에서 나눕니다(심프슨 한 단계만 계산하거나 끝없이 재귀했습니다). `calculus.limit`은 f를 한 번 계산하는 대신 점에 다가가며, `calculus.MonteCarlo`는 없는 함수를 호출하지 않고, `generate.collatz`는 배열을 돌려주며, `matrix.transpose`는 1차원 배열을 받습니다.
+
+### 보안
+
+- `postInstall.ps1`이 내려받는 모든 파일을 `data/DownloadHashes.txt`와 대조합니다. 이 새 파일은 SHA-256 값만 한 줄에 하나씩 담습니다. `Download-File`이 `Get-FileHash`(없는 PowerShell에서는 .NET 클래스)로 파일을 해싱하고, 값이 목록에 없으면 파일을 즉시 지우고 실제 해시를 로그에 남긴 뒤 오류를 발생시키므로 목록에 없는 파일은 실행되거나 압축이 풀리지 않습니다. 목록에는 `data/DownloadUrls.psd1`에 있는 55개 다운로드(모든 구성 요소·모든 아키텍처)의 해시가 들어 있고, 2026-11-18에 각 주소가 실제로 내려준 바이트에서 계산했습니다. 그래서 검사가 JDK 하나가 아니라 표 전체를 덮습니다. 목록은 실행할 때 한 번 읽어 대소문자를 구분하지 않는 집합으로 만들고, `data/DownloadUrls.psd1`에는 주소만 남습니다. JDK 압축 파일은 압축을 풀기 직전에 다시 확인합니다. 파일이 사용자 `%TEMP%`에 있는 동안 스크립트가 관리자 권한으로 도는 경우가 있기 때문입니다. 해시 파일이 없는 실행은 그 사실을 알리고 검증 없이 내려받습니다.
+- `WelsonJS.Service/app.config`에서 Google.Protobuf와 gRPC 어셈블리 5개의 바인딩 리디렉션을 제거했습니다. 해당 패키지들은 0.2.7.62에서 하트비트 gRPC 클라이언트와 함께 빌드에서 빠졌으므로 리디렉션만 남아 있었습니다([#434] 관련).
+- 패치 버전이 없는 is.js 0.9.0(CVE-2020-26302, `is.url()`의 ReDoS) 의존성을 제거했습니다. 무결성 사이드카 2개와 `app/assets/integrity.json`의 항목 2개를 없애 더 이상 내려받거나 불러오지 않습니다. 전역 `is`는 `lib/is.js`가 계속 제공하므로 `is`를 쓰던 애플리케이션은 그대로 동작합니다([#434] 관련).
+- 2026-08-05 오픈소스SW 검증에서 보고된 구성 요소 3개의 현황을 `docs/third-party-dependencies.md`에 정리했습니다. IE 6~8에 필요한 jQuery 1.11.3 폴백을 아직 제거할 수 없는 이유도 함께 적었습니다([#434] 관련).
+
 ## [0.2.7.62] - 2026-11-16
 
 설치 파일 없이 배포한 사전 릴리스 0.2.7.62-rc1 이후의 변경 사항입니다. 0.2.7.61에서 업그레이드한다면 [0.2.7.62-rc1](#0262-rc1---2026-11-01)도 함께 확인하세요.
@@ -947,6 +983,7 @@
 [#424]: https://github.com/gnh1201/welsonjs/issues/424
 [#427]: https://github.com/gnh1201/welsonjs/issues/427
 [#429]: https://github.com/gnh1201/welsonjs/issues/429
+[#434]: https://github.com/gnh1201/welsonjs/issues/434
 [#440]: https://github.com/gnh1201/welsonjs/issues/440
 [#449]: https://github.com/gnh1201/welsonjs/issues/449
 [#474]: https://github.com/gnh1201/welsonjs/issues/474
