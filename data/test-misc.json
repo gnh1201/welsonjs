@@ -118,7 +118,7 @@
         },
         {
             "id": "is_test",
-            "description": "Type, presence and format checks from lib/is.js, including the response time of is.url() on hostile input",
+            "description": "Type, presence and format checks of the global is (is.js 0.9.0.1), including the response time of is.url() and is.email() on hostile input",
             "tags": ["Standards"]
         }
     ]

@@ -31,6 +31,10 @@
     "eol": "Digests are computed over the repository bytes, which equal the bytes served by \"url\". Git may check the text assets out with CRLF line endings (core.autocrlf); normalize CRLF to LF before verifying a local copy."
   },
   "hashes": {
+    "sha384-GVdR2tVVmRN4ukQCSlgA2piUZ/GYkQlgYK9mvouv/HZ5McRMjUyW0OY9lQCpAYfK": {
+      "url": "https://catswords.blob.core.windows.net/welsonjs/ajax/libs/is_js/0.9.0.1/is.js",
+      "size": 33424
+    },
     "sha384-nqtJqMs0Nj+FwjJs6luVic+bszKGZzUzhqA/sbs8JKOjyPvC6CpCqYJXXI90qO2A": {
       "url": "https://catswords.blob.core.windows.net/welsonjs/ajax/libs/babel-standalone/7.20.6/babel.min.js",
       "size": 2772513
