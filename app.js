@@ -780,8 +780,8 @@ function require(pathname) {
 
         text = require._load(_filename);
 
-        // apply the module's patch (patches/<path>.patch) to the source in memory
-        text = require._applyPatch(_filename, text);
+        // a registered pre-processor may change the source before it is transpiled
+        text = require._applyProcessors(require.preProcessors, _filename, text);
 
         // check the suffix again
         suffix = (function(pos, s) {
@@ -878,8 +878,8 @@ function require(pathname) {
             _dirname
         );
 
-        // run the module's post-processing script (patches/<path>.post.js), if there is one
-        cache[FN] = require._applyPost(_filename, cache[FN], module, _filename, _dirname);
+        // a registered post-processor may change what the module exports
+        cache[FN] = require._applyProcessors(require.postProcessors, _filename, cache[FN], module, _dirname);
     } catch (e) {
         console.error("PARSE ERROR!", e.number + ",", e.description + ",", "FN=" + FN);
     }
@@ -970,104 +970,30 @@ require._load = function(FN, skipIntegrity) {
     });
 };
 
-// Patches for the modules loaded from local files are kept in one place, patches/,
-// mirrored by the module's relative path: patches/<path>.patch is a unified diff
-// that require() applies to the source in memory before it is transpiled, and
-// patches/<path>.post.js runs after the module executed and may change its exports.
-// Neither file is copied into the application's own folder, so a module found under
-// lib/ or node_modules/ is a third-party file as it was downloaded.
+// The module loader's extension points. A module that has to change what require()
+// loads registers a callback here, and app.js needs nothing else: a pre-processor is
+// called as (filename, text) after the source is read and before it is transpiled, and
+// returns the text to compile; a post-processor is called as
+// (filename, exports, module, dirname) after the module ran, and returns the exports
+// require() keeps. lib/patch.js registers the patches kept in patches/ this way.
 // See docs/require-patches.md.
-require._patchFiles = {};
-require._patchBusy = {};
-
-// Returns the path of patches/<module path><extension> when that module is in the
-// application's folder, or null. The answer is remembered for the next call.
-require._getPatchFile = function(FN, extension) {
-    // an absolute path or a URL has a colon; the parts "." and "" are dropped, and
-    // a part ".." is refused, so only a path inside the application folder is patched
-    if (typeof FN !== "string" || FN.length < 1 || FN.indexOf(":") > -1) return null;
-
-    var parts = FN.replace(/\\/g, "/").split("/");
-    var key = [];
+require.preProcessors = [];
+require.postProcessors = [];
+require.registerPreProcessor = function(callback) {
+    if (typeof callback === "function") require.preProcessors.push(callback);
+};
+require.registerPostProcessor = function(callback) {
+    if (typeof callback === "function") require.postProcessors.push(callback);
+};
+require._applyProcessors = function(processors, filename, value, module, dirname) {
     var i = 0;
 
-    while (i < parts.length) {
-        var part = parts[i];
-        if (part === ".." || (part === "" && i === 0)) return null;
-        if (part !== "" && part !== ".") key.push(part);
+    while (i < processors.length) {
+        value = processors[i](filename, value, module, dirname);
         i++;
     }
-    if (key.length < 1) return null;
 
-    var cacheKey = key.join("/") + extension;
-    if (!(cacheKey in require._patchFiles)) {
-        var patchPath = "patches/" + cacheKey;
-        require._patchFiles[cacheKey] = require._fileExists(patchPath) ? patchPath : null;
-    }
-
-    return require._patchFiles[cacheKey];
-};
-
-// Applies a patch kept in patches/ to the source of a module and returns it. A patch
-// that does not match the source (for example, after the file was updated upstream)
-// leaves the module as it is, with an error, instead of stopping the application.
-require._applyPatch = function(filename, text) {
-    if (typeof text !== "string" || text.length < 1) return text;
-
-    var patchPath = require._getPatchFile(filename, ".patch");
-    if (patchPath === null || require._patchBusy[patchPath]) return text;
-
-    require._patchBusy[patchPath] = true;
-    try {
-        var diff = require._load(patchPath, true);
-        if (typeof diff !== "string" || diff.length < 1) {
-            throw new Error("The patch could not be read");
-        }
-
-        return require("lib/patch").apply(text, diff);
-    } catch (e) {
-        console.error("PATCH ERROR!", (e.description || e.message) + ",", "FN=" + patchPath, "- the module is used unpatched.");
-        return text;
-    } finally {
-        require._patchBusy[patchPath] = false;
-    }
-};
-
-// Runs the post-processing script kept in patches/ on a module that has executed.
-// It receives the module as the loader gives it to a module and may change what it exports.
-require._applyPost = function(filename, value, module, _filename, _dirname) {
-    var scriptPath = require._getPatchFile(filename, ".post.js");
-    if (scriptPath === null || require._patchBusy[scriptPath]) return value;
-
-    require._patchBusy[scriptPath] = true;
-    try {
-        var text = require._load(scriptPath, true);
-        if (typeof text !== "string" || text.length < 1) {
-            throw new Error("The post-processing script could not be read");
-        }
-
-        module.exports = value;
-        return require("lib/patch").run(text, require._global, module, require, _filename, _dirname);
-    } catch (e) {
-        console.error("POST-PROCESS ERROR!", (e.description || e.message) + ",", "FN=" + scriptPath, "- the module is used without it.");
-        return module ? module.exports : value;
-    } finally {
-        require._patchBusy[scriptPath] = false;
-    }
-};
-
-require._fileExists = function(FN) {
-    var filename = require._getCurrentScriptDirectory() + "\\" + FN;
-
-    try {
-        if (!require._fso) {
-            require._fso = CreateObject("Scripting.FileSystemObject");
-        }
-        return require._fso.FileExists(filename) === true;
-    } catch (e) {
-        require._fso = null;
-        return false;
-    }
+    return value;
 };
 
 require._msie9 = function(FN, params, callback) {
@@ -1298,6 +1224,11 @@ if (!Date.prototype.toISOString) {
 if (typeof JSON === "undefined") {
     __evalFile__("app/assets/js/json2.js");
 }
+
+// Patches for the modules require() loads (patches/<module path>.patch and
+// patches/<module path>.post.js): lib/patch.js registers them with the loader here,
+// before the application's own modules are required. See docs/require-patches.md.
+require("lib/patch");
 
 // core-js (polyfills)
 require("app/assets/js/core-js-3.49.0.wsh");

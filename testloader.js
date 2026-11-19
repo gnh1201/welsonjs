@@ -1246,6 +1246,32 @@ var test_implements = {
         var result = patch.run("module.exports.value = 10; module.exports.extra = 11;", {}, module, require, "test.post.js", ".");
         check("post-processing", result.value + "," + result.extra, "10,11");
 
+        // the loader's callbacks: app.js keeps the lists, lib/patch.js registers a
+        // pre-processor and a post-processor when app.js loads it at bootstrap
+        check("a pre-processor is registered", require.preProcessors.length > 0, true);
+        check("a post-processor is registered", require.postProcessors.length > 0, true);
+
+        var registered = 0;
+        var processor = function(filename, value) { registered++; return value; };
+        require.registerPreProcessor(processor);
+        require._applyProcessors(require.preProcessors, "app/assets/js/x.js", "a");
+        check("a registered pre-processor is called", registered, 1);
+        require.preProcessors.pop();
+
+        check("the callbacks run in order", require._applyProcessors([
+            function(filename, value) { return value + "b"; },
+            function(filename, value) { return value + "c"; }
+        ], "app/assets/js/x.js", "a"), "abc");
+
+        // patches/ is found by the module's path inside the application folder
+        check("patch file of a module", patch.findPatch("app/assets/js/numbers-0.7.0.js", ".patch"), "patches/app/assets/js/numbers-0.7.0.js.patch");
+        check("patch file with Windows separators", patch.findPatch("app\\assets\\js\\numbers-0.7.0.js", ".patch"), "patches/app/assets/js/numbers-0.7.0.js.patch");
+        check("patch file with \".\" parts", patch.findPatch("./app/./assets/js/numbers-0.7.0.js", ".patch"), "patches/app/assets/js/numbers-0.7.0.js.patch");
+        check("a module without a patch", patch.findPatch("app/assets/js/linq-4.0.2.wsh.js", ".patch"), null);
+        check("a path that leaves the application folder", patch.findPatch("../x.js", ".patch"), null);
+        check("an absolute path", patch.findPatch("C:\\temp\\x.js", ".patch"), null);
+        check("a URL", patch.findPatch("https://example.com/x.js", ".patch"), null);
+
         // the global numbers is app/assets/js/numbers-0.7.0.js with patches/app/assets/js/numbers-0.7.0.js.patch applied
         check("numbers.basic.powerMod(2, 2^31, 1000003)", numbers.basic.powerMod(2, 2147483648, 1000003), 932614);
         check("numbers.basic.modInverse(3, 7)", numbers.basic.modInverse(3, 7), 5);

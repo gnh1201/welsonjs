@@ -1,10 +1,10 @@
 # Patches for the modules `require()` loads
 
 WelsonJS changes some of the third-party JavaScript files it ships. Those changes are
-kept as patches in one directory, `patches/`, and `app.js` applies them in memory as it
-loads a module: the file in `app/assets/js/` or `lib/` stays the file the vendor
-published. A vendor update is therefore a new download and a possible patch change, not a
-merge of a locally edited copy.
+kept as patches in one directory, `patches/`, and the module loader applies them in
+memory as it loads a module: the file in `app/assets/js/` or `lib/` stays the file the
+vendor published. A vendor update is therefore a new download and a possible patch change,
+not a merge of a locally edited copy.
 
 ## Layout
 
@@ -21,19 +21,29 @@ in another.
 ## What `require()` does
 
 1. `require._load()` reads the file.
-2. `require._applyPatch()` looks for `patches/<path>.patch`. When there is one,
-   `lib/patch.js` applies it to the source text. Nothing is written to disk.
+2. The pre-processors registered with `require.registerPreProcessor()` are called with
+   `(filename, text)`; each returns the text to compile. `lib/patch.js` looks here for
+   `patches/<path>.patch` and applies it to the source text. Nothing is written to disk.
 3. The source is transpiled (`.coffee`, `.ls`, `.ts`, `.re`, `.res`) and executed as usual.
-4. `require._applyPost()` looks for `patches/<path>.post.js`. When there is one, it runs
-   with `(global, exports, require, module, __filename, __dirname)` and the
-   `module.exports` it leaves is what `require()` returns.
+4. The post-processors registered with `require.registerPostProcessor()` are called with
+   `(filename, exports, module, dirname)`; the value they return is what `require()`
+   keeps. `lib/patch.js` looks here for `patches/<path>.post.js` and runs it with
+   `(global, exports, require, module, __filename, __dirname)`.
+
+`app.js` holds only those two lists and `require._applyProcessors()`, which calls a list
+in the order its callbacks were registered. Everything about patches is in
+`lib/patch.js`: the path under `patches/`, the guard, reading the files, applying them
+and reporting a failure. `lib/patch.js` registers both callbacks when it is loaded, and
+`app.js` requires it at bootstrap, before the application's own modules, so `patches/`
+applies to every module after it. A module that has to change what `require()` loads
+without shipping a file under `patches/` registers a callback the same way.
 
 A module loaded from a URL (`http:`, `https:`, `ai:`) and a path that would leave the
 application folder (`..`, an absolute path) are not patched. With `STRICT_INTEGRITY`, the
 digest check covers the file as it is on disk; a patch and a post-processing script are
 part of the repository and are read without that check. While a patch or a
-post-processing script runs, `require._patchBusy` marks that module, so a script that
-calls `require()` cannot re-enter the patch of the module it belongs to.
+post-processing script runs, `lib/patch.js` marks that file, so a script that calls
+`require()` cannot re-enter the patch of the module it belongs to.
 
 A patch or a post-processing script that fails is reported and the module is used without
 it, so a vendor file that changed upstream does not stop the application:
