@@ -10,6 +10,18 @@ Korean block ciphers for .NET (netstandard2.0), with the standard modes of opera
 
 Each is a `SymmetricAlgorithm` (through `BlockCipherAlgorithm`), so it is used like `Aes`.
 
+### HIGHT byte order
+
+Keys, plaintexts and ciphertexts are byte arrays with byte 0 first, as in the KISA reference code (`KISA_HIGHT_ECB.c`), its Java version and Crypto++. The HIGHT specification document writes them the other way round, most significant byte first: the key as `MK15 ‖ … ‖ MK0`, the plaintext as `P7 … P0`, the ciphertext as `C7 … C0`. To use a vector from the specification, reverse the key, the plaintext and the ciphertext:
+
+| | As written in the specification | As a byte array here |
+| --- | --- | --- |
+| Key | `00 11 22 33 44 55 66 77 88 99 aa bb cc dd ee ff` | `ff ee dd cc bb aa 99 88 77 66 55 44 33 22 11 00` |
+| Plaintext | `00 00 00 00 00 00 00 00` | `00 00 00 00 00 00 00 00` |
+| Ciphertext | `00 f4 18 ae d9 4f 03 f2` | `f2 03 4f d9 ae 18 f4 00` |
+
+The key written in the specification's order, used as a byte array, gives `ca 4c b6 02 91 ff 81 31` instead. The two outputs are not two versions of HIGHT: the inputs differ. Before PR #560, this library's HIGHT was not HIGHT either (issue #293).
+
 ## Modes
 
 | Mode | How | Notes |
