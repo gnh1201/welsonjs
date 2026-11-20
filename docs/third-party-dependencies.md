@@ -14,19 +14,18 @@ CVE-2026-0994 is a recursion depth bypass in `google.protobuf.json_format.ParseD
 
 ## is.js 0.9.0 — CVE-2020-26302
 
-**Current state: kept as is.js 0.9.0.1, a WelsonJS build of 0.9.0 with the vulnerable patterns rewritten.**
+**Current state: kept as is.js 0.9.0.2, a WelsonJS build of 0.9.0 with the vulnerable patterns rewritten.**
 
-`app.js` publishes the library as the global `is`, for applications built on the framework. CVE-2020-26302 is a ReDoS in the regular expression of `is.url()`, and is.js has no patched release; its last version is 0.9.0. The dependency could not be upgraded, so WelsonJS ships `app/assets/js/is-0.9.0.1.js`: the `is.js` of the 0.9.0 release with two regular expressions rewritten (an earlier attempt replaced the library with a module of the repository, `lib/is.js`; it was withdrawn in favour of this build, which keeps the library's behaviour exactly).
+`app.js` publishes the library as the global `is`, for applications built on the framework. CVE-2020-26302 is a ReDoS in the regular expression of `is.url()`, and is.js has no patched release; its last version is 0.9.0. The dependency could not be upgraded, so WelsonJS ships `app/assets/js/is-0.9.0.2.js`: the `is.js` of the 0.9.0 release with three regular expressions rewritten (an earlier attempt replaced the library with a module of the repository, `lib/is.js`; it was withdrawn in favour of this build, which keeps the library's behaviour exactly).
 
 - `is.url()`: the host name labels were `(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+`, a quantified group inside a quantified group, which backtracks exponentially on a value such as `http://` followed by `aa.` repeated (30 repeats took about 30 s in V8). They are now `[a-z\u00a1-\uffff0-9]+(?:-+[a-z\u00a1-\uffff0-9]+)*`, which describes the same labels (they start and end with a letter or digit and may contain hyphens) with only one way to match each.
 - `is.email()`: the domain part had the same flaw (its labels may contain dots, and the labels are repeated with dots between them), and `a@` followed by `a.` repeated took about 30 s at 30 repeats. It is now written as one pass that cannot match a character in two ways, for the same set of domains: a domain starts with a letter or digit, ends with a letter, and contains a dot between a letter or digit and a letter.
-- `is.VERSION` is `0.9.0.1`; the 0.9.0 release still said `0.8.0`.
+- `is.ipv6()` (0.9.0.2): the 0.9.0 pattern relied on lookaheads, backreferences to groups that may not have matched and an empty alternative inside a repeated group, which the JScript engine evaluates differently from V8, so it rejected valid addresses such as `2001:db8::1`. It is now the list of the address forms (eight groups; `::` with up to seven groups before and after it; six groups, or `::` with up to five, followed by an IPv4 address), with none of those constructs. It accepts and rejects the same values as the 0.9.0 pattern does in V8.
+- `is.VERSION` is `0.9.0.2`; the 0.9.0 release still said `0.8.0`. (0.9.0.1 had the first two changes only.)
 
 Nothing else is changed, so every other check and the browser and device detection group behave as in 0.9.0.
 
-Verification: the rewritten patterns were compared with the 0.9.0 ones in V8 on 600,000 random strings and on every string of up to 7 to 10 characters over the characters that matter (about 5.5 million values, valid ones included); they gave the same answer every time. On hostile values of 50,000 repeats they answer in under 10 ms. Under `cscript`, `testloader.js is_test` with `data/test-misc.json` checks the global `is` and the response time on hostile values of 4 to 6 KB (7 ms and 1 ms).
-
-In the JScript engine, `is.ipv6()` rejects some valid addresses with `::` in the middle (`2001:db8::1`), while V8 accepts them. The pattern is the unchanged one of 0.9.0; the difference comes from how JScript evaluates its lookaheads.
+Verification: the rewritten patterns were compared with the 0.9.0 ones in V8 on 600,000 random strings and on every string of up to 7 to 10 characters over the characters that matter (about 5.5 million values, valid ones included); they gave the same answer every time. On hostile values of 50,000 repeats they answer in under 10 ms. The `is.ipv6()` pattern was compared the same way on about 11 million values (4 million random, the rest every short string over the characters that matter), with no difference, and under `cscript` it gives the V8 answer of the 0.9.0 pattern for 33 addresses, valid and invalid. Under `cscript`, `testloader.js is_test` with `data/test-misc.json` checks the global `is` and the response time on hostile values of 4 to 6 KB (7 ms and 1 ms).
 
 ## jQuery 1.11.3 — CVE-2020-11023, CVE-2020-11022, CVE-2015-9251, CVE-2019-11358
 
@@ -49,5 +48,5 @@ An application that does not need IE 6–8 can ignore the fallback: on IE 9 or l
 - `app/assets/integrity.json` parses, and every sidecar file under `app/assets/js` still has an entry whose digest is listed in it (the reverse is checked by `restoreAppAssets.ps1`, which fails on a digest that has no URL).
 - No build input or source file references `Google.Protobuf`, `Grpc.Core` or `Grpc.Net.Client`; `app/assets/protos/heartbeat.proto` is no longer part of any build.
 - `app.js` and `testloader.js` parse, and `data/test-misc.json` parses as JSON with its `is_test` entry.
-- `is_test` passes under `cscript` against is.js 0.9.0.1.
+- `is_test` passes under `cscript` against is.js 0.9.0.2.
 - `WelsonJS.Service/app.config` is well-formed XML, and the binding redirects that stay are unchanged.
