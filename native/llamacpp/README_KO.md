@@ -39,13 +39,13 @@ bitnet.cpp는 포크를 BitNet 저장소의 하위 프로젝트로 빌드하며,
 
 ```powershell
 powershell -ExecutionPolicy Bypass -NoProfile -File native\llamacpp\build-llamacpp.ps1 `
-    [-Arch x64|arm64] [-OutDir <dir>] [-WorkDir <dir>] [-Source auto|git|archive] [-LlvmDir <dir>] [-InstallLlvm] [-Force]
+    [-Arch x64|x86|arm64] [-OutDir <dir>] [-WorkDir <dir>] [-Source auto|git|archive] [-LlvmDir <dir>] [-InstallLlvm] [-Force]
 ```
 
 요구 사항:
 
-- **두 아키텍처 공통:** git, C++ 워크로드가 있는 Visual Studio(MSVC).
-- **x64:** 설치된 Visual Studio 버전을 아는 CMake. 예를 들어 CMake 3.29에는 Visual Studio 2026용 생성기가 없으므로, Visual Studio에 포함된 CMake를 쓰세요.
+- **모든 아키텍처 공통:** git, C++ 워크로드가 있는 Visual Studio(MSVC).
+- **x64와 x86:** 설치된 Visual Studio 버전을 아는 CMake. 예를 들어 CMake 3.29에는 Visual Studio 2026용 생성기가 없으므로, Visual Studio에 포함된 CMake를 쓰세요.
 - **arm64**(x64 PC에서 크로스 컴파일):
   - LLVM(`choco install llvm`). ggml은 ARM에서 MSVC를 지원하지 않습니다.
   - Visual Studio 구성 요소 "MSVC ARM64/ARM64EC 빌드 도구"(`Microsoft.VisualStudio.Component.VC.Tools.ARM64`). `lib\arm64` 폴더는 AddressSanitizer 라이브러리만 있는 상태로도 존재할 수 있으므로, 스크립트는 `VC\Tools\MSVC\<version>\lib\arm64\msvcrt.lib`가 있는지 확인합니다.
@@ -60,6 +60,8 @@ powershell -ExecutionPolicy Bypass -NoProfile -File native\llamacpp\build-llamac
 | CPU 대상 | 모든 x86-64 변형(`GGML_CPU_ALL_VARIANTS`), 실행 시 선택 | `-march=armv8.7-a`, 백엔드 하나 `ggml-cpu.dll`(Windows의 ARM에서는 `GGML_CPU_ALL_VARIANTS`를 지원하지 않음) |
 | OpenMP | 켬(VC++ 재배포 패키지의 `VCOMP140.DLL`) | 끔: clang에서는 `libomp140.aarch64.dll`이 필요한데, Visual Studio는 이를 `debug_nonredist`로만 제공합니다. ggml은 자체 스레드 풀을 씁니다 |
 | 호스트 도구(`llama-ui-embed`) | 빌드의 일부로 빌드 | 작업 폴더의 `host-cxx.cmd`(`HOST_CXX_COMPILER`)로 x64용으로 빌드, 아래 참고 |
+
+**x86**(32비트)은 x64처럼 MSVC와 Visual Studio 생성기(`-A Win32`)로 빌드하되, CPU 백엔드는 하나(`ggml-cpu.dll`)이며 `GGML_NATIVE=OFF`의 AVX2 기준에서 BMI2를 뺍니다(`GGML_CPU_ALL_VARIANTS=OFF`, `GGML_BMI2=OFF`). ggml의 BMI2 코드가 32비트 MSVC에 없는 `_pdep_u64`를 쓰고, CPU 변형 여러 개가 BMI2를 켜기 때문입니다. 실행 파일은 `/LARGEADDRESSAWARE`로 링크해서 32비트 프로세스가 64비트 Windows에서 2GB 대신 4GB 주소 공간을 씁니다. 이것이 없으면 모델과 8192 토큰 문맥(런처의 `LlamaCppContextSize`)의 KV 캐시를 할당하지 못했습니다. x86 빌드는 8192 토큰 문맥에서 x64 빌드와 같은 그리디 답을 냅니다(Qwen3Guard 0.6B Q4_K_M, Hy-MT2 1.8B Q4_K_M, BitNet b1.58 2B I2_S). 더 큰 문맥이나 모델은 4GB에 들어가지 않을 수 있습니다.
 
 - `-InstallLlvm`은 arm64 빌드가 필요한데 clang이 없을 때 `choco install llvm -y`를 실행합니다.
 - arm64에서는 스크립트가 LLVM과 Visual Studio의 CMake, Ninja를 다른 사본(예: Strawberry Perl의 CMake 3.29)보다 앞서 `PATH`에 넣습니다.
@@ -100,7 +102,7 @@ powershell -ExecutionPolicy Bypass -NoProfile -File native\llamacpp\build-llamac
 
 ### 출력과 빌드 건너뛰기
 
-파일은 `<OutDir>\<arch>`에 기록됩니다. CI에서는 `artifacts\llamacpp\x64`와 `artifacts\llamacpp\arm64`입니다. 압축 파일은 만들지 않습니다. 폴더에는 다음 파일도 있습니다:
+파일은 `<OutDir>\<arch>`에 기록됩니다. CI에서는 `artifacts\llamacpp\x64`, `artifacts\llamacpp\arm64`, `artifacts\llamacpp\x86`입니다. 압축 파일은 만들지 않습니다. 폴더에는 다음 파일도 있습니다:
 
 - `LICENSE-llama.cpp.txt`(MIT).
 - `BUILDINFO.txt`: 버전 이름표, 제품 버전, 커밋, 사용한 소스(git, 또는 압축 파일 URL과 해시), 컴파일러, CPU 백엔드, BitNet 커널, 패치, 빌드 ID.
@@ -126,9 +128,9 @@ llama.cpp는 **Release** 작업에서 빌드하므로, 그 파일들이 다른 �
 
 - **첫 단계.** 빌드는 Release 작업의 첫 `before_build` 단계입니다. Debug 작업은 이 단계를 건너뛰므로, `llamacpp`가 들어 있는 것은 Release 작업의 `artifacts.zip`뿐입니다. 작업 시간은 60분이고, 먼저 빌드해야 llama.cpp 빌드가 가능한 한 일찍 끝납니다.
 - **네이티브 도구의 stderr.** AppVeyor의 `ps:` 단계는 stderr를 잡아내고, `$ErrorActionPreference = "Stop"`에서는 네이티브 명령의 stderr 한 줄 한 줄이 종료 오류가 됩니다. CMake, git, Ninja, `vcvarsall.bat`는 경고와 진행 상황을 stderr에 씁니다. 예를 들어 CMake는 쓰이지 않은 `CMAKE_BUILD_TYPE`에 대해 경고하고, `vcvarsall.bat`는 `'vswhere.exe' is not recognized`를 출력합니다. 그래서 스크립트는 stderr를 stdout처럼 출력하고(`Invoke-Checked`, `Get-NativeOutput`) 종료 코드로만 판단합니다. `CMAKE_BUILD_TYPE`은 단일 구성 생성기(Ninja)에만 넘기고 Visual Studio 생성기에는 넘기지 않습니다.
-- **두 아키텍처.** 이 단계는 스크립트를 `x64`, 이어서 `arm64`로 실행하며, 각각 `-InstallLlvm`을 씁니다. LLVM은 arm64 빌드가 필요하고 clang이 없을 때만 설치됩니다. arm64 빌드는 이미지에 MSVC ARM64 빌드 도구도 필요하며, 없으면 스크립트가 구성 요소 이름을 알려 주며 멈춥니다.
-- **출력: `artifacts\llamacpp\x64`와 `artifacts\llamacpp\arm64`.** `7z a artifacts.zip artifacts\*` 단계가 이를 `artifacts.zip`에 넣고, 배포 단계가 SignPath로 보냅니다. 이 중 어떤 파일을 서명할지는 SignPath 산출물 구성(`.artifact-configuration.xml`)이 정합니다.
-  - 두 아키텍처의 실행 파일 세 개와 모든 DLL을 이름으로 하나씩 적어(와일드카드 없음) 서명합니다. x64는 MSVC가 만드는 CPU 백엔드 9개(`ggml-cpu-alderlake.dll`부터 `ggml-cpu-x64.dll`까지), arm64는 백엔드 `ggml-cpu.dll` 하나입니다.
+- **세 아키텍처.** 이 단계는 스크립트를 `x64`, `arm64`, `x86` 순서로 실행하며, 각각 `-InstallLlvm`을 씁니다. LLVM은 arm64 빌드가 필요하고 clang이 없을 때만 설치됩니다. arm64 빌드는 이미지에 MSVC ARM64 빌드 도구도 필요하며, 없으면 스크립트가 구성 요소 이름을 알려 주며 멈춥니다.
+- **출력: `artifacts\llamacpp\x64`, `artifacts\llamacpp\arm64`, `artifacts\llamacpp\x86`.** `7z a artifacts.zip artifacts\*` 단계가 이를 `artifacts.zip`에 넣고, 배포 단계가 SignPath로 보냅니다. 이 중 어떤 파일을 서명할지는 SignPath 산출물 구성(`.artifact-configuration.xml`)이 정합니다.
+  - 세 아키텍처의 실행 파일 세 개와 모든 DLL을 이름으로 하나씩 적어(와일드카드 없음) 서명합니다. x64는 MSVC가 만드는 CPU 백엔드 9개(`ggml-cpu-alderlake.dll`부터 `ggml-cpu-x64.dll`까지), arm64와 x86은 백엔드 `ggml-cpu.dll` 하나입니다.
   - 빌드한 실행 파일이나 DLL이 여기에 없으면 빌드 스크립트가 실패하므로, 새 바이너리가 서명에서 빠질 수 없습니다.
   - Authenticode 서명은 파일을 바꿉니다. 서명된 패키지의 `SHA256SUMS.txt`는 서명 전 빌드 출력의 해시를 그대로 담고 있습니다.
 - **캐시: `artifacts\llamacpp`.** `commit.txt`, `version.txt`, 스크립트, 패치 파일, `app\favicon.ico` 중 하나가 바뀌면 무효화됩니다.

@@ -39,13 +39,13 @@ The other BitNet files are used only inside `#if defined(GGML_BITNET_ARM_TL1) ||
 
 ```powershell
 powershell -ExecutionPolicy Bypass -NoProfile -File native\llamacpp\build-llamacpp.ps1 `
-    [-Arch x64|arm64] [-OutDir <dir>] [-WorkDir <dir>] [-Source auto|git|archive] [-LlvmDir <dir>] [-InstallLlvm] [-Force]
+    [-Arch x64|x86|arm64] [-OutDir <dir>] [-WorkDir <dir>] [-Source auto|git|archive] [-LlvmDir <dir>] [-InstallLlvm] [-Force]
 ```
 
 Requirements:
 
-- **Both architectures:** git and Visual Studio (MSVC) with the C++ workload.
-- **x64:** CMake that knows the installed Visual Studio version. For example, CMake 3.29 has no generator for Visual Studio 2026; use the CMake that comes with Visual Studio.
+- **All architectures:** git and Visual Studio (MSVC) with the C++ workload.
+- **x64 and x86:** CMake that knows the installed Visual Studio version. For example, CMake 3.29 has no generator for Visual Studio 2026; use the CMake that comes with Visual Studio.
 - **arm64**, cross-compiled on an x64 PC:
   - LLVM (`choco install llvm`), because ggml does not support MSVC on ARM.
   - The Visual Studio component "MSVC ARM64/ARM64EC build tools" (`Microsoft.VisualStudio.Component.VC.Tools.ARM64`). The script checks for `VC\Tools\MSVC\<version>\lib\arm64\msvcrt.lib`, because the `lib\arm64` folder can exist with only the AddressSanitizer libraries.
@@ -60,6 +60,8 @@ Requirements:
 | CPU target | every x86-64 variant (`GGML_CPU_ALL_VARIANTS`), chosen at run time | `-march=armv8.7-a`, one backend `ggml-cpu.dll` (`GGML_CPU_ALL_VARIANTS` is not supported for ARM on Windows) |
 | OpenMP | on (`VCOMP140.DLL` from the VC++ redistributable) | off: with clang it needs `libomp140.aarch64.dll`, which Visual Studio ships only as `debug_nonredist`; ggml uses its own thread pool |
 | Host tool (`llama-ui-embed`) | built as part of the build | built for x64 with `host-cxx.cmd` in the work folder (`HOST_CXX_COMPILER`), see below |
+
+**x86** (32-bit) is built like x64, with MSVC and the Visual Studio generator (`-A Win32`), but with one CPU backend (`ggml-cpu.dll`) with the AVX2 baseline of `GGML_NATIVE=OFF` and without BMI2 (`GGML_CPU_ALL_VARIANTS=OFF`, `GGML_BMI2=OFF`): ggml's BMI2 code uses `_pdep_u64`, which 32-bit MSVC lacks, and several of the CPU variants enable BMI2. The executables are linked with `/LARGEADDRESSAWARE`, so a 32-bit process gets 4 GB of address space on 64-bit Windows instead of 2 GB; without it, the model and the KV cache of an 8192-token context (the launcher's `LlamaCppContextSize`) could not be allocated. The x86 build gives the same greedy answers as the x64 build (Qwen3Guard 0.6B Q4_K_M, Hy-MT2 1.8B Q4_K_M and BitNet b1.58 2B I2_S), with an 8192-token context. A larger context or model may not fit in 4 GB.
 
 - `-InstallLlvm` runs `choco install llvm -y` when an arm64 build is needed and clang is missing.
 - For arm64, the script puts LLVM and Visual Studio's CMake and Ninja first on `PATH`, ahead of other copies (for example, Strawberry Perl's CMake 3.29).
@@ -100,7 +102,7 @@ Requirements:
 
 ### Output and skipping the build
 
-The files are written to `<OutDir>\<arch>`; in CI this is `artifacts\llamacpp\x64` and `artifacts\llamacpp\arm64`. No archive is created. The folder also contains:
+The files are written to `<OutDir>\<arch>`; in CI this is `artifacts\llamacpp\x64`, `artifacts\llamacpp\arm64` and `artifacts\llamacpp\x86`. No archive is created. The folder also contains:
 
 - `LICENSE-llama.cpp.txt` (MIT).
 - `BUILDINFO.txt`: the version label, the product version, commit, source used (git, or the archive URL and hash), compiler, CPU backends, BitNet kernels, patches, and the build ID.
@@ -126,9 +128,9 @@ llama.cpp is built in the **Release** job, so its files are packaged and signed 
 
 - **First step.** The build is the first `before_build` step of the Release job. The Debug job skips it, so only the Release job's `artifacts.zip` contains `llamacpp`. A job has 60 minutes, and building first lets the llama.cpp build finish as early as possible.
 - **stderr of native tools.** AppVeyor's `ps:` steps capture stderr, and with `$ErrorActionPreference = "Stop"` each stderr line of a native command becomes a terminating error. CMake, git, Ninja, and `vcvarsall.bat` write warnings and progress there. For example, CMake warns about an unused `CMAKE_BUILD_TYPE`, and `vcvarsall.bat` prints `'vswhere.exe' is not recognized`. So the script prints stderr like stdout (`Invoke-Checked`, `Get-NativeOutput`) and decides by exit codes only. `CMAKE_BUILD_TYPE` is passed only to single-configuration generators (Ninja), not to the Visual Studio generator.
-- **Both architectures.** The step runs the script for `x64`, then `arm64`, each with `-InstallLlvm`. LLVM is installed only when the arm64 build is needed and clang is missing. The arm64 build also needs the MSVC ARM64 build tools on the image; without them, the script stops with a message that names the component.
-- **Output: `artifacts\llamacpp\x64` and `artifacts\llamacpp\arm64`.** The `7z a artifacts.zip artifacts\*` step adds it to `artifacts.zip`, which the deployment sends to SignPath. The SignPath artifact configuration (`.artifact-configuration.xml`) decides which of these files are signed.
-  - It signs the three executables and every DLL of both architectures, each listed by name (no wildcards): for x64 the nine CPU backends that MSVC builds (`ggml-cpu-alderlake.dll` to `ggml-cpu-x64.dll`), for arm64 the one backend `ggml-cpu.dll`.
+- **Three architectures.** The step runs the script for `x64`, `arm64` and `x86`, each with `-InstallLlvm`. LLVM is installed only when the arm64 build is needed and clang is missing. The arm64 build also needs the MSVC ARM64 build tools on the image; without them, the script stops with a message that names the component.
+- **Output: `artifacts\llamacpp\x64`, `artifacts\llamacpp\arm64` and `artifacts\llamacpp\x86`.** The `7z a artifacts.zip artifacts\*` step adds it to `artifacts.zip`, which the deployment sends to SignPath. The SignPath artifact configuration (`.artifact-configuration.xml`) decides which of these files are signed.
+  - It signs the three executables and every DLL of the three architectures, each listed by name (no wildcards): for x64 the nine CPU backends that MSVC builds (`ggml-cpu-alderlake.dll` to `ggml-cpu-x64.dll`), for arm64 and x86 the one backend `ggml-cpu.dll`.
   - The build script fails when a built executable or DLL is not listed there, so a new binary cannot be left unsigned.
   - Authenticode signing changes the files. In the signed package, `SHA256SUMS.txt` still lists the hashes of the unsigned build output.
 - **Cache: `artifacts\llamacpp`.** It is invalidated when `commit.txt`, `version.txt`, the script, a patch file, or `app\favicon.ico` changes.

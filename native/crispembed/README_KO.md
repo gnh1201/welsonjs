@@ -21,10 +21,10 @@
 ## 빌드
 
 ```powershell
-powershell -ExecutionPolicy Bypass -NoProfile -File native\crispembed\build-crispembed.ps1 [-OutDir <폴더>] [-WorkDir <폴더>] [-Force]
+powershell -ExecutionPolicy Bypass -NoProfile -File native\crispembed\build-crispembed.ps1 [-Arch x64|x86|arm64] [-OutDir <폴더>] [-WorkDir <폴더>] [-LlvmDir <폴더>] [-InstallLlvm] [-Force]
 ```
 
-필요한 것: git, 그리고 C++ 워크로드와 CMake가 있는 Visual Studio(또는 Build Tools). `PATH`에서 먼저 찾은 CMake(예: Strawberry Perl의 것)는 다른 생성기를 고를 수 있으므로, 스크립트는 Visual Studio에 들어 있는 CMake를 찾으면 그것을 씁니다.
+필요한 것: git, 그리고 C++ 워크로드와 CMake가 있는 Visual Studio(또는 Build Tools). `PATH`에서 먼저 찾은 CMake(예: Strawberry Perl의 것)는 다른 생성기를 고를 수 있으므로, 스크립트는 Visual Studio에 들어 있는 CMake를 찾으면 그것을 씁니다. arm64에는 MSVC ARM64 빌드 도구와 LLVM(clang)도 필요합니다: `-LlvmDir`, Program Files나 `PATH`의 LLVM, 또는 `-InstallLlvm`(clang이 없으면 `choco install llvm`).
 
 스크립트가 하는 일:
 
@@ -34,7 +34,7 @@ powershell -ExecutionPolicy Bypass -NoProfile -File native\crispembed\build-cris
 3. MSVC로 구성합니다. `-DGGML_NATIVE=OFF`(CrispEmbed의 Windows 릴리스처럼 SSE4.2, AVX, AVX2, FMA, F16C, BMI2로 고정한 x86-64 기준. `GGML_NATIVE`를 켜면 MSVC가 대부분의 일반 PC CPU에 없는 AVX-512를 켤 수 있음), `-DGGML_BLAS=OFF`, `-DCRISPEMBED_BUILD_SHARED=OFF`(실행 파일이 CrispEmbed를 정적으로 링크하므로 `crispembed.dll`은 빌드하지 않음).
    `/utf-8`(소스가 BOM 없는 UTF-8이라 이 옵션이 없으면 MSVC가 시스템 코드 페이지로 읽으며, 한국어 Windows에서는 빌드가 깨짐)과 `0001-windows-resources.patch`의 아이콘·파일 정보 옵션도 넘깁니다. 실행 파일에는 WelsonJS 아이콘(`app\favicon.ico`)이, 모든 실행 파일과 DLL에는 WelsonJS 버전(런처의 `AssemblyFileVersion`, `-ProductVersion`으로 바꿀 수 있음), `CrispEmbed built for WelsonJS`라는 설명, `CompanyName` `Catswords Research`, CrispEmbed·ggml·WelsonJS의 저작권이 들어갑니다.
 4. `crispembed-server`, `crispembed-cli`(`crispembed.exe`), `crispembed-quantize`를 빌드합니다.
-5. `ggml.dll`, `ggml-base.dll`, `ggml-cpu.dll`, CrispEmbed 패키지에 들어 있는 라이선스와 고지 파일, `BUILDINFO.txt`, `SHA256SUMS.txt`와 함께 `<OutDir>\x64`에 둡니다. 실행 파일이나 DLL에 파일 정보가 없거나 `.artifact-configuration.xml`의 서명 목록에 없으면 실패합니다.
+5. `ggml.dll`, `ggml-base.dll`, `ggml-cpu.dll`, CrispEmbed 패키지에 들어 있는 라이선스와 고지 파일, `BUILDINFO.txt`, `SHA256SUMS.txt`와 함께 `<OutDir>\<arch>`에 둡니다. 실행 파일이나 DLL에 파일 정보가 없거나 `.artifact-configuration.xml`의 서명 목록에 없으면 실패합니다.
 
 출력이 같은 입력(버전, 제품 버전, 커밋, 패치, 아이콘, 스크립트: `BUILDINFO.txt`의 "Build ID")으로 빌드되었고 파일이 `SHA256SUMS.txt`와 일치하면 빌드를 건너뜁니다.
 
@@ -49,15 +49,23 @@ git -C ggml archive --format=zip --prefix=CrispEmbed-<커밋>/ggml/ -o ggml.zip 
 # 그 URL과 SHA-256을 source-archive.txt에 적습니다.
 ```
 
-x64만 빌드합니다. CrispEmbed는 ARM64 Windows 빌드를 배포하지 않으며, ARM64 Windows에서는 x64 빌드가 에뮬레이션으로 실행됩니다.
+### 아키텍처
+
+| `-Arch` | 컴파일러 | CPU 기준 |
+| --- | --- | --- |
+| `x64`(기본값) | MSVC, Visual Studio 생성기 | SSE4.2, AVX, AVX2, FMA, F16C, BMI2 |
+| `x86` | MSVC, Visual Studio 생성기(Win32) | 위와 같되 BMI2 제외(ggml의 BMI2 코드가 32비트 MSVC에 없는 `_pdep_u64`를 씀). `/LARGEADDRESSAWARE`로 링크(64비트 Windows에서 4GB 주소 공간) |
+| `arm64` | clang. x64에서 `cmake\arm64-windows-llvm.cmake`와 Ninja로 Visual Studio `x64_arm64` 환경에서 교차 컴파일 | WelsonJS llama.cpp ARM64 빌드와 같은 `-march=armv8.7-a`. OpenMP 대신 ggml의 스레드 풀 |
+
+ggml은 ARM용 MSVC를 지원하지 않으므로 arm64는 clang을 씁니다. CrispEmbed의 `CMakeLists.txt`는 `NOMINMAX`, `WIN32_LEAN_AND_MEAN`, `_USE_MATH_DEFINES`, `_CRT_SECURE_NO_WARNINGS`를 MSVC에서만 정의하므로, 툴체인 파일이 clang용으로 정의합니다. x86 빌드는 x64 빌드와 같은 판단을 냅니다(라벨 8개 모두 같고 확률 차이 1e-6 이내). arm64 빌드는 형식(ARM64)과 가져오는 DLL(VC++ 런타임과 Windows만)을 확인했고, 실행해 보지는 않았습니다.
 
 ## CI(AppVeyor)
 
-Release 작업이 llama.cpp 빌드 다음에 스크립트를 실행해 `artifacts\crispembed\x64`에 두고, 그 폴더를 캐시합니다. 캐시 키는 `commit.txt`, `version.txt`, 스크립트, 패치, 아이콘, 런처의 `AssemblyInfo.cs`입니다(새 패치를 추가하면 그 파일도 넣으세요). 파일은 `artifacts.zip`에 들어가 다른 아티팩트와 함께 서명됩니다.
+Release 작업이 llama.cpp 빌드 다음에 x64, arm64, x86마다 스크립트를 실행해 `artifacts\crispembed\<아키텍처>`에 두고, 그 폴더를 캐시합니다. 캐시 키는 `commit.txt`, `version.txt`, 스크립트, 패치, arm64 툴체인 파일, 아이콘, 런처의 `AssemblyInfo.cs`입니다(새 패치를 추가하면 그 파일도 넣으세요). 파일은 `artifacts.zip`에 들어가 다른 아티팩트와 함께 서명됩니다.
 
 ## 설치
 
-설치 구성 요소 `crispembed`를 고르면 artifacts 패키지가 함께 선택되고, `postInstall.ps1`이 그 안의 `crispembed\x64`를 런처가 `crispembed-server.exe`를 실행하는 `%APPDATA%\WelsonJS\crispembed\`로 복사합니다. 모델은 별도 구성 요소입니다(예: `crispembed\embeddinggemma_2_typed_decision`).
+설치 구성 요소 `crispembed`를 고르면 artifacts 패키지가 함께 선택되고, `postInstall.ps1`이 그 안에서 컴퓨터에 맞는 `crispembed\<아키텍처>`(arm64 빌드가 없는 ARM64 Windows에서는 에뮬레이션으로 실행되는 `crispembed\x64`)를 런처가 `crispembed-server.exe`를 실행하는 `%APPDATA%\WelsonJS\crispembed\`로 복사합니다. 모델은 별도 구성 요소입니다(예: `crispembed\embeddinggemma_2_typed_decision`).
 
 ## 패치
 

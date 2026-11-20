@@ -1054,17 +1054,20 @@ function Install-ArtifactsPackage {
     }
     if (Test-Path $llamaBuildRoot) { Remove-Item -Path $llamaBuildRoot -Recurse -Force }
 
-    # CrispEmbed: x64 only. On ARM64 Windows the x64 build runs under emulation,
-    # which must provide AVX2 (the build's CPU baseline).
+    # CrispEmbed: the build for the machine (x64, arm64 or x86). ARM64 Windows
+    # falls back to the x64 build, which runs under emulation and needs AVX2 (the
+    # x64 baseline), when the package has no arm64 build.
     $crispBuildRoot = Join-Path $staging "crispembed"
     if (Test-ComponentSelected -Name "crispembed") {
         $crispSource = $null
-        foreach ($crispArch in @($arch, "x64") | Select-Object -Unique) {
+        $crispArchCandidates = @($arch)
+        if ($arch -eq "arm64") { $crispArchCandidates += "x64" }
+        foreach ($crispArch in $crispArchCandidates) {
             $candidate = Join-Path $crispBuildRoot $crispArch
             if (Test-Path (Join-Path $candidate "crispembed-server.exe")) { $crispSource = $candidate; break }
         }
 
-        if ($crispSource -and $arch -ne "x86") {
+        if ($crispSource) {
             $crispDestination = Join-Path $TargetDir "crispembed"
             Ensure-EmptyDirectory -Path $crispDestination
             # Remove files of a previous installation (for example, the release package).
@@ -1073,7 +1076,7 @@ function Install-ArtifactsPackage {
             Write-Host "[*] Installed CrispEmbed from the artifacts package: crispembed\$(Split-Path $crispSource -Leaf) -> $crispDestination"
         }
         else {
-            Write-Host "[WARN] The artifacts package has no CrispEmbed build for $arch (crispembed\x64 runs on x64 and ARM64 Windows). Skipping CrispEmbed."
+            Write-Host "[WARN] The artifacts package has no CrispEmbed build for $arch (crispembed\$arch). Skipping CrispEmbed."
         }
     }
     if (Test-Path $crispBuildRoot) { Remove-Item -Path $crispBuildRoot -Recurse -Force }

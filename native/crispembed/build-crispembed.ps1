@@ -35,27 +35,40 @@
 # archive is made for WelsonJS: the git archives of both commits in one folder
 # "CrispEmbed-<commit>" (see README.md).
 #
-# Architectures: x64 only. CrispEmbed publishes no ARM64 Windows build, and its
-# ARM64 Windows build is not tested.
+# Architectures:
+#   x64   MSVC (Visual Studio generator), the x86-64 baseline above.
+#   x86   MSVC (Visual Studio generator, Win32), the same baseline (AVX2): for
+#         32-bit Windows on a CPU with AVX2, and for 32-bit processes.
+#   arm64 Cross-compiled on x64 with clang (ggml does not support MSVC on ARM),
+#         cmake\arm64-windows-llvm.cmake (-march=armv8.7-a, as the WelsonJS
+#         llama.cpp ARM64 build) and Ninja, inside the Visual Studio x64_arm64
+#         developer environment; ggml's own thread pool instead of OpenMP (with
+#         clang, OpenMP needs a libomp that is not redistributable).
+#         Needs LLVM: -LlvmDir, LLVM in Program Files or on PATH, or
+#         -InstallLlvm ("choco install llvm" when clang is missing).
 #
 # Usage:
-#   powershell -ExecutionPolicy Bypass -NoProfile -File build-crispembed.ps1 [-OutDir <dir>] [-WorkDir <dir>] [-Source auto|git|archive] [-ProductVersion a.b.c.d] [-Force]
+#   powershell -ExecutionPolicy Bypass -NoProfile -File build-crispembed.ps1 [-Arch x64|x86|arm64] [-OutDir <dir>] [-WorkDir <dir>] [-Source auto|git|archive] [-ProductVersion a.b.c.d] [-LlvmDir <dir>] [-InstallLlvm] [-Force]
 #
-# Requirements: git, CMake and Visual Studio (MSVC) with the C++ workload.
+# Requirements: git, CMake and Visual Studio (MSVC) with the C++ workload; for
+# arm64 also the MSVC ARM64 build tools, Ninja (Visual Studio's CMake tools) and
+# LLVM (clang).
 # Output: <OutDir>\<arch>\* (for example, artifacts\crispembed\x64 in CI)
 
 param(
     [string]$OutDir    = (Join-Path $PSScriptRoot "..\..\out\crispembed"),
     [string]$WorkDir   = (Join-Path $env:TEMP "welsonjs-crispembed-build"),
-    [ValidateSet("x64")]
+    [ValidateSet("x64", "x86", "arm64")]
     [string]$Arch      = "x64",
-    [string]$Generator = "",          # empty: the CMake default (Visual Studio)
+    [string]$Generator = "",          # x64 and x86 only; empty: the CMake default (Visual Studio)
     [int]$Jobs         = [Environment]::ProcessorCount,
     [string]$RepositoryUrl     = "https://github.com/CrispStrobe/CrispEmbed.git",
     [string]$GgmlRepositoryUrl = "https://github.com/CrispStrobe/ggml.git",
     [ValidateSet("auto", "git", "archive")]
     [string]$Source    = "auto",
     [string]$ProductVersion = "",     # a.b.c.d in the version information; empty: the launcher's AssemblyFileVersion
+    [string]$LlvmDir   = "",          # arm64: folder with clang.exe; empty: search
+    [switch]$InstallLlvm,             # arm64: install LLVM with choco when clang is missing
     [switch]$Force
 )
 
@@ -150,6 +163,63 @@ function Remove-Tree {
         [IO.File]::SetAttributes($file, [IO.FileAttributes]::Normal)
     }
     [IO.Directory]::Delete($long, $true)
+}
+
+# arm64: finds clang.exe (-LlvmDir, then LLVM from "choco install llvm", then
+# PATH). Returns $null when none is found.
+function Find-Clang {
+    $candidates = @()
+    if ($LlvmDir) { $candidates += (Join-Path $LlvmDir "clang.exe") }
+    else {
+        $candidates += (Join-Path $env:ProgramFiles "LLVM\bin\clang.exe")
+        $onPath = Get-Command "clang.exe" -ErrorAction SilentlyContinue
+        if ($onPath) { $candidates += $onPath.Source }
+    }
+    foreach ($candidate in $candidates) { if (Test-Path -LiteralPath $candidate) { return $candidate } }
+    return $null
+}
+
+# arm64: finds a Visual Studio installation and MSVC version with the ARM64
+# C runtime (VC\Tools\MSVC\<version>\lib\arm64\msvcrt.lib; the folder alone
+# can exist with only the AddressSanitizer libraries), preferring one that also
+# has Visual Studio's CMake and Ninja. Returns the path and the MSVC version.
+function Find-VsForArm64 {
+    $vswhere = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer\vswhere.exe"
+    if (-not (Test-Path -LiteralPath $vswhere)) { throw "vswhere.exe was not found; install Visual Studio or Build Tools with the C++ workload" }
+    $found = @()
+    foreach ($path in (Get-NativeOutput $vswhere @("-all", "-products", "*", "-requires", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64", "-sort", "-property", "installationPath"))) {
+        $versions = @(Get-ChildItem -Path (Join-Path $path "VC\Tools\MSVC") -Directory -ErrorAction SilentlyContinue |
+            Where-Object { Test-Path -LiteralPath (Join-Path $_.FullName "lib\arm64\msvcrt.lib") } |
+            Sort-Object { [version]$_.Name } -Descending)
+        if ($versions.Count -eq 0) { continue }
+        $hasNinja = Test-Path -LiteralPath (Join-Path $path "Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja\ninja.exe")
+        $found += [pscustomobject]@{ Path = $path; Version = $versions[0].Name; HasNinja = $hasNinja }
+    }
+    $best = @($found | Where-Object HasNinja) + @($found | Where-Object { -not $_.HasNinja }) | Select-Object -First 1
+    if (-not $best) {
+        throw "No Visual Studio installation has the MSVC ARM64 C runtime (VC\Tools\MSVC\*\lib\arm64\msvcrt.lib). Install the 'MSVC ARM64/ARM64EC build tools' component (Microsoft.VisualStudio.Component.VC.Tools.ARM64)."
+    }
+    return $best
+}
+
+# arm64: loads a Visual Studio developer environment (vcvarsall.bat x64_arm64)
+# into this process: the ARM64 MSVC libraries and Windows SDK and the x64-hosted
+# ARM64 linker. Visual Studio's CMake and Ninja are put first on PATH, ahead of
+# other copies (for example, an older CMake from Strawberry Perl).
+function Import-VsDevEnvironment {
+    param([string]$VsPath, [string]$VcvarsArch, [string]$VcToolsVersion = "")
+    $vcvars = Join-Path $VsPath "VC\Auxiliary\Build\vcvarsall.bat"
+    if (-not (Test-Path -LiteralPath $vcvars)) { throw "vcvarsall.bat was not found: $vcvars" }
+    $versionArg = if ($VcToolsVersion) { " -vcvars_ver=$VcToolsVersion" } else { "" }
+    $lines = Get-NativeOutput "cmd.exe" @("/d", "/s", "/c", "`"$vcvars`" $VcvarsArch$versionArg >nul && set")
+    if ($script:NativeExitCode -ne 0) { throw "vcvarsall.bat $VcvarsArch$versionArg failed with exit code $($script:NativeExitCode)" }
+    foreach ($line in $lines) {
+        if ($line -match '^([^=]+)=(.*)$') { [Environment]::SetEnvironmentVariable($Matches[1], $Matches[2], "Process") }
+    }
+    foreach ($dir in @("Common7\IDE\CommonExtensions\Microsoft\CMake\Ninja", "Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin")) {
+        $full = Join-Path $VsPath $dir
+        if (Test-Path -LiteralPath $full) { $env:PATH = $full + ";" + $env:PATH }
+    }
 }
 
 # Fetches exactly one commit of a repository into a new folder. The checkout
@@ -271,12 +341,16 @@ $copyright = "Copyright (c) 2026 CrispStrobe (CrispEmbed), Copyright (c) 2023-20
 $winDescription = "CrispEmbed built for WelsonJS"
 # Every executable and DLL must be listed (without wildcards) for SignPath.
 $signingConfigPath = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot "..\..\.artifact-configuration.xml"))
+# arm64: the clang toolchain file.
+$toolchainPath = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot "cmake\arm64-windows-llvm.cmake"))
+if ($Arch -eq "arm64" -and -not (Test-Path -LiteralPath $toolchainPath)) { throw "The toolchain file was not found: $toolchainPath" }
 
 # The build ID covers every input, so a change to any of them rebuilds. The ggml
 # commit is part of the CrispEmbed commit.
 $inputs = New-Object IO.MemoryStream
 foreach ($item in @(@{ Name = "version"; Bytes = [Text.Encoding]::UTF8.GetBytes("$version|$ProductVersion|$commit|$Arch") }) +
                   @($patches | ForEach-Object { @{ Name = $_.Name; Bytes = [IO.File]::ReadAllBytes($_.FullName) } }) +
+                  @(if ($Arch -eq "arm64") { @{ Name = "toolchain"; Bytes = [IO.File]::ReadAllBytes($toolchainPath) } }) +
                   @(@{ Name = "icon"; Bytes = [IO.File]::ReadAllBytes($iconPath) }) +
                   @(@{ Name = "script"; Bytes = [IO.File]::ReadAllBytes($PSCommandPath) })) {
     $name = [Text.Encoding]::UTF8.GetBytes($item.Name + "`n")
@@ -306,6 +380,41 @@ if (-not $Force -and (Test-Path -LiteralPath $buildInfoPath) -and
     }
     Write-Host "[WARN] The output does not match SHA256SUMS.txt. Building again."
 }
+
+# ================================
+# TOOLCHAIN
+# ================================
+# Checked before the source is fetched, so a missing tool fails early.
+if ($Arch -eq "arm64") {
+    $clang = Find-Clang
+    if (-not $clang -and $InstallLlvm) {
+        Invoke-Checked "choco" @("install", "llvm", "-y", "--no-progress")
+        $clang = Find-Clang
+    }
+    if (-not $clang) { throw "clang.exe was not found. Install LLVM (choco install llvm), or pass -LlvmDir or -InstallLlvm." }
+    $vs = Find-VsForArm64
+    Import-VsDevEnvironment $vs.Path "x64_arm64" $vs.Version
+    # The toolchain file names the compilers "clang" and "clang++"; put LLVM first on PATH.
+    $env:PATH = (Split-Path -Parent $clang) + ";" + $env:PATH
+    foreach ($tool in @("cmake", "ninja")) {
+        if (-not (Get-Command "$tool.exe" -ErrorAction SilentlyContinue)) { throw "$tool.exe was not found; install the Visual Studio 'C++ CMake tools for Windows' component" }
+    }
+    $cmake = (Get-Command cmake.exe).Source
+    Write-Host "[*] Compiler          : $(Get-NativeOutput $clang @('--version') | Select-Object -First 1), Visual Studio $($vs.Path) (x64_arm64, MSVC $($vs.Version))"
+    Write-Host "[*] Ninja             : $((Get-Command ninja.exe).Source)"
+}
+else {
+    # Visual Studio's own CMake, which knows its generator; a CMake found first on
+    # PATH (for example Strawberry Perl's) may default to another generator.
+    $cmake = "cmake"
+    $vswhere = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer\vswhere.exe"
+    if (Test-Path -LiteralPath $vswhere) {
+        $vsPath = ("" + (Get-NativeOutput $vswhere @("-latest", "-products", "*", "-requires", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64", "-property", "installationPath") | Select-Object -First 1)).Trim()
+        $vsCmake = if ($vsPath) { Join-Path $vsPath "Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" } else { "" }
+        if ($vsCmake -and (Test-Path -LiteralPath $vsCmake)) { $cmake = $vsCmake }
+    }
+}
+Write-Host "[*] CMake             : $cmake"
 
 # ================================
 # SOURCE
@@ -344,26 +453,42 @@ foreach ($patch in $patches) {
 # ================================
 # BUILD
 # ================================
-# Visual Studio's own CMake, which knows its generator; a CMake found first on
-# PATH (for example Strawberry Perl's) may default to another generator.
-$cmake = "cmake"
-$vswhere = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer\vswhere.exe"
-if (Test-Path -LiteralPath $vswhere) {
-    $vsPath = ("" + (Get-NativeOutput $vswhere @("-latest", "-products", "*", "-requires", "Microsoft.VisualStudio.Component.VC.Tools.x86.x64", "-property", "installationPath") | Select-Object -First 1)).Trim()
-    $vsCmake = if ($vsPath) { Join-Path $vsPath "Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe" } else { "" }
-    if ($vsCmake -and (Test-Path -LiteralPath $vsCmake)) { $cmake = $vsCmake }
-}
-Write-Host "[*] CMake             : $cmake"
-
 $configure = @("-S", $sourceDir, "-B", $buildDir)
-if ($Generator) { $configure += @("-G", $Generator) }
-if (-not $Generator -or $Generator -like "Visual Studio*") {
-    # Multi-config generator: the configuration is chosen at build time.
-    $configure += @("-A", $Arch)
+if ($Arch -eq "arm64") {
+    # clang with cmake\arm64-windows-llvm.cmake; clang reads the sources as
+    # UTF-8 already (no /utf-8, which the clang driver would take for a file).
+    $configure += @(
+        "-G", "Ninja",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_TOOLCHAIN_FILE=$($toolchainPath.Replace('\', '/'))",
+        "-DGGML_OPENMP=OFF"
+    )
 }
-else { $configure += @("-DCMAKE_BUILD_TYPE=Release") }
+else {
+    if ($Generator) { $configure += @("-G", $Generator) }
+    if (-not $Generator -or $Generator -like "Visual Studio*") {
+        # Multi-config generator: the configuration is chosen at build time.
+        $configure += @("-A", $(if ($Arch -eq "x86") { "Win32" } else { $Arch }))
+    }
+    else { $configure += @("-DCMAKE_BUILD_TYPE=Release") }
+    $configure += @(
+        # The sources are UTF-8 without a BOM. Without /utf-8, MSVC reads them in the
+        # system code page, which breaks the build on a non-English Windows (for
+        # example code page 949: "newline in constant" in string literals with
+        # non-ASCII text). _INIT keeps CMake's default flags (/EHsc and the others).
+        "-DCMAKE_C_FLAGS_INIT=/utf-8",
+        "-DCMAKE_CXX_FLAGS_INIT=/utf-8"
+    )
+    if ($Arch -eq "x86") {
+        # ggml's BMI2 code uses _pdep_u64, a 64-bit-only intrinsic that 32-bit
+        # MSVC does not provide (LNK2019 in ggml-cpu).
+        # /LARGEADDRESSAWARE: up to 4 GB of address space on 64-bit Windows
+        # instead of 2 GB, for the model and its buffers.
+        $configure += @("-DGGML_BMI2=OFF", "-DCMAKE_EXE_LINKER_FLAGS_INIT=/LARGEADDRESSAWARE")
+    }
+}
 $configure += @(
-    # A fixed x86-64 baseline instead of the build machine's CPU (CrispEmbed's
+    # A fixed CPU baseline instead of the build machine's CPU (CrispEmbed's
     # Windows release does the same; with GGML_NATIVE, MSVC can enable AVX-512).
     "-DGGML_NATIVE=OFF",
     "-DGGML_BLAS=OFF",
@@ -371,12 +496,6 @@ $configure += @(
     "-DGGML_CCACHE=OFF",
     # The executables link CrispEmbed statically.
     "-DCRISPEMBED_BUILD_SHARED=OFF",
-    # The sources are UTF-8 without a BOM. Without /utf-8, MSVC reads them in the
-    # system code page, which breaks the build on a non-English Windows (for
-    # example code page 949: "newline in constant" in string literals with
-    # non-ASCII text). _INIT keeps CMake's default flags (/EHsc and the others).
-    "-DCMAKE_C_FLAGS_INIT=/utf-8",
-    "-DCMAKE_CXX_FLAGS_INIT=/utf-8",
     # The WelsonJS icon and version information in every executable and DLL
     # (patches\0001-windows-resources.patch): the file properties show
     # "<file> - <role> (CrispEmbed built for WelsonJS)".
@@ -467,7 +586,7 @@ if ($compilerFile) {
     "ggml: $ggmlCommit",
     "Source: $sourceOrigin",
     "Compiler: $(if ($compiler) { $compiler } else { 'CMake default' })",
-    "Architecture: $Arch (GGML_NATIVE=OFF: SSE4.2, AVX, AVX2, FMA, F16C, BMI2)",
+    "Architecture: $Arch ($(if ($Arch -eq 'arm64') { 'clang -march=armv8.7-a, no OpenMP' } else { 'GGML_NATIVE=OFF: SSE4.2, AVX, AVX2, FMA, F16C, BMI2' }))",
     "Patches: $(if ($patches.Count) { ($patches | ForEach-Object Name) -join ', ' } else { '(none)' })",
     "Build ID: $buildId",
     "Built: $([DateTime]::UtcNow.ToString('u'))"
