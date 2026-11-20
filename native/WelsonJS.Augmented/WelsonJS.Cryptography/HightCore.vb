@@ -4,6 +4,14 @@
 ' https://github.com/gnh1201/welsonjs
 ' 
 Public Class HightCore
+    Implements IBlockCipher
+
+    Public ReadOnly Property BlockSize As Integer Implements IBlockCipher.BlockSize
+        Get
+            Return 8
+        End Get
+    End Property
+
     Private ReadOnly roundKey(135) As Byte
     Private Shared ReadOnly DELTA As Byte() = {
         &H5A, &H6D, &H36, &H1B, &HD, &H6, &H3, &H41,
@@ -48,7 +56,7 @@ Public Class HightCore
         &H85, &HDD, &H35, &H6D, &HE4, &HBC, &H54, &HC, &H47, &H1F, &HF7, &HAF, &H26, &H7E, &H96, &HCE,
         &HB, &H53, &HBB, &HE3, &H6A, &H32, &HDA, &H82, &HC9, &H91, &H79, &H21, &HA8, &HF0, &H18, &H40,
         &H8E, &HD6, &H3E, &H66, &HEF, &HB7, &H5F, &H7, &H4C, &H14, &HFC, &HA4, &H2D, &H75, &H9D, &HC5,
-        &H16, &H4E, &HA6, &HFE, &H77, &H2F, &HC7, &H9F, &HD4, &H8C, &H64, &H3C, &HB5, &HED, &H5D, &H5D,
+        &H16, &H4E, &HA6, &HFE, &H77, &H2F, &HC7, &H9F, &HD4, &H8C, &H64, &H3C, &HB5, &HED, &H5, &H5D,
         &H93, &HCB, &H23, &H7B, &HF2, &HAA, &H42, &H1A, &H51, &H9, &HE1, &HB9, &H30, &H68, &H80, &HD8,
         &H1D, &H45, &HAD, &HF5, &H7C, &H24, &HCC, &H94, &HDF, &H87, &H6F, &H37, &HBE, &HE6, &HE, &H56,
         &H98, &HC0, &H28, &H70, &HF9, &HA1, &H49, &H11, &H5A, &H2, &HEA, &HB2, &H3B, &H63, &H8B, &HD3,
@@ -82,22 +90,26 @@ Public Class HightCore
     Private Sub KeySchedule(key As Byte())
         If key.Length <> 16 Then Throw New ArgumentException("Key must be 16 bytes")
 
-        ' 1. Set the whitening key (WK0 ~ WK7): Use MK[8..15]
-        For i As Integer = 0 To 7
-            roundKey(i) = key(8 + i)
+        ' The key schedule of the HIGHT specification and the KISA reference code
+        ' (HIGHT_KeySched): the whitening keys are WK0..WK3 = MK12..MK15 and WK4..WK7 = MK0..MK3,
+        ' where MKi is byte i of the key.
+        For i As Integer = 0 To 3
+            roundKey(i) = key(i + 12)
+            roundKey(i + 4) = key(i)
         Next
 
-        ' 2. Set the round key (key length is 128)
+        ' The subkeys: SK(16i + j) = MK((j - i) mod 8) + delta(16i + j) and
+        ' SK(16i + j + 8) = MK((j - i) mod 8 + 8) + delta(16i + j + 8).
         For i As Integer = 0 To 7
             For j As Integer = 0 To 7
                 Dim idx = 16 * i + j
-                roundKey(8 + idx) = CByte((key(8 + Mod8(j - i)) + DELTA(idx)) And &HFF)
-                roundKey(8 + idx + 8) = CByte((key(Mod8(j - i)) + DELTA(idx + 8)) And &HFF)
+                roundKey(8 + idx) = CByte((key(Mod8(j - i)) + DELTA(idx)) And &HFF)
+                roundKey(8 + idx + 8) = CByte((key(Mod8(j - i) + 8) + DELTA(idx + 8)) And &HFF)
             Next
         Next
     End Sub
 
-    Public Sub EncryptBlock(input() As Byte, inOffset As Integer, output() As Byte, outOffset As Integer)
+    Public Sub EncryptBlock(input() As Byte, inOffset As Integer, output() As Byte, outOffset As Integer) Implements IBlockCipher.EncryptBlock
         Dim XX(7) As Byte
 
         ' First Round
@@ -146,7 +158,7 @@ Public Class HightCore
         output(outOffset + 6) = CByte(XX(7) Xor roundKey(7))
     End Sub
 
-    Public Sub DecryptBlock(input() As Byte, inOffset As Integer, output() As Byte, outOffset As Integer)
+    Public Sub DecryptBlock(input() As Byte, inOffset As Integer, output() As Byte, outOffset As Integer) Implements IBlockCipher.DecryptBlock
         Dim XX(7) As Byte
 
         ' Initial Round

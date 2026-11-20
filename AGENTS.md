@@ -39,8 +39,8 @@ The solution `native/WelsonJS.Augmented/WelsonJS.Augmented.sln` contains these p
 | `WelsonJS.Launcher` | Managed application launcher and related startup/UI components. |
 | `WelsonJS.Service` | Windows service host and lifecycle support. |
 | `WelsonJS.Esent` | ESENT database integration. |
-| `WelsonJS.Cryptography` | Managed cryptographic algorithms, including implementations in this project such as ARIA and HIGHT. |
-| `WelsonJS.Cryptography.Test` | Standalone cryptography validation project. |
+| `WelsonJS.Cryptography` | Managed Korean block ciphers (ARIA, SEED, HIGHT) as `SymmetricAlgorithm` classes, with the modes ECB, CBC, CFB, OFB, CTS, CTR, GCM, CCM and CMAC; see its `README.md`. |
+| `WelsonJS.Cryptography.Test` | Checks `WelsonJS.Cryptography` against published test vectors and .NET's AES; exits with 1 on a failure (`dotnet run --project native\WelsonJS.Augmented\WelsonJS.Cryptography.Test`). |
 
 Do not assume every capability is implemented by a managed project: many APIs live in `lib/` and interact directly with WSH, COM, external programs, or optional components. Preserve graceful handling of unavailable optional dependencies where the surrounding API already provides it.
 

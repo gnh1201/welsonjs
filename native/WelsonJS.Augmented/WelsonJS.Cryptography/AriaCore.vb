@@ -4,6 +4,14 @@
 ' https://github.com/gnh1201/welsonjs
 ' 
 Public Class AriaCore
+    Implements IBlockCipher
+
+    Public ReadOnly Property BlockSize As Integer Implements IBlockCipher.BlockSize
+        Get
+            Return 16
+        End Get
+    End Property
+
     Private S(3, 255) As Byte
     Private KRK(2, 15) As Byte
     Private roundKeyEnc(271) As Byte
@@ -26,7 +34,7 @@ Public Class AriaCore
         DecKeySetup(key, roundKeyDec)
     End Sub
 
-    Public Sub EncryptBlock(input() As Byte, inOffset As Integer, output() As Byte, outOffset As Integer)
+    Public Sub EncryptBlock(input() As Byte, inOffset As Integer, output() As Byte, outOffset As Integer) Implements IBlockCipher.EncryptBlock
         Dim block(15) As Byte
         Array.Copy(input, inOffset, block, 0, 16)
         Dim encrypted(15) As Byte
@@ -34,7 +42,7 @@ Public Class AriaCore
         Array.Copy(encrypted, 0, output, outOffset, 16)
     End Sub
 
-    Public Sub DecryptBlock(input() As Byte, inOffset As Integer, output() As Byte, outOffset As Integer)
+    Public Sub DecryptBlock(input() As Byte, inOffset As Integer, output() As Byte, outOffset As Integer) Implements IBlockCipher.DecryptBlock
         Dim block(15) As Byte
         Array.Copy(input, inOffset, block, 0, 16)
         Dim decrypted(15) As Byte

@@ -2,11 +2,16 @@
 ' SPDX-License-Identifier: MIT
 ' SPDX-FileCopyrightText: 2025 Namhyeon Go <gnh1201@catswords.re.kr>, Catswords OSS And WelsonJS Contributors
 ' https://github.com/gnh1201/welsonjs
-' 
+'
 Imports System.Security.Cryptography
 
+''' <summary>
+''' HIGHT (TTAS.KO-12.0040/R1, ISO/IEC 18033-3), a 64-bit block cipher with a 128-bit key, as a
+''' SymmetricAlgorithm. Through Mode: ECB (the default), CBC, CFB, OFB and CTS; through their own
+''' methods: CTR and CMAC. GCM and CCM need a 128-bit block. See <see cref="BlockCipherAlgorithm"/>.
+''' </summary>
 Public Class HightAlgorithm
-    Inherits SymmetricAlgorithm
+    Inherits BlockCipherAlgorithm
 
     Public Sub New()
         LegalBlockSizesValue = New KeySizes() {New KeySizes(64, 64, 0)}
@@ -23,34 +28,7 @@ Public Class HightAlgorithm
         Me.IV = New Byte(7) {}
     End Sub
 
-    Public Overrides Sub GenerateKey()
-        Using rng As New RNGCryptoServiceProvider()
-            rng.GetBytes(Me.Key)
-        End Using
-    End Sub
-
-    Public Overrides Sub GenerateIV()
-        Using rng As New RNGCryptoServiceProvider()
-            rng.GetBytes(Me.IV)
-        End Using
-    End Sub
-
-    Public Overrides Function CreateEncryptor(rgbKey As Byte(), rgbIV As Byte()) As ICryptoTransform
-        Return CreateTransform(rgbKey, rgbIV, True)
+    Protected Overrides Function CreateCipherCore(key() As Byte) As IBlockCipher
+        Return New HightCore(key)
     End Function
-
-    Public Overrides Function CreateDecryptor(rgbKey As Byte(), rgbIV As Byte()) As ICryptoTransform
-        Return CreateTransform(rgbKey, rgbIV, False)
-    End Function
-
-    Private Function CreateTransform(key As Byte(), iv As Byte(), encrypt As Boolean) As ICryptoTransform
-        Select Case Me.Mode
-            Case CipherMode.ECB
-                Return New HightEcbTransform(key, encrypt, Me.Padding)
-            Case Else
-                Throw New NotSupportedException("This mode not supported yet")
-        End Select
-    End Function
-
-    ' TODO: CCM, GCM, CMAC
 End Class
