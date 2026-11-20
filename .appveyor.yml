@@ -20,8 +20,9 @@ environment:
   SEVENZR_GZ_URL: https://catswords.blob.core.windows.net/welsonjs/packages/native/7zr/26.05-x86/7zr.exe.gz
   SEVENZR_GZ_SHA256: c63c0233d08a49606626613f28e87879f223bc949d20cca9bcc9f3ea31921a43
   matrix:
+    # The Debug job is a test build: it builds and keeps its artifacts, but sends no
+    # signing request (the deploy below runs for Release only).
     - CONFIGURATION: Debug
-      SIGNING_POLICY_SLUG: test-signing
     - CONFIGURATION: Release
       SIGNING_POLICY_SLUG: release-signing
       # Keep the llama.cpp and CrispEmbed builds in the cache even if a later step fails.
@@ -107,6 +108,7 @@ after_build:
    - cmd: xcopy /s /y native\WelsonJS.Augmented\WelsonJS.Service\bin\x86\%CONFIGURATION%\* artifacts\
    - cmd: xcopy /s /y native\WelsonJS.Augmented\WelsonJS.Launcher\bin\x86\%CONFIGURATION%\* artifacts\
    - cmd: xcopy /s /y native\WelsonJS.Augmented\Catswords.Phantomizer\bin\%CONFIGURATION%\netstandard2.0\* artifacts\
+   - cmd: xcopy /s /y native\WelsonJS.Augmented\WelsonJS.Cryptography\bin\x86\%CONFIGURATION%\netstandard2.0\* artifacts\
    - cmd: nuget pack native\WelsonJS.Augmented\WelsonJS.ManagedObject\ -properties Configuration=%CONFIGURATION% -properties Platform=AnyCPU -OutputDirectory artifacts\
    - ps: |
        $ErrorActionPreference = "Stop"
@@ -179,8 +181,11 @@ artifacts:
     name: WelsonJS.Augmented
 
 deploy:
+# SignPath signing request, for the Release job only.
 - provider: Webhook
   url: https://app.signpath.io/API/v1/%ORGANIZATION_ID%/Integrations/AppVeyor?ProjectSlug=%PROJECT_SLUG%&SigningPolicySlug=%SIGNING_POLICY_SLUG%&ArtifactConfigurationSlug=%ARTIFACT_CONFIGURATION_SLUG%
+  on:
+    CONFIGURATION: Release
   authorization:
     secure: nABfe+lksIRfS7lVnkq3EdIYNH8KOka+5ZFTUJqUW2nckBubhrlAXarbCPJHLp9FWWf3zxAWhNwT0It+qyqPRQ==
 
