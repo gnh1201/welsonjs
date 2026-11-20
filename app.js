@@ -1201,9 +1201,9 @@ var squel = require("app/assets/js/squel-basic-5.13.0.1");
 // JavaScript YAML parser and dumper. 
 var yaml = require("app/assets/js/js-yaml-4.1.0.1");
 
-// is.js Micro check library: is.js 0.9.0.1, the release 0.9.0 with is.url() fixed for
-// CVE-2020-26302 (ReDoS) and is.email() fixed the same way
-var is = require("app/assets/js/is-0.9.0.1");
+// is.js Micro check library: is.js 0.9.0.2, the release 0.9.0 with is.url() fixed for
+// CVE-2020-26302 (ReDoS), is.email() fixed the same way and is.ipv6() working in JScript
+var is = require("app/assets/js/is-0.9.0.2");
 
 // Intl (ECMA-402) polyfill
 //var Intl = require("app/assets/js/Intl-1.2.5-e93b114.min");

@@ -1533,11 +1533,11 @@ var test_implements = {
         console.log(response_text);
     },
 
-    // the global is: is.js 0.9.0.1 (app/assets/js/is-0.9.0.1.js)
+    // the global is: is.js 0.9.0.2 (app/assets/js/is-0.9.0.2.js)
     "is_test": function() {
         var jp = "user@" + String.fromCharCode(0x4F8B, 0x3048) + ".jp";
         var cases = [
-            ["is.VERSION", is.VERSION, "0.9.0.1"],
+            ["is.VERSION", is.VERSION, "0.9.0.2"],
             ["is.string('abc')", is.string("abc"), true],
             ["is.string(1)", is.string(1), false],
             ["is.number(1)", is.number(1), true],
@@ -1574,6 +1574,11 @@ var test_implements = {
             ["is.email(Japanese domain)", is.email(jp), true],
             ["is.ipv4('1.2.3.4')", is.ipv4("1.2.3.4"), true],
             ["is.ipv4('256.1.1.1')", is.ipv4("256.1.1.1"), false],
+            ["is.ipv6('2001:db8::1')", is.ipv6("2001:db8::1"), true],
+            ["is.ipv6('::ffff:1.2.3.4')", is.ipv6("::ffff:1.2.3.4"), true],
+            ["is.ipv6('1:2:3:4:5:6:7:8')", is.ipv6("1:2:3:4:5:6:7:8"), true],
+            ["is.ipv6('1::2::3')", is.ipv6("1::2::3"), false],
+            ["is.ipv6('1:2:3:4:5:6:7:8:9')", is.ipv6("1:2:3:4:5:6:7:8:9"), false],
             ["is.ip('::1')", is.ip("::1"), true],
             ["is.alphaNumeric('abc123')", is.alphaNumeric("abc123"), true],
             ["is.usZipCode('12345')", is.usZipCode("12345"), true],
@@ -1614,8 +1619,8 @@ var test_implements = {
         }
 
         console.log(failures === 0 ?
-            "is.js 0.9.0.1을 정상적으로 확인하였습니다." :
-            "is.js 0.9.0.1 확인 중 " + failures + "건이 실패하였습니다.");
+            "is.js 0.9.0.2를 정상적으로 확인하였습니다." :
+            "is.js 0.9.0.2 확인 중 " + failures + "건이 실패하였습니다.");
     }
 };
 

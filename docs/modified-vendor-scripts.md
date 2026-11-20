@@ -7,7 +7,7 @@ Up to 0.2.7.62, the same files carried `.wsh` in their names (`core-js-3.49.0.ws
 | File | Comes from | Loaded by |
 | --- | --- | --- |
 | `core-js-3.49.0.1.js` | core-js 3.49.0, `index.js` of the npm package `core-js-bundle` | `app.js` |
-| `is-0.9.0.1.js` | is.js 0.9.0, `is.js` of the release (npm package `is_js`, tag `v0.9.0`) | `app.js` (`is`) |
+| `is-0.9.0.2.js` | is.js 0.9.0, `is.js` of the release (npm package `is_js`, tag `v0.9.0`) | `app.js` (`is`) |
 | `js-yaml-4.1.0.1.js` | js-yaml 4.1.0, `dist/js-yaml.js` of the npm package | `app.js` (`yaml`) |
 | `linq-4.0.2.1.js` | linq.js 4.0.2, `linq.js` of the npm package `linq` | `app.js` (`Enumerable`) |
 | `numbers-0.7.0.1.js` | numbers.js 0.7.0, the browserified `src/numbers.js` | `app.js` (`numbers`) |
@@ -44,13 +44,14 @@ The digests are of the files as downloaded. Squel.js at `afa1cb5` is not the `di
 
 Nothing else is changed.
 
-### is.js 0.9.0.1
+### is.js 0.9.0.2
 
 - `is.url()`: the host name labels are matched with a pattern that has one way to match each label, instead of a quantified group inside a quantified group that backtracked exponentially (CVE-2020-26302). See `docs/third-party-dependencies.md`.
 - `is.email()`: the domain part is rewritten the same way; the 0.9.0 pattern backtracked exponentially on `a@` followed by `a.` repeated.
-- `is.VERSION` is `0.9.0.1` (the release said `0.8.0`).
+- `is.ipv6()`: written as the list of the address forms, without the lookaheads, backreferences and empty alternative that the JScript engine evaluated differently (it rejected `2001:db8::1`).
+- `is.VERSION` is `0.9.0.2` (the release said `0.8.0`). 0.9.0.1 had the `is.url()` and `is.email()` changes only.
 
-Both patterns accept and reject exactly the values the 0.9.0 patterns did; they were compared on about 6 million strings. WelsonJS used to load the release's `is.min.js`, the minified form of the same source; 0.9.0.1 is the readable `is.js`. The `is.js` on the default branch of the repository is newer than the release (2020, with `is.thenable` and `is.operaMini`) and is not used.
+The three patterns accept and reject exactly the values the 0.9.0 patterns do in V8; they were compared on about 17 million strings. WelsonJS used to load the release's `is.min.js`, the minified form of the same source; 0.9.0.2 is built from the readable `is.js`. The `is.js` on the default branch of the repository is newer than the release (2020, with `is.thenable` and `is.operaMini`) and is not used.
 
 ### js-yaml 4.1.0.1
 
