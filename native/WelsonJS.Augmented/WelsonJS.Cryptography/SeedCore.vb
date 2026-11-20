@@ -4,6 +4,14 @@
 ' https://github.com/gnh1201/welsonjs
 ' 
 Public Class SeedCore
+    Implements IBlockCipher
+
+    Public ReadOnly Property BlockSize As Integer Implements IBlockCipher.BlockSize
+        Get
+            Return 16
+        End Get
+    End Property
+
     Private ReadOnly roundKey(31) As UInteger
 
     Private Shared ReadOnly SS0() As UInteger = {
@@ -208,7 +216,7 @@ Public Class SeedCore
         Next
     End Sub
 
-    Public Sub EncryptBlock(input() As Byte, inOffset As Integer, output() As Byte, outOffset As Integer)
+    Public Sub EncryptBlock(input() As Byte, inOffset As Integer, output() As Byte, outOffset As Integer) Implements IBlockCipher.EncryptBlock
         Dim L0 = ToUInt32BE(input, inOffset)
         Dim L1 = ToUInt32BE(input, inOffset + 4)
         Dim R0 = ToUInt32BE(input, inOffset + 8)
@@ -231,7 +239,7 @@ Public Class SeedCore
         WriteUInt32BE(L1, output, outOffset + 12)
     End Sub
 
-    Public Sub DecryptBlock(input() As Byte, inOffset As Integer, output() As Byte, outOffset As Integer)
+    Public Sub DecryptBlock(input() As Byte, inOffset As Integer, output() As Byte, outOffset As Integer) Implements IBlockCipher.DecryptBlock
         Dim L0 = ToUInt32BE(input, inOffset)
         Dim L1 = ToUInt32BE(input, inOffset + 4)
         Dim R0 = ToUInt32BE(input, inOffset + 8)
