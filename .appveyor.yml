@@ -42,7 +42,7 @@ cache:
   # invalidated when the pinned commit, the version, the script, a patch, the
   # icon or the WelsonJS version changes; the script also checks its build ID
   # and SHA256SUMS.txt.
-  - artifacts\crispembed -> native\crispembed\commit.txt, native\crispembed\version.txt, native\crispembed\build-crispembed.ps1, native\crispembed\patches\0001-windows-resources.patch, app\favicon.ico, native\WelsonJS.Augmented\WelsonJS.Launcher\Properties\AssemblyInfo.cs
+  - artifacts\crispembed -> native\crispembed\commit.txt, native\crispembed\version.txt, native\crispembed\build-crispembed.ps1, native\crispembed\patches\0001-windows-resources.patch, native\crispembed\cmake\arm64-windows-llvm.cmake, app\favicon.ico, native\WelsonJS.Augmented\WelsonJS.Launcher\Properties\AssemblyInfo.cs
 
 before_build:
   - ps: |
@@ -51,19 +51,22 @@ before_build:
       # files go to artifacts\llamacpp\<arch> and are packaged into artifacts.zip
       # (and signed) with the other artifacts. Each architecture is skipped when
       # its cached output was built from the same inputs. The source is
-      # bitnet.cpp's llama.cpp fork (with BitNet's I2_S kernels): x64 is built
-      # with MSVC, arm64 is cross-compiled with clang (-InstallLlvm installs LLVM
+      # bitnet.cpp's llama.cpp fork (with BitNet's I2_S kernels): x64 and x86 are
+      # built with MSVC, arm64 is cross-compiled with clang (-InstallLlvm installs LLVM
       # with choco only when the arm64 build is needed and clang is missing).
       if ($env:CONFIGURATION -eq "Release") {
           $ErrorActionPreference = "Stop"
-          foreach ($llamaArch in @("x64", "arm64")) {
+          foreach ($llamaArch in @("x64", "arm64", "x86")) {
               & .\native\llamacpp\build-llamacpp.ps1 -Arch $llamaArch -OutDir "artifacts\llamacpp" -WorkDir "C:\llamacpp-build" -InstallLlvm
               if ($LASTEXITCODE -ne 0) { throw "build-llamacpp.ps1 -Arch $llamaArch failed with exit code $LASTEXITCODE" }
           }
-          # CrispEmbed (crispembed-server for the launcher), x64 with MSVC, into
-          # artifacts\crispembed\x64; skipped when the cached output matches.
-          & .\native\crispembed\build-crispembed.ps1 -OutDir "artifacts\crispembed" -WorkDir "C:\crispembed-build"
-          if ($LASTEXITCODE -ne 0) { throw "build-crispembed.ps1 failed with exit code $LASTEXITCODE" }
+          # CrispEmbed (crispembed-server for the launcher) into
+          # artifacts\crispembed\<arch>: x64 and x86 with MSVC, arm64 cross-compiled
+          # with clang; each is skipped when its cached output matches.
+          foreach ($crispArch in @("x64", "arm64", "x86")) {
+              & .\native\crispembed\build-crispembed.ps1 -Arch $crispArch -OutDir "artifacts\crispembed" -WorkDir "C:\crispembed-build" -InstallLlvm
+              if ($LASTEXITCODE -ne 0) { throw "build-crispembed.ps1 -Arch $crispArch failed with exit code $LASTEXITCODE" }
+          }
       }
   - git submodule update --init --recursive
   - git -C native\ManagedEsent apply --ignore-whitespace ..\patches\ManagedEsent-no-system-memory.patch

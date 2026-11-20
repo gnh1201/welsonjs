@@ -35,6 +35,10 @@
 #
 # Architectures:
 #   x64   MSVC (Visual Studio generator), every x86-64 CPU variant.
+#   x86   MSVC (Visual Studio generator, Win32), one CPU backend (ggml-cpu.dll)
+#         with the AVX2 baseline (GGML_NATIVE=OFF) without BMI2: ggml's BMI2
+#         code uses _pdep_u64, which 32-bit MSVC lacks, and several of the CPU
+#         variants of GGML_CPU_ALL_VARIANTS enable BMI2.
 #   arm64 Cross-compiled on x64 with clang (ggml does not support MSVC on ARM),
 #         the fork's cmake\arm64-windows-llvm.cmake toolchain (-march=armv8.7-a)
 #         and Ninja, inside the Visual Studio x64_arm64 developer environment.
@@ -43,7 +47,7 @@
 #         "choco install llvm" when a build is needed and clang is missing.
 #
 # Usage:
-#   powershell -ExecutionPolicy Bypass -NoProfile -File build-llamacpp.ps1 [-Arch x64|arm64] [-OutDir <dir>] [-WorkDir <dir>] [-Source auto|git|archive] [-LlvmDir <dir>] [-InstallLlvm] [-Force]
+#   powershell -ExecutionPolicy Bypass -NoProfile -File build-llamacpp.ps1 [-Arch x64|x86|arm64] [-OutDir <dir>] [-WorkDir <dir>] [-Source auto|git|archive] [-LlvmDir <dir>] [-InstallLlvm] [-Force]
 #
 # Requirements: git, CMake and Visual Studio (MSVC) with the C++ workload; for
 # arm64 also the MSVC ARM64 build tools, Ninja and LLVM (clang).
@@ -52,9 +56,9 @@
 param(
     [string]$OutDir    = (Join-Path $PSScriptRoot "..\..\out\llamacpp"),
     [string]$WorkDir   = (Join-Path $env:TEMP "welsonjs-llamacpp-build"),
-    [ValidateSet("x64", "arm64")]
+    [ValidateSet("x64", "x86", "arm64")]
     [string]$Arch      = "x64",
-    [string]$Generator = "",          # x64 only; empty: the CMake default (Visual Studio)
+    [string]$Generator = "",          # x64 and x86 only; empty: the CMake default (Visual Studio)
     [int]$Jobs         = [Environment]::ProcessorCount,
     [ValidateSet("auto", "git", "archive")]
     [string]$Source    = "auto",
@@ -467,10 +471,18 @@ else {
         # Multi-config generator: the configuration is chosen at build time
         # (--config Release); CMAKE_BUILD_TYPE would only produce an
         # "unused variable" warning.
-        $configure += @("-A", $Arch)
+        $configure += @("-A", $(if ($Arch -eq "x86") { "Win32" } else { $Arch }))
     }
     else { $configure += @("-DCMAKE_BUILD_TYPE=Release") }
-    $configure += @("-DGGML_CPU_ALL_VARIANTS=ON")
+    if ($Arch -eq "x86") {
+        # One CPU backend with the AVX2 baseline without BMI2 (_pdep_u64 is
+        # 64-bit only in MSVC, and several CPU variants enable BMI2).
+        # /LARGEADDRESSAWARE: up to 4 GB of address space on 64-bit Windows
+        # instead of 2 GB; the model and the KV cache of an 8192-token context
+        # (the launcher's LlamaCppContextSize) do not fit in 2 GB.
+        $configure += @("-DGGML_CPU_ALL_VARIANTS=OFF", "-DGGML_BMI2=OFF", "-DCMAKE_EXE_LINKER_FLAGS_INIT=/LARGEADDRESSAWARE")
+    }
+    else { $configure += @("-DGGML_CPU_ALL_VARIANTS=ON") }
 }
 $configure += @(
     "-DBUILD_SHARED_LIBS=ON",

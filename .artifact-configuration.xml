@@ -54,6 +54,19 @@
       <include path="artifacts/llamacpp/arm64/ggml.dll" />
       <include path="artifacts/llamacpp/arm64/ggml-base.dll" />
       <include path="artifacts/llamacpp/arm64/ggml-cpu.dll" />
+      <!-- llama.cpp for x86 (32-bit, MSVC; one CPU backend, ggml-cpu.dll) -->
+      <include path="artifacts/llamacpp/x86/llama-server.exe" />
+      <include path="artifacts/llamacpp/x86/llama-cli.exe" />
+      <include path="artifacts/llamacpp/x86/llama-quantize.exe" />
+      <include path="artifacts/llamacpp/x86/llama.dll" />
+      <include path="artifacts/llamacpp/x86/llama-common.dll" />
+      <include path="artifacts/llamacpp/x86/llama-server-impl.dll" />
+      <include path="artifacts/llamacpp/x86/llama-cli-impl.dll" />
+      <include path="artifacts/llamacpp/x86/llama-quantize-impl.dll" />
+      <include path="artifacts/llamacpp/x86/mtmd.dll" />
+      <include path="artifacts/llamacpp/x86/ggml.dll" />
+      <include path="artifacts/llamacpp/x86/ggml-base.dll" />
+      <include path="artifacts/llamacpp/x86/ggml-cpu.dll" />
       <!-- CrispEmbed (native/crispembed/build-crispembed.ps1, built in the Release job; x64 only);
            build-crispembed.ps1 fails when a built executable or DLL is not listed here -->
       <include path="artifacts/crispembed/x64/crispembed-server.exe" />
@@ -62,6 +75,20 @@
       <include path="artifacts/crispembed/x64/ggml.dll" />
       <include path="artifacts/crispembed/x64/ggml-base.dll" />
       <include path="artifacts/crispembed/x64/ggml-cpu.dll" />
+      <!-- CrispEmbed for ARM64 (cross-compiled with clang) -->
+      <include path="artifacts/crispembed/arm64/crispembed-server.exe" />
+      <include path="artifacts/crispembed/arm64/crispembed.exe" />
+      <include path="artifacts/crispembed/arm64/crispembed-quantize.exe" />
+      <include path="artifacts/crispembed/arm64/ggml.dll" />
+      <include path="artifacts/crispembed/arm64/ggml-base.dll" />
+      <include path="artifacts/crispembed/arm64/ggml-cpu.dll" />
+      <!-- CrispEmbed for x86 (32-bit, MSVC) -->
+      <include path="artifacts/crispembed/x86/crispembed-server.exe" />
+      <include path="artifacts/crispembed/x86/crispembed.exe" />
+      <include path="artifacts/crispembed/x86/crispembed-quantize.exe" />
+      <include path="artifacts/crispembed/x86/ggml.dll" />
+      <include path="artifacts/crispembed/x86/ggml-base.dll" />
+      <include path="artifacts/crispembed/x86/ggml-cpu.dll" />
       <for-each>
         <authenticode-sign />
       </for-each>
