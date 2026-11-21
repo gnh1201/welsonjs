@@ -70,7 +70,7 @@ The binaries are not built in CI: building llama.cpp and CrispEmbed for x64, arm
    - It copies `SHA256SUMS.txt` to `native\crispembed\prebuilt\<arch>.sha256`.
 3. **Commit** the three `prebuilt\<arch>.sha256` files with the change.
 
-The Release job runs `native\restore-prebuilt.ps1 -Component crispembed -Arch <arch>` for each architecture, into `artifacts\crispembed\<arch>`. It downloads the files listed in `prebuilt\<arch>.sha256` from `<version>-<arch>` as `<file>.gz` and decompresses them (when a `.gz` cannot be downloaded or used, it downloads the file itself), and uses a file only if its SHA-256 matches, so the repository, not the storage, decides what is shipped. The Debug job does not restore them.
+The Debug and Release jobs run `native\restore-prebuilt.ps1 -Component crispembed -Arch <arch>` for each architecture, into `artifacts\crispembed\<arch>`. It downloads the files listed in `prebuilt\<arch>.sha256` from `<version>-<arch>` as `<file>.gz` and decompresses them (when a `.gz` cannot be downloaded or used, it downloads the file itself), and uses a file only if its SHA-256 matches, so the repository, not the storage, decides what is shipped. Both packages are signed (Debug with the test-signing policy, Release with release-signing). Each job caches `artifacts\crispembed`, keyed on `version.txt` and the three `prebuilt\<arch>.sha256` files: when they are unchanged, the restored folders match their records and nothing is downloaded.
 
 `.artifact-configuration.xml` lists every executable and DLL of the three architectures by name (no wildcards), and the build script fails when a built binary is not listed, so a new binary cannot be left unsigned. Authenticode signing changes the files, so in the signed package `SHA256SUMS.txt` lists the hashes of the unsigned files.
 
@@ -91,6 +91,6 @@ The setup component `crispembed` selects the artifacts package; `postInstall.ps1
 1. Set `commit.txt` to the new commit (the commit itself, not a tag object) and `version.txt` to `<VERSION of the commit>.<first six characters of the commit>.1`. If the commit has no `VERSION` file, use the highest release tag for which `gh api repos/CrispStrobe/CrispEmbed/compare/<tag>...<commit>` reports `behind_by` 0, without its `v`.
 2. If the ggml submodule URL changed, check it and update `GgmlRepositoryUrl` in the script.
 3. Make the source archive for the new commit (see [Source archive](#source-archive)), upload it, and update `source-archive.txt`.
-4. Check that each patch applies (`git -c core.autocrlf=false apply --check`), and add new patches to the AppVeyor cache key.
-5. Build locally, also with `-Source archive`, and check that the built files are the ones listed in `.artifact-configuration.xml`, and that `crispembed-server` answers `/health` with the installed models.
-6. Commit. The AppVeyor cache is invalidated by the changed files.
+4. Check that each patch applies (`git -c core.autocrlf=false apply --check`).
+5. Build locally for x64, arm64 and x86, also with `-Source archive`, and check that the built files are the ones listed in `.artifact-configuration.xml`, and that `crispembed-server` answers `/health` with the installed models.
+6. Publish the three builds (`native\publish-prebuilt.ps1`, see [CI](#ci-appveyor)) and commit with the new `prebuilt\<arch>.sha256` files. The changed files invalidate the CI cache, so CI downloads the new build.

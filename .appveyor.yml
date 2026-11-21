@@ -20,14 +20,23 @@ environment:
   SEVENZR_GZ_URL: https://catswords.blob.core.windows.net/welsonjs/packages/native/7zr/26.05-x86/7zr.exe.gz
   SEVENZR_GZ_SHA256: c63c0233d08a49606626613f28e87879f223bc949d20cca9bcc9f3ea31921a43
   matrix:
-    # The Debug job is a test build: it builds and keeps its artifacts, but sends no
-    # signing request (the deploy below runs for Release only).
+    # The Debug job is a test build, signed with the test-signing policy.
     - CONFIGURATION: Debug
+      SIGNING_POLICY_SLUG: test-signing
     - CONFIGURATION: Release
       SIGNING_POLICY_SLUG: release-signing
 
 install:
   - choco install innosetup --version=%INNOSETUP_VERSION% -y --no-progress
+
+cache:
+  # The prebuilt llama.cpp and CrispEmbed builds that native\restore-prebuilt.ps1
+  # downloads (before_build). Each job keeps its own cache. A cache is invalidated
+  # when version.txt or a recorded file list (prebuilt\<arch>.sha256) changes, and
+  # only then are the files downloaded again; otherwise restore-prebuilt.ps1 finds
+  # the restored folders matching their records and downloads nothing.
+  - artifacts\llamacpp -> native\llamacpp\version.txt, native\llamacpp\prebuilt\x64.sha256, native\llamacpp\prebuilt\arm64.sha256, native\llamacpp\prebuilt\x86.sha256
+  - artifacts\crispembed -> native\crispembed\version.txt, native\crispembed\prebuilt\x64.sha256, native\crispembed\prebuilt\arm64.sha256, native\crispembed\prebuilt\x86.sha256
 
 before_build:
   - ps: |
@@ -39,15 +48,16 @@ before_build:
       # (packages/native/<component>/<version>-<arch>/), and restored here into
       # artifacts\<component>\<arch> by native\restore-prebuilt.ps1, which uses a
       # file only if its SHA-256 matches native\<component>\prebuilt\<arch>.sha256
-      # in the repository. They are packaged into artifacts.zip and signed with
-      # the other artifacts.
-      if ($env:CONFIGURATION -eq "Release") {
-          $ErrorActionPreference = "Stop"
-          foreach ($component in @("llamacpp", "crispembed")) {
-              foreach ($arch in @("x64", "arm64", "x86")) {
-                  & .\native\restore-prebuilt.ps1 -Component $component -Arch $arch -OutDir "artifacts\$component"
-                  if ($LASTEXITCODE -ne 0) { throw "restore-prebuilt.ps1 -Component $component -Arch $arch failed with exit code $LASTEXITCODE" }
-              }
+      # in the repository; a folder restored from the build cache (see cache:)
+      # that still matches its record is not downloaded again. They are packaged
+      # into artifacts.zip and signed with the other artifacts, in both jobs, so
+      # the Debug (test-signing) package has every file of
+      # .artifact-configuration.xml as well.
+      $ErrorActionPreference = "Stop"
+      foreach ($component in @("llamacpp", "crispembed")) {
+          foreach ($arch in @("x64", "arm64", "x86")) {
+              & .\native\restore-prebuilt.ps1 -Component $component -Arch $arch -OutDir "artifacts\$component"
+              if ($LASTEXITCODE -ne 0) { throw "restore-prebuilt.ps1 -Component $component -Arch $arch failed with exit code $LASTEXITCODE" }
           }
       }
   - git submodule update --init --recursive
@@ -166,11 +176,9 @@ artifacts:
     name: WelsonJS.Augmented
 
 deploy:
-# SignPath signing request, for the Release job only.
+# SignPath signing request: test-signing for Debug, release-signing for Release.
 - provider: Webhook
   url: https://app.signpath.io/API/v1/%ORGANIZATION_ID%/Integrations/AppVeyor?ProjectSlug=%PROJECT_SLUG%&SigningPolicySlug=%SIGNING_POLICY_SLUG%&ArtifactConfigurationSlug=%ARTIFACT_CONFIGURATION_SLUG%
-  on:
-    CONFIGURATION: Release
   authorization:
     secure: nABfe+lksIRfS7lVnkq3EdIYNH8KOka+5ZFTUJqUW2nckBubhrlAXarbCPJHLp9FWWf3zxAWhNwT0It+qyqPRQ==
 

@@ -25,8 +25,8 @@
 #
 # A build is skipped when <OutDir>\<arch> was built from the same inputs
 # (version, product version, commit, patches, the icon and this script; the
-# "Build ID" in BUILDINFO.txt) and its files match SHA256SUMS.txt, so the folder
-# can be kept in a CI cache.
+# "Build ID" in BUILDINFO.txt) and its files match SHA256SUMS.txt. CI does not
+# run this script: it restores the published build (native\restore-prebuilt.ps1).
 #
 # Source: the pinned commit and the ggml commit it pins are fetched with git. If
 # that fails (-Source auto), or with -Source archive, the source archive in
@@ -69,7 +69,6 @@ param(
     [string]$ProductVersion = "",     # a.b.c.d in the version information; empty: the launcher's AssemblyFileVersion
     [string]$LlvmDir   = "",          # arm64: folder with clang.exe; empty: search
     [switch]$InstallLlvm,             # arm64: install LLVM with choco when clang is missing
-    [switch]$CheckOnly,               # only report: exit 0 when the output is up to date, 3 when a build is needed
     [switch]$Force
 )
 
@@ -371,7 +370,7 @@ Write-Host "[*] Patches           : $(if ($patches.Count) { ($patches | ForEach-
 Write-Host "[*] Build ID          : $buildId"
 Write-Host "[*] Output            : $archDir"
 
-# Skip the build when the output folder (for example, restored from a CI cache)
+# Skip the build when the output folder (for example, from an earlier run)
 # was built from the same inputs and every file still matches SHA256SUMS.txt.
 if (-not $Force -and (Test-Path -LiteralPath $buildInfoPath) -and
     (Select-String -LiteralPath $buildInfoPath -SimpleMatch "Build ID: $buildId" -Quiet)) {
@@ -380,10 +379,6 @@ if (-not $Force -and (Test-Path -LiteralPath $buildInfoPath) -and
         exit 0
     }
     Write-Host "[WARN] The output does not match SHA256SUMS.txt. Building again."
-}
-if ($CheckOnly) {
-    Write-Host "[*] A build is needed."
-    exit 3
 }
 
 # ================================
