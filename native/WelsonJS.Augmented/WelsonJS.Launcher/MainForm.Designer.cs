@@ -41,6 +41,7 @@
             this.instancesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.runAsAdministratorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.globalSettingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.azureSignInToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.startTheEditorToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
@@ -133,6 +134,7 @@
             this.instancesToolStripMenuItem,
             this.runAsAdministratorToolStripMenuItem,
             this.globalSettingsToolStripMenuItem,
+            this.azureSignInToolStripMenuItem,
             this.startTheEditorToolStripMenuItem});
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
             this.settingsToolStripMenuItem.Size = new System.Drawing.Size(62, 20);
@@ -165,6 +167,13 @@
             this.globalSettingsToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
             this.globalSettingsToolStripMenuItem.Text = "Global settings...";
             this.globalSettingsToolStripMenuItem.Click += new System.EventHandler(this.globalSettingsToolStripMenuItem_Click);
+            // 
+            // azureSignInToolStripMenuItem
+            // 
+            this.azureSignInToolStripMenuItem.Name = "azureSignInToolStripMenuItem";
+            this.azureSignInToolStripMenuItem.Size = new System.Drawing.Size(196, 22);
+            this.azureSignInToolStripMenuItem.Text = "Sign in to Azure...";
+            this.azureSignInToolStripMenuItem.Click += new System.EventHandler(this.azureSignInToolStripMenuItem_Click);
             // 
             // startTheEditorToolStripMenuItem
             // 
@@ -275,6 +284,7 @@
         private System.Windows.Forms.ToolStripMenuItem instancesToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem runAsAdministratorToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem globalSettingsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem azureSignInToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem startTheEditorToolStripMenuItem;
         private System.Windows.Forms.NotifyIcon notifyIcon1;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;

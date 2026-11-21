@@ -130,6 +130,7 @@ exports.main = main;
 | `IpQueryApiKey2` | IP 도구에 쓰는 AbuseIPDB API 키 |
 | `DnsServerAddress` | DNS 도구가 쓰는 DNS 서버(쉼표로 구분, 기본값 `1.1.1.1,8.8.8.8`) |
 | `ResourceServerApiKey` | 런처의 OpenAI 호환 API를 쓰는 다른 프로그램을 위한 API 키 |
+| `AzureClientId`, `AzureTenant` | Azure Key Vault에서 API 키를 받기 위한 로그인(**Settings > Sign in to Azure...**, [azure-key-vault.md](azure-key-vault.md) 참고) |
 
 업그레이드하면 설치 프로그램이 이 파일을 새 파일로 바꾼다. 바꾼 값은 적어 두었다가 업그레이드 후 다시 설정한다.
 

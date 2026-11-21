@@ -86,6 +86,7 @@
     <Reference Include="System.IO.Compression.FileSystem" />
     <Reference Include="System.Management" />
     <Reference Include="System.Net.Http" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Web" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
@@ -95,6 +96,8 @@
     <Compile Include="ApiEndpoints\LlamaCpp.cs" />
     <Compile Include="ApiEndpoints\CrispEmbed.cs" />
     <Compile Include="ApiEndpoints\LocalServers.cs" />
+    <Compile Include="ApiEndpoints\KeyVault.cs" />
+    <Compile Include="AzureKeyVault.cs" />
     <Compile Include="ApiEndpoints\OpenAiCompatible.cs" />
     <Compile Include="ApiEndpoints\LlmGuard.cs" />
     <Compile Include="ApiEndpoints\Terminal.cs" />

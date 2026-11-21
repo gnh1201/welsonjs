@@ -106,6 +106,24 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
+        ///   5bd2e397-314a-4fc9-88db-4e2b2452fb50과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string AzureClientId {
+            get {
+                return ResourceManager.GetString("AzureClientId", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   과(와) 유사한 지역화된 문자열을 찾습니다.
+        /// </summary>
+        internal static string AzureTenant {
+            get {
+                return ResourceManager.GetString("AzureTenant", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   https://catswords.blob.core.windows.net/welsonjs/과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string BlobStoragePrefix {

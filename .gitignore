@@ -544,6 +544,7 @@ FodyWeavers.xsd
 
 bin
 data/*-apikey.txt
+data/*_apikey.txt
 data/*.nomedia.txt
 data/.pipe_*
 data/python3*.zip

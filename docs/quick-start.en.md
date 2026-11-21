@@ -130,6 +130,7 @@ The launcher's settings are in `C:\Program Files (x86)\WelsonJS\bin\x86\WelsonJS
 | `IpQueryApiKey2` | AbuseIPDB API key, for the IP tool |
 | `DnsServerAddress` | DNS servers for the DNS tool, separated by commas (default `1.1.1.1,8.8.8.8`) |
 | `ResourceServerApiKey` | API key for other software that uses the launcher's OpenAI-compatible API |
+| `AzureClientId`, `AzureTenant` | Sign-in for API keys from Azure Key Vault (**Settings > Sign in to Azure...**; see [azure-key-vault.md](azure-key-vault.md)) |
 
 The installer replaces this file when you upgrade. Note your changes, and set them again after upgrading.
 
