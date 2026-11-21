@@ -115,11 +115,26 @@ namespace WelsonJS.Launcher
             AssemblyLoader.AddIntegrityHash(GetAppConfig("IntegrityHashCurl"));
             AssemblyLoader.Register();
 
-            AssemblyLoader.LoadNativeModules(
-                "ChakraCore",
-                new Version(1, 13, 0, 0),
-                new[] { "ChakraCore.dll" }
-            );
+            // ChakraCore: the signed release for the architecture of this process, checked against its
+            // hash list (native\publish-signed.ps1). Without ChakraCoreRelease, the earlier
+            // single-architecture build (verified with AssemblyIntegrityUrl) is loaded.
+            string chakraCoreRelease = GetAppConfig("ChakraCoreRelease");
+            if (!string.IsNullOrWhiteSpace(chakraCoreRelease))
+            {
+                AssemblyLoader.LoadNativeModules(
+                    "ChakraCore",
+                    chakraCoreRelease.Trim(),
+                    new[] { "ChakraCore.dll" }
+                );
+            }
+            else
+            {
+                AssemblyLoader.LoadNativeModules(
+                    "ChakraCore",
+                    new Version(1, 13, 0, 0),
+                    new[] { "ChakraCore.dll" }
+                );
+            }
         }
 
         public static void RecordFirstDeployTime(string directory, string instanceId)

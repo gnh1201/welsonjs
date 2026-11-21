@@ -131,6 +131,21 @@ Upload your managed and native assemblies to your CDN following the URL pattern 
 | Native DLL         | `https://example.cdn.tld/packages/native/MyNativeLib/1.0.0.0/MyNativeLib.dll`       | Native assembly                 |
 | Native DLL (GZip)  | `https://example.cdn.tld/packages/native/MyNativeLib/1.0.0.0/MyNativeLib.dll.gz`    | GZip-compressed native assembly |
 
+#### 🧬 Native releases per architecture, with a hash list
+
+`LoadNativeModules(string ownerAssemblyName, string release, IList<string> fileNames)` loads the native modules of a release for the architecture of the current process (`x86`, `x64` or `arm64`):
+
+| File | Example URL |
+| --- | --- |
+| Hash list | `https://example.cdn.tld/packages/native/MyNativeLib/1.0.0-signed/SHA256SUMS.txt` |
+| Native DLL | `https://example.cdn.tld/packages/native/MyNativeLib/1.0.0-signed/x64/MyNativeLib.dll` (and `.dll.gz`) |
+
+`SHA256SUMS.txt` has one `<sha256>  <arch>/<file>` line per file, as `sha256sum` writes it. A module is loaded only when it is listed for the architecture, its SHA-256 matches the list (a cached copy that does not match is downloaded again) and it has a valid Authenticode signature. For these modules the hash list takes the place of the Integrity URL. They are cached in `%APPDATA%\<AppName>\assembly\<Name>\<release>\<arch>\`.
+
+```csharp
+AssemblyLoader.LoadNativeModules("ChakraCore", "1.13.0.97e68c9.1-signed", new[] { "ChakraCore.dll" });
+```
+
 ---
 
 ### 4. 🎉 Start loading assemblies over HTTP

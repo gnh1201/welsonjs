@@ -280,6 +280,198 @@ namespace Catswords.Phantomizer
         }
 
         /// <summary>
+        /// Loads native modules of a published release for the architecture of the current process.
+        /// The release carries a hash list:
+        ///   {BaseUrl}/native/{ownerAssemblyName}/{release}/SHA256SUMS.txt   ("&lt;sha256&gt;  &lt;arch&gt;/&lt;file&gt;" per line)
+        ///   {BaseUrl}/native/{ownerAssemblyName}/{release}/{arch}/{file}    (downloaded as {file}.gz for a .dll)
+        /// {arch} is x86, x64 or arm64. Each file must be listed for that architecture, its SHA-256 must
+        /// match the list (a cached file that does not match is downloaded again), and it must carry a
+        /// valid Authenticode signature. For these files the hash list takes the place of IntegrityUrl.
+        /// Cached at: %APPDATA%\{AppName}\assembly\{ownerAssemblyName}\{release}\{arch}\
+        /// </summary>
+        public static void LoadNativeModules(string ownerAssemblyName, string release, IList<string> fileNames)
+        {
+            TryVerifyUrl(BaseUrl, out bool verified);
+            if (!verified)
+                throw new InvalidOperationException("BaseUrl verification failed.");
+
+            if (!IsSafePathSegment(ownerAssemblyName))
+                throw new ArgumentException("Invalid owner assembly name: " + ownerAssemblyName, "ownerAssemblyName");
+            if (!IsSafePathSegment(release))
+                throw new ArgumentException("Invalid release name: " + release, "release");
+            if (fileNames == null) throw new ArgumentNullException("fileNames");
+
+            string arch = GetProcessArchitectureName();
+            string releaseUrl = $"{BaseUrl.TrimEnd('/')}/native/{ownerAssemblyName}/{release}";
+
+            lock (SyncRoot)
+            {
+                Dictionary<string, string> hashes = DownloadHashList(releaseUrl + "/SHA256SUMS.txt");
+
+                string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                string cacheDir = Path.Combine(appData, AppName, "assembly", ownerAssemblyName, release, arch);
+                Directory.CreateDirectory(cacheDir);
+
+                try
+                {
+                    if (!SetDllDirectory(cacheDir))
+                        Trace.TraceWarning("SetDllDirectory failed for: {0}", cacheDir);
+                }
+                catch (Exception ex)
+                {
+                    Trace.TraceWarning("SetDllDirectory threw exception: {0}", ex.Message);
+                }
+
+                foreach (string raw in fileNames)
+                {
+                    if (string.IsNullOrWhiteSpace(raw))
+                        continue;
+
+                    string fileName = raw.Trim();
+                    if (!IsSafePathSegment(fileName))
+                        throw new ArgumentException("Invalid native module file name: " + fileName, "fileNames");
+
+                    string listedName = arch + "/" + fileName;
+                    if (!hashes.TryGetValue(listedName, out string expectedHash))
+                        throw new InvalidOperationException($"{listedName} is not listed in the hash list of {ownerAssemblyName} {release}.");
+
+                    string localPath = Path.Combine(cacheDir, fileName);
+                    if (File.Exists(localPath) && FileHashEquals(localPath, expectedHash))
+                    {
+                        Trace.TraceInformation("Using cached native module: {0}", localPath);
+                    }
+                    else
+                    {
+                        string downloadPath = localPath + ".download";
+                        try
+                        {
+                            DownloadFile($"{releaseUrl}/{arch}/{fileName}", downloadPath);
+                            if (!FileHashEquals(downloadPath, expectedHash))
+                            {
+                                Trace.TraceError("Hash mismatch for {0}: expected SHA256={1}", listedName, expectedHash);
+                                throw new InvalidOperationException($"The downloaded {listedName} does not match the hash list of {ownerAssemblyName} {release}.");
+                            }
+
+                            if (File.Exists(localPath))
+                                File.Delete(localPath);
+                            File.Move(downloadPath, localPath);
+                            Trace.TraceInformation("Downloaded native module: {0}", listedName);
+                        }
+                        finally
+                        {
+                            if (File.Exists(downloadPath))
+                            {
+                                try { File.Delete(downloadPath); }
+                                catch (Exception ex) { Trace.TraceWarning("Failed to delete {0}: {1}", downloadPath, ex.Message); }
+                            }
+                        }
+                    }
+
+                    EnsureSignedFileOrThrow(localPath, fileName);
+
+                    IntPtr h = LoadLibrary(localPath);
+                    if (h == IntPtr.Zero)
+                    {
+                        int errorCode = Marshal.GetLastWin32Error();
+                        Trace.TraceError("LoadLibrary failed for {0} with error code {1}", localPath, errorCode);
+                        throw new InvalidOperationException($"Failed to load native module: {fileName} (error: {errorCode})");
+                    }
+
+                    Trace.TraceInformation("Loaded native module: {0} ({1})", fileName, arch);
+                }
+            }
+        }
+
+        // x86, x64 or arm64: the architecture of the current process, which decides the native modules it can load.
+        private static string GetProcessArchitectureName()
+        {
+            switch (RuntimeInformation.ProcessArchitecture)
+            {
+                case Architecture.X86: return "x86";
+                case Architecture.X64: return "x64";
+                case Architecture.Arm64: return "arm64";
+                default:
+                    throw new PlatformNotSupportedException("Native modules are not published for " + RuntimeInformation.ProcessArchitecture + ".");
+            }
+        }
+
+        // Downloads a hash list ("<sha256>  <name>" per line, as written by sha256sum) into a dictionary.
+        private static Dictionary<string, string> DownloadHashList(string url)
+        {
+            TryVerifyUrl(url, out bool verified);
+            if (!verified)
+                throw new InvalidOperationException("Hash list URL verification failed: " + url);
+
+            var hashes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            using (var stream = GetStreamFromUrl(Http, url))
+            using (var reader = new StreamReader(stream, Encoding.UTF8))
+            {
+                string line;
+                while ((line = reader.ReadLine()) != null)
+                {
+                    line = line.Trim();
+                    if (line.Length == 0 || line[0] == '#')
+                        continue;
+
+                    int separator = line.IndexOf(' ');
+                    string hash = separator == 64 ? line.Substring(0, 64).ToLowerInvariant() : null;
+                    string name = separator == 64 ? line.Substring(64).TrimStart(' ', '*') : null;
+                    if (hash == null || !IsSha256Hex(hash) || string.IsNullOrEmpty(name))
+                        throw new InvalidOperationException($"Unexpected line in the hash list {url}: {line}");
+
+                    hashes[name] = hash;
+                }
+            }
+
+            if (hashes.Count == 0)
+                throw new InvalidOperationException("The hash list is empty: " + url);
+
+            Trace.TraceInformation("Loaded {0} hashes from {1}", hashes.Count, url);
+            return hashes;
+        }
+
+        private static bool FileHashEquals(string path, string expectedHash)
+        {
+            string actual;
+            using (var stream = File.OpenRead(path))
+            using (var sha256 = SHA256.Create())
+            {
+                var hash = sha256.ComputeHash(stream);
+                var sb = new StringBuilder(hash.Length * 2);
+                foreach (var b in hash)
+                    sb.Append(b.ToString("x2"));
+                actual = sb.ToString();
+            }
+
+            return string.Equals(actual, expectedHash, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool IsSha256Hex(string value)
+        {
+            if (value == null || value.Length != 64)
+                return false;
+            foreach (char c in value)
+            {
+                if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')))
+                    return false;
+            }
+            return true;
+        }
+
+        // A single file or folder name: letters, digits, '.', '_' and '-', and not "." or "..".
+        private static bool IsSafePathSegment(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value) || value == "." || value == "..")
+                return false;
+            foreach (char c in value)
+            {
+                if (!((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '.' || c == '_' || c == '-'))
+                    return false;
+            }
+            return true;
+        }
+
+        /// <summary>
         /// Adds an allowed URI scheme for assembly and module loading.
         /// Only HTTP and HTTPS schemes are supported. HTTPS is the default.
         /// Adding HTTP reduces security and will log a warning.
