@@ -94,7 +94,10 @@ if ($files.Count -eq 0) { throw "$sumsPath lists no files" }
 if (-not $OutDir) { $OutDir = Join-Path (Get-Location).ProviderPath "artifacts\$Component" }
 if (-not [IO.Path]::IsPathRooted($OutDir)) { $OutDir = Join-Path (Get-Location).ProviderPath $OutDir }
 $archDir = [IO.Path]::GetFullPath((Join-Path $OutDir $Arch))
-$url = "$($BaseUrl.TrimEnd('/'))/$Component/$version-$Arch"
+# The folder of the component in the storage. ChakraCore keeps the casing of
+# packages/native/ChakraCore, the folder Catswords.Phantomizer loads native modules from.
+$storageName = @{ "llamacpp" = "llamacpp"; "crispembed" = "crispembed"; "chakracore" = "ChakraCore" }[$Component]
+$url = "$($BaseUrl.TrimEnd('/'))/$storageName/$version-$Arch"
 
 Write-Host "[*] $Component $version ($Arch): $url -> $archDir"
 

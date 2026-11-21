@@ -10,6 +10,8 @@
 #   <Container>/packages/native/<component>/<version>-<arch>/<file>
 #   <Container>/packages/native/<component>/<version>-<arch>/<file>.gz
 #
+# <component> is llamacpp, crispembed or ChakraCore (for chakracore).
+#
 # Each file is uploaded as it is and gzip-compressed (<file>.gz, which CI downloads).
 #
 # Before uploading, it checks that the folder matches its SHA256SUMS.txt and that
@@ -72,7 +74,10 @@ foreach ($file in $present) {
     if ((Get-FileSha256 $file.FullName) -ne $listed[$file.Name]) { throw "$($file.Name) does not match SHA256SUMS.txt" }
 }
 
-$destination = "$($Container.TrimEnd('/'))/packages/native/$Component/$version-$Arch/"
+# The folder of the component in the storage. ChakraCore keeps the casing of
+# packages/native/ChakraCore, the folder Catswords.Phantomizer loads native modules from.
+$storageName = @{ "llamacpp" = "llamacpp"; "crispembed" = "crispembed"; "chakracore" = "ChakraCore" }[$Component]
+$destination = "$($Container.TrimEnd('/'))/packages/native/$storageName/$version-$Arch/"
 Write-Host "[*] $Component $version ($Arch): $($present.Count) files -> $destination"
 
 if (-not $AzCopy) {
