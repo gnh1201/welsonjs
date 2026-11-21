@@ -133,7 +133,7 @@ The binaries are not built in CI: building llama.cpp and CrispEmbed for x64, arm
    - It copies `SHA256SUMS.txt` to `native\llamacpp\prebuilt\<arch>.sha256`.
 3. **Commit** the three `prebuilt\<arch>.sha256` files with the change.
 
-The Release job runs `native\restore-prebuilt.ps1 -Component llamacpp -Arch <arch>` for each architecture, into `artifacts\llamacpp\<arch>`. It downloads the files listed in `prebuilt\<arch>.sha256` from `<version>-<arch>` as `<file>.gz` and decompresses them (when a `.gz` cannot be downloaded or used, it downloads the file itself), and uses a file only if its SHA-256 matches, so the repository, not the storage, decides what is shipped. The Debug job does not restore them.
+The Debug and Release jobs run `native\restore-prebuilt.ps1 -Component llamacpp -Arch <arch>` for each architecture, into `artifacts\llamacpp\<arch>`. It downloads the files listed in `prebuilt\<arch>.sha256` from `<version>-<arch>` as `<file>.gz` and decompresses them (when a `.gz` cannot be downloaded or used, it downloads the file itself), and uses a file only if its SHA-256 matches, so the repository, not the storage, decides what is shipped. Both packages are signed (Debug with the test-signing policy, Release with release-signing). Each job caches `artifacts\llamacpp`, keyed on `version.txt` and the three `prebuilt\<arch>.sha256` files: when they are unchanged, the restored folders match their records and nothing is downloaded.
 
 `.artifact-configuration.xml` lists every executable and DLL of the three architectures by name (no wildcards), and the build script fails when a built binary is not listed, so a new binary cannot be left unsigned. Authenticode signing changes the files, so in the signed package `SHA256SUMS.txt` lists the hashes of the unsigned files.
 
@@ -620,8 +620,8 @@ The file is upstream's, with two changes for the fork's API:
 2. Upload the source archive for that commit (`git archive --format=zip --prefix=llama.cpp-<sha>/ <sha>`), then update the URL and SHA-256 in `source-archive.txt`.
 3. Check that each patch applies to a clean checkout with `git -c core.autocrlf=false apply --check`. Rebase the patches if needed, and check the type IDs in `ggml.h`, `llama.h`, and `gguf-py/gguf/constants.py` against the fork's types.
 4. Check that the fork still keeps every use of the BitNet repository behind the TL1/TL2 options (`0002-bitnet-i2s.patch`, part 1), and that the `I2_S` sources are compiled into every CPU variant.
-5. Build locally with the script, for x64 and arm64. Check that:
+5. Build locally with the script, for x64, arm64 and x86. Check that:
    - `llama-quantize --help` lists STQ1_0,
    - `llama-server` answers a chat request with one of the installed models and with an `I2_S` model,
    - `llama-server --embedding -m embeddinggemma-2-Q8_0.gguf` answers `POST /v1/embeddings` with 768 values per input.
-6. Commit. The AppVeyor cache is invalidated by the changed files.
+6. Publish the three builds (`native\publish-prebuilt.ps1`, see [CI](#ci-appveyor)) and commit with the new `prebuilt\<arch>.sha256` files. The changed files invalidate the CI cache, so CI downloads the new build.

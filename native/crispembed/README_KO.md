@@ -70,7 +70,7 @@ CI에서는 빌드하지 않습니다. llama.cpp와 CrispEmbed를 x64, arm64, x8
    - `SHA256SUMS.txt`를 `native\crispembed\prebuilt\<arch>.sha256`으로 복사합니다.
 3. 세 `prebuilt\<arch>.sha256` 파일을 변경과 함께 **커밋**합니다.
 
-Release 작업은 아키텍처마다 `native\restore-prebuilt.ps1 -Component crispembed -Arch <arch>`를 실행해 `artifacts\crispembed\<arch>`에 둡니다. `prebuilt\<arch>.sha256`에 적힌 파일을 `<version>-<arch>`에서 `<file>.gz`로 받아 압축을 풀고(`.gz`를 받지 못하거나 쓸 수 없으면 원본 파일을 받음), SHA-256이 맞을 때만 쓰므로, 무엇을 배포할지는 스토리지가 아니라 저장소가 정합니다. Debug 작업은 복원하지 않습니다.
+Debug와 Release 작업은 아키텍처마다 `native\restore-prebuilt.ps1 -Component crispembed -Arch <arch>`를 실행해 `artifacts\crispembed\<arch>`에 둡니다. `prebuilt\<arch>.sha256`에 적힌 파일을 `<version>-<arch>`에서 `<file>.gz`로 받아 압축을 풀고(`.gz`를 받지 못하거나 쓸 수 없으면 원본 파일을 받음), SHA-256이 맞을 때만 쓰므로, 무엇을 배포할지는 스토리지가 아니라 저장소가 정합니다. 두 패키지 모두 서명합니다(Debug는 test-signing 정책, Release는 release-signing 정책). 각 작업은 `version.txt`와 세 `prebuilt\<arch>.sha256` 파일을 키로 `artifacts\crispembed`를 캐시하므로, 이 파일들이 그대로면 복원된 폴더가 기록과 맞아 아무것도 받지 않습니다.
 
 `.artifact-configuration.xml`은 세 아키텍처의 실행 파일과 DLL을 모두 이름으로 하나씩 적고(와일드카드 없음), 빌드 스크립트는 목록에 없는 바이너리가 있으면 실패하므로 새 바이너리가 서명되지 않은 채 남을 수 없습니다. Authenticode 서명은 파일을 바꾸므로, 서명된 패키지의 `SHA256SUMS.txt`는 서명 전 파일의 해시입니다.
 
@@ -91,6 +91,6 @@ Release 작업은 아키텍처마다 `native\restore-prebuilt.ps1 -Component cri
 1. `commit.txt`를 새 커밋(태그 객체가 아닌 커밋 자체)으로, `version.txt`를 `<그 커밋의 VERSION>.<커밋 앞 여섯 글자>.1`로 바꿉니다. 커밋에 `VERSION` 파일이 없으면 `gh api repos/CrispStrobe/CrispEmbed/compare/<태그>...<커밋>`이 `behind_by` 0을 돌려주는 가장 큰 릴리스 태그에서 `v`를 뺀 것을 씁니다.
 2. ggml 서브모듈 URL이 바뀌었으면 확인하고 스크립트의 `GgmlRepositoryUrl`을 바꿉니다.
 3. 새 커밋의 소스 압축 파일을 만들어([소스 압축 파일](#소스-압축-파일) 참고) 올리고 `source-archive.txt`를 바꿉니다.
-4. 각 패치가 적용되는지 확인하고(`git -c core.autocrlf=false apply --check`), 새 패치는 AppVeyor 캐시 키에 넣습니다.
-5. 로컬에서 `-Source archive`로도 빌드하고, 빌드된 파일이 `.artifact-configuration.xml`에 나열된 파일과 같은지, `crispembed-server`가 설치되는 모델로 `/health`에 답하는지 확인합니다.
-6. 커밋합니다. 바뀐 파일 때문에 AppVeyor 캐시가 무효화됩니다.
+4. 각 패치가 적용되는지 확인합니다(`git -c core.autocrlf=false apply --check`).
+5. 로컬에서 x64, arm64, x86으로, `-Source archive`로도 빌드하고, 빌드된 파일이 `.artifact-configuration.xml`에 나열된 파일과 같은지, `crispembed-server`가 설치되는 모델로 `/health`에 답하는지 확인합니다.
+6. 세 빌드를 게시하고(`native\publish-prebuilt.ps1`, [CI](#ciappveyor) 참고) 새 `prebuilt\<arch>.sha256` 파일과 함께 커밋합니다. 바뀐 파일 때문에 CI 캐시가 무효화되어 CI가 새 빌드를 받습니다.

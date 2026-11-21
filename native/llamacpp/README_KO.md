@@ -133,7 +133,7 @@ CI에서는 빌드하지 않습니다. llama.cpp와 CrispEmbed를 x64, arm64, x8
    - `SHA256SUMS.txt`를 `native\llamacpp\prebuilt\<arch>.sha256`으로 복사합니다.
 3. 세 `prebuilt\<arch>.sha256` 파일을 변경과 함께 **커밋**합니다.
 
-Release 작업은 아키텍처마다 `native\restore-prebuilt.ps1 -Component llamacpp -Arch <arch>`를 실행해 `artifacts\llamacpp\<arch>`에 둡니다. `prebuilt\<arch>.sha256`에 적힌 파일을 `<version>-<arch>`에서 `<file>.gz`로 받아 압축을 풀고(`.gz`를 받지 못하거나 쓸 수 없으면 원본 파일을 받음), SHA-256이 맞을 때만 쓰므로, 무엇을 배포할지는 스토리지가 아니라 저장소가 정합니다. Debug 작업은 복원하지 않습니다.
+Debug와 Release 작업은 아키텍처마다 `native\restore-prebuilt.ps1 -Component llamacpp -Arch <arch>`를 실행해 `artifacts\llamacpp\<arch>`에 둡니다. `prebuilt\<arch>.sha256`에 적힌 파일을 `<version>-<arch>`에서 `<file>.gz`로 받아 압축을 풀고(`.gz`를 받지 못하거나 쓸 수 없으면 원본 파일을 받음), SHA-256이 맞을 때만 쓰므로, 무엇을 배포할지는 스토리지가 아니라 저장소가 정합니다. 두 패키지 모두 서명합니다(Debug는 test-signing 정책, Release는 release-signing 정책). 각 작업은 `version.txt`와 세 `prebuilt\<arch>.sha256` 파일을 키로 `artifacts\llamacpp`를 캐시하므로, 이 파일들이 그대로면 복원된 폴더가 기록과 맞아 아무것도 받지 않습니다.
 
 `.artifact-configuration.xml`은 세 아키텍처의 실행 파일과 DLL을 모두 이름으로 하나씩 적고(와일드카드 없음), 빌드 스크립트는 목록에 없는 바이너리가 있으면 실패하므로 새 바이너리가 서명되지 않은 채 남을 수 없습니다. Authenticode 서명은 파일을 바꾸므로, 서명된 패키지의 `SHA256SUMS.txt`는 서명 전 파일의 해시입니다.
 
@@ -620,8 +620,8 @@ Copyright (c) 2023-2026 The ggml authors (llama.cpp), Copyright (c) Microsoft Co
 2. 그 커밋의 소스 압축 파일을 올리고(`git archive --format=zip --prefix=llama.cpp-<sha>/ <sha>`), `source-archive.txt`의 URL과 SHA-256을 업데이트합니다.
 3. 깨끗한 체크아웃에 각 패치가 `git -c core.autocrlf=false apply --check`로 적용되는지 확인합니다. 필요하면 패치를 리베이스하고, `ggml.h`, `llama.h`, `gguf-py/gguf/constants.py`의 타입 ID를 포크의 타입과 대조합니다.
 4. 포크가 여전히 BitNet 저장소의 모든 사용을 TL1/TL2 옵션 뒤에 두는지(`0002-bitnet-i2s.patch` 파트 1), 그리고 `I2_S` 소스가 모든 CPU 변형에 컴파일되는지 확인합니다.
-5. 스크립트로 x64와 arm64를 로컬에서 빌드합니다. 다음을 확인합니다:
+5. 스크립트로 x64, arm64, x86을 로컬에서 빌드합니다. 다음을 확인합니다:
    - `llama-quantize --help`가 STQ1_0을 보여 줌,
    - `llama-server`가 설치되는 모델 중 하나와 `I2_S` 모델로 채팅 요청에 답함,
    - `llama-server --embedding -m embeddinggemma-2-Q8_0.gguf`가 `POST /v1/embeddings`에 입력마다 768개 값으로 답함.
-6. 커밋합니다. 바뀐 파일 때문에 AppVeyor 캐시가 무효화됩니다.
+6. 세 빌드를 게시하고(`native\publish-prebuilt.ps1`, [CI](#ciappveyor) 참고) 새 `prebuilt\<arch>.sha256` 파일과 함께 커밋합니다. 바뀐 파일 때문에 CI 캐시가 무효화되어 CI가 새 빌드를 받습니다.

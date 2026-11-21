@@ -81,8 +81,8 @@ The cryptography validation project is separate from the JavaScript profile runn
 | `data/` | Configuration, data files, and JSON test profiles. |
 | `native/WelsonJS.Augmented/` | WelsonJS managed solution and projects. |
 | `native/ManagedEsent/` | Vendored ManagedEsent source, samples, and tests. |
-| `native/crispembed/` | CrispEmbed build for the launcher's embedding and decision servers (pinned commit, build script), built and cached in the AppVeyor Release job; see its `README.md`. |
-| `native/llamacpp/` | Patched llama.cpp build from bitnet.cpp's llama.cpp fork with BitNet I2_S support (pinned commit, patches, build script), built and cached in the AppVeyor Release job; see its `README.md`. |
+| `native/crispembed/` | CrispEmbed build for the launcher's embedding and decision servers (pinned commit, build script), built on a developer PC for x64, arm64 and x86 and published to the WelsonJS blob storage, from which CI restores it (`native/restore-prebuilt.ps1`); see its `README.md`. |
+| `native/llamacpp/` | Patched llama.cpp build from bitnet.cpp's llama.cpp fork with BitNet I2_S support (pinned commit, patches, build script), built on a developer PC for x64, arm64 and x86 and published to the WelsonJS blob storage, from which CI restores it (`native/restore-prebuilt.ps1`); see its `README.md`. |
 | `examples/` | Application and integration examples. |
 
 When updating this guide, verify project names, entry-point behavior, and profile paths against the checked-in repository rather than carrying forward outdated architecture descriptions.
