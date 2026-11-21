@@ -20,7 +20,8 @@ environment:
   SEVENZR_GZ_URL: https://catswords.blob.core.windows.net/welsonjs/packages/native/7zr/26.05-x86/7zr.exe.gz
   SEVENZR_GZ_SHA256: c63c0233d08a49606626613f28e87879f223bc949d20cca9bcc9f3ea31921a43
   matrix:
-    # The Debug job is a test build, signed with the test-signing policy.
+    # The Debug job is a test build. Its SIGNING_POLICY_SLUG (test-signing) is used
+    # only if its signing request is turned back on (see deploy below).
     - CONFIGURATION: Debug
       SIGNING_POLICY_SLUG: test-signing
     - CONFIGURATION: Release
@@ -177,11 +178,22 @@ artifacts:
     name: WelsonJS.Augmented
 
 deploy:
-# SignPath signing request: test-signing for Debug, release-signing for Release.
+# SignPath signing request, sent for the Release job only (release-signing).
+#
+# The Debug job's request (test-signing) is turned off. AppVeyor allows 1024 MB of
+# artifact downloads a day, and SignPath downloads artifacts.zip (about 80 MB)
+# once for each request. With two requests a build, about six builds a day used up
+# the limit. After that, every request failed in SignPath with
+# ArtifactRetrievalFailed, while AppVeyor still reported the webhook call as OK.
+#
+# To sign the Debug job again, remove the "on:" condition below, so that both
+# jobs send a request with their own SIGNING_POLICY_SLUG.
 - provider: Webhook
   url: https://app.signpath.io/API/v1/%ORGANIZATION_ID%/Integrations/AppVeyor?ProjectSlug=%PROJECT_SLUG%&SigningPolicySlug=%SIGNING_POLICY_SLUG%&ArtifactConfigurationSlug=%ARTIFACT_CONFIGURATION_SLUG%
   authorization:
     secure: nABfe+lksIRfS7lVnkq3EdIYNH8KOka+5ZFTUJqUW2nckBubhrlAXarbCPJHLp9FWWf3zxAWhNwT0It+qyqPRQ==
+  on:
+    CONFIGURATION: Release
 
 notifications:
   - provider: Email
