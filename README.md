@@ -1,5 +1,9 @@
 # welsonjs
 
+<img src="https://catswords.blob.core.windows.net/welsonjs/images/logo.svg?utm_source=welsonjs" height="32" alt="WelsonJS logo with four diagonal stripes in red, green, blue, and yellow, overlaid with the letters JS."/> WelsonJS - Built-in JavaScript for Industrial Automation on Windows.
+
+![Cover Art: Windows in 1999, Art by @_bag0@x.com](https://catswords.blob.core.windows.net/welsonjs/images/cover.png?utm_source=welsonjs)
+
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs.svg?type=shield&utm_source=welsonjs)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs?ref=badge_shield&utm_source=welsonjs)
 [![AppVeyor Status](https://ci.appveyor.com/api/projects/status/github/gnh1201/welsonjs?svg=true&utm_source=welsonjs)](https://ci.appveyor.com/project/gnh1201/welsonjs?utm_source=welsonjs)
 [![DOI 10.5281/zenodo.11382384](https://zenodo.org/badge/DOI/10.5281/zenodo.11382384.svg?utm_source=welsonjs)](https://doi.org/10.5281/zenodo.11382384?utm_source=welsonjs)
@@ -16,9 +20,6 @@
 [![MCP](https://img.shields.io/badge/-MCP-black?logo=modelcontextprotocol&utm_source=welsonjs)](https://github.com/gnh1201/welsonjs/wiki/MCP-server?utm_source=welsonjs)
 [![Powered by OrcaRouter](https://img.shields.io/badge/Powered_by-OrcaRouter-2563eb)](https://www.orcarouter.ai/ref/ref_52d30a71b6fb8416d0fc)
 
-<img src="https://catswords.blob.core.windows.net/welsonjs/images/logo.svg?utm_source=welsonjs" height="32" alt="WelsonJS logo with four diagonal stripes in red, green, blue, and yellow, overlaid with the letters JS."/> WelsonJS - Built-in JavaScript for Industrial Automation on Windows.
-
-![Cover Art: Windows in 1999, Art by @_bag0@x.com](https://catswords.blob.core.windows.net/welsonjs/images/cover.png?utm_source=welsonjs)
 
 Now, you can build, automate, and orchestrate Windows applications and industrial systems using JavaScript, transpiled languages such as TypeScript, CoffeeScript, and ReScript, and HTML/CSS, all powered by the built-in ECMAScript engine.
 
@@ -30,17 +31,28 @@ WelsonJS = ***W***indows + ***El***ectr***on***-like + ***Javascript(JS)*** + :h
 
 **Note**: The default license for this project is GPL 3.0. However, if the GPL 3.0 license is not compatible with Microsoft products, it is subject to the MS-RL license.
 
-## Collaborations
-* :octocat: [GitHub Sponsors](https://github.com/sponsors/gnh1201?utm_source=welsonjs), :euro: [Liberapay](https://liberapay.com/catswords?utm_source=welsonjs), :coffee: [Buy me a coffee](https://buymeacoffee.com/catswords?utm_source=welsonjs)
-* <img src="https://catswords.blob.core.windows.net/welsonjs/images/serpapi_logo_32.png?utm_source=welsonjs" height="32" alt="SerpApi"/> [SerpApi: Search API](https://serpapi.com/?utm_source=welsonjs) - Scrape search engine results with a simple API.
-* <img src="https://catswords.blob.core.windows.net/welsonjs/images/logo_oss.gif?utm_source=welsonjs" height="32" alt="OPENUP"/> [Opensource Portal](https://oss.kr/?utm_source=welsonjs), NIPA National IT Industry Promotion Agency
-* <img src="https://catswords.blob.core.windows.net/welsonjs/images/signpath_logo.png?utm_source=welsonjs" height="32" alt="Signpath"/> Free code signing provided by [SignPath.io](https://signpath.io/?utm_source=welsonjs), certificate by [SignPath Foundation](https://signpath.org/)
-* <img src="https://catswords.blob.core.windows.net/welsonjs/images/cloudbro_logo.png?utm_source=welsonjs" height="32" alt="CloudBro"/> ["Ship to Production" Season 3](https://stp.cloudbro.ai/?utm_source=welsonjs) - Selected project
-* Thanks for [F1Security](https://f1security.co.kr/?utm_source=welsonjs), [Microsoft<sup>(ISV Success Program)</sup>](https://www.microsoft.com/en-us/isv/isv-success?utm_source=welsonjs), [Tenstorrent<sup>(Korea OSS Developer Program)</sup>](https://tenstorrent.com/?utm_source=welsonjs), [ReadMe](https://readme.com/?utm_source=welsonjs), [AppSignal](https://www.appsignal.com/?utm_source=welsonjs)
 
-## System Requirements
-* **Operating Systems**: Windows XP SP3 or later (Currently, Windows 11 24H2)
-* For systems running Windows 2000 or earlier versions (e.g., 95, 98, Me), please contact us separately.
+## Screenshots
+<table>
+<tr><td width="50%" align="center"><a href="https://catswords.blob.core.windows.net/welsonjs/images/screenshot.png?utm_source=welsonjs"><img src="https://catswords.blob.core.windows.net/welsonjs/images/screenshot.png?utm_source=welsonjs" alt="GUI environment"/></a><br/><sub>GUI environment</sub></td><td width="50%" align="center"><a href="https://catswords.blob.core.windows.net/welsonjs/images/screenshot2.png?utm_source=welsonjs"><img src="https://catswords.blob.core.windows.net/welsonjs/images/screenshot2.png?utm_source=welsonjs" alt="Command-line environment"/></a><br/><sub>Command-line environment</sub></td></tr>
+<tr><td width="50%" align="center"><a href="https://catswords.blob.core.windows.net/welsonjs/images/screenshot3.png?utm_source=welsonjs"><img src="https://catswords.blob.core.windows.net/welsonjs/images/screenshot3.png?utm_source=welsonjs" alt="WelsonJS with Microsoft Excel"/></a><br/><sub>WelsonJS with Microsoft Excel</sub></td><td width="50%" align="center"><a href="https://catswords.blob.core.windows.net/welsonjs/images/screenshot4.png?utm_source=welsonjs"><img src="https://catswords.blob.core.windows.net/welsonjs/images/screenshot4.png?utm_source=welsonjs" alt="Write a Windows Service with JavaScript"/></a><br/><sub>Write a Windows Service with JavaScript</sub></td></tr>
+<tr><td width="50%" align="center"><a href="https://catswords.blob.core.windows.net/welsonjs/images/screenshot5.png?utm_source=welsonjs"><img src="https://catswords.blob.core.windows.net/welsonjs/images/screenshot5.png?utm_source=welsonjs" alt="Template Matching on the computer screen"/></a><br/><sub>Template Matching on the computer screen</sub></td><td width="50%" align="center"><a href="https://catswords.blob.core.windows.net/welsonjs/images/screenshot6.png?utm_source=welsonjs"><img src="https://catswords.blob.core.windows.net/welsonjs/images/screenshot6.png?utm_source=welsonjs" alt="The Launcher for WelsonJS Application Packages"/></a><br/><sub>The Launcher for WelsonJS Application Packages</sub></td></tr>
+<tr><td width="50%" align="center"><a href="https://catswords.blob.core.windows.net/welsonjs/images/screenshot7.png?utm_source=welsonjs"><img src="https://catswords.blob.core.windows.net/welsonjs/images/screenshot7.png?utm_source=welsonjs" alt="Microsoft Monaco Editor on WelsonJS Launcher"/></a><br/><sub>Microsoft Monaco Editor on WelsonJS Launcher</sub></td><td width="50%" align="center"><a href="https://catswords.blob.core.windows.net/welsonjs/images/screenshot8.png?utm_source=welsonjs"><img src="https://catswords.blob.core.windows.net/welsonjs/images/screenshot8.png?utm_source=welsonjs" alt="You can run a .js file just like an executable by simply double-clicking it."/></a><br/><sub>You can run a .js file just like an executable by simply double-clicking it.</sub></td></tr>
+</table>
+
+## Featured
+
+### Product Hunt
+WelsonJS was featured on Product Hunt on September 9th, 2026, at 12:01 AM PDT.
+
+[![WelsonJS on Product Hunt](https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1245343&theme=light&t=1788932620105)](https://www.producthunt.com/products/welsonjs?embed=true&amp;utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-welsonjs)
+
+### Dev Tools Dir
+
+WelsonJS was featured on Dev Tools Dir on Sunday, November 1, 2026 at 08:00 AM UTC
+
+[![WelsonJS on Dev Tools Dir](https://devtoolsdir.com/devtoolsdir/images/badges/featured-on-light.svg)](https://devtoolsdir.com/projects/welsonjs?utm_source=badge)
+
 
 ## Why Choose WelsonJS?
 WelsonJS is an advanced JavaScript framework designed to operate in extreme conditions where conventional solutions may fail. Unlike traditional JavaScript frameworks, WelsonJS focuses on executing scripts in constrained environments, ensuring reliable performance even with minimal system resources.
@@ -61,97 +73,82 @@ WelsonJS is an advanced JavaScript framework designed to operate in extreme cond
 
 WelsonJS is tailored for developers who need a reliable, lightweight JavaScript framework in environments where traditional solutions are impractical. Whether working with legacy systems, embedded devices, or security-critical applications, WelsonJS ensures that JavaScript remains a viable and efficient option.
 
+
+## System Requirements
+* **Operating Systems**: Windows XP SP3 or later (Currently, Windows 11 24H2)
+* For systems running Windows 2000 or earlier versions (e.g., 95, 98, Me), please contact us separately.
+
+
 ## Structure
-
-### Console environment
-
-```mermaid
-flowchart LR
-
-User([Console User])
-
-CMD[Command Prompt]
-
-App[app.js]
-
-Require{"require()"}
-
-subgraph Modules
-    Module[name.js]
-end
-
-User --> CMD
-CMD -->|"cscript app.js name"| App
-
-App --> Require
-Require -->|"name"| Module
-
-Module -.->|"exports"| App
-```
-
-### GUI environment (using HTA)
+Every way of starting WelsonJS ends in the same runtime, `app.js`, which loads the entry script and the modules it `require()`s. The modules reach Windows through COM and WSH, external programs and remote services. Those that use local AI call the WelsonJS Launcher's HTTP API.
 
 ```mermaid
 flowchart LR
 
-User([Window User])
-
-HTA[app.hta]
-
-App[app.js]
-
-Require1{"require()"}
-
-Loader[Webloader.js]
-
-Require2{"require()"}
-
-subgraph Webpage
-    JS[index.js]
-    HTML[index.html]
-    CSS[style.css]
+subgraph Start["Ways to start"]
+    Console(["Console<br/>cscript app.js name"])
+    Click(["Double-click a .js file<br/>(JCTG)"])
+    Uri(["welsonjs:// URI"])
+    Hta(["app.hta window"])
+    Mcp(["MCP client<br/>(stdio)"])
+    Service["WelsonJS.Service<br/>(Windows service)"]
 end
 
-User --> HTA
-HTA --> App
+App["app.js<br/>runtime and require()"]
 
-App --> Require1
-Require1 -->|"webloader"| Loader
+subgraph Entry["Entry scripts"]
+    Script["name.js<br/>(your script)"]
+    Web["webloader.js"]
+    UriLoader["uriloader.js"]
+    McpLoader["mcploader.js"]
+end
 
-Loader --> Require2
-Require2 -->|"index"| JS
+Page["index.html, index.js,<br/>style.css"]
 
-Loader --> HTML
-Loader --> CSS
+Modules["lib/*.js modules"]
 
-JS -.->|"exports"| Loader
-Loader -.->|"Present webpage"| HTA
+subgraph Host["Windows and outside"]
+    Com["COM, WSH, WMI,<br/>registry, Office"]
+    Managed["WelsonJS.ManagedObject<br/>and other .NET modules"]
+    Programs["External programs<br/>(curl, ADB, Chrome...)"]
+    Cloud["Remote services<br/>(cloud AI, web APIs)"]
+end
+
+subgraph Launcher["WelsonJS Launcher"]
+    Instances["Instances, editor,<br/>settings"]
+    Api["HTTP API<br/>localhost:3000"]
+    Local["llama.cpp, CrispEmbed,<br/>LLM guard"]
+    Chakra["ChakraCore<br/>(via Phantomizer)"]
+end
+
+Console --> App
+Click --> App
+Uri --> App
+Hta --> App
+Mcp --> App
+Service -->|"ScriptControl (JScript)"| App
+Instances -->|"cscript app.js"| App
+
+App -->|"require()"| Script
+App --> Web
+App --> UriLoader
+App --> McpLoader
+Web -->|"present"| Page
+Page -.->|"shown in"| Hta
+
+Script --> Modules
+Web --> Modules
+UriLoader --> Modules
+McpLoader --> Modules
+
+Modules --> Com
+Modules --> Managed
+Modules --> Programs
+Modules --> Cloud
+Modules -->|"lib/llamacpp.js, crispembed.js,<br/>llm-guard.js"| Api
+Api --> Local
+Api --- Chakra
 ```
-
-## Specifications
-* Built-in transpilers: [TypeScript](https://www.typescriptlang.org/?utm_source=welsonjs), [Rescript](https://rescript-lang.org/?utm_source=welsonjs), [CoffeeScript 2](https://coffeescript.org/?utm_source=welsonjs), [LiveScript](https://livescript.net/?utm_source=welsonjs)
-* **Ready to use on Windows machine immediately. No additional software installation is required.**
-* **WelsonJS Launcher**: Manage instances (Like a container), User-defined variable editor, [Microsoft Monaco Editor](https://github.com/microsoft/monaco-editor?utm_source=welsonjs) and [React](https://react.dev/?utm_source=welsonjs) (Pre-embedded rich code editor), [Microsoft Copilot](https://copilot.microsoft.com), and [Azure AI Services](https://azure.microsoft.com/en-us/products/ai-services?utm_source=welsonjs), Network tools (Whois, DNS Query, [Criminal IP CTI](https://www.criminalip.io/?utm_source=welsonjs)) on the code editor.
-* ES5(ECMAScript 5), XML, JSON, YAML compatibility: [core-js](https://github.com/zloirock/core-js?utm_source=welsonjs), [JSON2.js](https://github.com/douglascrockford/JSON-js?utm_source=welsonjs), [js-yaml](https://github.com/nodeca/js-yaml?utm_source=welsonjs)
-* HTML5 compatibility on the built-in HTML rendering engine: [html5shiv](https://github.com/aFarkas/html5shiv?utm_source=welsonjs), [jquery-html5-placeholder-shim](https://github.com/parndt/jquery-html5-placeholder-shim?utm_source=welsonjs), [Respond](https://github.com/scottjehl/Respond?utm_source=welsonjs), [selectivizr](https://github.com/keithclark/selectivizr?utm_source=welsonjs), [ExplorerCanvas](https://github.com/arv/ExplorerCanvas?utm_source=welsonjs), [Modernizr](https://github.com/Modernizr/Modernizr?utm_source=welsonjs)
-* Classical CSS Frameworks: [cascadeframework](https://github.com/jslegers/cascadeframework?utm_source=welsonjs), [golden-layout](https://github.com/golden-layout/golden-layout?utm_source=welsonjs)
-* WYSIWYG HTML Editor: [summernote](https://github.com/summernote/summernote?utm_source=welsonjs)
-* Included libraries: [jQuery](https://jquery.com/), [jQuery UI](https://jqueryui.com/?utm_source=welsonjs), [jquery-toast-plugin](https://github.com/kamranahmedse/jquery-toast-plugin?utm_source=welsonjs), [squel](https://github.com/hiddentao/squel?utm_source=welsonjs), [jsrender](https://github.com/BorisMoore/jsrender?utm_source=welsonjs), [linq](https://github.com/mihaifm/linq?utm_source=welsonjs), [pegjs](https://github.com/pegjs/pegjs?utm_source=welsonjs), [numbers.js](https://github.com/numbers/numbers.js?utm_source=welsonjs)
-* Compatible with modern JavaScript specifications: [module.exports](https://nodejs.org/api/modules.html?utm_source=welsonjs#moduleexports), CommonJS, UMD compatibility, [NPM(Node Package Manager)](https://www.npmjs.com/?utm_source=welsonjs) compatibility
-* Supports device debugging protocol clients: [Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/?utm_source=welsonjs), [ADB(Android Debug Bridge)](https://source.android.com/docs/setup/build/adb?utm_source=welsonjs)
-* RPC(Remote Procedure Call) protocol clients: [gRPC](https://grpc.io/), [JSON-RPC 2.0](https://www.jsonrpc.org/specification?utm_source=welsonjs)
-* Various types of HTTP clients: [XHR(MSXML)](https://developer.mozilla.org/docs/Glossary/XMLHttpRequest?utm_source=welsonjs), [cURL](https://curl.se/?utm_source=welsonjs), [BITS](https://en.m.wikipedia.org/w/index.php?title=Background_Intelligent_Transfer_Service&utm_source=welsonjs), [CERT](https://github.com/MicrosoftDocs/windowsserverdocs/blob/main/WindowsServerDocs/administration/windows-commands/certutil.md?utm_source=welsonjs), Web Proxy, SEO/SERP
-* [WelsonJS.ManagedObject](https://www.nuget.org/packages/WelsonJS.ManagedObject?utm_source=welsonjs): A native module for Windows Service applications, window handle control, bitmap manipulation, virtual mouse and keyboard events, and [Named Shared Memory](https://learn.microsoft.com/en-us/windows/win32/memory/creating-named-shared-memory?utm_source=welsonjs)-based IPC.
-* AI integrations:
-  * Cloud providers: [OpenAI (ChatGPT)](https://developers.openai.com/api/docs?utm_source=welsonjs), [Anthropic](https://platform.claude.com/docs/en/api/overview?utm_source=welsonjs), [xAI](https://api.x.ai/docs/?utm_source=welsonjs), [Google Gemini](https://ai.google.dev/api?utm_source=welsonjs), [Mistral AI](https://docs.mistral.ai/getting-started/quickstarts/developer/first-api-request?utm_source=welsonjs), [DeepSeek](https://api-docs.deepseek.com/?utm_source=welsonjs), [Moonshot AI](https://www.moonshot.ai/en?utm_source=welsonjs), and [NAVER CLOVA Studio](https://clovastudio.ncloud.com/playground/?utm_source=welsonjs).
-  * Cloud AI gateways and multi-model platforms: [OrcaRouter](https://www.orcarouter.ai/ref/ref_52d30a71b6fb8416d0fc?utm_source=welsonjs) for model routing, [CheaperInference](https://api.cheaperinference.com/docs?utm_source=welsonjs) for OpenAI-compatible multi-provider model routing, [UberLLM](https://uberllm.dev/?utm_source=welsonjs) for OpenAI-compatible access to many vendors' chat models with one prepaid key, [Groq](https://console.groq.com/docs/api-reference?utm_source=welsonjs) and [FriendliAI](https://friendli.ai/docs/guides/model-apis/quickstart?utm_source=welsonjs) for hosted multi-model inference, and [Alibaba Cloud Model Studio (Qwen)](https://docs.modelstudio.console.alibabacloud.com/en/model-studio/get-started-with-models?utm_source=welsonjs) for Qwen and third-party model APIs.
-  * Local: Optional llama.cpp inference with GGUF models, including [Hy-MT2 1.8B 1.25-bit](https://huggingface.co/tencent/Hy-MT2-1.8B-1.25Bit-GGUF?utm_source=welsonjs) (Tencent AngelSlim) for machine translation [FrogNano 4B 2609](https://huggingface.co/gnh1201/FrogNano-4B-2609-Q4_K_M-GGUF?utm_source=welsonjs) for SWE, and [BitNet b1.58 2B-4T](https://huggingface.co/microsoft/bitnet-b1.58-2B-4T-gguf?utm_source=welsonjs) (Microsoft, 1.58-bit); downloads require internet, while inference runs on-device.
-* Aviation Data integrations: [AviationStack](https://aviationstack.com?utm_source=FirstPromoter&utm_medium=Affiliate&fpr=namhyeon71), [SerpApi Google Flights API](https://serpapi.com/google-flights-api?utm_source=welsonjs)
-* OVFTool (VMware) integration: [OVFTool for Broadcom/VMware infrastructures](https://developer.broadcom.com/tools/open-virtualization-format-ovf-tool/latest?utm_source=welsonjs)
-* ***:fire: NEW!*** Windows built-in database engine, aka. [ESENT (ESE) database](https://learn.microsoft.com/en-us/windows/win32/extensible-storage-engine/database-overview?utm_source=welsonjs) interface library (WelsonJS.Esent)
-* ***:fire: NEW!*** WelsonJS JCTG(JavaScript-Click-To-Go): Run WelsonJS script files written in JavaScript directly from Windows File Explorer with a (double) click. Just like an `.exe` file.
-* ***:fire: NEW!*** WelsonJS [MCP(Model Context Protocol)](https://github.com/gnh1201/welsonjs/wiki/MCP-server)
-* Everything you can imagine.
 
 ## Quick start
 
@@ -192,6 +189,42 @@ hello
 ended say()
 ```
 
+
+## Documentation
+More guides are in the [`docs`](docs) folder:
+
+* Getting started: [Quick Start](docs/quick-start.en.md) ([한국어](docs/quick-start.md))
+* Launcher APIs: [OpenAI-compatible API](docs/openai-compatible-api.md), [llama.cpp API](docs/llamacpp-launcher-api.md), [CrispEmbed API](docs/crispembed-launcher-api.md)
+* LLM data handling: [LLM data egress policy](docs/llm-data-policy.md), [LLM data flow and Qwen3Guard policy](docs/llm-guard-flow.en.md) ([한국어](docs/llm-guard-flow.md))
+* Dependencies: [Modified vendor scripts](docs/modified-vendor-scripts.md), [Third-party dependencies flagged by the OSS assessment](docs/third-party-dependencies.md)
+
+
+## Specifications
+* Built-in transpilers: [TypeScript](https://www.typescriptlang.org/?utm_source=welsonjs), [Rescript](https://rescript-lang.org/?utm_source=welsonjs), [CoffeeScript 2](https://coffeescript.org/?utm_source=welsonjs), [LiveScript](https://livescript.net/?utm_source=welsonjs)
+* **Ready to use on Windows machine immediately. No additional software installation is required.**
+* **WelsonJS Launcher**: Manage instances (Like a container), User-defined variable editor, [Microsoft Monaco Editor](https://github.com/microsoft/monaco-editor?utm_source=welsonjs) and [React](https://react.dev/?utm_source=welsonjs) (Pre-embedded rich code editor), [Microsoft Copilot](https://copilot.microsoft.com), and [Azure AI Services](https://azure.microsoft.com/en-us/products/ai-services?utm_source=welsonjs), Network tools (Whois, DNS Query, [Criminal IP CTI](https://www.criminalip.io/?utm_source=welsonjs)) on the code editor.
+* ES5(ECMAScript 5), XML, JSON, YAML compatibility: [core-js](https://github.com/zloirock/core-js?utm_source=welsonjs), [JSON2.js](https://github.com/douglascrockford/JSON-js?utm_source=welsonjs), [js-yaml](https://github.com/nodeca/js-yaml?utm_source=welsonjs)
+* HTML5 compatibility on the built-in HTML rendering engine: [html5shiv](https://github.com/aFarkas/html5shiv?utm_source=welsonjs), [jquery-html5-placeholder-shim](https://github.com/parndt/jquery-html5-placeholder-shim?utm_source=welsonjs), [Respond](https://github.com/scottjehl/Respond?utm_source=welsonjs), [selectivizr](https://github.com/keithclark/selectivizr?utm_source=welsonjs), [ExplorerCanvas](https://github.com/arv/ExplorerCanvas?utm_source=welsonjs), [Modernizr](https://github.com/Modernizr/Modernizr?utm_source=welsonjs)
+* Classical CSS Frameworks: [cascadeframework](https://github.com/jslegers/cascadeframework?utm_source=welsonjs), [golden-layout](https://github.com/golden-layout/golden-layout?utm_source=welsonjs)
+* WYSIWYG HTML Editor: [summernote](https://github.com/summernote/summernote?utm_source=welsonjs)
+* Included libraries: [jQuery](https://jquery.com/), [jQuery UI](https://jqueryui.com/?utm_source=welsonjs), [jquery-toast-plugin](https://github.com/kamranahmedse/jquery-toast-plugin?utm_source=welsonjs), [squel](https://github.com/hiddentao/squel?utm_source=welsonjs), [jsrender](https://github.com/BorisMoore/jsrender?utm_source=welsonjs), [linq](https://github.com/mihaifm/linq?utm_source=welsonjs), [pegjs](https://github.com/pegjs/pegjs?utm_source=welsonjs), [numbers.js](https://github.com/numbers/numbers.js?utm_source=welsonjs)
+* Compatible with modern JavaScript specifications: [module.exports](https://nodejs.org/api/modules.html?utm_source=welsonjs#moduleexports), CommonJS, UMD compatibility, [NPM(Node Package Manager)](https://www.npmjs.com/?utm_source=welsonjs) compatibility
+* Supports device debugging protocol clients: [Chrome DevTools Protocol](https://chromedevtools.github.io/devtools-protocol/?utm_source=welsonjs), [ADB(Android Debug Bridge)](https://source.android.com/docs/setup/build/adb?utm_source=welsonjs)
+* RPC(Remote Procedure Call) protocol clients: [gRPC](https://grpc.io/), [JSON-RPC 2.0](https://www.jsonrpc.org/specification?utm_source=welsonjs)
+* Various types of HTTP clients: [XHR(MSXML)](https://developer.mozilla.org/docs/Glossary/XMLHttpRequest?utm_source=welsonjs), [cURL](https://curl.se/?utm_source=welsonjs), [BITS](https://en.m.wikipedia.org/w/index.php?title=Background_Intelligent_Transfer_Service&utm_source=welsonjs), [CERT](https://github.com/MicrosoftDocs/windowsserverdocs/blob/main/WindowsServerDocs/administration/windows-commands/certutil.md?utm_source=welsonjs), Web Proxy, SEO/SERP
+* [WelsonJS.ManagedObject](https://www.nuget.org/packages/WelsonJS.ManagedObject?utm_source=welsonjs): A native module for Windows Service applications, window handle control, bitmap manipulation, virtual mouse and keyboard events, and [Named Shared Memory](https://learn.microsoft.com/en-us/windows/win32/memory/creating-named-shared-memory?utm_source=welsonjs)-based IPC.
+* AI integrations:
+  * Cloud providers: [OpenAI (ChatGPT)](https://developers.openai.com/api/docs?utm_source=welsonjs), [Anthropic](https://platform.claude.com/docs/en/api/overview?utm_source=welsonjs), [xAI](https://api.x.ai/docs/?utm_source=welsonjs), [Google Gemini](https://ai.google.dev/api?utm_source=welsonjs), [Mistral AI](https://docs.mistral.ai/getting-started/quickstarts/developer/first-api-request?utm_source=welsonjs), [DeepSeek](https://api-docs.deepseek.com/?utm_source=welsonjs), [Moonshot AI](https://www.moonshot.ai/en?utm_source=welsonjs), and [NAVER CLOVA Studio](https://clovastudio.ncloud.com/playground/?utm_source=welsonjs).
+  * Cloud AI gateways and multi-model platforms: [OrcaRouter](https://www.orcarouter.ai/ref/ref_52d30a71b6fb8416d0fc?utm_source=welsonjs) for model routing, [CheaperInference](https://api.cheaperinference.com/docs?utm_source=welsonjs) for OpenAI-compatible multi-provider model routing, [UberLLM](https://uberllm.dev/?utm_source=welsonjs) for OpenAI-compatible access to many vendors' chat models with one prepaid key, [Groq](https://console.groq.com/docs/api-reference?utm_source=welsonjs) and [FriendliAI](https://friendli.ai/docs/guides/model-apis/quickstart?utm_source=welsonjs) for hosted multi-model inference, and [Alibaba Cloud Model Studio (Qwen)](https://docs.modelstudio.console.alibabacloud.com/en/model-studio/get-started-with-models?utm_source=welsonjs) for Qwen and third-party model APIs.
+  * Local: Optional llama.cpp inference with GGUF models, including [Hy-MT2 1.8B 1.25-bit](https://huggingface.co/tencent/Hy-MT2-1.8B-1.25Bit-GGUF?utm_source=welsonjs) (Tencent AngelSlim) for machine translation [FrogNano 4B 2609](https://huggingface.co/gnh1201/FrogNano-4B-2609-Q4_K_M-GGUF?utm_source=welsonjs) for SWE, and [BitNet b1.58 2B-4T](https://huggingface.co/microsoft/bitnet-b1.58-2B-4T-gguf?utm_source=welsonjs) (Microsoft, 1.58-bit); downloads require internet, while inference runs on-device.
+* Aviation Data integrations: [AviationStack](https://aviationstack.com?utm_source=FirstPromoter&utm_medium=Affiliate&fpr=namhyeon71), [SerpApi Google Flights API](https://serpapi.com/google-flights-api?utm_source=welsonjs)
+* OVFTool (VMware) integration: [OVFTool for Broadcom/VMware infrastructures](https://developer.broadcom.com/tools/open-virtualization-format-ovf-tool/latest?utm_source=welsonjs)
+* ***:fire: NEW!*** Windows built-in database engine, aka. [ESENT (ESE) database](https://learn.microsoft.com/en-us/windows/win32/extensible-storage-engine/database-overview?utm_source=welsonjs) interface library (WelsonJS.Esent)
+* ***:fire: NEW!*** WelsonJS JCTG(JavaScript-Click-To-Go): Run WelsonJS script files written in JavaScript directly from Windows File Explorer with a (double) click. Just like an `.exe` file.
+* ***:fire: NEW!*** WelsonJS [MCP(Model Context Protocol)](https://github.com/gnh1201/welsonjs/wiki/MCP-server)
+* Everything you can imagine.
+
+
 ## How to release my application?
 The WelsonJS framework suggests the following application release methods:
 
@@ -200,22 +233,15 @@ The WelsonJS framework suggests the following application release methods:
 * **Use PowerShell**: For example, `irm https://catswords.blob.core.windows.net/welsonjs/bootstrap.ps1 | iex`
 * **Copy all directories and files**: This is the simplest and most straightforward method.
 
-## Screenshots
-![(Screenshot 1) GUI environment](https://catswords.blob.core.windows.net/welsonjs/images/screenshot.png?utm_source=welsonjs)
 
-![(Screenshot 2) Command-line environment](https://catswords.blob.core.windows.net/welsonjs/images/screenshot2.png?utm_source=welsonjs)
+## Collaborations
+* :octocat: [GitHub Sponsors](https://github.com/sponsors/gnh1201?utm_source=welsonjs), :euro: [Liberapay](https://liberapay.com/catswords?utm_source=welsonjs), :coffee: [Buy me a coffee](https://buymeacoffee.com/catswords?utm_source=welsonjs)
+* <img src="https://catswords.blob.core.windows.net/welsonjs/images/serpapi_logo_32.png?utm_source=welsonjs" height="32" alt="SerpApi"/> [SerpApi: Search API](https://serpapi.com/?utm_source=welsonjs) - Scrape search engine results with a simple API.
+* <img src="https://catswords.blob.core.windows.net/welsonjs/images/logo_oss.gif?utm_source=welsonjs" height="32" alt="OPENUP"/> [Opensource Portal](https://oss.kr/?utm_source=welsonjs), NIPA National IT Industry Promotion Agency
+* <img src="https://catswords.blob.core.windows.net/welsonjs/images/signpath_logo.png?utm_source=welsonjs" height="32" alt="Signpath"/> Free code signing provided by [SignPath.io](https://signpath.io/?utm_source=welsonjs), certificate by [SignPath Foundation](https://signpath.org/)
+* <img src="https://catswords.blob.core.windows.net/welsonjs/images/cloudbro_logo.png?utm_source=welsonjs" height="32" alt="CloudBro"/> ["Ship to Production" Season 3](https://stp.cloudbro.ai/?utm_source=welsonjs) - Selected project
+* Thanks for [F1Security](https://f1security.co.kr/?utm_source=welsonjs), [Microsoft<sup>(ISV Success Program)</sup>](https://www.microsoft.com/en-us/isv/isv-success?utm_source=welsonjs), [Tenstorrent<sup>(Korea OSS Developer Program)</sup>](https://tenstorrent.com/?utm_source=welsonjs), [ReadMe](https://readme.com/?utm_source=welsonjs), [AppSignal](https://www.appsignal.com/?utm_source=welsonjs)
 
-![(Screenshot 3) WelsonJS with Microsoft Excel](https://catswords.blob.core.windows.net/welsonjs/images/screenshot3.png?utm_source=welsonjs)
-
-![(Screenshot 4) Write a Windows Service with JavaScript](https://catswords.blob.core.windows.net/welsonjs/images/screenshot4.png?utm_source=welsonjs)
-
-![(Screenshot 5) Template Matching on the computer screen](https://catswords.blob.core.windows.net/welsonjs/images/screenshot5.png?utm_source=welsonjs)
-
-![(Screenshot 6) The Launcher for WelsonJS Application Packages](https://catswords.blob.core.windows.net/welsonjs/images/screenshot6.png?utm_source=welsonjs)
-
-![(Screenshot 7) Microsoft Monaco Editor on WelsonJS Launcher](https://catswords.blob.core.windows.net/welsonjs/images/screenshot7.png?utm_source=welsonjs)
-
-![(Screenshot 8) You can run a .js file just like an executable by simply double-clicking it.](https://catswords.blob.core.windows.net/welsonjs/images/screenshot8.png?utm_source=welsonjs)
 
 ## Thanks to
 * :heart: Artwork (Logo image): [@druidesse](https://github.com/druidesse?utm_source=welsonjs)
@@ -232,9 +258,12 @@ The WelsonJS framework suggests the following application release methods:
 * :sunglasses: Inspired by the use of Named Shared Memory in a cross-runtime IPC implementation written by the unidentified developer.
 * :eyes: [Hacker News](https://news.ycombinator.com/item?id=41316782&utm_source=welsonjs), [Node Weekly (#​582 - June 17, 2025)](https://nodeweekly.com/issues/582?utm_source=welsonjs), [WebToolsWeekly](https://webtoolsweekly.com/archives/issue-585/?utm_source=welsonjs), [GeekNews in GeekNews Weekly (2024-09-30 ~ 2024-10-06)](https://news.hada.io/weekly/202441?utm_source=welsonjs), [Facebook Group "Javascript Programming"(javascript4u)](https://www.facebook.com/javascript4u/posts/build-a-windows-desktop-apps-with-javascript-html-and-cssmorioh-javascript-html-/1484014618472735/?utm_source=welsonjs), [morioh.com](https://morioh.com/a/23c427a82bf1/build-a-windows-desktop-apps-with-javascript-html-and-css?utm_source=welsonjs), CSDN, Fediverse, [daily.dev](https://app.daily.dev/posts/js-libraries-svg-tools-json-databases-8quregz3a?utm_source=welsonjs), [PitchHut](https://www.pitchhut.com/project/proj_Ya136OLSW5at?utm_source=welsonjs), [Disquiet](https://dis.qa/nv6T6?utm_source=welsonjs), [Zhouexin (周e信)](https://www.zhouexin.com/issues/321?utm_source=welsonjs), [Echo JS](https://www.echojs.com/news/43008?utm_source=welsonjs), [Telegram Channel @front_end_dev](https://t.me/front_end_dev/9376?ysclid=mgk4a9hqf0853890652&utm_source=welsonjs), [React Status](https://react.statuscode.com/issues/432?utm_source=welsonjs)
 
-## Report abuse
-* [GitHub Security Advisories (gnh1201/welsonjs)](https://github.com/gnh1201/welsonjs/security?utm_source=welsonjs)
-* [abuse@catswords.re.kr](mailto:abuse@catswords.re.kr)
+
+## Subprojects
+* [YAWW (Yet Another Windows WebView)](https://github.com/gnh1201/yaww?utm_source=welsonjs): WebView for Windows, with WebView2, EdgeHTML, MSHTML, and ChakraCore.
+* [catswords-jsrt-rs](https://github.com/gnh1201/catswords-jsrt-rs?utm_source=welsonjs): Minimal ChakraCore (JsRT) bindings for Rust.
+* [jsrt-claw](https://github.com/gnh1201/jsrt-claw?utm_source=welsonjs): OpenClaw-compatible skill definition for a built-in JSRT (JScript 5.x).
+
 
 ## Join the community
 I am always open. Collaboration, opportunities, and community activities are all welcome.
@@ -244,31 +273,21 @@ I am always open. Collaboration, opportunities, and community activities are all
 * [Join Catswords OSS on Microsoft Teams (teams.live.com)](https://teams.live.com/l/community/FEACHncAhq8ldnojAI?utm_source=welsonjs)
 * [Join Catswords OSS #welsonjs on Discord (discord.gg)](https://discord.gg/XKG5CjtXEj?utm_source=welsonjs)
 
+
 ## Support Contact
 For offline copy requests, consulting, mentoring, and technical support inquiries, please check [this link](https://catswords.z12.web.core.windows.net/?utm_source=welsonjs).
+
+
+## Report abuse
+* [GitHub Security Advisories (gnh1201/welsonjs)](https://github.com/gnh1201/welsonjs/security?utm_source=welsonjs)
+* [abuse@catswords.re.kr](mailto:abuse@catswords.re.kr)
+
 
 ## Open-source software license
 For detailed information on the open-source license status of this project, please refer to [FOSSA Status](https://app.fossa.com/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs?ref=badge_large&utm_source=welsonjs).
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs.svg?type=large&utm_source=welsonjs)](https://app.fossa.com/projects/git%2Bgithub.com%2Fgnh1201%2Fwelsonjs?ref=badge_large&utm_source=welsonjs)
 
-## Subprojects
-* [YAWW (Yet Another Windows WebView)](https://github.com/gnh1201/yaww?utm_source=welsonjs): WebView for Windows, with WebView2, EdgeHTML, MSHTML, and ChakraCore.
-* [catswords-jsrt-rs](https://github.com/gnh1201/catswords-jsrt-rs?utm_source=welsonjs): Minimal ChakraCore (JsRT) bindings for Rust.
-* [jsrt-claw](https://github.com/gnh1201/jsrt-claw?utm_source=welsonjs): OpenClaw-compatible skill definition for a built-in JSRT (JScript 5.x).
-
-## Featured
-
-### Product Hunt
-WelsonJS was featured on Product Hunt on September 9th, 2026, at 12:01 AM PDT.
-
-[![WelsonJS on Product Hunt](https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1245343&theme=light&t=1788932620105)](https://www.producthunt.com/products/welsonjs?embed=true&amp;utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-welsonjs)
-
-### Dev Tools Dir
-
-WelsonJS was featured on Dev Tools Dir on Sunday, November 1, 2026 at 08:00 AM UTC
-
-[![WelsonJS on Dev Tools Dir](https://devtoolsdir.com/devtoolsdir/images/badges/featured-on-light.svg)](https://devtoolsdir.com/projects/welsonjs?utm_source=badge)
 
 ## Disclaimer
 To the maximum extent permitted by applicable law, Namhyeon Go and Catswords Research shall not be held liable for any direct, indirect, incidental, special, or consequential damages arising out of or in connection with the use of this software outside its intended purpose or scope.
