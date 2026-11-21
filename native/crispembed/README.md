@@ -12,11 +12,11 @@ Like [native/llamacpp](../llamacpp/README.md), the build comes from a pinned sou
 | --- | --- |
 | `build-crispembed.ps1` | The build script. |
 | `commit.txt` | The CrispEmbed commit that is built, as a full 40-character SHA. The source is fetched by this SHA rather than by a tag, because a tag can move and a commit cannot. |
-| `version.txt` | The version label (`0.17.20`, CrispEmbed's `VERSION` at the commit), used in BUILDINFO.txt and the build ID only. |
+| `version.txt` | The version label, `<version>.<commit>.1` as for llama.cpp: the version the pinned commit records in its `VERSION` file (or, for a commit without one, the last release before it, without the `v` of its tag), the first six characters of `commit.txt`, and `.1` for the WelsonJS build (`0.17.20.ad01b2.1`). Used in BUILDINFO.txt and the build ID only. |
 | `source-archive.txt` | The fallback source archive (`url=`) and its SHA-256 (`sha256=`), used when git cannot fetch the commits. |
 | `patches\*.patch` | Patches applied in name order (see [Patches](#patches)). |
 
-Current pin: commit `ad01b21a23d884d197686aa508f78f11d1505925` of `https://github.com/CrispStrobe/CrispEmbed.git` (2026-11-18, `VERSION` 0.17.20, 343 commits after the tag `v0.17.19`). Its ggml submodule is `https://github.com/CrispStrobe/ggml.git` at the commit that CrispEmbed commit records (`3a27b6c665b191cb230be367db5c52d81dd3e2ac`); the script reads it from the tree, so it is pinned by `commit.txt` too.
+Current pin: commit `ad01b21a23d884d197686aa508f78f11d1505925` of `https://github.com/CrispStrobe/CrispEmbed.git` (2026-11-18, `VERSION` 0.17.20, 343 commits after the release `v0.17.19`). Its ggml submodule is `https://github.com/CrispStrobe/ggml.git` at the commit that CrispEmbed commit records (`3a27b6c665b191cb230be367db5c52d81dd3e2ac`); the script reads it from the tree, so it is pinned by `commit.txt` too.
 
 ## Build
 
@@ -61,7 +61,20 @@ ggml does not support MSVC on ARM, so arm64 uses clang. CrispEmbed's `CMakeLists
 
 ## CI (AppVeyor)
 
-The Release job runs the script for x64, arm64 and x86 after the llama.cpp build, into `artifacts\crispembed\<arch>`, and caches that folder; the cache key covers `commit.txt`, `version.txt`, the script, the patches, the arm64 toolchain file, the icon and the launcher's `AssemblyInfo.cs` (add a new patch there). The files are packaged into `artifacts.zip` and signed with the other artifacts.
+The binaries are not built in CI: building llama.cpp and CrispEmbed for x64, arm64 and x86 takes longer than the 60-minute AppVeyor job limit. They are built on a developer PC with this script, published to the WelsonJS blob storage, and restored by the **Release** job, which packages and signs them with the other artifacts.
+
+1. **Build** each architecture: `-Arch x64`, `-Arch arm64` and `-Arch x86`.
+2. **Publish** each build: `native\publish-prebuilt.ps1 -Component crispembed -Arch <arch> -BuildDir <OutDir>\<arch>`.
+   - It checks that the folder matches its `SHA256SUMS.txt`, and that `BUILDINFO.txt` names the current `version.txt`, `commit.txt` and architecture.
+   - It uploads each file as it is and gzip-compressed (`<file>.gz`) with AzCopy (`azcopy login` first) to `packages/native/crispembed/<version>-<arch>/`, never overwriting an existing blob, so a published build does not change.
+   - It copies `SHA256SUMS.txt` to `native\crispembed\prebuilt\<arch>.sha256`.
+3. **Commit** the three `prebuilt\<arch>.sha256` files with the change.
+
+The Release job runs `native\restore-prebuilt.ps1 -Component crispembed -Arch <arch>` for each architecture, into `artifacts\crispembed\<arch>`. It downloads the files listed in `prebuilt\<arch>.sha256` from `<version>-<arch>` as `<file>.gz` and decompresses them (when a `.gz` cannot be downloaded or used, it downloads the file itself), and uses a file only if its SHA-256 matches, so the repository, not the storage, decides what is shipped. The Debug job does not restore them.
+
+`.artifact-configuration.xml` lists every executable and DLL of the three architectures by name (no wildcards), and the build script fails when a built binary is not listed, so a new binary cannot be left unsigned. Authenticode signing changes the files, so in the signed package `SHA256SUMS.txt` lists the hashes of the unsigned files.
+
+The current builds (`0.17.20.ad01b2.1`) were made with Visual Studio 2026: MSVC 19.50 (toolset 14.50) for x64 and x86, and clang 23 with the MSVC 14.51 libraries for arm64. A PC that runs them needs a Visual C++ 2015-2026 redistributable at least as new as those tools.
 
 ## Installation
 
@@ -75,7 +88,7 @@ The setup component `crispembed` selects the artifacts package; `postInstall.ps1
 
 ## Updating
 
-1. Set `commit.txt` to the new commit (the commit itself, not a tag object) and `version.txt` to its `VERSION`.
+1. Set `commit.txt` to the new commit (the commit itself, not a tag object) and `version.txt` to `<VERSION of the commit>.<first six characters of the commit>.1`. If the commit has no `VERSION` file, use the highest release tag for which `gh api repos/CrispStrobe/CrispEmbed/compare/<tag>...<commit>` reports `behind_by` 0, without its `v`.
 2. If the ggml submodule URL changed, check it and update `GgmlRepositoryUrl` in the script.
 3. Make the source archive for the new commit (see [Source archive](#source-archive)), upload it, and update `source-archive.txt`.
 4. Check that each patch applies (`git -c core.autocrlf=false apply --check`), and add new patches to the AppVeyor cache key.

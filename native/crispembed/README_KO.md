@@ -12,11 +12,11 @@
 | --- | --- |
 | `build-crispembed.ps1` | 빌드 스크립트 |
 | `commit.txt` | 빌드할 CrispEmbed 커밋(40자 SHA 전체). 태그는 옮겨질 수 있지만 커밋은 그렇지 않으므로 태그 대신 이 SHA로 소스를 받습니다. |
-| `version.txt` | 버전 표시(`0.17.20`, 그 커밋의 CrispEmbed `VERSION`). BUILDINFO.txt와 빌드 ID에만 씁니다. |
+| `version.txt` | llama.cpp와 같은 형식의 버전 이름표 `<버전>.<커밋>.1`. 고정한 커밋이 `VERSION` 파일에 적은 버전(이 파일이 없는 커밋이면 그 이전의 마지막 릴리스에서 태그의 `v`를 뺀 것), `commit.txt`의 앞 여섯 글자, WelsonJS 빌드를 뜻하는 `.1`입니다(`0.17.20.ad01b2.1`). BUILDINFO.txt와 빌드 ID에만 씁니다. |
 | `source-archive.txt` | git으로 커밋을 받지 못할 때 쓰는 소스 압축 파일(`url=`)과 그 SHA-256(`sha256=`) |
 | `patches\*.patch` | 이름 순서로 적용하는 패치([패치](#패치) 참고) |
 
-현재 고정: `https://github.com/CrispStrobe/CrispEmbed.git`의 커밋 `ad01b21a23d884d197686aa508f78f11d1505925`(2026-11-18, `VERSION` 0.17.20, 태그 `v0.17.19` 이후 343개 커밋). ggml 서브모듈은 `https://github.com/CrispStrobe/ggml.git`이며, 그 CrispEmbed 커밋이 기록한 커밋(`3a27b6c665b191cb230be367db5c52d81dd3e2ac`)을 씁니다. 스크립트가 트리에서 읽으므로 이것도 `commit.txt`로 고정됩니다.
+현재 고정: `https://github.com/CrispStrobe/CrispEmbed.git`의 커밋 `ad01b21a23d884d197686aa508f78f11d1505925`(2026-11-18, `VERSION` 0.17.20, 릴리스 `v0.17.19` 이후 343개 커밋). ggml 서브모듈은 `https://github.com/CrispStrobe/ggml.git`이며, 그 CrispEmbed 커밋이 기록한 커밋(`3a27b6c665b191cb230be367db5c52d81dd3e2ac`)을 씁니다. 스크립트가 트리에서 읽으므로 이것도 `commit.txt`로 고정됩니다.
 
 ## 빌드
 
@@ -61,7 +61,20 @@ ggml은 ARM용 MSVC를 지원하지 않으므로 arm64는 clang을 씁니다. Cr
 
 ## CI(AppVeyor)
 
-Release 작업이 llama.cpp 빌드 다음에 x64, arm64, x86마다 스크립트를 실행해 `artifacts\crispembed\<아키텍처>`에 두고, 그 폴더를 캐시합니다. 캐시 키는 `commit.txt`, `version.txt`, 스크립트, 패치, arm64 툴체인 파일, 아이콘, 런처의 `AssemblyInfo.cs`입니다(새 패치를 추가하면 그 파일도 넣으세요). 파일은 `artifacts.zip`에 들어가 다른 아티팩트와 함께 서명됩니다.
+CI에서는 빌드하지 않습니다. llama.cpp와 CrispEmbed를 x64, arm64, x86으로 빌드하면 AppVeyor 작업 제한 60분을 넘기 때문입니다. 개발자 PC에서 이 스크립트로 빌드해 WelsonJS blob 스토리지에 올리고, **Release** 작업이 이를 복원해 다른 산출물과 함께 패키징하고 서명합니다.
+
+1. 아키텍처마다 **빌드**합니다: `-Arch x64`, `-Arch arm64`, `-Arch x86`.
+2. 빌드마다 **게시**합니다: `native\publish-prebuilt.ps1 -Component crispembed -Arch <arch> -BuildDir <OutDir>\<arch>`.
+   - 폴더가 `SHA256SUMS.txt`와 맞는지, `BUILDINFO.txt`가 현재 `version.txt`, `commit.txt`, 아키텍처를 적고 있는지 확인합니다.
+   - 각 파일을 그대로, 그리고 gzip으로 압축한 `<file>.gz`로 AzCopy(먼저 `azcopy login`)를 써서 `packages/native/crispembed/<version>-<arch>/`에 올립니다. 이미 있는 blob은 덮어쓰지 않으므로 게시한 빌드는 바뀌지 않습니다.
+   - `SHA256SUMS.txt`를 `native\crispembed\prebuilt\<arch>.sha256`으로 복사합니다.
+3. 세 `prebuilt\<arch>.sha256` 파일을 변경과 함께 **커밋**합니다.
+
+Release 작업은 아키텍처마다 `native\restore-prebuilt.ps1 -Component crispembed -Arch <arch>`를 실행해 `artifacts\crispembed\<arch>`에 둡니다. `prebuilt\<arch>.sha256`에 적힌 파일을 `<version>-<arch>`에서 `<file>.gz`로 받아 압축을 풀고(`.gz`를 받지 못하거나 쓸 수 없으면 원본 파일을 받음), SHA-256이 맞을 때만 쓰므로, 무엇을 배포할지는 스토리지가 아니라 저장소가 정합니다. Debug 작업은 복원하지 않습니다.
+
+`.artifact-configuration.xml`은 세 아키텍처의 실행 파일과 DLL을 모두 이름으로 하나씩 적고(와일드카드 없음), 빌드 스크립트는 목록에 없는 바이너리가 있으면 실패하므로 새 바이너리가 서명되지 않은 채 남을 수 없습니다. Authenticode 서명은 파일을 바꾸므로, 서명된 패키지의 `SHA256SUMS.txt`는 서명 전 파일의 해시입니다.
+
+현재 빌드(`0.17.20.ad01b2.1`)는 Visual Studio 2026으로 만들었습니다. x64와 x86은 MSVC 19.50(도구 집합 14.50), arm64는 MSVC 14.51 라이브러리와 clang 23입니다. 이를 실행하는 PC에는 이 도구보다 오래되지 않은 Visual C++ 2015-2026 재배포 패키지가 필요합니다.
 
 ## 설치
 
@@ -75,7 +88,7 @@ Release 작업이 llama.cpp 빌드 다음에 x64, arm64, x86마다 스크립트�
 
 ## 업데이트 방법
 
-1. `commit.txt`를 새 커밋(태그 객체가 아닌 커밋 자체)으로, `version.txt`를 그 `VERSION`으로 바꿉니다.
+1. `commit.txt`를 새 커밋(태그 객체가 아닌 커밋 자체)으로, `version.txt`를 `<그 커밋의 VERSION>.<커밋 앞 여섯 글자>.1`로 바꿉니다. 커밋에 `VERSION` 파일이 없으면 `gh api repos/CrispStrobe/CrispEmbed/compare/<태그>...<커밋>`이 `behind_by` 0을 돌려주는 가장 큰 릴리스 태그에서 `v`를 뺀 것을 씁니다.
 2. ggml 서브모듈 URL이 바뀌었으면 확인하고 스크립트의 `GgmlRepositoryUrl`을 바꿉니다.
 3. 새 커밋의 소스 압축 파일을 만들어([소스 압축 파일](#소스-압축-파일) 참고) 올리고 `source-archive.txt`를 바꿉니다.
 4. 각 패치가 적용되는지 확인하고(`git -c core.autocrlf=false apply --check`), 새 패치는 AppVeyor 캐시 키에 넣습니다.

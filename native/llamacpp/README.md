@@ -15,12 +15,12 @@ The launcher runs `llama-server` in router mode, with the installed models in `%
 | File | Purpose |
 | --- | --- |
 | `commit.txt` | The llama.cpp commit that is built, as a full 40-character SHA. The source is fetched by this SHA rather than by a branch, because a branch can move and a commit cannot. |
-| `version.txt` | A label for the build. It is a label only and does not select the source. |
+| `version.txt` | The version label, `<upstream release>.<commit>.1` (llama.cpp records no version in its tree, so the release stands for it): the last upstream llama.cpp release (`bNNNN`) before the commit where the fork diverges from upstream, the first six characters of the pinned commit (`commit.txt`), and `.1` for the WelsonJS build. It is a label only (BUILDINFO.txt and the build ID) and does not select the source. |
 | `source-archive.txt` | The fallback source archive (`url=`) and its SHA-256 (`sha256=`), used when git cannot fetch the commit. |
 | `patches/*.patch` | Patches applied in name order with `git apply`. They are stored with LF line endings, and `.gitattributes` keeps them byte-exact on checkout. |
 | `build-llamacpp.ps1` | Fetches the source, applies the patches, builds, and writes the output. |
 
-Current pin: commit `390c307752ab78fd8189f359d6954c9ba1be74af` of `https://github.com/isHuangXin/llama.cpp.git` (branch `release-bitnet-embedding-0.6b-270m`, 2026-07-15). It is the submodule commit of BitNet `0b341e582afbf9e1011f24744b554c96a3477eb5`.
+Current pin: commit `390c307752ab78fd8189f359d6954c9ba1be74af` of `https://github.com/isHuangXin/llama.cpp.git` (branch `release-bitnet-embedding-0.6b-270m`, 2026-07-15). It is the submodule commit of BitNet `0b341e582afbf9e1011f24744b554c96a3477eb5`. It diverges from upstream llama.cpp (`ggml-org/llama.cpp`) after `665892536dfb` (2026-07-04, 46 commits of its own); the last upstream release before that commit is `b9871`, so `version.txt` is `b9871.390c30.1`.
 
 The fork is older than upstream llama.cpp, so upstream changes made after it are not included.
 
@@ -124,24 +124,20 @@ The following are not part of the build ID:
 
 ## CI (AppVeyor)
 
-llama.cpp is built in the **Release** job, so its files are packaged and signed with the other artifacts. No separate job is used, because AppVeyor jobs do not share artifacts: a separate job's files would not reach `artifacts.zip` or the SignPath signing request.
+The binaries are not built in CI: building llama.cpp and CrispEmbed for x64, arm64 and x86 takes longer than the 60-minute AppVeyor job limit. They are built on a developer PC with this script, published to the WelsonJS blob storage, and restored by the **Release** job, which packages and signs them with the other artifacts.
 
-- **First step.** The build is the first `before_build` step of the Release job. The Debug job skips it, so only the Release job's `artifacts.zip` contains `llamacpp`. A job has 60 minutes, and building first lets the llama.cpp build finish as early as possible.
-- **stderr of native tools.** AppVeyor's `ps:` steps capture stderr, and with `$ErrorActionPreference = "Stop"` each stderr line of a native command becomes a terminating error. CMake, git, Ninja, and `vcvarsall.bat` write warnings and progress there. For example, CMake warns about an unused `CMAKE_BUILD_TYPE`, and `vcvarsall.bat` prints `'vswhere.exe' is not recognized`. So the script prints stderr like stdout (`Invoke-Checked`, `Get-NativeOutput`) and decides by exit codes only. `CMAKE_BUILD_TYPE` is passed only to single-configuration generators (Ninja), not to the Visual Studio generator.
-- **Three architectures.** The step runs the script for `x64`, `arm64` and `x86`, each with `-InstallLlvm`. LLVM is installed only when the arm64 build is needed and clang is missing. The arm64 build also needs the MSVC ARM64 build tools on the image; without them, the script stops with a message that names the component.
-- **Output: `artifacts\llamacpp\x64`, `artifacts\llamacpp\arm64` and `artifacts\llamacpp\x86`.** The `7z a artifacts.zip artifacts\*` step adds it to `artifacts.zip`, which the deployment sends to SignPath. The SignPath artifact configuration (`.artifact-configuration.xml`) decides which of these files are signed.
-  - It signs the three executables and every DLL of the three architectures, each listed by name (no wildcards): for x64 the nine CPU backends that MSVC builds (`ggml-cpu-alderlake.dll` to `ggml-cpu-x64.dll`), for arm64 and x86 the one backend `ggml-cpu.dll`.
-  - The build script fails when a built executable or DLL is not listed there, so a new binary cannot be left unsigned.
-  - Authenticode signing changes the files. In the signed package, `SHA256SUMS.txt` still lists the hashes of the unsigned build output.
-- **Cache: `artifacts\llamacpp`.** It is invalidated when `commit.txt`, `version.txt`, the script, a patch file, or `app\favicon.ico` changes.
-  - AppVeyor keeps a separate cache for each job; only the Release job writes this folder.
-  - AppVeyor re-uploads the cache only when the folder contents change.
-  - A patch file that is added later is not in the cache dependency list. The script's build ID still covers it.
-- **`APPVEYOR_SAVE_CACHE_ON_ERROR=true` (Release).** AppVeyor normally saves the cache only for successful jobs. With this setting, a llama.cpp build is kept even if a later step fails (for example, ISCC or the deployment). A partly written output is never reused: `SHA256SUMS.txt` is written last, and the script checks it.
-- **Existing folder.** The cache restores `artifacts\llamacpp` before the build, so the later `mkdir artifacts` step creates the folder only if it does not exist.
-- **Image.** The Release job runs on the Visual Studio 2019 image (MSVC 19.29).
+1. **Build** each architecture: `-Arch x64`, `-Arch arm64` and `-Arch x86` (on a PC whose CMake on `PATH` defaults to another generator, pass `-Generator "Visual Studio 18 2026"` for x64 and x86).
+2. **Publish** each build: `native\publish-prebuilt.ps1 -Component llamacpp -Arch <arch> -BuildDir <OutDir>\<arch>`.
+   - It checks that the folder matches its `SHA256SUMS.txt`, and that `BUILDINFO.txt` names the current `version.txt`, `commit.txt` and architecture.
+   - It uploads each file as it is and gzip-compressed (`<file>.gz`) with AzCopy (`azcopy login` first) to `packages/native/llamacpp/<version>-<arch>/`, never overwriting an existing blob, so a published build does not change.
+   - It copies `SHA256SUMS.txt` to `native\llamacpp\prebuilt\<arch>.sha256`.
+3. **Commit** the three `prebuilt\<arch>.sha256` files with the change.
 
-A build without the cache takes much longer on the hosted VM than on a developer PC. In the first successful run (build 0.2.7.build2427), x64 took 20.2 minutes and arm64 9.1 minutes, and the whole Release job 36 minutes of its 60. With a valid cache both builds are skipped. If the Release job comes close to 60 minutes, reduce the x64 CPU variants or build the package elsewhere.
+The Release job runs `native\restore-prebuilt.ps1 -Component llamacpp -Arch <arch>` for each architecture, into `artifacts\llamacpp\<arch>`. It downloads the files listed in `prebuilt\<arch>.sha256` from `<version>-<arch>` as `<file>.gz` and decompresses them (when a `.gz` cannot be downloaded or used, it downloads the file itself), and uses a file only if its SHA-256 matches, so the repository, not the storage, decides what is shipped. The Debug job does not restore them.
+
+`.artifact-configuration.xml` lists every executable and DLL of the three architectures by name (no wildcards), and the build script fails when a built binary is not listed, so a new binary cannot be left unsigned. Authenticode signing changes the files, so in the signed package `SHA256SUMS.txt` lists the hashes of the unsigned files.
+
+The current builds (`b9871.390c30.1`) were made with Visual Studio 2026: MSVC 19.50 (toolset 14.50) for x64 and x86, and clang 23 with the MSVC 14.51 libraries for arm64. A PC that runs them needs a Visual C++ 2015-2026 redistributable at least as new as those tools.
 
 ## Installation
 
@@ -620,7 +616,7 @@ The file is upstream's, with two changes for the fork's API:
 
 ## Updating
 
-1. Find the llama.cpp commit that the new BitNet commit uses: `git ls-tree <BitNet sha> 3rdparty/llama.cpp` and BitNet's `.gitmodules`. Set `commit.txt` to it, and `RepositoryUrl` in the script if the fork URL changed. Update `version.txt`.
+1. Find the llama.cpp commit that the new BitNet commit uses: `git ls-tree <BitNet sha> 3rdparty/llama.cpp` and BitNet's `.gitmodules`. Set `commit.txt` to it, and `RepositoryUrl` in the script if the fork URL changed. Set `version.txt` to `<release>.<first six characters of the commit>.1`, where `<release>` is the last upstream release before the fork diverges: the merge base is `merge_base_commit` of `gh api repos/ggml-org/llama.cpp/compare/master...<fork owner>:llama.cpp:<sha>`, and the release is the highest `bNNNN` tag for which `gh api repos/ggml-org/llama.cpp/compare/bNNNN...<merge base>` reports `behind_by` 0.
 2. Upload the source archive for that commit (`git archive --format=zip --prefix=llama.cpp-<sha>/ <sha>`), then update the URL and SHA-256 in `source-archive.txt`.
 3. Check that each patch applies to a clean checkout with `git -c core.autocrlf=false apply --check`. Rebase the patches if needed, and check the type IDs in `ggml.h`, `llama.h`, and `gguf-py/gguf/constants.py` against the fork's types.
 4. Check that the fork still keeps every use of the BitNet repository behind the TL1/TL2 options (`0002-bitnet-i2s.patch`, part 1), and that the `I2_S` sources are compiled into every CPU variant.
