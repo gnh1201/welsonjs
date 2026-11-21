@@ -32,6 +32,14 @@ WelsonJS script (lib/credentials.js, "keyvault:<vault>/<secret>" in data/apikey.
    }
    ```
 
+   A provider may also list several sources, tried in order. This keeps a key file as a fallback for when the launcher is closed or not signed in:
+
+   ```json
+   {
+       "openai": ["keyvault:my-vault/openai-api-key", "file:data/openai_apikey.txt"]
+   }
+   ```
+
    Scripts keep using `CRED.get("apikey", "openai")` from `lib/credentials.js`, as the provider modules (`lib/chatgpt.js`, `lib/anthropic.js`, ...) already do.
 
 ## Launcher settings
@@ -89,9 +97,10 @@ The settings are in `WelsonJS.Launcher.exe.config`:
   - the reference is invalid.
 
   Failures are not cached, so a later call tries again, for example after you sign in.
+- **Several sources** (an array in `data/apikey.json`): the sources are tried in order, and the first value wins. Missing or empty files, empty values and Key Vault secrets that cannot be read are skipped; a Key Vault failure is then logged as a warning, not an error. A value from the first source is kept in memory. After a fallback, the earlier sources are tried again on the next call, so the Key Vault value is used once the launcher runs and is signed in. When no source gives a value, `get()` returns `null`.
 
 ## Limits
 
-- **The launcher must be running.** Scripts run with `cscript` while the launcher is closed, or by WelsonJS.Service under another account, get `null` for `keyvault:` values. Keep using `file:` there.
+- **The launcher must be running.** Scripts run with `cscript` while the launcher is closed, or by WelsonJS.Service under another account, get `null` for `keyvault:` values. Keep using `file:` there, alone or as the fallback of an array.
 - **Same-user scope.** Any program that runs as your Windows user can read `credentials.token`, and so can ask the launcher for secrets, just as it could read key files. Put only the keys that the PC needs in the vault you use there.
 - **Sign-in method.** Only browser sign-in with a work or school account. Device code sign-in, service principals and managed identities are not supported yet (see [#571](https://github.com/gnh1201/welsonjs/issues/571)).

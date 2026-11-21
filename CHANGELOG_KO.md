@@ -20,6 +20,7 @@
 
 - Azure Key Vault에서 API 키 받기(관련 [#571](https://github.com/gnh1201/welsonjs/issues/571)). 두 부분으로 나뉩니다.
   - **스크립트 쪽:** `data/apikey.json`에 `file:`과 직접 적은 값 외에 `keyvault:<볼트>/<비밀>`을 쓸 수 있습니다. `lib/credentials.js`는 `CRED.get()`이 처음 요청할 때 런처를 통해 값을 읽어 메모리에 두며, 실패하면 이유(런처가 실행 중이 아님, 로그인 필요, 권한 없음, 비밀 없음 등)를 남기고 `null`을 돌려줍니다.
+  - **여러 소스:** provider 값을 이 형식들의 배열로 적으면 순서대로 시도합니다. 예: `["keyvault:my-vault/openai-api-key", "file:data/openai_apikey.txt"]`. 없거나 빈 파일, 빈 값, 읽을 수 없는 Key Vault 비밀은 건너뜁니다. 첫 번째 소스에서 얻은 값은 메모리에 두고, 다음 소스로 대체했을 때는 다음 `CRED.get()`에서 앞의 소스를 다시 시도합니다. 값 하나만 적는 기존 형식도 그대로 쓸 수 있습니다.
   - **런처:** **Settings > Sign in to Azure...**로 사용자 자신의 회사·학교 계정에 기본 브라우저로 로그인합니다(PKCE 인증 코드, 루프백 리디렉션). 로그인에는 여러 조직용 Entra ID 앱 **WelsonJS Launcher**(`AzureClientId`, `5bd2e397-314a-4fc9-88db-4e2b2452fb50`)를 씁니다. refresh token은 DPAPI로 `%APPDATA%\WelsonJS\azure-signin.dat`에 두고, 볼트의 테넌트는 볼트의 401 응답에서 찾으며, 비밀 값은 메모리에 15분 동안 둡니다.
   - **로컬 엔드포인트:** 런처가 `GET /credentials/keyvault/<볼트>/<비밀>`을 제공합니다. 브라우저 요청과, 현재 사용자만 읽을 수 있는 `%APPDATA%\WelsonJS\credentials.token`의 시작할 때마다 바뀌는 토큰이 없는 요청은 거부합니다.
   - NuGet 패키지는 추가하지 않았습니다. 설정과 보안 방식은 `docs/azure-key-vault.md`에 있습니다.
