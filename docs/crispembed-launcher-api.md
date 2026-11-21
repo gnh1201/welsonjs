@@ -10,7 +10,7 @@ Two setup components install it (custom installation):
 
 | Component | Installs |
 | --- | --- |
-| `crispembed` | The WelsonJS build of CrispEmbed 0.17.20.ad01b2.1 (commit `ad01b21`) for Windows x86_64 (CPU, AVX2 and FMA required), from the artifacts package, into `%APPDATA%\WelsonJS\crispembed\`. It is built from a pinned commit in CI and signed with the other binaries ([native/crispembed](../native/crispembed/README.md)). There is no ARM64 or 32-bit Windows build; on ARM64 Windows the x64 build runs under emulation. |
+| `crispembed` | The WelsonJS build of CrispEmbed 0.17.20.ad01b21.1 (commit `ad01b21`) for Windows x64, ARM64 and x86 (CPU; the x64 and x86 builds require AVX2 and FMA), from the artifacts package, into `%APPDATA%\WelsonJS\crispembed\`. It is built from a pinned commit on a developer PC, published to the WelsonJS blob storage, restored by CI and signed with the other binaries ([native/crispembed](../native/crispembed/README.md)). Setup installs the build for the machine's architecture. |
 | `crispembed\embeddinggemma_2_typed_decision` | [EmbeddingGemma 2 fine-tuned for typed decisions](https://huggingface.co/cstr/embeddinggemma-2-ft-typed-decision-GGUF), Q8_0 (308 MB, Apache-2.0), into `%APPDATA%\WelsonJS\crispembed_models\embeddinggemma_2_typed_decision\`. Selecting it also selects `crispembed`. |
 
 The model download is pinned to a repository revision and checked against `data/DownloadHashes.txt`.
@@ -36,7 +36,7 @@ A model is one of two kinds:
 | Decision | The models in `CrispEmbedDecisionModels` (`embeddinggemma_2_typed_decision`) | Typed decisions only: `POST /v1/decisions`, `POST /crispembed/decide` |
 | Embedding | Every other installed model | Embeddings only: `POST /v1/embeddings`, `POST /crispembed/embed` |
 
-A decision model's encoder is fine-tuned together with its decision head, so its vectors are not general-purpose embeddings, and the launcher does not offer them as such (an embedding request for a decision model is answered with `400`). Embeddings come from an embedding model: for EmbeddingGemma 2 that is the original [google/embeddinggemma-2](https://huggingface.co/google/embeddinggemma-2), a separate model. CrispEmbed 0.17.20.ad01b2.1 does not load it (it supports EmbeddingGemma-300m and the decision fine-tune), so it runs in the WelsonJS llama.cpp build instead: the setup component `llamacpp\embeddinggemma_2`, model `embeddinggemma_2` (see [llamacpp-launcher-api.md](llamacpp-launcher-api.md#embeddings)). Setup installs no CrispEmbed embedding model.
+A decision model's encoder is fine-tuned together with its decision head, so its vectors are not general-purpose embeddings, and the launcher does not offer them as such (an embedding request for a decision model is answered with `400`). Embeddings come from an embedding model: for EmbeddingGemma 2 that is the original [google/embeddinggemma-2](https://huggingface.co/google/embeddinggemma-2), a separate model. CrispEmbed 0.17.20.ad01b21.1 does not load it (it supports EmbeddingGemma-300m and the decision fine-tune), so it runs in the WelsonJS llama.cpp build instead: the setup component `llamacpp\embeddinggemma_2`, model `embeddinggemma_2` (see [llamacpp-launcher-api.md](llamacpp-launcher-api.md#embeddings)). Setup installs no CrispEmbed embedding model.
 
 ## Settings (`WelsonJS.Launcher.exe.config`)
 

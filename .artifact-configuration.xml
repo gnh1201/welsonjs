@@ -89,6 +89,10 @@
       <include path="artifacts/crispembed/x86/ggml.dll" />
       <include path="artifacts/crispembed/x86/ggml-base.dll" />
       <include path="artifacts/crispembed/x86/ggml-cpu.dll" />
+      <!-- ChakraCore (native/chakracore/build-chakracore.ps1, built on a developer PC and restored by CI) -->
+      <include path="artifacts/chakracore/x64/ChakraCore.dll" />
+      <include path="artifacts/chakracore/arm64/ChakraCore.dll" />
+      <include path="artifacts/chakracore/x86/ChakraCore.dll" />
       <for-each>
         <authenticode-sign />
       </for-each>

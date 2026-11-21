@@ -1,0 +1,58 @@
+diff --git a/bin/ChakraCore/ChakraCore.rc b/bin/ChakraCore/ChakraCore.rc
+index fa7ea46..3c188a9 100644
+--- a/bin/ChakraCore/ChakraCore.rc
++++ b/bin/ChakraCore/ChakraCore.rc
+@@ -9,7 +9,43 @@
+ #define VER_INTERNALNAME_STR            "chakracore.dll"
+ #define VER_FILETYPE                    VFT_DLL
+ 
++// WelsonJS: the build script (native\chakracore\build-chakracore.ps1) writes
++// WelsonJSVersion.h with the version information of the WelsonJS build. With the
++// default file, WELSONJS_WIN_VERSION is 0 and the original resource is used.
++#include "WelsonJSVersion.h"
++#if WELSONJS_WIN_VERSION
++VS_VERSION_INFO VERSIONINFO
++ FILEVERSION     WELSONJS_WIN_VERSION_NUMBERS
++ PRODUCTVERSION  WELSONJS_WIN_VERSION_NUMBERS
++ FILEFLAGSMASK   VS_FFI_FILEFLAGSMASK
++ FILEFLAGS       0
++ FILEOS          VOS_NT_WINDOWS32
++ FILETYPE        VFT_DLL
++ FILESUBTYPE     VFT2_UNKNOWN
++BEGIN
++    BLOCK "StringFileInfo"
++    BEGIN
++        BLOCK "040904B0"
++        BEGIN
++            VALUE "CompanyName",      WELSONJS_WIN_COMPANY
++            VALUE "FileDescription",  WELSONJS_WIN_DESCRIPTION
++            VALUE "FileVersion",      WELSONJS_WIN_VERSION_STRING
++            VALUE "InternalName",     "chakracore.dll"
++            VALUE "LegalCopyright",   WELSONJS_WIN_COPYRIGHT
++            VALUE "OriginalFilename", "ChakraCore.dll"
++            VALUE "ProductName",      "ChakraCore"
++            VALUE "ProductVersion",   WELSONJS_WIN_VERSION_STRING
++            VALUE "Comments",         WELSONJS_WIN_COMMENTS
++        END
++    END
++    BLOCK "VarFileInfo"
++    BEGIN
++        VALUE "Translation", 0x409, 1200
++    END
++END
++#else
+ #include "..\CoreCommon.ver"
++#endif
+ 
+ #include "jserr.rc2"
+ 
+diff --git a/bin/ChakraCore/WelsonJSVersion.h b/bin/ChakraCore/WelsonJSVersion.h
+new file mode 100644
+index 0000000..548b21f
+--- /dev/null
++++ b/bin/ChakraCore/WelsonJSVersion.h
+@@ -0,0 +1,4 @@
++// WelsonJS: version information of the WelsonJS build of ChakraCore.
++// native\chakracore\build-chakracore.ps1 overwrites this file before the build;
++// with WELSONJS_WIN_VERSION 0, ChakraCore.rc uses the original resource.
++#define WELSONJS_WIN_VERSION 0
