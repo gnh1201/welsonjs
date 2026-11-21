@@ -100,6 +100,8 @@ Select text in the editor and right-click it to use the following menu items:
 
 The answer is inserted into the editor as a comment. Switching the service clears the accumulated conversation.
 
+**Analyze Tactics (MITRE ATT&CK)** works the same with every service: the local model FrogNano (installer component `llamacpp\frognano_4b_2609`) names one or two [MITRE ATT&CK](https://attack.mitre.org/) tactics that the selected code performs, with links and a one-sentence reason, or says that there is no clear tactic. It runs on your PC and takes 5 to 10 seconds (longer the first time, while the model loads). Treat the result as candidates: in tests it named the right tactic first in 20 of 32 attack snippets and among its answers in 28, and called all 14 ordinary snippets ordinary. It tends to add Initial Access to code that downloads or runs something.
+
 ### Local AI
 
 - The first request starts llama.cpp and loads the model, which can take a little while. Later requests are faster.
