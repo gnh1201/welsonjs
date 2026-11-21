@@ -1061,9 +1061,146 @@
                     });
                 };
 
+                // ---- Analyze Tactics (MITRE ATT&CK) ----
+                //
+                // Asks the local model FrogNano (llama.cpp, POST /llamacpp/chat) which tactics of
+                // MITRE ATT&CK Enterprise 20.1 the selection performs: one or two, with a one-sentence
+                // reason, or none (at most two are shown). The prompt lists the tactics with their official summaries ("The
+                // adversary is trying to ..."; IDs, names and summaries: Copyright 2015-2026, The
+                // MITRE Corporation; MITRE ATT&CK and ATT&CK are registered trademarks of The MITRE
+                // Corporation). On 32 attack snippets (8 from the Gootloader 2019 sample) and 14
+                // ordinary ones, it named the right tactic first in 20 and among its answers in 28,
+                // never answered "none" for attack code and always for the ordinary code. Embedding
+                // similarity with EmbeddingGemma 2 matched words rather than behavior, so it missed
+                // real malware with meaningless names. The answer is shown as candidates.
+                const ATTACK_MODEL = 'frognano_4b_2609';
+                const ATTACK_MODEL_LABEL = 'FrogNano';
+                const ATTACK_MAX_SELECTION = 6000;
+                const ATTACK_TACTICS = [
+                    { key: 'reconnaissance', id: 'TA0043', name: 'Reconnaissance', goal: 'gather information they can use to plan future operations' },
+                    { key: 'resource-development', id: 'TA0042', name: 'Resource Development', goal: 'establish resources they can use to support operations' },
+                    { key: 'initial-access', id: 'TA0001', name: 'Initial Access', goal: 'get into your network' },
+                    { key: 'execution', id: 'TA0002', name: 'Execution', goal: 'run malicious code' },
+                    { key: 'persistence', id: 'TA0003', name: 'Persistence', goal: 'maintain their foothold' },
+                    { key: 'privilege-escalation', id: 'TA0004', name: 'Privilege Escalation', goal: 'gain higher-level permissions' },
+                    { key: 'stealth', id: 'TA0005', name: 'Stealth', goal: 'avoid being detected (obfuscation, hiding, sandbox evasion)' },
+                    { key: 'defense-impairment', id: 'TA0112', name: 'Defense Impairment', goal: 'disable or weaken your defenses (antivirus, firewall, logs)' },
+                    { key: 'credential-access', id: 'TA0006', name: 'Credential Access', goal: 'steal account names and passwords' },
+                    { key: 'discovery', id: 'TA0007', name: 'Discovery', goal: 'figure out your environment' },
+                    { key: 'lateral-movement', id: 'TA0008', name: 'Lateral Movement', goal: 'move through your environment' },
+                    { key: 'collection', id: 'TA0009', name: 'Collection', goal: 'gather data of interest to their goal' },
+                    { key: 'command-and-control', id: 'TA0011', name: 'Command and Control', goal: 'communicate with compromised systems to control them' },
+                    { key: 'exfiltration', id: 'TA0010', name: 'Exfiltration', goal: 'steal data' },
+                    { key: 'impact', id: 'TA0040', name: 'Impact', goal: 'manipulate, interrupt, or destroy your systems and data' }
+                ];
+                const ATTACK_SYSTEM_PROMPT = 'You are a malware analyst. Classify Windows Script Host (JScript) code by MITRE ATT&CK Enterprise tactics.\n' +
+                    'Tactic keys (the adversary is trying to ...):\n' +
+                    '- none: the code does nothing an adversary would do\n' +
+                    ATTACK_TACTICS.map(t => `- ${t.key}: ${t.goal}`).join('\n') + '\n' +
+                    // "One to three": the model gave one or two (never three) on the test snippets, and
+                    // the result shows at most two. Telling it when not to use initial-access made it
+                    // answer initial-access more often, so the prompt does not mention it.
+                    'Answer with JSON only, no other text: {"tactics": [one to three keys, most relevant first], "reason": "one short sentence"}. ' +
+                    'Use ["none"] when the code is ordinary.';
+
+                // The first JSON object of the answer, or null.
+                const parseTacticsAnswer = (text) => {
+                    const match = String(text || '').match(/\{[\s\S]*\}/);
+                    if (!match)
+                        return null;
+                    try {
+                        const answer = JSON.parse(match[0]);
+                        const keys = Array.isArray(answer.tactics) ? answer.tactics.map(x => String(x).toLowerCase()) : [];
+                        return {
+                            none: keys.length > 0 && keys[0] === 'none',
+                            tactics: keys.map(key => ATTACK_TACTICS.find(t => t.key === key)).filter(Boolean)
+                                .filter((t, i, all) => all.indexOf(t) === i).slice(0, 2),
+                            reason: typeof answer.reason === 'string' ? answer.reason.replace(/\s+/g, ' ').trim() : ''
+                        };
+                    } catch (e) {
+                        return null;
+                    }
+                };
+
+                // Inserts the tactics below endLine, as a comment.
+                const analyzeTactics = (text, endLine) => {
+                    const truncated = text.length > ATTACK_MAX_SELECTION;
+                    const input = truncated ? text.substring(0, ATTACK_MAX_SELECTION) : text;
+                    const replace = insertPlaceholder(endLine,
+                        `// ${summarize(text)}... Analyzing MITRE ATT&CK tactics with ${ATTACK_MODEL_LABEL} (llama.cpp; loading the model may take a while)...`);
+
+                    // "translate": false keeps the code from being translated (the launcher otherwise
+                    // translates FrogNano's prompts into English); the prompt is in English already.
+                    axios.post('/llamacpp/chat', {
+                        model: ATTACK_MODEL,
+                        translate: false,
+                        messages: [
+                            { role: 'system', content: ATTACK_SYSTEM_PROMPT },
+                            { role: 'user', content: 'Code:\n```javascript\n' + input + '\n```' }
+                        ],
+                        max_tokens: 200,
+                        temperature: 0,
+                        chat_template_kwargs: { enable_thinking: false }
+                    }, {
+                        headers: { 'Content-Type': 'application/json' }
+                    }).then(response => {
+                        const choice = response.data && response.data.choices && response.data.choices[0];
+                        const content = choice && choice.message ? choice.message.content : '';
+                        const answer = parseTacticsAnswer(content);
+                        const note = truncated ? `, first ${ATTACK_MAX_SELECTION} characters` : '';
+                        const clean = (s) => DOMPurify.sanitize(s, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+                        if (!answer || (!answer.none && answer.tactics.length === 0)) {
+                            replace(`// Analyze Tactics: ${ATTACK_MODEL_LABEL} did not answer with tactics. Its answer: ${clean(String(content || '')).replace(/\s+/g, ' ').substring(0, 300)}`);
+                            return;
+                        }
+                        const reason = answer.reason ? [`// Reason: ${clean(answer.reason)}`] : [];
+                        if (answer.none) {
+                            replace([`// No clear MITRE ATT&CK tactic in the selection (${ATTACK_MODEL_LABEL}, local${note}).`].concat(reason).join('\n'));
+                            return;
+                        }
+                        const lines = answer.tactics.map((t, i) => `//   ${i + 1}. ${t.id} ${t.name} https://attack.mitre.org/tactics/${t.id}/`);
+                        replace([`// MITRE ATT&CK tactics of the selection (${ATTACK_MODEL_LABEL}, local; candidates, not a verdict${note}):`]
+                            .concat(lines, reason).join('\n'));
+                    }).catch(error => {
+                        const body = error.response && error.response.data;
+                        const detail = body && body.error
+                            ? (typeof body.error === 'string' ? body.error : (body.error.message || JSON.stringify(body.error)))
+                            : error.message;
+                        console.error('Analyze Tactics error:', body || error.message);
+                        replace(`// Analyze Tactics failed: ${String(detail).replace(/\r?\n/g, ' ')} (needs the setup component llamacpp\\frognano_4b_2609)`);
+                    });
+                };
+
+                // Editor context menu items that do not depend on the AI service chosen in the
+                // ribbon. Added once, when the editor is ready.
+                const registerAnalysisActions = (editor) => {
+                    editor.addAction({
+                        id: 'welsonjs.analyzeTactics',
+                        label: 'Analyze Tactics (MITRE ATT&CK)',
+                        precondition: 'editorHasSelection',
+                        contextMenuGroupId: '2_analysis',
+                        contextMenuOrder: 1,
+                        run: () => {
+                            const model = editor.getModel();
+                            const selection = editor.getSelection();
+                            if (!selection || selection.isEmpty())
+                                return;
+                            const text = model.getValueInRange(selection);
+                            if (text.trim() === '')
+                                return;
+                            // A selection of whole lines ends at column 1 of the next line.
+                            const endLine = (selection.endColumn === 1 && selection.endLineNumber > selection.startLineNumber)
+                                ? selection.endLineNumber - 1
+                                : selection.endLineNumber;
+                            analyzeTactics(text, endLine);
+                        }
+                    });
+                };
+
                 const registerAiActions = (editor) => {
                     aiEditorRef.current = editor;
                     registerAiServiceActions(aiServiceKey);
+                    registerAnalysisActions(editor);
                 };
 
                 // When the launcher's model list (or translation model) arrives, keep the chosen

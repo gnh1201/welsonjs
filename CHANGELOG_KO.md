@@ -18,6 +18,10 @@
 
 ### 추가
 
+- 편집기: 선택 영역의 컨텍스트 메뉴에 **Analyze Tactics (MITRE ATT&CK)** 추가([#574](https://github.com/gnh1201/welsonjs/issues/574)). 로컬 모델 FrogNano(`frognano_4b_2609`, `POST /llamacpp/chat`)에 코드가 MITRE ATT&CK Enterprise 20.1의 어떤 전술(Stealth TA0005, Defense Impairment TA0112 포함)을 하는지 묻고, 전술 한두 개를 링크와 한 문장 근거와 함께, 또는 "No clear MITRE ATT&CK tactic"을 주석으로 넣습니다.
+  - **방식:** 프롬프트에 전술을 공식 요약("The adversary is trying to ...")과 함께 나열하고 JSON으로 답하게 합니다. 코드가 번역되지 않도록 런처의 프롬프트 번역은 끕니다(`"translate": false`). 선택 영역은 6,000자까지만 씁니다. CPU에서 답 하나에 5~10초, 모델을 불러오는 동안은 더 걸립니다.
+  - **정확도:** 공격 코드 조각 32개(그중 8개는 Gootloader 2019 샘플 [gootloader-payload-2019](https://github.com/gnh1201/gootloader-payload-2019)에서 잘라 냄)에서 정답 전술을 첫 번째로 답한 것이 20개, 답 안에 넣은 것이 28개이고, "none"으로 답한 적은 없습니다. 평범한 코드 14개는 모두 "none"으로 답했습니다. 무언가를 내려받거나 실행하는 코드에 Initial Access를 덧붙이는 경향이 있고, 그러지 말라고 하면 더 잦아졌습니다. 결과는 후보로 표시합니다.
+  - **먼저 시도한 것:** EmbeddingGemma 2(`embeddinggemma_2`)로 전술 설명이나 공식 기법 설명과의 임베딩 유사도를 재는 방식은 동작이 아니라 단어를 맞춰서, 이름이 무의미한 해독된 Gootloader 단계를 "두드러지는 전술 없음"으로 판단했습니다. typed-decision 모델 `embeddinggemma_2_typed_decision`은 전술을 구분하지 못했습니다.
 - Azure Key Vault에서 API 키 받기(관련 [#571](https://github.com/gnh1201/welsonjs/issues/571)). 두 부분으로 나뉩니다.
   - **스크립트 쪽:** `data/apikey.json`에 `file:`과 직접 적은 값 외에 `keyvault:<볼트>/<비밀>`을 쓸 수 있습니다. `lib/credentials.js`는 `CRED.get()`이 처음 요청할 때 런처를 통해 값을 읽어 메모리에 두며, 실패하면 이유(런처가 실행 중이 아님, 로그인 필요, 권한 없음, 비밀 없음 등)를 남기고 `null`을 돌려줍니다.
   - **여러 소스:** provider 값을 이 형식들의 배열로 적으면 순서대로 시도합니다. 예: `["keyvault:my-vault/openai-api-key", "file:data/openai_apikey.txt"]`. 없거나 빈 파일, 빈 값, 읽을 수 없는 Key Vault 비밀은 건너뜁니다. 첫 번째 소스에서 얻은 값은 메모리에 두고, 다음 소스로 대체했을 때는 다음 `CRED.get()`에서 앞의 소스를 다시 시도합니다. 값 하나만 적는 기존 형식도 그대로 쓸 수 있습니다.
