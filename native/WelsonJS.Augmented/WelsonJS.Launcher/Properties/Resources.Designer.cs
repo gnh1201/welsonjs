@@ -115,7 +115,7 @@ namespace WelsonJS.Launcher.Properties {
         }
         
         /// <summary>
-        ///   1.13.0.97e68c9.1-signed과(와) 유사한 지역화된 문자열을 찾습니다.
+        ///   과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
         internal static string ChakraCoreRelease {
             get {
