@@ -15,12 +15,12 @@
 | 파일 | 용도 |
 | --- | --- |
 | `commit.txt` | 빌드하는 llama.cpp 커밋(40자 SHA 전체). 브랜치는 움직일 수 있지만 커밋은 바뀌지 않으므로, 소스는 브랜치가 아니라 이 SHA로 가져옵니다. |
-| `version.txt` | 빌드 이름표. 이름표일 뿐 소스를 선택하지 않습니다. |
+| `version.txt` | 버전 이름표 `<upstream 릴리스>.<커밋>.1`(llama.cpp는 소스에 버전을 적지 않으므로 릴리스로 대신함). 포크가 upstream에서 갈라진 커밋보다 앞선 마지막 upstream llama.cpp 릴리스(`bNNNN`), 고정한 커밋(`commit.txt`)의 앞 여섯 글자, WelsonJS 빌드를 뜻하는 `.1`을 차례로 붙입니다. 이름표일 뿐(BUILDINFO.txt와 빌드 ID) 소스를 선택하지 않습니다. |
 | `source-archive.txt` | git으로 커밋을 가져오지 못할 때 쓰는 대체 소스 압축 파일(`url=`)과 그 SHA-256(`sha256=`). |
 | `patches/*.patch` | 이름 순서대로 `git apply`로 적용하는 패치. LF 줄바꿈으로 저장되어 있고, `.gitattributes`가 체크아웃 시 바이트 그대로 유지합니다. |
 | `build-llamacpp.ps1` | 소스를 가져와 패치를 적용하고, 빌드하고, 출력물을 씁니다. |
 
-현재 고정된 버전: `https://github.com/isHuangXin/llama.cpp.git`의 커밋 `390c307752ab78fd8189f359d6954c9ba1be74af`(브랜치 `release-bitnet-embedding-0.6b-270m`, 2026-07-15). BitNet `0b341e582afbf9e1011f24744b554c96a3477eb5`의 서브모듈 커밋입니다.
+현재 고정된 버전: `https://github.com/isHuangXin/llama.cpp.git`의 커밋 `390c307752ab78fd8189f359d6954c9ba1be74af`(브랜치 `release-bitnet-embedding-0.6b-270m`, 2026-07-15). BitNet `0b341e582afbf9e1011f24744b554c96a3477eb5`의 서브모듈 커밋입니다. 이 커밋은 upstream llama.cpp(`ggml-org/llama.cpp`)의 `665892536dfb`(2026-07-04) 다음에서 갈라졌으며(포크 자체 커밋 46개), 그보다 앞선 마지막 upstream 릴리스가 `b9871`이므로 `version.txt`는 `b9871.390c30.1`입니다.
 
 포크는 업스트림 llama.cpp보다 오래되었으므로, 그 이후의 업스트림 변경은 들어 있지 않습니다.
 
@@ -620,7 +620,7 @@ Copyright (c) 2023-2026 The ggml authors (llama.cpp), Copyright (c) Microsoft Co
 
 ## 업데이트 방법
 
-1. 새 BitNet 커밋이 쓰는 llama.cpp 커밋을 찾습니다: `git ls-tree <BitNet sha> 3rdparty/llama.cpp`와 BitNet의 `.gitmodules`. `commit.txt`를 그 커밋으로 설정하고, 포크 URL이 바뀌었으면 스크립트의 `RepositoryUrl`도 바꿉니다. `version.txt`를 업데이트합니다.
+1. 새 BitNet 커밋이 쓰는 llama.cpp 커밋을 찾습니다: `git ls-tree <BitNet sha> 3rdparty/llama.cpp`와 BitNet의 `.gitmodules`. `commit.txt`를 그 커밋으로 설정하고, 포크 URL이 바뀌었으면 스크립트의 `RepositoryUrl`도 바꿉니다. `version.txt`를 `<릴리스>.<커밋 앞 여섯 글자>.1`로 바꿉니다. `<릴리스>`는 포크가 갈라지기 전의 마지막 upstream 릴리스입니다. 갈라진 지점은 `gh api repos/ggml-org/llama.cpp/compare/master...<포크 소유자>:llama.cpp:<sha>`의 `merge_base_commit`이고, 릴리스는 `gh api repos/ggml-org/llama.cpp/compare/bNNNN...<갈라진 지점>`이 `behind_by` 0을 돌려주는 가장 큰 `bNNNN` 태그입니다.
 2. 그 커밋의 소스 압축 파일을 올리고(`git archive --format=zip --prefix=llama.cpp-<sha>/ <sha>`), `source-archive.txt`의 URL과 SHA-256을 업데이트합니다.
 3. 깨끗한 체크아웃에 각 패치가 `git -c core.autocrlf=false apply --check`로 적용되는지 확인합니다. 필요하면 패치를 리베이스하고, `ggml.h`, `llama.h`, `gguf-py/gguf/constants.py`의 타입 ID를 포크의 타입과 대조합니다.
 4. 포크가 여전히 BitNet 저장소의 모든 사용을 TL1/TL2 옵션 뒤에 두는지(`0002-bitnet-i2s.patch` 파트 1), 그리고 `I2_S` 소스가 모든 CPU 변형에 컴파일되는지 확인합니다.

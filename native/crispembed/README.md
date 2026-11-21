@@ -12,11 +12,11 @@ Like [native/llamacpp](../llamacpp/README.md), the build comes from a pinned sou
 | --- | --- |
 | `build-crispembed.ps1` | The build script. |
 | `commit.txt` | The CrispEmbed commit that is built, as a full 40-character SHA. The source is fetched by this SHA rather than by a tag, because a tag can move and a commit cannot. |
-| `version.txt` | The version label (`0.17.20`, CrispEmbed's `VERSION` at the commit), used in BUILDINFO.txt and the build ID only. |
+| `version.txt` | The version label, `<version>.<commit>.1` as for llama.cpp: the version the pinned commit records in its `VERSION` file (or, for a commit without one, the last release before it, without the `v` of its tag), the first six characters of `commit.txt`, and `.1` for the WelsonJS build (`0.17.20.ad01b2.1`). Used in BUILDINFO.txt and the build ID only. |
 | `source-archive.txt` | The fallback source archive (`url=`) and its SHA-256 (`sha256=`), used when git cannot fetch the commits. |
 | `patches\*.patch` | Patches applied in name order (see [Patches](#patches)). |
 
-Current pin: commit `ad01b21a23d884d197686aa508f78f11d1505925` of `https://github.com/CrispStrobe/CrispEmbed.git` (2026-11-18, `VERSION` 0.17.20, 343 commits after the tag `v0.17.19`). Its ggml submodule is `https://github.com/CrispStrobe/ggml.git` at the commit that CrispEmbed commit records (`3a27b6c665b191cb230be367db5c52d81dd3e2ac`); the script reads it from the tree, so it is pinned by `commit.txt` too.
+Current pin: commit `ad01b21a23d884d197686aa508f78f11d1505925` of `https://github.com/CrispStrobe/CrispEmbed.git` (2026-11-18, `VERSION` 0.17.20, 343 commits after the release `v0.17.19`). Its ggml submodule is `https://github.com/CrispStrobe/ggml.git` at the commit that CrispEmbed commit records (`3a27b6c665b191cb230be367db5c52d81dd3e2ac`); the script reads it from the tree, so it is pinned by `commit.txt` too.
 
 ## Build
 
@@ -75,7 +75,7 @@ The setup component `crispembed` selects the artifacts package; `postInstall.ps1
 
 ## Updating
 
-1. Set `commit.txt` to the new commit (the commit itself, not a tag object) and `version.txt` to its `VERSION`.
+1. Set `commit.txt` to the new commit (the commit itself, not a tag object) and `version.txt` to `<VERSION of the commit>.<first six characters of the commit>.1`. If the commit has no `VERSION` file, use the highest release tag for which `gh api repos/CrispStrobe/CrispEmbed/compare/<tag>...<commit>` reports `behind_by` 0, without its `v`.
 2. If the ggml submodule URL changed, check it and update `GgmlRepositoryUrl` in the script.
 3. Make the source archive for the new commit (see [Source archive](#source-archive)), upload it, and update `source-archive.txt`.
 4. Check that each patch applies (`git -c core.autocrlf=false apply --check`), and add new patches to the AppVeyor cache key.

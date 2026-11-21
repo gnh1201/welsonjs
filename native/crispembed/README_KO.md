@@ -12,11 +12,11 @@
 | --- | --- |
 | `build-crispembed.ps1` | 빌드 스크립트 |
 | `commit.txt` | 빌드할 CrispEmbed 커밋(40자 SHA 전체). 태그는 옮겨질 수 있지만 커밋은 그렇지 않으므로 태그 대신 이 SHA로 소스를 받습니다. |
-| `version.txt` | 버전 표시(`0.17.20`, 그 커밋의 CrispEmbed `VERSION`). BUILDINFO.txt와 빌드 ID에만 씁니다. |
+| `version.txt` | llama.cpp와 같은 형식의 버전 이름표 `<버전>.<커밋>.1`. 고정한 커밋이 `VERSION` 파일에 적은 버전(이 파일이 없는 커밋이면 그 이전의 마지막 릴리스에서 태그의 `v`를 뺀 것), `commit.txt`의 앞 여섯 글자, WelsonJS 빌드를 뜻하는 `.1`입니다(`0.17.20.ad01b2.1`). BUILDINFO.txt와 빌드 ID에만 씁니다. |
 | `source-archive.txt` | git으로 커밋을 받지 못할 때 쓰는 소스 압축 파일(`url=`)과 그 SHA-256(`sha256=`) |
 | `patches\*.patch` | 이름 순서로 적용하는 패치([패치](#패치) 참고) |
 
-현재 고정: `https://github.com/CrispStrobe/CrispEmbed.git`의 커밋 `ad01b21a23d884d197686aa508f78f11d1505925`(2026-11-18, `VERSION` 0.17.20, 태그 `v0.17.19` 이후 343개 커밋). ggml 서브모듈은 `https://github.com/CrispStrobe/ggml.git`이며, 그 CrispEmbed 커밋이 기록한 커밋(`3a27b6c665b191cb230be367db5c52d81dd3e2ac`)을 씁니다. 스크립트가 트리에서 읽으므로 이것도 `commit.txt`로 고정됩니다.
+현재 고정: `https://github.com/CrispStrobe/CrispEmbed.git`의 커밋 `ad01b21a23d884d197686aa508f78f11d1505925`(2026-11-18, `VERSION` 0.17.20, 릴리스 `v0.17.19` 이후 343개 커밋). ggml 서브모듈은 `https://github.com/CrispStrobe/ggml.git`이며, 그 CrispEmbed 커밋이 기록한 커밋(`3a27b6c665b191cb230be367db5c52d81dd3e2ac`)을 씁니다. 스크립트가 트리에서 읽으므로 이것도 `commit.txt`로 고정됩니다.
 
 ## 빌드
 
@@ -75,7 +75,7 @@ Release 작업이 llama.cpp 빌드 다음에 x64, arm64, x86마다 스크립트�
 
 ## 업데이트 방법
 
-1. `commit.txt`를 새 커밋(태그 객체가 아닌 커밋 자체)으로, `version.txt`를 그 `VERSION`으로 바꿉니다.
+1. `commit.txt`를 새 커밋(태그 객체가 아닌 커밋 자체)으로, `version.txt`를 `<그 커밋의 VERSION>.<커밋 앞 여섯 글자>.1`로 바꿉니다. 커밋에 `VERSION` 파일이 없으면 `gh api repos/CrispStrobe/CrispEmbed/compare/<태그>...<커밋>`이 `behind_by` 0을 돌려주는 가장 큰 릴리스 태그에서 `v`를 뺀 것을 씁니다.
 2. ggml 서브모듈 URL이 바뀌었으면 확인하고 스크립트의 `GgmlRepositoryUrl`을 바꿉니다.
 3. 새 커밋의 소스 압축 파일을 만들어([소스 압축 파일](#소스-압축-파일) 참고) 올리고 `source-archive.txt`를 바꿉니다.
 4. 각 패치가 적용되는지 확인하고(`git -c core.autocrlf=false apply --check`), 새 패치는 AppVeyor 캐시 키에 넣습니다.

@@ -15,12 +15,12 @@ The launcher runs `llama-server` in router mode, with the installed models in `%
 | File | Purpose |
 | --- | --- |
 | `commit.txt` | The llama.cpp commit that is built, as a full 40-character SHA. The source is fetched by this SHA rather than by a branch, because a branch can move and a commit cannot. |
-| `version.txt` | A label for the build. It is a label only and does not select the source. |
+| `version.txt` | The version label, `<upstream release>.<commit>.1` (llama.cpp records no version in its tree, so the release stands for it): the last upstream llama.cpp release (`bNNNN`) before the commit where the fork diverges from upstream, the first six characters of the pinned commit (`commit.txt`), and `.1` for the WelsonJS build. It is a label only (BUILDINFO.txt and the build ID) and does not select the source. |
 | `source-archive.txt` | The fallback source archive (`url=`) and its SHA-256 (`sha256=`), used when git cannot fetch the commit. |
 | `patches/*.patch` | Patches applied in name order with `git apply`. They are stored with LF line endings, and `.gitattributes` keeps them byte-exact on checkout. |
 | `build-llamacpp.ps1` | Fetches the source, applies the patches, builds, and writes the output. |
 
-Current pin: commit `390c307752ab78fd8189f359d6954c9ba1be74af` of `https://github.com/isHuangXin/llama.cpp.git` (branch `release-bitnet-embedding-0.6b-270m`, 2026-07-15). It is the submodule commit of BitNet `0b341e582afbf9e1011f24744b554c96a3477eb5`.
+Current pin: commit `390c307752ab78fd8189f359d6954c9ba1be74af` of `https://github.com/isHuangXin/llama.cpp.git` (branch `release-bitnet-embedding-0.6b-270m`, 2026-07-15). It is the submodule commit of BitNet `0b341e582afbf9e1011f24744b554c96a3477eb5`. It diverges from upstream llama.cpp (`ggml-org/llama.cpp`) after `665892536dfb` (2026-07-04, 46 commits of its own); the last upstream release before that commit is `b9871`, so `version.txt` is `b9871.390c30.1`.
 
 The fork is older than upstream llama.cpp, so upstream changes made after it are not included.
 
@@ -620,7 +620,7 @@ The file is upstream's, with two changes for the fork's API:
 
 ## Updating
 
-1. Find the llama.cpp commit that the new BitNet commit uses: `git ls-tree <BitNet sha> 3rdparty/llama.cpp` and BitNet's `.gitmodules`. Set `commit.txt` to it, and `RepositoryUrl` in the script if the fork URL changed. Update `version.txt`.
+1. Find the llama.cpp commit that the new BitNet commit uses: `git ls-tree <BitNet sha> 3rdparty/llama.cpp` and BitNet's `.gitmodules`. Set `commit.txt` to it, and `RepositoryUrl` in the script if the fork URL changed. Set `version.txt` to `<release>.<first six characters of the commit>.1`, where `<release>` is the last upstream release before the fork diverges: the merge base is `merge_base_commit` of `gh api repos/ggml-org/llama.cpp/compare/master...<fork owner>:llama.cpp:<sha>`, and the release is the highest `bNNNN` tag for which `gh api repos/ggml-org/llama.cpp/compare/bNNNN...<merge base>` reports `behind_by` 0.
 2. Upload the source archive for that commit (`git archive --format=zip --prefix=llama.cpp-<sha>/ <sha>`), then update the URL and SHA-256 in `source-archive.txt`.
 3. Check that each patch applies to a clean checkout with `git -c core.autocrlf=false apply --check`. Rebase the patches if needed, and check the type IDs in `ggml.h`, `llama.h`, and `gguf-py/gguf/constants.py` against the fork's types.
 4. Check that the fork still keeps every use of the BitNet repository behind the TL1/TL2 options (`0002-bitnet-i2s.patch`, part 1), and that the `I2_S` sources are compiled into every CPU variant.
