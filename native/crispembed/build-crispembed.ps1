@@ -69,6 +69,7 @@ param(
     [string]$ProductVersion = "",     # a.b.c.d in the version information; empty: the launcher's AssemblyFileVersion
     [string]$LlvmDir   = "",          # arm64: folder with clang.exe; empty: search
     [switch]$InstallLlvm,             # arm64: install LLVM with choco when clang is missing
+    [switch]$CheckOnly,               # only report: exit 0 when the output is up to date, 3 when a build is needed
     [switch]$Force
 )
 
@@ -379,6 +380,10 @@ if (-not $Force -and (Test-Path -LiteralPath $buildInfoPath) -and
         exit 0
     }
     Write-Host "[WARN] The output does not match SHA256SUMS.txt. Building again."
+}
+if ($CheckOnly) {
+    Write-Host "[*] A build is needed."
+    exit 3
 }
 
 # ================================

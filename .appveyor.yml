@@ -7,6 +7,8 @@ clone_folder: C:\projects\welsonjs
 init:
   # The repository stores LF; the installer must ship CRLF batch files.
   - git config --global core.autocrlf true
+  # The start of the job, for the time budget of the native builds (before_build).
+  - ps: Set-AppveyorBuildVariable -Name JOB_STARTED_UTC -Value ([DateTime]::UtcNow.ToString("o"))
 
 environment:
   ORGANIZATION_ID: 8ee5ec82-36dc-4619-ac33-5bc1117428fe
@@ -54,18 +56,42 @@ before_build:
       # bitnet.cpp's llama.cpp fork (with BitNet's I2_S kernels): x64 and x86 are
       # built with MSVC, arm64 is cross-compiled with clang (-InstallLlvm installs LLVM
       # with choco only when the arm64 build is needed and clang is missing).
+      #
+      # A job that reaches 60 minutes is stopped without saving the build cache,
+      # so a build that cannot finish in time is not started: before each build
+      # that is needed (-CheckOnly exits with 3), the elapsed time plus the build's
+      # estimated duration on this VM must stay within the budget, which leaves
+      # about 13 minutes for the rest of the job (the solution, welsonjs-hta, the
+      # installer and packaging). Otherwise the job fails here, the build cache is
+      # saved (APPVEYOR_SAVE_CACHE_ON_ERROR) with the builds that finished, and the
+      # next run continues from it.
       if ($env:CONFIGURATION -eq "Release") {
           $ErrorActionPreference = "Stop"
-          foreach ($llamaArch in @("x64", "arm64", "x86")) {
-              & .\native\llamacpp\build-llamacpp.ps1 -Arch $llamaArch -OutDir "artifacts\llamacpp" -WorkDir "C:\llamacpp-build" -InstallLlvm
-              if ($LASTEXITCODE -ne 0) { throw "build-llamacpp.ps1 -Arch $llamaArch failed with exit code $LASTEXITCODE" }
+          $started = [DateTime]::Parse($env:JOB_STARTED_UTC, $null, [Globalization.DateTimeStyles]::RoundtripKind).ToUniversalTime()
+          $budgetMinutes = 47
+          $estimatedMinutes = @{
+              "llama.cpp x64" = 33; "llama.cpp arm64" = 16; "llama.cpp x86" = 17
+              "CrispEmbed x64" = 25; "CrispEmbed arm64" = 12; "CrispEmbed x86" = 20
           }
-          # CrispEmbed (crispembed-server for the launcher) into
-          # artifacts\crispembed\<arch>: x64 and x86 with MSVC, arm64 cross-compiled
-          # with clang; each is skipped when its cached output matches.
-          foreach ($crispArch in @("x64", "arm64", "x86")) {
-              & .\native\crispembed\build-crispembed.ps1 -Arch $crispArch -OutDir "artifacts\crispembed" -WorkDir "C:\crispembed-build" -InstallLlvm
-              if ($LASTEXITCODE -ne 0) { throw "build-crispembed.ps1 -Arch $crispArch failed with exit code $LASTEXITCODE" }
+          $builds = @(
+              @{ Name = "llama.cpp x64";    Script = ".\native\llamacpp\build-llamacpp.ps1";     Arch = "x64";   Out = "artifacts\llamacpp";   Work = "C:\llamacpp-build" },
+              @{ Name = "llama.cpp arm64";  Script = ".\native\llamacpp\build-llamacpp.ps1";     Arch = "arm64"; Out = "artifacts\llamacpp";   Work = "C:\llamacpp-build" },
+              @{ Name = "llama.cpp x86";    Script = ".\native\llamacpp\build-llamacpp.ps1";     Arch = "x86";   Out = "artifacts\llamacpp";   Work = "C:\llamacpp-build" },
+              @{ Name = "CrispEmbed x64";   Script = ".\native\crispembed\build-crispembed.ps1"; Arch = "x64";   Out = "artifacts\crispembed"; Work = "C:\crispembed-build" },
+              @{ Name = "CrispEmbed arm64"; Script = ".\native\crispembed\build-crispembed.ps1"; Arch = "arm64"; Out = "artifacts\crispembed"; Work = "C:\crispembed-build" },
+              @{ Name = "CrispEmbed x86";   Script = ".\native\crispembed\build-crispembed.ps1"; Arch = "x86";   Out = "artifacts\crispembed"; Work = "C:\crispembed-build" }
+          )
+          foreach ($build in $builds) {
+              & $build.Script -Arch $build.Arch -OutDir $build.Out -WorkDir $build.Work -CheckOnly
+              if ($LASTEXITCODE -eq 0) { continue }
+              if ($LASTEXITCODE -ne 3) { throw "$($build.Script) -Arch $($build.Arch) -CheckOnly failed with exit code $LASTEXITCODE" }
+              $elapsed = ([DateTime]::UtcNow - $started).TotalMinutes
+              if ($elapsed + $estimatedMinutes[$build.Name] -gt $budgetMinutes) {
+                  $message = "Not enough time left in this job for the {0} build ({1:N0} min elapsed, about {2} min needed, budget {3} min). " -f $build.Name, $elapsed, $estimatedMinutes[$build.Name], $budgetMinutes
+                  throw ($message + "The builds that finished are saved in the build cache; run the build again to continue.")
+              }
+              & $build.Script -Arch $build.Arch -OutDir $build.Out -WorkDir $build.Work -InstallLlvm
+              if ($LASTEXITCODE -ne 0) { throw "$($build.Script) -Arch $($build.Arch) failed with exit code $LASTEXITCODE" }
           }
       }
   - git submodule update --init --recursive
