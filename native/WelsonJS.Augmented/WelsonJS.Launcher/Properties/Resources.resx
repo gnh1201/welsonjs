@@ -204,7 +204,7 @@
   <data name="AssemblyBaseUrl" xml:space="preserve">
     <value>https://catswords.blob.core.windows.net/welsonjs/packages</value>
   </data>
-  <data name="ChakraCoreRelease" xml:space="preserve">
+  <data name="ChakraCoreVersion" xml:space="preserve">
     <value />
   </data>
   <data name="AssemblyIntegrityUrl" xml:space="preserve">

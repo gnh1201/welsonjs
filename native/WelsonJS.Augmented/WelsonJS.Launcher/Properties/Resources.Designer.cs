@@ -117,9 +117,9 @@ namespace WelsonJS.Launcher.Properties {
         /// <summary>
         ///   과(와) 유사한 지역화된 문자열을 찾습니다.
         /// </summary>
-        internal static string ChakraCoreRelease {
+        internal static string ChakraCoreVersion {
             get {
-                return ResourceManager.GetString("ChakraCoreRelease", resourceCulture);
+                return ResourceManager.GetString("ChakraCoreVersion", resourceCulture);
             }
         }
         
