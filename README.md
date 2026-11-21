@@ -195,6 +195,7 @@ More guides are in the [`docs`](docs) folder:
 
 * Getting started: [Quick Start](docs/quick-start.en.md) ([한국어](docs/quick-start.md))
 * Launcher APIs: [OpenAI-compatible API](docs/openai-compatible-api.md), [llama.cpp API](docs/llamacpp-launcher-api.md), [CrispEmbed API](docs/crispembed-launcher-api.md)
+* API keys: [API keys from Azure Key Vault](docs/azure-key-vault.md)
 * LLM data handling: [LLM data egress policy](docs/llm-data-policy.md), [LLM data flow and Qwen3Guard policy](docs/llm-guard-flow.en.md) ([한국어](docs/llm-guard-flow.md))
 * Dependencies: [Modified vendor scripts](docs/modified-vendor-scripts.md), [Third-party dependencies flagged by the OSS assessment](docs/third-party-dependencies.md)
 

@@ -33,6 +33,7 @@ namespace WelsonJS.Launcher
 
             // Initialize UI
             InitializeComponent();
+            UpdateAzureSignInMenu();
 
             // Check the user is an Administator
             if (IsInAdministrator())
@@ -274,6 +275,53 @@ namespace WelsonJS.Launcher
         private void globalSettingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             (new GlobalSettingsForm()).Show();
+        }
+
+        // Settings > Sign in to Azure... / Sign out of Azure (account): the account that reads
+        // Azure Key Vault secrets for WelsonJS scripts (AzureKeyVault, /credentials/keyvault/...).
+        private void UpdateAzureSignInMenu()
+        {
+            string account = AzureKeyVault.Instance.Account;
+            azureSignInToolStripMenuItem.Text = account == null ? "Sign in to Azure..." : $"Sign out of Azure ({account})";
+        }
+
+        private async void azureSignInToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            AzureKeyVault keyVault = AzureKeyVault.Instance;
+            if (keyVault.Account != null)
+            {
+                if (MessageBox.Show($"Sign out of Azure ({keyVault.Account})?\r\n\r\nWelsonJS scripts will not get Key Vault secrets until you sign in again.",
+                    "WelsonJS", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK)
+                {
+                    keyVault.SignOut();
+                    UpdateAzureSignInMenu();
+                }
+                return;
+            }
+
+            if (!AzureKeyVault.IsConfigured)
+            {
+                MessageBox.Show("Set AzureClientId (the client ID of a Microsoft Entra ID app registration) in the launcher settings first.",
+                    "WelsonJS", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            azureSignInToolStripMenuItem.Enabled = false;
+            try
+            {
+                string account = await keyVault.SignInAsync();
+                MessageBox.Show($"Signed in to Azure as {account ?? "(unknown account)"}.", "WelsonJS", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                _logger?.Error($"Azure sign-in failed: {ex.Message}");
+                MessageBox.Show($"Azure sign-in failed: {ex.Message}", "WelsonJS", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            finally
+            {
+                azureSignInToolStripMenuItem.Enabled = true;
+                UpdateAzureSignInMenu();
+            }
         }
 
         private void btnStartTheEditor_Click(object sender, EventArgs e)

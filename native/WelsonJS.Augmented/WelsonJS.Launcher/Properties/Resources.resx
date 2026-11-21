@@ -185,6 +185,12 @@
   <data name="ChromiumAppMode" xml:space="preserve">
     <value>true</value>
   </data>
+  <data name="AzureClientId" xml:space="preserve">
+    <value>5bd2e397-314a-4fc9-88db-4e2b2452fb50</value>
+  </data>
+  <data name="AzureTenant" xml:space="preserve">
+    <value />
+  </data>
   <data name="IpQueryApiKey2" xml:space="preserve">
     <value />
     <comment>API key of AbuseIPDB (abuseipdb in the blob config)</comment>

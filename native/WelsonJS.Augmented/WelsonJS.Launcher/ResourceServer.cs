@@ -95,6 +95,7 @@ namespace WelsonJS.Launcher
             _apis.Add(new ApiEndpoints.LocalServers(this, _httpClient, _logger));
             _apis.Add(new ApiEndpoints.LlmGuard(this, _httpClient, _logger));
             _apis.Add(new ApiEndpoints.OpenAiCompatible(this, _httpClient, _logger));
+            _apis.Add(new ApiEndpoints.KeyVault(this, _httpClient, _logger));
             _jsrtInstanceEndpoint = new ApiEndpoints.JsrtInstance(this, _httpClient, _logger);
             _apis.Add(_jsrtInstanceEndpoint);
             _terminalEndpoint = new ApiEndpoints.Terminal(this, _httpClient, _logger);
