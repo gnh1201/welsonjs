@@ -80,72 +80,75 @@ WelsonJS is tailored for developers who need a reliable, lightweight JavaScript 
 
 
 ## Structure
-
-### Console environment
-
-```mermaid
-flowchart LR
-
-User([Console User])
-
-CMD[Command Prompt]
-
-App[app.js]
-
-Require{"require()"}
-
-subgraph Modules
-    Module[name.js]
-end
-
-User --> CMD
-CMD -->|"cscript app.js name"| App
-
-App --> Require
-Require -->|"name"| Module
-
-Module -.->|"exports"| App
-```
-
-### GUI environment (using HTA)
+Every way of starting WelsonJS ends in the same runtime, `app.js`, which loads the entry script and the modules it `require()`s. The modules reach Windows through COM and WSH, external programs and remote services. Those that use local AI call the WelsonJS Launcher's HTTP API.
 
 ```mermaid
 flowchart LR
 
-User([Window User])
-
-HTA[app.hta]
-
-App[app.js]
-
-Require1{"require()"}
-
-Loader[Webloader.js]
-
-Require2{"require()"}
-
-subgraph Webpage
-    JS[index.js]
-    HTML[index.html]
-    CSS[style.css]
+subgraph Start["Ways to start"]
+    Console(["Console<br/>cscript app.js name"])
+    Click(["Double-click a .js file<br/>(JCTG)"])
+    Uri(["welsonjs:// URI"])
+    Hta(["app.hta window"])
+    Mcp(["MCP client<br/>(stdio)"])
+    Service["WelsonJS.Service<br/>(Windows service)"]
 end
 
-User --> HTA
-HTA --> App
+App["app.js<br/>runtime and require()"]
 
-App --> Require1
-Require1 -->|"webloader"| Loader
+subgraph Entry["Entry scripts"]
+    Script["name.js<br/>(your script)"]
+    Web["webloader.js"]
+    UriLoader["uriloader.js"]
+    McpLoader["mcploader.js"]
+end
 
-Loader --> Require2
-Require2 -->|"index"| JS
+Page["index.html, index.js,<br/>style.css"]
 
-Loader --> HTML
-Loader --> CSS
+Modules["lib/*.js modules"]
 
-JS -.->|"exports"| Loader
-Loader -.->|"Present webpage"| HTA
+subgraph Host["Windows and outside"]
+    Com["COM, WSH, WMI,<br/>registry, Office"]
+    Managed["WelsonJS.ManagedObject<br/>and other .NET modules"]
+    Programs["External programs<br/>(curl, ADB, Chrome...)"]
+    Cloud["Remote services<br/>(cloud AI, web APIs)"]
+end
+
+subgraph Launcher["WelsonJS Launcher"]
+    Instances["Instances, editor,<br/>settings"]
+    Api["HTTP API<br/>localhost:3000"]
+    Local["llama.cpp, CrispEmbed,<br/>LLM guard"]
+    Chakra["ChakraCore<br/>(via Phantomizer)"]
+end
+
+Console --> App
+Click --> App
+Uri --> App
+Hta --> App
+Mcp --> App
+Service -->|"ScriptControl (JScript)"| App
+Instances -->|"cscript app.js"| App
+
+App -->|"require()"| Script
+App --> Web
+App --> UriLoader
+App --> McpLoader
+Web -->|"present"| Page
+Page -.->|"shown in"| Hta
+
+Script --> Modules
+Web --> Modules
+UriLoader --> Modules
+McpLoader --> Modules
+
+Modules --> Com
+Modules --> Managed
+Modules --> Programs
+Modules --> Cloud
+Modules -->|"lib/llamacpp.js, crispembed.js,<br/>llm-guard.js"| Api
+Api --> Local
+Api --- Chakra
 ```
-
 
 ## Quick start
 
