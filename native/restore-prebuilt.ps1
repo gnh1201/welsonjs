@@ -3,13 +3,13 @@
 # SPDX-FileCopyrightText: Namhyeon Go <gnh1201@catswords.re.kr>, and Catswords OSS contributors.
 # https://github.com/gnh1201/welsonjs
 #
-# Downloads a prebuilt llama.cpp or CrispEmbed build (made with
-# native\llamacpp\build-llamacpp.ps1 or native\crispembed\build-crispembed.ps1 and
+# Downloads a prebuilt llama.cpp, CrispEmbed or ChakraCore build (made with
+# native\<component>\build-<component>.ps1 and
 # published with native\publish-prebuilt.ps1) from the WelsonJS blob storage into
 # <OutDir>\<arch>, so that CI does not build them within its time limit:
 #
 #   <BaseUrl>/<component>/<version>-<arch>/<file>
-#   for example .../packages/native/llamacpp/b9871.390c30.1-x64/llama-server.exe
+#   for example .../packages/native/llamacpp/b9871.390c307.1-x64/llama-server.exe
 #
 # Each file is downloaded gzip-compressed (<file>.gz, published next to the file)
 # and decompressed; if that fails (no .gz, a broken one, or one that does not give
@@ -24,14 +24,14 @@
 # as it is when it already matches.
 #
 # Usage:
-#   powershell -ExecutionPolicy Bypass -NoProfile -File native\restore-prebuilt.ps1 -Component llamacpp|crispembed -Arch x64|arm64|x86 [-OutDir <dir>] [-BaseUrl <url>]
+#   powershell -ExecutionPolicy Bypass -NoProfile -File native\restore-prebuilt.ps1 -Component llamacpp|crispembed|chakracore -Arch x64|arm64|x86 [-OutDir <dir>] [-BaseUrl <url>]
 #
 # Output: <OutDir>\<arch>\* (default artifacts\<component>\<arch>), with SHA256SUMS.txt.
 # Exit code: 0 on success; an error is thrown otherwise.
 
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("llamacpp", "crispembed")]
+    [ValidateSet("llamacpp", "crispembed", "chakracore")]
     [string]$Component,
     [Parameter(Mandatory = $true)]
     [ValidateSet("x64", "arm64", "x86")]

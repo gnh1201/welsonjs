@@ -12,7 +12,7 @@
 | --- | --- |
 | `build-crispembed.ps1` | 빌드 스크립트 |
 | `commit.txt` | 빌드할 CrispEmbed 커밋(40자 SHA 전체). 태그는 옮겨질 수 있지만 커밋은 그렇지 않으므로 태그 대신 이 SHA로 소스를 받습니다. |
-| `version.txt` | llama.cpp와 같은 형식의 버전 이름표 `<버전>.<커밋>.1`. 고정한 커밋이 `VERSION` 파일에 적은 버전(이 파일이 없는 커밋이면 그 이전의 마지막 릴리스에서 태그의 `v`를 뺀 것), `commit.txt`의 앞 여섯 글자, WelsonJS 빌드를 뜻하는 `.1`입니다(`0.17.20.ad01b2.1`). BUILDINFO.txt와 빌드 ID에만 씁니다. |
+| `version.txt` | llama.cpp와 같은 형식의 버전 이름표 `<버전>.<커밋>.1`. 고정한 커밋이 `VERSION` 파일에 적은 버전(이 파일이 없는 커밋이면 그 이전의 마지막 릴리스에서 태그의 `v`를 뺀 것), `commit.txt`의 앞 일곱 글자, WelsonJS 빌드를 뜻하는 `.1`입니다(`0.17.20.ad01b21.1`). BUILDINFO.txt와 빌드 ID에만 씁니다. |
 | `source-archive.txt` | git으로 커밋을 받지 못할 때 쓰는 소스 압축 파일(`url=`)과 그 SHA-256(`sha256=`) |
 | `patches\*.patch` | 이름 순서로 적용하는 패치([패치](#패치) 참고) |
 
@@ -74,7 +74,7 @@ Debug와 Release 작업은 아키텍처마다 `native\restore-prebuilt.ps1 -Comp
 
 `.artifact-configuration.xml`은 세 아키텍처의 실행 파일과 DLL을 모두 이름으로 하나씩 적고(와일드카드 없음), 빌드 스크립트는 목록에 없는 바이너리가 있으면 실패하므로 새 바이너리가 서명되지 않은 채 남을 수 없습니다. Authenticode 서명은 파일을 바꾸므로, 서명된 패키지의 `SHA256SUMS.txt`는 서명 전 파일의 해시입니다.
 
-현재 빌드(`0.17.20.ad01b2.1`)는 Visual Studio 2026으로 만들었습니다. x64와 x86은 MSVC 19.50(도구 집합 14.50), arm64는 MSVC 14.51 라이브러리와 clang 23입니다. 이를 실행하는 PC에는 이 도구보다 오래되지 않은 Visual C++ 2015-2026 재배포 패키지가 필요합니다.
+현재 빌드(`0.17.20.ad01b21.1`)는 Visual Studio 2026으로 만들었습니다. x64와 x86은 MSVC 19.50(도구 집합 14.50), arm64는 MSVC 14.51 라이브러리와 clang 23입니다. 이를 실행하는 PC에는 이 도구보다 오래되지 않은 Visual C++ 2015-2026 재배포 패키지가 필요합니다.
 
 ## 설치
 
@@ -88,7 +88,7 @@ Debug와 Release 작업은 아키텍처마다 `native\restore-prebuilt.ps1 -Comp
 
 ## 업데이트 방법
 
-1. `commit.txt`를 새 커밋(태그 객체가 아닌 커밋 자체)으로, `version.txt`를 `<그 커밋의 VERSION>.<커밋 앞 여섯 글자>.1`로 바꿉니다. 커밋에 `VERSION` 파일이 없으면 `gh api repos/CrispStrobe/CrispEmbed/compare/<태그>...<커밋>`이 `behind_by` 0을 돌려주는 가장 큰 릴리스 태그에서 `v`를 뺀 것을 씁니다.
+1. `commit.txt`를 새 커밋(태그 객체가 아닌 커밋 자체)으로, `version.txt`를 `<그 커밋의 VERSION>.<커밋 앞 일곱 글자>.1`로 바꿉니다. 커밋에 `VERSION` 파일이 없으면 `gh api repos/CrispStrobe/CrispEmbed/compare/<태그>...<커밋>`이 `behind_by` 0을 돌려주는 가장 큰 릴리스 태그에서 `v`를 뺀 것을 씁니다.
 2. ggml 서브모듈 URL이 바뀌었으면 확인하고 스크립트의 `GgmlRepositoryUrl`을 바꿉니다.
 3. 새 커밋의 소스 압축 파일을 만들어([소스 압축 파일](#소스-압축-파일) 참고) 올리고 `source-archive.txt`를 바꿉니다.
 4. 각 패치가 적용되는지 확인합니다(`git -c core.autocrlf=false apply --check`).

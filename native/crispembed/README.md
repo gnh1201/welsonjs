@@ -12,7 +12,7 @@ Like [native/llamacpp](../llamacpp/README.md), the build comes from a pinned sou
 | --- | --- |
 | `build-crispembed.ps1` | The build script. |
 | `commit.txt` | The CrispEmbed commit that is built, as a full 40-character SHA. The source is fetched by this SHA rather than by a tag, because a tag can move and a commit cannot. |
-| `version.txt` | The version label, `<version>.<commit>.1` as for llama.cpp: the version the pinned commit records in its `VERSION` file (or, for a commit without one, the last release before it, without the `v` of its tag), the first six characters of `commit.txt`, and `.1` for the WelsonJS build (`0.17.20.ad01b2.1`). Used in BUILDINFO.txt and the build ID only. |
+| `version.txt` | The version label, `<version>.<commit>.1` as for llama.cpp: the version the pinned commit records in its `VERSION` file (or, for a commit without one, the last release before it, without the `v` of its tag), the first seven characters of `commit.txt`, and `.1` for the WelsonJS build (`0.17.20.ad01b21.1`). Used in BUILDINFO.txt and the build ID only. |
 | `source-archive.txt` | The fallback source archive (`url=`) and its SHA-256 (`sha256=`), used when git cannot fetch the commits. |
 | `patches\*.patch` | Patches applied in name order (see [Patches](#patches)). |
 
@@ -74,7 +74,7 @@ The Debug and Release jobs run `native\restore-prebuilt.ps1 -Component crispembe
 
 `.artifact-configuration.xml` lists every executable and DLL of the three architectures by name (no wildcards), and the build script fails when a built binary is not listed, so a new binary cannot be left unsigned. Authenticode signing changes the files, so in the signed package `SHA256SUMS.txt` lists the hashes of the unsigned files.
 
-The current builds (`0.17.20.ad01b2.1`) were made with Visual Studio 2026: MSVC 19.50 (toolset 14.50) for x64 and x86, and clang 23 with the MSVC 14.51 libraries for arm64. A PC that runs them needs a Visual C++ 2015-2026 redistributable at least as new as those tools.
+The current builds (`0.17.20.ad01b21.1`) were made with Visual Studio 2026: MSVC 19.50 (toolset 14.50) for x64 and x86, and clang 23 with the MSVC 14.51 libraries for arm64. A PC that runs them needs a Visual C++ 2015-2026 redistributable at least as new as those tools.
 
 ## Installation
 
@@ -88,7 +88,7 @@ The setup component `crispembed` selects the artifacts package; `postInstall.ps1
 
 ## Updating
 
-1. Set `commit.txt` to the new commit (the commit itself, not a tag object) and `version.txt` to `<VERSION of the commit>.<first six characters of the commit>.1`. If the commit has no `VERSION` file, use the highest release tag for which `gh api repos/CrispStrobe/CrispEmbed/compare/<tag>...<commit>` reports `behind_by` 0, without its `v`.
+1. Set `commit.txt` to the new commit (the commit itself, not a tag object) and `version.txt` to `<VERSION of the commit>.<first seven characters of the commit>.1`. If the commit has no `VERSION` file, use the highest release tag for which `gh api repos/CrispStrobe/CrispEmbed/compare/<tag>...<commit>` reports `behind_by` 0, without its `v`.
 2. If the ggml submodule URL changed, check it and update `GgmlRepositoryUrl` in the script.
 3. Make the source archive for the new commit (see [Source archive](#source-archive)), upload it, and update `source-archive.txt`.
 4. Check that each patch applies (`git -c core.autocrlf=false apply --check`).

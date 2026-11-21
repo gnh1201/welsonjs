@@ -3,8 +3,8 @@
 # SPDX-FileCopyrightText: Namhyeon Go <gnh1201@catswords.re.kr>, and Catswords OSS contributors.
 # https://github.com/gnh1201/welsonjs
 #
-# Publishes a llama.cpp or CrispEmbed build made on a developer PC (the <OutDir>\<arch>
-# folder of native\llamacpp\build-llamacpp.ps1 or native\crispembed\build-crispembed.ps1)
+# Publishes a llama.cpp, CrispEmbed or ChakraCore build made on a developer PC (the
+# <OutDir>\<arch> folder of native\<component>\build-<component>.ps1)
 # to the WelsonJS blob storage, where CI restores it with native\restore-prebuilt.ps1:
 #
 #   <Container>/packages/native/<component>/<version>-<arch>/<file>
@@ -19,11 +19,11 @@
 # which is what CI trusts: commit that file to use the build.
 #
 # Usage:
-#   powershell -ExecutionPolicy Bypass -NoProfile -File native\publish-prebuilt.ps1 -Component llamacpp|crispembed -Arch x64|arm64|x86 -BuildDir <dir>\<arch> [-AzCopy <path>] [-WhatIf]
+#   powershell -ExecutionPolicy Bypass -NoProfile -File native\publish-prebuilt.ps1 -Component llamacpp|crispembed|chakracore -Arch x64|arm64|x86 -BuildDir <dir>\<arch> [-AzCopy <path>] [-WhatIf]
 
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet("llamacpp", "crispembed")]
+    [ValidateSet("llamacpp", "crispembed", "chakracore")]
     [string]$Component,
     [Parameter(Mandatory = $true)]
     [ValidateSet("x64", "arm64", "x86")]

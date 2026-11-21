@@ -1,0 +1,4 @@
+# Fallback source for build-chakracore.ps1 when git cannot fetch the pinned commit (commit.txt).
+# A "git archive" of the commit in one folder ChakraCore-<commit>; used only if its SHA-256 matches.
+url=https://catswords.blob.core.windows.net/welsonjs/packages/archive/ChakraCore-97e68c9174209413f621deb2f963941550ef6f22.zip
+sha256=96da66ba299af29759535e27aae470d573364f0d1bcf7055d4b39c9509544b82

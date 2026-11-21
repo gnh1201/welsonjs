@@ -30,20 +30,21 @@ install:
   - choco install innosetup --version=%INNOSETUP_VERSION% -y --no-progress
 
 cache:
-  # The prebuilt llama.cpp and CrispEmbed builds that native\restore-prebuilt.ps1
+  # The prebuilt llama.cpp, CrispEmbed and ChakraCore builds that native\restore-prebuilt.ps1
   # downloads (before_build). Each job keeps its own cache. A cache is invalidated
   # when version.txt or a recorded file list (prebuilt\<arch>.sha256) changes, and
   # only then are the files downloaded again; otherwise restore-prebuilt.ps1 finds
   # the restored folders matching their records and downloads nothing.
   - artifacts\llamacpp -> native\llamacpp\version.txt, native\llamacpp\prebuilt\x64.sha256, native\llamacpp\prebuilt\arm64.sha256, native\llamacpp\prebuilt\x86.sha256
   - artifacts\crispembed -> native\crispembed\version.txt, native\crispembed\prebuilt\x64.sha256, native\crispembed\prebuilt\arm64.sha256, native\crispembed\prebuilt\x86.sha256
+  - artifacts\chakracore -> native\chakracore\version.txt, native\chakracore\prebuilt\x64.sha256, native\chakracore\prebuilt\arm64.sha256, native\chakracore\prebuilt\x86.sha256
 
 before_build:
   - ps: |
-      # llama.cpp (native\llamacpp) and CrispEmbed (native\crispembed) for x64,
-      # arm64 and x86 are not built here: building them takes longer than the
-      # 60-minute job limit. They are built on a developer PC with
-      # build-llamacpp.ps1 and build-crispembed.ps1, published to the WelsonJS
+      # llama.cpp (native\llamacpp), CrispEmbed (native\crispembed) and ChakraCore
+      # (native\chakracore) for x64, arm64 and x86 are not built here: building
+      # them takes longer than the 60-minute job limit. They are built on a
+      # developer PC with native\<component>\build-<component>.ps1, published to the WelsonJS
       # blob storage with native\publish-prebuilt.ps1
       # (packages/native/<component>/<version>-<arch>/), and restored here into
       # artifacts\<component>\<arch> by native\restore-prebuilt.ps1, which uses a
@@ -54,7 +55,7 @@ before_build:
       # the Debug (test-signing) package has every file of
       # .artifact-configuration.xml as well.
       $ErrorActionPreference = "Stop"
-      foreach ($component in @("llamacpp", "crispembed")) {
+      foreach ($component in @("llamacpp", "crispembed", "chakracore")) {
           foreach ($arch in @("x64", "arm64", "x86")) {
               & .\native\restore-prebuilt.ps1 -Component $component -Arch $arch -OutDir "artifacts\$component"
               if ($LASTEXITCODE -ne 0) { throw "restore-prebuilt.ps1 -Component $component -Arch $arch failed with exit code $LASTEXITCODE" }
