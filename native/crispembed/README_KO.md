@@ -61,7 +61,20 @@ ggml은 ARM용 MSVC를 지원하지 않으므로 arm64는 clang을 씁니다. Cr
 
 ## CI(AppVeyor)
 
-Release 작업이 llama.cpp 빌드 다음에 x64, arm64, x86마다 스크립트를 실행해 `artifacts\crispembed\<아키텍처>`에 두고, 그 폴더를 캐시합니다. 캐시 키는 `commit.txt`, `version.txt`, 스크립트, 패치, arm64 툴체인 파일, 아이콘, 런처의 `AssemblyInfo.cs`입니다(새 패치를 추가하면 그 파일도 넣으세요). 파일은 `artifacts.zip`에 들어가 다른 아티팩트와 함께 서명됩니다.
+CI에서는 빌드하지 않습니다. llama.cpp와 CrispEmbed를 x64, arm64, x86으로 빌드하면 AppVeyor 작업 제한 60분을 넘기 때문입니다. 개발자 PC에서 이 스크립트로 빌드해 WelsonJS blob 스토리지에 올리고, **Release** 작업이 이를 복원해 다른 산출물과 함께 패키징하고 서명합니다.
+
+1. 아키텍처마다 **빌드**합니다: `-Arch x64`, `-Arch arm64`, `-Arch x86`.
+2. 빌드마다 **게시**합니다: `native\publish-prebuilt.ps1 -Component crispembed -Arch <arch> -BuildDir <OutDir>\<arch>`.
+   - 폴더가 `SHA256SUMS.txt`와 맞는지, `BUILDINFO.txt`가 현재 `version.txt`, `commit.txt`, 아키텍처를 적고 있는지 확인합니다.
+   - 각 파일을 그대로, 그리고 gzip으로 압축한 `<file>.gz`로 AzCopy(먼저 `azcopy login`)를 써서 `packages/native/crispembed/<version>-<arch>/`에 올립니다. 이미 있는 blob은 덮어쓰지 않으므로 게시한 빌드는 바뀌지 않습니다.
+   - `SHA256SUMS.txt`를 `native\crispembed\prebuilt\<arch>.sha256`으로 복사합니다.
+3. 세 `prebuilt\<arch>.sha256` 파일을 변경과 함께 **커밋**합니다.
+
+Release 작업은 아키텍처마다 `native\restore-prebuilt.ps1 -Component crispembed -Arch <arch>`를 실행해 `artifacts\crispembed\<arch>`에 둡니다. `prebuilt\<arch>.sha256`에 적힌 파일을 `<version>-<arch>`에서 `<file>.gz`로 받아 압축을 풀고(`.gz`를 받지 못하거나 쓸 수 없으면 원본 파일을 받음), SHA-256이 맞을 때만 쓰므로, 무엇을 배포할지는 스토리지가 아니라 저장소가 정합니다. Debug 작업은 복원하지 않습니다.
+
+`.artifact-configuration.xml`은 세 아키텍처의 실행 파일과 DLL을 모두 이름으로 하나씩 적고(와일드카드 없음), 빌드 스크립트는 목록에 없는 바이너리가 있으면 실패하므로 새 바이너리가 서명되지 않은 채 남을 수 없습니다. Authenticode 서명은 파일을 바꾸므로, 서명된 패키지의 `SHA256SUMS.txt`는 서명 전 파일의 해시입니다.
+
+현재 빌드(`0.17.20.ad01b2.1`)는 Visual Studio 2026으로 만들었습니다. x64와 x86은 MSVC 19.50(도구 집합 14.50), arm64는 MSVC 14.51 라이브러리와 clang 23입니다. 이를 실행하는 PC에는 이 도구보다 오래되지 않은 Visual C++ 2015-2026 재배포 패키지가 필요합니다.
 
 ## 설치
 

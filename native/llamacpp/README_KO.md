@@ -124,24 +124,20 @@ powershell -ExecutionPolicy Bypass -NoProfile -File native\llamacpp\build-llamac
 
 ## CI(AppVeyor)
 
-llama.cpp는 **Release** 작업에서 빌드하므로, 그 파일들이 다른 산출물과 함께 패키징되고 서명됩니다. 별도 작업을 쓰지 않는 이유는 AppVeyor 작업끼리 산출물을 공유하지 않기 때문입니다. 별도 작업의 파일은 `artifacts.zip`이나 SignPath 서명 요청에 들어가지 못합니다.
+CI에서는 빌드하지 않습니다. llama.cpp와 CrispEmbed를 x64, arm64, x86으로 빌드하면 AppVeyor 작업 제한 60분을 넘기 때문입니다. 개발자 PC에서 이 스크립트로 빌드해 WelsonJS blob 스토리지에 올리고, **Release** 작업이 이를 복원해 다른 산출물과 함께 패키징하고 서명합니다.
 
-- **첫 단계.** 빌드는 Release 작업의 첫 `before_build` 단계입니다. Debug 작업은 이 단계를 건너뛰므로, `llamacpp`가 들어 있는 것은 Release 작업의 `artifacts.zip`뿐입니다. 작업 시간은 60분이고, 먼저 빌드해야 llama.cpp 빌드가 가능한 한 일찍 끝납니다.
-- **네이티브 도구의 stderr.** AppVeyor의 `ps:` 단계는 stderr를 잡아내고, `$ErrorActionPreference = "Stop"`에서는 네이티브 명령의 stderr 한 줄 한 줄이 종료 오류가 됩니다. CMake, git, Ninja, `vcvarsall.bat`는 경고와 진행 상황을 stderr에 씁니다. 예를 들어 CMake는 쓰이지 않은 `CMAKE_BUILD_TYPE`에 대해 경고하고, `vcvarsall.bat`는 `'vswhere.exe' is not recognized`를 출력합니다. 그래서 스크립트는 stderr를 stdout처럼 출력하고(`Invoke-Checked`, `Get-NativeOutput`) 종료 코드로만 판단합니다. `CMAKE_BUILD_TYPE`은 단일 구성 생성기(Ninja)에만 넘기고 Visual Studio 생성기에는 넘기지 않습니다.
-- **세 아키텍처.** 이 단계는 스크립트를 `x64`, `arm64`, `x86` 순서로 실행하며, 각각 `-InstallLlvm`을 씁니다. LLVM은 arm64 빌드가 필요하고 clang이 없을 때만 설치됩니다. arm64 빌드는 이미지에 MSVC ARM64 빌드 도구도 필요하며, 없으면 스크립트가 구성 요소 이름을 알려 주며 멈춥니다.
-- **출력: `artifacts\llamacpp\x64`, `artifacts\llamacpp\arm64`, `artifacts\llamacpp\x86`.** `7z a artifacts.zip artifacts\*` 단계가 이를 `artifacts.zip`에 넣고, 배포 단계가 SignPath로 보냅니다. 이 중 어떤 파일을 서명할지는 SignPath 산출물 구성(`.artifact-configuration.xml`)이 정합니다.
-  - 세 아키텍처의 실행 파일 세 개와 모든 DLL을 이름으로 하나씩 적어(와일드카드 없음) 서명합니다. x64는 MSVC가 만드는 CPU 백엔드 9개(`ggml-cpu-alderlake.dll`부터 `ggml-cpu-x64.dll`까지), arm64와 x86은 백엔드 `ggml-cpu.dll` 하나입니다.
-  - 빌드한 실행 파일이나 DLL이 여기에 없으면 빌드 스크립트가 실패하므로, 새 바이너리가 서명에서 빠질 수 없습니다.
-  - Authenticode 서명은 파일을 바꿉니다. 서명된 패키지의 `SHA256SUMS.txt`는 서명 전 빌드 출력의 해시를 그대로 담고 있습니다.
-- **캐시: `artifacts\llamacpp`.** `commit.txt`, `version.txt`, 스크립트, 패치 파일, `app\favicon.ico` 중 하나가 바뀌면 무효화됩니다.
-  - AppVeyor는 작업마다 별도의 캐시를 두며, 이 폴더는 Release 작업만 씁니다.
-  - AppVeyor는 폴더 내용이 바뀌었을 때만 캐시를 다시 올립니다.
-  - 나중에 추가된 패치 파일은 캐시 의존성 목록에 없습니다. 그래도 스크립트의 빌드 ID에는 포함됩니다.
-- **`APPVEYOR_SAVE_CACHE_ON_ERROR=true`(Release).** AppVeyor는 보통 성공한 작업의 캐시만 저장합니다. 이 설정이 있으면 이후 단계(예: ISCC나 배포)가 실패해도 llama.cpp 빌드가 보존됩니다. 일부만 기록된 출력은 재사용되지 않습니다. `SHA256SUMS.txt`를 마지막에 쓰고 스크립트가 이를 확인하기 때문입니다.
-- **기존 폴더.** 캐시가 빌드 전에 `artifacts\llamacpp`를 복원하므로, 이후의 `mkdir artifacts` 단계는 폴더가 없을 때만 만듭니다.
-- **이미지.** Release 작업은 Visual Studio 2019 이미지(MSVC 19.29)에서 실행됩니다.
+1. 아키텍처마다 **빌드**합니다: `-Arch x64`, `-Arch arm64`, `-Arch x86`(`PATH`의 CMake가 다른 생성기를 기본으로 고르는 PC에서는 x64와 x86에 `-Generator "Visual Studio 18 2026"`을 줍니다).
+2. 빌드마다 **게시**합니다: `native\publish-prebuilt.ps1 -Component llamacpp -Arch <arch> -BuildDir <OutDir>\<arch>`.
+   - 폴더가 `SHA256SUMS.txt`와 맞는지, `BUILDINFO.txt`가 현재 `version.txt`, `commit.txt`, 아키텍처를 적고 있는지 확인합니다.
+   - 각 파일을 그대로, 그리고 gzip으로 압축한 `<file>.gz`로 AzCopy(먼저 `azcopy login`)를 써서 `packages/native/llamacpp/<version>-<arch>/`에 올립니다. 이미 있는 blob은 덮어쓰지 않으므로 게시한 빌드는 바뀌지 않습니다.
+   - `SHA256SUMS.txt`를 `native\llamacpp\prebuilt\<arch>.sha256`으로 복사합니다.
+3. 세 `prebuilt\<arch>.sha256` 파일을 변경과 함께 **커밋**합니다.
 
-캐시가 없을 때 빌드는 호스팅 VM에서 개발자 PC보다 훨씬 오래 걸립니다. 처음 성공한 실행(빌드 0.2.7.build2427)에서 x64는 20.2분, arm64는 9.1분이 걸렸고, Release 작업 전체는 60분 중 36분이 걸렸습니다. 캐시가 유효하면 두 빌드 모두 건너뜁니다. Release 작업이 60분에 가까워지면 x64 CPU 변형을 줄이거나 패키지를 다른 곳에서 빌드하세요.
+Release 작업은 아키텍처마다 `native\restore-prebuilt.ps1 -Component llamacpp -Arch <arch>`를 실행해 `artifacts\llamacpp\<arch>`에 둡니다. `prebuilt\<arch>.sha256`에 적힌 파일을 `<version>-<arch>`에서 `<file>.gz`로 받아 압축을 풀고(`.gz`를 받지 못하거나 쓸 수 없으면 원본 파일을 받음), SHA-256이 맞을 때만 쓰므로, 무엇을 배포할지는 스토리지가 아니라 저장소가 정합니다. Debug 작업은 복원하지 않습니다.
+
+`.artifact-configuration.xml`은 세 아키텍처의 실행 파일과 DLL을 모두 이름으로 하나씩 적고(와일드카드 없음), 빌드 스크립트는 목록에 없는 바이너리가 있으면 실패하므로 새 바이너리가 서명되지 않은 채 남을 수 없습니다. Authenticode 서명은 파일을 바꾸므로, 서명된 패키지의 `SHA256SUMS.txt`는 서명 전 파일의 해시입니다.
+
+현재 빌드(`b9871.390c30.1`)는 Visual Studio 2026으로 만들었습니다. x64와 x86은 MSVC 19.50(도구 집합 14.50), arm64는 MSVC 14.51 라이브러리와 clang 23입니다. 이를 실행하는 PC에는 이 도구보다 오래되지 않은 Visual C++ 2015-2026 재배포 패키지가 필요합니다.
 
 ## 설치
 

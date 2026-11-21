@@ -61,7 +61,20 @@ ggml does not support MSVC on ARM, so arm64 uses clang. CrispEmbed's `CMakeLists
 
 ## CI (AppVeyor)
 
-The Release job runs the script for x64, arm64 and x86 after the llama.cpp build, into `artifacts\crispembed\<arch>`, and caches that folder; the cache key covers `commit.txt`, `version.txt`, the script, the patches, the arm64 toolchain file, the icon and the launcher's `AssemblyInfo.cs` (add a new patch there). The files are packaged into `artifacts.zip` and signed with the other artifacts.
+The binaries are not built in CI: building llama.cpp and CrispEmbed for x64, arm64 and x86 takes longer than the 60-minute AppVeyor job limit. They are built on a developer PC with this script, published to the WelsonJS blob storage, and restored by the **Release** job, which packages and signs them with the other artifacts.
+
+1. **Build** each architecture: `-Arch x64`, `-Arch arm64` and `-Arch x86`.
+2. **Publish** each build: `native\publish-prebuilt.ps1 -Component crispembed -Arch <arch> -BuildDir <OutDir>\<arch>`.
+   - It checks that the folder matches its `SHA256SUMS.txt`, and that `BUILDINFO.txt` names the current `version.txt`, `commit.txt` and architecture.
+   - It uploads each file as it is and gzip-compressed (`<file>.gz`) with AzCopy (`azcopy login` first) to `packages/native/crispembed/<version>-<arch>/`, never overwriting an existing blob, so a published build does not change.
+   - It copies `SHA256SUMS.txt` to `native\crispembed\prebuilt\<arch>.sha256`.
+3. **Commit** the three `prebuilt\<arch>.sha256` files with the change.
+
+The Release job runs `native\restore-prebuilt.ps1 -Component crispembed -Arch <arch>` for each architecture, into `artifacts\crispembed\<arch>`. It downloads the files listed in `prebuilt\<arch>.sha256` from `<version>-<arch>` as `<file>.gz` and decompresses them (when a `.gz` cannot be downloaded or used, it downloads the file itself), and uses a file only if its SHA-256 matches, so the repository, not the storage, decides what is shipped. The Debug job does not restore them.
+
+`.artifact-configuration.xml` lists every executable and DLL of the three architectures by name (no wildcards), and the build script fails when a built binary is not listed, so a new binary cannot be left unsigned. Authenticode signing changes the files, so in the signed package `SHA256SUMS.txt` lists the hashes of the unsigned files.
+
+The current builds (`0.17.20.ad01b2.1`) were made with Visual Studio 2026: MSVC 19.50 (toolset 14.50) for x64 and x86, and clang 23 with the MSVC 14.51 libraries for arm64. A PC that runs them needs a Visual C++ 2015-2026 redistributable at least as new as those tools.
 
 ## Installation
 

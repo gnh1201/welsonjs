@@ -124,24 +124,20 @@ The following are not part of the build ID:
 
 ## CI (AppVeyor)
 
-llama.cpp is built in the **Release** job, so its files are packaged and signed with the other artifacts. No separate job is used, because AppVeyor jobs do not share artifacts: a separate job's files would not reach `artifacts.zip` or the SignPath signing request.
+The binaries are not built in CI: building llama.cpp and CrispEmbed for x64, arm64 and x86 takes longer than the 60-minute AppVeyor job limit. They are built on a developer PC with this script, published to the WelsonJS blob storage, and restored by the **Release** job, which packages and signs them with the other artifacts.
 
-- **First step.** The build is the first `before_build` step of the Release job. The Debug job skips it, so only the Release job's `artifacts.zip` contains `llamacpp`. A job has 60 minutes, and building first lets the llama.cpp build finish as early as possible.
-- **stderr of native tools.** AppVeyor's `ps:` steps capture stderr, and with `$ErrorActionPreference = "Stop"` each stderr line of a native command becomes a terminating error. CMake, git, Ninja, and `vcvarsall.bat` write warnings and progress there. For example, CMake warns about an unused `CMAKE_BUILD_TYPE`, and `vcvarsall.bat` prints `'vswhere.exe' is not recognized`. So the script prints stderr like stdout (`Invoke-Checked`, `Get-NativeOutput`) and decides by exit codes only. `CMAKE_BUILD_TYPE` is passed only to single-configuration generators (Ninja), not to the Visual Studio generator.
-- **Three architectures.** The step runs the script for `x64`, `arm64` and `x86`, each with `-InstallLlvm`. LLVM is installed only when the arm64 build is needed and clang is missing. The arm64 build also needs the MSVC ARM64 build tools on the image; without them, the script stops with a message that names the component.
-- **Output: `artifacts\llamacpp\x64`, `artifacts\llamacpp\arm64` and `artifacts\llamacpp\x86`.** The `7z a artifacts.zip artifacts\*` step adds it to `artifacts.zip`, which the deployment sends to SignPath. The SignPath artifact configuration (`.artifact-configuration.xml`) decides which of these files are signed.
-  - It signs the three executables and every DLL of the three architectures, each listed by name (no wildcards): for x64 the nine CPU backends that MSVC builds (`ggml-cpu-alderlake.dll` to `ggml-cpu-x64.dll`), for arm64 and x86 the one backend `ggml-cpu.dll`.
-  - The build script fails when a built executable or DLL is not listed there, so a new binary cannot be left unsigned.
-  - Authenticode signing changes the files. In the signed package, `SHA256SUMS.txt` still lists the hashes of the unsigned build output.
-- **Cache: `artifacts\llamacpp`.** It is invalidated when `commit.txt`, `version.txt`, the script, a patch file, or `app\favicon.ico` changes.
-  - AppVeyor keeps a separate cache for each job; only the Release job writes this folder.
-  - AppVeyor re-uploads the cache only when the folder contents change.
-  - A patch file that is added later is not in the cache dependency list. The script's build ID still covers it.
-- **`APPVEYOR_SAVE_CACHE_ON_ERROR=true` (Release).** AppVeyor normally saves the cache only for successful jobs. With this setting, a llama.cpp build is kept even if a later step fails (for example, ISCC or the deployment). A partly written output is never reused: `SHA256SUMS.txt` is written last, and the script checks it.
-- **Existing folder.** The cache restores `artifacts\llamacpp` before the build, so the later `mkdir artifacts` step creates the folder only if it does not exist.
-- **Image.** The Release job runs on the Visual Studio 2019 image (MSVC 19.29).
+1. **Build** each architecture: `-Arch x64`, `-Arch arm64` and `-Arch x86` (on a PC whose CMake on `PATH` defaults to another generator, pass `-Generator "Visual Studio 18 2026"` for x64 and x86).
+2. **Publish** each build: `native\publish-prebuilt.ps1 -Component llamacpp -Arch <arch> -BuildDir <OutDir>\<arch>`.
+   - It checks that the folder matches its `SHA256SUMS.txt`, and that `BUILDINFO.txt` names the current `version.txt`, `commit.txt` and architecture.
+   - It uploads each file as it is and gzip-compressed (`<file>.gz`) with AzCopy (`azcopy login` first) to `packages/native/llamacpp/<version>-<arch>/`, never overwriting an existing blob, so a published build does not change.
+   - It copies `SHA256SUMS.txt` to `native\llamacpp\prebuilt\<arch>.sha256`.
+3. **Commit** the three `prebuilt\<arch>.sha256` files with the change.
 
-A build without the cache takes much longer on the hosted VM than on a developer PC. In the first successful run (build 0.2.7.build2427), x64 took 20.2 minutes and arm64 9.1 minutes, and the whole Release job 36 minutes of its 60. With a valid cache both builds are skipped. If the Release job comes close to 60 minutes, reduce the x64 CPU variants or build the package elsewhere.
+The Release job runs `native\restore-prebuilt.ps1 -Component llamacpp -Arch <arch>` for each architecture, into `artifacts\llamacpp\<arch>`. It downloads the files listed in `prebuilt\<arch>.sha256` from `<version>-<arch>` as `<file>.gz` and decompresses them (when a `.gz` cannot be downloaded or used, it downloads the file itself), and uses a file only if its SHA-256 matches, so the repository, not the storage, decides what is shipped. The Debug job does not restore them.
+
+`.artifact-configuration.xml` lists every executable and DLL of the three architectures by name (no wildcards), and the build script fails when a built binary is not listed, so a new binary cannot be left unsigned. Authenticode signing changes the files, so in the signed package `SHA256SUMS.txt` lists the hashes of the unsigned files.
+
+The current builds (`b9871.390c30.1`) were made with Visual Studio 2026: MSVC 19.50 (toolset 14.50) for x64 and x86, and clang 23 with the MSVC 14.51 libraries for arm64. A PC that runs them needs a Visual C++ 2015-2026 redistributable at least as new as those tools.
 
 ## Installation
 
