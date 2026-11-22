@@ -72,6 +72,8 @@ The runner logs the result and waits before closing. It is an interactive/manual
 
 The cryptography validation project is separate from the JavaScript profile runner. Use the relevant project documentation and build configuration for that suite.
 
+The editor's **Analyze Tactics (MITRE ATT&CK)** is validated against real malware. When its prompts, its model (FrogNano) or its request settings change, re-run the reference samples in `docs/analyze-tactics-validation.md` and compare with the results recorded there. The samples are Stuxnet, Flame, Duqu, Mirai, Gootloader and BPFDoor. Read them as text only: never run them, and do not download binaries.
+
 ## 5. Repository map
 
 | Path | Contents |
