@@ -18,6 +18,11 @@
 
 ### 추가
 
+- 편집기: abcjs 6.4.4로 ABC 악보 표기 지원(다른 편집기 라이브러리처럼 런처를 거쳐 SHA-384 무결성 해시와 함께 불러옴). 선택 영역이나 `.abc` 파일 전체가 곡이면(`K:` 줄과 음표, `parseOnly`로 확인) 컨텍스트 메뉴에 **Show Score**, **Download MIDI**(`X:` 곡마다 `T:` 제목을 이름으로 한 파일), **Download WAV**, **Transpose Up/Down a Semitone**(`strTranspose`, 조표와 코드 기호 포함)이 나타납니다. Show Score는 편집기 옆에 패널을 엽니다.
+  - 원문을 고치면 악보를 다시 그리고(실시간 미리보기), 음표를 누르면 원문에서 그 음표를 선택합니다.
+  - **Play**로 연주하며 연주 중인 음표를 강조합니다. 화면의 조를 옮길 수 있고, **Apply to source**는 원문을 그 조로 바꿉니다.
+  - 바이올린, 기타, 5현 밴조 타브와 **Save SVG**, **MIDI**, **WAV**(보이는 조 그대로) 저장.
+  - `.abc` 파일은 ABC 문법 강조(Monaco 언어 `abc`)로 열고, abcjs 경고를 해당 줄과 열에 마커로 표시합니다(그 언어의 파일에서만, 선택 영역에는 표시하지 않음). 재생과 WAV 저장은 abcjs 기본 악기 음원을 paulrosen.github.io에서 받습니다(`editor.html`의 `ABC_SOUNDFONT_URL`).
 - 런처가 서명된 ChakraCore 1.13.0.97e68c9.1을 불러옵니다(`ChakraCoreVersion`). SignPath로 서명한 릴리스(release-signing, AppVeyor 빌드 0.2.7.build2568)를 x64, x86, arm64용 `SHA256SUMS.txt`와 함께 `packages/native/ChakraCore/1.13.0.97e68c9.1/`(런처가 Phantomizer에 요청하는 릴리스 이름)로 게시했습니다. 서명 전 빌드는 `1.13.0.97e68c9.1-<arch>-nosigned/`로 옮겼습니다(`native/chakracore/prebuilt/signed.sha256`에 기록). Catswords.Phantomizer가 런처 프로세스의 아키텍처에 맞는 빌드를 골라 해시와 Authenticode 서명을 확인합니다. welsonjs-hta는 예전 압축 파일을 그대로 씁니다.
   - `ChakraCoreVersion`은 필수입니다. 릴리스가 서명되기 전에 쓰던 예전 단일 아키텍처 빌드(`ChakraCore/1.13.0.0`)로 대체하지 않습니다.
   - Catswords.Phantomizer와 런처 안의 `AssemblyLoader.cs` 사본을 다시 같은 파일로 맞췄습니다. 무결성 목록을 내려받지 못하면 실행 폴더의 `integrity.config.xml`을 쓰는 런처 쪽 기능을 Phantomizer에도 넣었습니다.
@@ -25,6 +30,11 @@
 - 편집기: 선택 영역의 컨텍스트 메뉴에 **Analyze Tactics (MITRE ATT&CK)** 추가([#574](https://github.com/gnh1201/welsonjs/issues/574)). 로컬 모델 FrogNano(`frognano_4b_2609`, `POST /llamacpp/chat`)에 코드가 MITRE ATT&CK Enterprise 20.1의 어떤 전술(Stealth TA0005, Defense Impairment TA0112 포함)을 하는지 묻고, 전술 한두 개를 링크와 한 문장 근거와 함께, 또는 "No clear MITRE ATT&CK tactic"을 주석으로 넣습니다.
   - **방식:** 프롬프트에 전술을 공식 요약("The adversary is trying to ...")과 함께 나열하고 JSON으로 답하게 합니다. 코드가 번역되지 않도록 런처의 프롬프트 번역은 끕니다(`"translate": false`). 선택 영역은 6,000자까지만 씁니다. CPU에서 답 하나에 5~10초, 모델을 불러오는 동안은 더 걸립니다.
   - **정확도:** 공격 코드 조각 32개(그중 8개는 Gootloader 2019 샘플 [gootloader-payload-2019](https://github.com/gnh1201/gootloader-payload-2019)에서 잘라 냄)에서 정답 전술을 첫 번째로 답한 것이 20개, 답 안에 넣은 것이 28개이고, "none"으로 답한 적은 없습니다. 평범한 코드 14개는 모두 "none"으로 답했습니다. 무언가를 내려받거나 실행하는 코드에 Initial Access를 덧붙이는 경향이 있고, 그러지 말라고 하면 더 잦아졌습니다. 결과는 후보로 표시합니다.
+  - **지역:** 전술을 찾으면 두 번째 요청으로 코드 안의 증거에서 위협 행위자의 지역을 추정하거나 "unknown"으로 답하게 하고, 귀속 판단이 아닌 추정으로 표시합니다. 프롬프트에는 설명에 귀속이 명시된 ATT&CK 그룹(178개 중 99개, 13개 국가·지역)을 국가별로 요약해 넣었습니다(이름과 별칭, 그 나라 그룹만 쓰는 소프트웨어, 주요 표적). 증거가 있는 조각 10개 중 9개의 지역을 맞혔고(Kimsuky 방식의 한국어 HWP 미끼는 South Korea로 답함), BPFDoor, Mirai, Stuxnet을 포함해 증거가 없는 공격 코드 조각 44개는 모두 "unknown"으로 답했습니다. 한국을 언급하는 주석을 증거로 삼은 일이 있어, 평범한 코드에는 묻지 않습니다.
+  - **C 코드:** BPFDoor, Mirai, Stuxnet의 조각 12개에서는 전술이 첫 번째로 맞은 것이 6개, 답 안에 든 것이 8개였습니다. 프롬프트는 WSH 스크립트를 전제로 합니다.
+  - **ICS 전술:** ATT&CK for ICS 20.1에만 있는 세 전술 Inhibit Response Function(TA0107), Impair Process Control(TA0106), Impact (ICS)(TA0105)도 프롬프트에 넣었습니다. FrostyGoop의 Modbus 쓰기에는 Impact (ICS)가 붙지만, TRITON에는 여전히 ICS 전술이 나오지 않습니다.
+  - **검증 세트:** `docs/analyze-tactics-validation.md`에 기준 사례를 정리했습니다(텍스트로만 읽고 실행하지 않음). 산업자동화 공격의 대표 사례(Stuxnet, Flame, Duqu, Mirai, Gootloader, BPFDoor)와 TRITON, Industroyer2, EKANS, FrostyGoop, Houdini, Dorkbot, Atomic Red Team, LOLBAS, 오탐 시험용 WelsonJS `lib/` 모듈입니다. 결과도 기록했습니다. 공격 코드 101개 중 51개가 첫 번째로, 71개가 답 안에서 맞았고, WelsonJS 모듈 6개는 모두 공격으로 판단됐습니다. `AGENTS.md`와 `editor.html`에 프롬프트나 모델을 바꾸면 다시 검증하라고 적었습니다.
+  - **기반 모델:** FrogNano의 기반 모델인 Qwen3.5-4B는 같은 조각에서 44 / 65였습니다. 주로 산업제어와 디컴파일 사례에서 낮았고, Initial Access와 ICS 전술을 더 느슨하게 붙였습니다.
   - **먼저 시도한 것:** EmbeddingGemma 2(`embeddinggemma_2`)로 전술 설명이나 공식 기법 설명과의 임베딩 유사도를 재는 방식은 동작이 아니라 단어를 맞춰서, 이름이 무의미한 해독된 Gootloader 단계를 "두드러지는 전술 없음"으로 판단했습니다. typed-decision 모델 `embeddinggemma_2_typed_decision`은 전술을 구분하지 못했습니다.
 - Azure Key Vault에서 API 키 받기(관련 [#571](https://github.com/gnh1201/welsonjs/issues/571)). 두 부분으로 나뉩니다.
   - **스크립트 쪽:** `data/apikey.json`에 `file:`과 직접 적은 값 외에 `keyvault:<볼트>/<비밀>`을 쓸 수 있습니다. `lib/credentials.js`는 `CRED.get()`이 처음 요청할 때 런처를 통해 값을 읽어 메모리에 두며, 실패하면 이유(런처가 실행 중이 아님, 로그인 필요, 권한 없음, 비밀 없음 등)를 남기고 `null`을 돌려줍니다.

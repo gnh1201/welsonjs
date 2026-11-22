@@ -81,6 +81,7 @@
     <script src="http://localhost:3000/ajax/libs/axios/1.8.4/axios.min.js" integrity="sha384-06w+raHvkSL3+E7mbQ2X6DZwI5A3veU8Ba+NLrAPxxRGw4Xy78sihHDHQMustMM4" crossorigin="anonymous"></script>
     <script src="http://localhost:3000/ajax/libs/fast-xml-parser/4.5.1/fxparser.min.js" integrity="sha384-ae/HepOQ8hiJ/VA6yGwPMGXQXOkT/lJpjlcQ7EUgibUcfnBltuozgNj4IgOZ9QLc" crossorigin="anonymous"></script>
     <script src="http://localhost:3000/ajax/libs/dompurify/3.2.4/purify.min.js" integrity="sha384-eEu5CTj3qGvu9PdJuS+YlkNi7d2XxQROAFYOr59zgObtlcux1ae1Il3u7jvdCSWu" crossorigin="anonymous"></script>
+    <script src="http://localhost:3000/ajax/libs/abcjs/6.4.4/abcjs-basic-min.js" integrity="sha384-sk+P5M5THZ2+cNNE7wQUEAwkU+812jPeru2bG637mOeCRxiCbs2hD05PdpeqFhjh" crossorigin="anonymous"></script>
     <script src="http://localhost:3000/ajax/libs/monaco-editor/0.52.2/min/vs/loader.js" integrity="sha384-pHG02SG8pId94Np3AbPmBEJ1yPqaH0IkJGLSNGXYmuGhkazT8Lr/57WYpbkGjJtu" crossorigin="anonymous"></script>
     <script src="http://localhost:3000/ajax/libs/monaco-editor/0.52.2/min/vs/editor/editor.main.js" integrity="sha384-fj9z+NUc93I3woCCy5IRQfrQ8Amu1E27tllwgb5gz3d9Vr1ymS13xcF6two3e4KH" crossorigin="anonymous"></script>
     <script src="/webchat.js"></script>
@@ -627,7 +628,8 @@
                                 js: 'javascript', ts: 'typescript', html: 'html',
                                 css: 'css', json: 'json', py: 'python', java: 'java',
                                 c: 'c', cpp: 'cpp', cs: 'csharp', php: 'php',
-                                rb: 'ruby', go: 'go', rs: 'rust'
+                                rb: 'ruby', go: 'go', rs: 'rust',
+                                abc: 'abc' // ABC notation, registered with the ABC menus
                             };
                             const lang = langMap[ext] || 'plaintext';
 
@@ -1065,14 +1067,18 @@
                 //
                 // Asks the local model FrogNano (llama.cpp, POST /llamacpp/chat) which tactics of
                 // MITRE ATT&CK Enterprise 20.1 the selection performs: one or two, with a one-sentence
-                // reason, or none (at most two are shown). The prompt lists the tactics with their official summaries ("The
+                // reason, or none (at most two are shown), then estimates the region (below). The prompt lists the tactics with their official summaries ("The
                 // adversary is trying to ..."; IDs, names and summaries: Copyright 2015-2026, The
                 // MITRE Corporation; MITRE ATT&CK and ATT&CK are registered trademarks of The MITRE
-                // Corporation). On 32 attack snippets (8 from the Gootloader 2019 sample) and 14
-                // ordinary ones, it named the right tactic first in 20 and among its answers in 28,
-                // never answered "none" for attack code and always for the ordinary code. Embedding
+                // Corporation). On 101 attack segments of real malware and labeled tests it named the
+                // right tactic first in 51 and among its answers in 71 (its base model Qwen3.5-4B: 44
+                // and 65), but it also flags legitimate host-changing code such as WelsonJS's lib/
+                // modules (docs/analyze-tactics-validation.md). Embedding
                 // similarity with EmbeddingGemma 2 matched words rather than behavior, so it missed
                 // real malware with meaningless names. The answer is shown as candidates.
+                // Before changing the prompts, the model or the request settings, re-run the reference
+                // samples of docs/analyze-tactics-validation.md (Stuxnet, Flame, Duqu, Mirai, Gootloader,
+                // BPFDoor) and compare with the results recorded there.
                 const ATTACK_MODEL = 'frognano_4b_2609';
                 const ATTACK_MODEL_LABEL = 'FrogNano';
                 const ATTACK_MAX_SELECTION = 6000;
@@ -1091,9 +1097,14 @@
                     { key: 'collection', id: 'TA0009', name: 'Collection', goal: 'gather data of interest to their goal' },
                     { key: 'command-and-control', id: 'TA0011', name: 'Command and Control', goal: 'communicate with compromised systems to control them' },
                     { key: 'exfiltration', id: 'TA0010', name: 'Exfiltration', goal: 'steal data' },
-                    { key: 'impact', id: 'TA0040', name: 'Impact', goal: 'manipulate, interrupt, or destroy your systems and data' }
+                    { key: 'impact', id: 'TA0040', name: 'Impact', goal: 'manipulate, interrupt, or destroy your systems and data' },
+                    // The tactics only ATT&CK for ICS 20.1 has (its other nine share the names above), for
+                    // code that targets controllers, safety systems or industrial processes.
+                    { key: 'inhibit-response-function', id: 'TA0107', name: 'Inhibit Response Function (ICS)', goal: 'prevent your safety, protection, quality assurance, and operator intervention functions from responding to a failure, hazard, or unsafe state' },
+                    { key: 'impair-process-control', id: 'TA0106', name: 'Impair Process Control (ICS)', goal: 'manipulate, disable, or damage physical control processes' },
+                    { key: 'ics-impact', id: 'TA0105', name: 'Impact (ICS)', goal: 'manipulate, interrupt, or destroy your ICS systems, data, and their surrounding environment' }
                 ];
-                const ATTACK_SYSTEM_PROMPT = 'You are a malware analyst. Classify Windows Script Host (JScript) code by MITRE ATT&CK Enterprise tactics.\n' +
+                const ATTACK_SYSTEM_PROMPT = 'You are a malware analyst. Classify Windows Script Host (JScript) code by MITRE ATT&CK Enterprise and ICS tactics.\n' +
                     'Tactic keys (the adversary is trying to ...):\n' +
                     '- none: the code does nothing an adversary would do\n' +
                     ATTACK_TACTICS.map(t => `- ${t.key}: ${t.goal}`).join('\n') + '\n' +
@@ -1103,71 +1114,148 @@
                     'Answer with JSON only, no other text: {"tactics": [one to three keys, most relevant first], "reason": "one short sentence"}. ' +
                     'Use ["none"] when the code is ordinary.';
 
-                // The first JSON object of the answer, or null.
-                const parseTacticsAnswer = (text) => {
+                // Region estimate, asked after the tactics in a request of its own (so that the
+                // tactics answer is the one tested above). The prompt summarizes, per attributed
+                // country, the MITRE ATT&CK Enterprise 20.1 groups whose description states the
+                // attribution (99 of 178; groups attributed only by their targets are left out):
+                // their names and aliases, software only that country's groups use, and their
+                // targets. On 10 snippets with evidence (a group or tool name, the language of
+                // strings) it named the region in 9 (a Kimsuky-style Korean HWP lure came out as
+                // South Korea), and answered "unknown" for all 44 attack snippets without
+                // evidence, including Gootloader, BPFDoor, Mirai and Stuxnet code. It is not asked
+                // when the tactics answer is "none". It is an estimate from code evidence, not an
+                // attribution.
+                const ATTACK_REGIONS = [
+                    { key: "china", name: "China", summary: "APT41 (Wicked Panda), menuPass (APT10), Threat Group-3390 (Emissary Panda), Mustang Panda, Volt Typhoon, APT1, Leviathan (APT40), MirrorFace, BlackTech, Winnti Group; tools Derusbi, ZxShell, BLACKCOFFEE, HUI Loader, UPPERCUT, Winnti; espionage against governments, telecoms, defense and technology in Asia, the US and Europe" },
+                    { key: "russia", name: "Russia", summary: "APT28 (Fancy Bear, GRU), APT29 (Cozy Bear, SVR), Turla, Sandworm Team, Gamaredon Group, Ember Bear, Dragonfly, Star Blizzard, Wizard Spider (TrickBot, Ryuk, Conti), Indrik Spider (Evil Corp); tools Saint Bot, WastedLocker, BitPaymer, PowerPunch, Backdoor.Oldrea; espionage and destructive attacks on Ukraine, Europe and NATO, and ransomware for money; Russian-language strings, ransom notes and forums" },
+                    { key: "iran", name: "Iran", summary: "OilRig (APT34), MuddyWater (Seedworm), APT33 (Elfin), Magic Hound (Charming Kitten, APT35), APT39, APT42, Agrius, Fox Kitten, Moses Staff, CopyKittens; tools POWERSTATS, PowGoop, Mori, MuddyViper, DEADWOOD, Fooder, RemoteUtilities; espionage and wipers against the Middle East, Israel, Saudi Arabia and the US, PowerShell-heavy" },
+                    { key: "north-korea", name: "North Korea", summary: "Lazarus Group (HIDDEN COBRA), Kimsuky (Velvet Chollima), APT37 (ScarCruft), APT38 (Bluenoroff), Andariel, Contagious Interview, Moonstone Sleet, AppleJeus; tools HOPLIGHT, AppleSeed, BabyShark, Gold Dragon, GoBear, CSPY Downloader; theft of cryptocurrency and banks, espionage against South Korea with Korean-language documents and HWP lures, defense and fake job offers" },
+                    { key: "pakistan", name: "Pakistan", summary: "Transparent Tribe (APT36), SideCopy, Gorgon Group; tools Crimson, ObliqueRAT, Action RAT, AuTo Stealer, Peppy; espionage against Indian and Afghan military and government" },
+                    { key: "india", name: "India", summary: "Patchwork (Dropping Elephant), Sidewinder (Rattlesnake); tools BADNEWS, BackConfig, NDiskMonitor, TINYTYPHON; espionage against Pakistan, China and South Asian governments" },
+                    { key: "vietnam", name: "Vietnam", summary: "APT32 (OceanLotus); tools Kerrdown, Denis, Goopy, KOMPROGO, SOUNDBITE, WINDSHIELD, PHOREAL; espionage against foreign companies, governments and dissidents in Southeast Asia" },
+                    { key: "lebanon", name: "Lebanon", summary: "Dark Caracal, POLONIUM, Volatile Cedar; tools CreepyDrive, CreepySnail, Bandook, CrossRAT, Explosive; espionage mostly against Israel" },
+                    { key: "palestine", name: "Palestine (Gaza)", summary: "WIRTE (Gaza Cybergang); tools IronWind, LitePower, SameCoin, Havoc; espionage against the Middle East" },
+                    { key: "south-korea", name: "South Korea", summary: "Darkhotel, Higaisa; espionage against business travelers in other East Asian countries through hotel networks" },
+                    { key: "uae", name: "United Arab Emirates", summary: "Stealth Falcon; spyware against Emirati journalists, activists and dissidents" },
+                    { key: "nigeria", name: "Nigeria", summary: "SilverTerrier; Lokibot and other stealers, business email compromise against companies" },
+                    { key: "latin-america", name: "Latin America", summary: "APT-C-36 (Blind Eagle), Machete, Malteiro; tools Machete, Mispadu, DCRAT, PureCrypter; Spanish- and Portuguese-language phishing and banking trojans against Colombia, Brazil and Latin America" }
+                ];
+                const ATTACK_REGION_SYSTEM_PROMPT = 'You are a threat intelligence analyst. Estimate which region the threat actor behind Windows Script Host (JScript) code is associated with, ' +
+                    'using these summaries of MITRE ATT&CK groups by attributed country:\n' +
+                    ATTACK_REGIONS.map(r => `- ${r.key} (${r.name}): ${r.summary}`).join('\n') + '\n' +
+                    '- unknown: no evidence in the code\n' +
+                    'Base the estimate only on evidence in the code: names of these groups or tools, the language of strings and comments, and the targets these groups are known for. ' +
+                    'A country-code domain alone is not evidence. ' +
+                    'Answer with JSON only, no other text: {"region": "one key", "evidence": "one short sentence"}. Use "unknown" when the code has no such evidence.';
+
+                // The first JSON object of an answer, or null.
+                const parseJsonAnswer = (text) => {
                     const match = String(text || '').match(/\{[\s\S]*\}/);
                     if (!match)
                         return null;
                     try {
-                        const answer = JSON.parse(match[0]);
-                        const keys = Array.isArray(answer.tactics) ? answer.tactics.map(x => String(x).toLowerCase()) : [];
-                        return {
-                            none: keys.length > 0 && keys[0] === 'none',
-                            tactics: keys.map(key => ATTACK_TACTICS.find(t => t.key === key)).filter(Boolean)
-                                .filter((t, i, all) => all.indexOf(t) === i).slice(0, 2),
-                            reason: typeof answer.reason === 'string' ? answer.reason.replace(/\s+/g, ' ').trim() : ''
-                        };
+                        return JSON.parse(match[0]);
                     } catch (e) {
                         return null;
                     }
                 };
 
-                // Inserts the tactics below endLine, as a comment.
+                const parseTacticsAnswer = (text) => {
+                    const answer = parseJsonAnswer(text);
+                    if (!answer)
+                        return null;
+                    const keys = Array.isArray(answer.tactics) ? answer.tactics.map(x => String(x).toLowerCase()) : [];
+                    return {
+                        none: keys.length > 0 && keys[0] === 'none',
+                        tactics: keys.map(key => ATTACK_TACTICS.find(t => t.key === key)).filter(Boolean)
+                            .filter((t, i, all) => all.indexOf(t) === i).slice(0, 2),
+                        reason: typeof answer.reason === 'string' ? answer.reason.replace(/\s+/g, ' ').trim() : ''
+                    };
+                };
+
+                // {region: an ATTACK_REGIONS entry or null for unknown, evidence}, or null.
+                const parseRegionAnswer = (text) => {
+                    const answer = parseJsonAnswer(text);
+                    if (!answer || typeof answer.region !== 'string')
+                        return null;
+                    const key = answer.region.toLowerCase();
+                    const region = ATTACK_REGIONS.find(r => r.key === key) || null;
+                    if (!region && key !== 'unknown')
+                        return null;
+                    return { region: region, evidence: typeof answer.evidence === 'string' ? answer.evidence.replace(/\s+/g, ' ').trim() : '' };
+                };
+
+                // One FrogNano answer (the message content) for a system prompt and the code.
+                // "translate": false keeps the code from being translated (the launcher otherwise
+                // translates FrogNano's prompts into English); the prompts are in English already.
+                const askAttackModel = (systemPrompt, input) => axios.post('/llamacpp/chat', {
+                    model: ATTACK_MODEL,
+                    translate: false,
+                    messages: [
+                        { role: 'system', content: systemPrompt },
+                        { role: 'user', content: 'Code:\n```javascript\n' + input + '\n```' }
+                    ],
+                    max_tokens: 200,
+                    temperature: 0,
+                    chat_template_kwargs: { enable_thinking: false }
+                }, {
+                    headers: { 'Content-Type': 'application/json' }
+                }).then(response => {
+                    const choice = response.data && response.data.choices && response.data.choices[0];
+                    return choice && choice.message ? String(choice.message.content || '') : '';
+                });
+
+                const describeError = (error) => {
+                    const body = error.response && error.response.data;
+                    const detail = body && body.error
+                        ? (typeof body.error === 'string' ? body.error : (body.error.message || JSON.stringify(body.error)))
+                        : error.message;
+                    return String(detail).replace(/\r?\n/g, ' ');
+                };
+
+                // Inserts the tactics and the region estimate below endLine, as a comment.
                 const analyzeTactics = (text, endLine) => {
                     const truncated = text.length > ATTACK_MAX_SELECTION;
                     const input = truncated ? text.substring(0, ATTACK_MAX_SELECTION) : text;
                     const replace = insertPlaceholder(endLine,
-                        `// ${summarize(text)}... Analyzing MITRE ATT&CK tactics with ${ATTACK_MODEL_LABEL} (llama.cpp; loading the model may take a while)...`);
+                        `// ${summarize(text)}... Analyzing MITRE ATT&CK tactics and the region with ${ATTACK_MODEL_LABEL} (llama.cpp; loading the model may take a while)...`);
+                    const clean = (s) => DOMPurify.sanitize(s, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
+                    const note = truncated ? `, first ${ATTACK_MAX_SELECTION} characters` : '';
 
-                    // "translate": false keeps the code from being translated (the launcher otherwise
-                    // translates FrogNano's prompts into English); the prompt is in English already.
-                    axios.post('/llamacpp/chat', {
-                        model: ATTACK_MODEL,
-                        translate: false,
-                        messages: [
-                            { role: 'system', content: ATTACK_SYSTEM_PROMPT },
-                            { role: 'user', content: 'Code:\n```javascript\n' + input + '\n```' }
-                        ],
-                        max_tokens: 200,
-                        temperature: 0,
-                        chat_template_kwargs: { enable_thinking: false }
-                    }, {
-                        headers: { 'Content-Type': 'application/json' }
-                    }).then(response => {
-                        const choice = response.data && response.data.choices && response.data.choices[0];
-                        const content = choice && choice.message ? choice.message.content : '';
+                    let tacticsLines = null;
+                    askAttackModel(ATTACK_SYSTEM_PROMPT, input).then(content => {
                         const answer = parseTacticsAnswer(content);
-                        const note = truncated ? `, first ${ATTACK_MAX_SELECTION} characters` : '';
-                        const clean = (s) => DOMPurify.sanitize(s, { ALLOWED_TAGS: [], ALLOWED_ATTR: [] });
                         if (!answer || (!answer.none && answer.tactics.length === 0)) {
-                            replace(`// Analyze Tactics: ${ATTACK_MODEL_LABEL} did not answer with tactics. Its answer: ${clean(String(content || '')).replace(/\s+/g, ' ').substring(0, 300)}`);
+                            replace(`// Analyze Tactics: ${ATTACK_MODEL_LABEL} did not answer with tactics. Its answer: ${clean(content).replace(/\s+/g, ' ').substring(0, 300)}`);
                             return;
                         }
                         const reason = answer.reason ? [`// Reason: ${clean(answer.reason)}`] : [];
                         if (answer.none) {
+                            // Without adversary behavior there is no threat actor to place; asked
+                            // anyway, the model took a comment naming Korea or a .kr address as
+                            // evidence for South Korea.
                             replace([`// No clear MITRE ATT&CK tactic in the selection (${ATTACK_MODEL_LABEL}, local${note}).`].concat(reason).join('\n'));
                             return;
                         }
-                        const lines = answer.tactics.map((t, i) => `//   ${i + 1}. ${t.id} ${t.name} https://attack.mitre.org/tactics/${t.id}/`);
-                        replace([`// MITRE ATT&CK tactics of the selection (${ATTACK_MODEL_LABEL}, local; candidates, not a verdict${note}):`]
-                            .concat(lines, reason).join('\n'));
+                        tacticsLines = [`// MITRE ATT&CK tactics of the selection (${ATTACK_MODEL_LABEL}, local; candidates, not a verdict${note}):`]
+                            .concat(answer.tactics.map((t, i) => `//   ${i + 1}. ${t.id} ${t.name} https://attack.mitre.org/tactics/${t.id}/`), reason);
+                        return askAttackModel(ATTACK_REGION_SYSTEM_PROMPT, input).then(regionContent => {
+                            const region = parseRegionAnswer(regionContent);
+                            let line;
+                            if (!region)
+                                line = `// Region: not estimated (${ATTACK_MODEL_LABEL} answered: ${clean(regionContent).replace(/\s+/g, ' ').substring(0, 200)})`;
+                            else if (!region.region)
+                                line = '// Region: unknown (no evidence in the code)';
+                            else
+                                line = `// Region (estimate from code evidence, not an attribution): ${region.region.name}${region.evidence ? ' - ' + clean(region.evidence) : ''}`;
+                            replace(tacticsLines.concat([line]).join('\n'));
+                        }, error => {
+                            console.error('Analyze Tactics (region) error:', error.response && error.response.data || error.message);
+                            replace(tacticsLines.concat([`// Region: not estimated (${describeError(error)})`]).join('\n'));
+                        });
                     }).catch(error => {
-                        const body = error.response && error.response.data;
-                        const detail = body && body.error
-                            ? (typeof body.error === 'string' ? body.error : (body.error.message || JSON.stringify(body.error)))
-                            : error.message;
-                        console.error('Analyze Tactics error:', body || error.message);
-                        replace(`// Analyze Tactics failed: ${String(detail).replace(/\r?\n/g, ' ')} (needs the setup component llamacpp\\frognano_4b_2609)`);
+                        console.error('Analyze Tactics error:', error.response && error.response.data || error.message);
+                        replace(`// Analyze Tactics failed: ${describeError(error)} (needs the setup component llamacpp\\frognano_4b_2609)`);
                     });
                 };
 
@@ -1197,10 +1285,458 @@
                     });
                 };
 
+                // ---- ABC notation (abcjs) ----
+                //
+                // For a tune in ABC notation (https://abcnotation.com/), the selection or a whole .abc file,
+                // the context menu offers its score, MIDI and WAV files, and transposition. abcjs 6.4.4 draws
+                // the score in a panel beside the editor. The panel follows edits of the source (live
+                // preview), a click on a note selects it in the source, and it plays the tune with the
+                // playing notes highlighted, transposes the view or the source and adds tablature.
+                // A tune needs a K: (key) header and at least one line of music; X: (reference number) is
+                // added when it is missing, as abcjs separates tunes by it.
+                const ABC_MAX_SELECTION = 100000;
+                // Instrument samples for playing and WAV files: abcjs's default soundfont, fetched from
+                // paulrosen.github.io when a tune is played or saved as WAV (only the samples are requested).
+                const ABC_SOUNDFONT_URL = 'https://paulrosen.github.io/midi-js-soundfonts/abcjs/';
+                const ABC_TABLATURES = [['', 'No tablature'], ['violin', 'Violin'], ['guitar', 'Guitar'], ['fiveString', 'Banjo (5-string)']];
+
+                // Monaco language "abc": highlighting for .abc files and the files set to it.
+                const registerAbcLanguage = () => {
+                    if (monaco.languages.getLanguages().some(l => l.id === 'abc'))
+                        return;
+                    monaco.languages.register({ id: 'abc', extensions: ['.abc'], aliases: ['ABC notation', 'abc'] });
+                    monaco.languages.setMonarchTokensProvider('abc', {
+                        tokenizer: {
+                            root: [
+                                [/%.*$/, 'comment'],
+                                [/^[A-Za-z+]:.*$/, 'keyword'],               // fields: X:, T:, M:, L:, K:, w: ...
+                                [/\[[A-Za-z]:[^\]]*\]/, 'keyword'],           // inline fields: [K:D]
+                                [/"[^"]*"/, 'string'],                        // chord symbols and annotations
+                                [/![^!\s]*!|\+[^+\s]*\+/, 'type'],           // decorations: !trill!, +fermata+
+                                [/[|:\[\]]+[0-9]*/, 'delimiter'],            // bar lines and repeats
+                                [/[_^=]*[A-Ga-gzZx][,']*[0-9]*\/*[0-9]*/, 'number'], // notes and rests
+                                [/[(){}<>~.\-]/, 'operator']
+                            ]
+                        }
+                    });
+                };
+
+                // {abc, offset} for text that abcjs can draw (offset: characters added before it), or null.
+                const toAbcTune = (text) => {
+                    if (typeof ABCJS === 'undefined' || !text || text.length > ABC_MAX_SELECTION)
+                        return null;
+                    if (!/^[ \t]*K:/m.test(text))
+                        return null;
+                    const prefix = /^[ \t]*X:/m.test(text) ? '' : 'X:1\n';
+                    const abc = prefix + text;
+                    try {
+                        const tunes = ABCJS.parseOnly(abc);
+                        const hasMusic = tunes.some(tune => (tune.lines || []).some(line => line.staff && line.staff.length > 0));
+                        return hasMusic ? { abc: abc, offset: prefix.length } : null;
+                    } catch (e) {
+                        return null;
+                    }
+                };
+
+                // The ABC to work on: the selection, or the whole file when its language is "abc".
+                const getAbcSource = (editor) => {
+                    const model = editor.getModel();
+                    if (!model)
+                        return null;
+                    const selection = editor.getSelection();
+                    let range;
+                    if (selection && !selection.isEmpty())
+                        range = selection;
+                    else if (model.getLanguageId() === 'abc')
+                        range = model.getFullModelRange();
+                    else
+                        return null;
+                    const tune = toAbcTune(model.getValueInRange(range));
+                    return tune ? Object.assign({ range: range }, tune) : null;
+                };
+
+                // The tunes of an ABC text, split at their X: lines.
+                const splitAbcTunes = (abc) => abc.split(/(?=^[ \t]*X:)/m).filter(tune => /^[ \t]*K:/m.test(tune));
+
+                // A file name from the first T: (title) header.
+                const abcFileName = (abc, extension) => {
+                    const title = (abc.match(/^[ \t]*T:(.*)$/m) || [, ''])[1].trim();
+                    const safe = title.replace(/[\\/:*?"<>|\x00-\x1f]+/g, '_').replace(/\s+/g, ' ').substring(0, 80).trim();
+                    return (safe || 'tune') + extension;
+                };
+
+                const downloadBlob = (blob, fileName) => {
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+                };
+
+                // Each tune as a standard MIDI file. getMidiFile converts the first tune only.
+                const downloadAbcMidi = (abc, transpose) => {
+                    try {
+                        const tunes = splitAbcTunes(abc);
+                        tunes.forEach((tune, i) => {
+                            const files = ABCJS.synth.getMidiFile(tune, { midiOutputType: 'binary', midiTranspose: transpose || 0 });
+                            const data = Array.isArray(files) ? files[0] : files;
+                            downloadBlob(new Blob([data], { type: 'audio/midi' }),
+                                abcFileName(tune, tunes.length > 1 && !/^[ \t]*T:/m.test(tune) ? `-${i + 1}.mid` : '.mid'));
+                        });
+                    } catch (e) {
+                        console.error('ABC to MIDI failed:', e);
+                        alert('The tune could not be converted to MIDI: ' + e.message);
+                    }
+                };
+
+                // A synthesizer primed with the instrument samples for a drawn tune.
+                let abcAudioContext = null;
+                const primeAbcSynth = async (visualObj, transpose) => {
+                    if (!ABCJS.synth.supportsAudio())
+                        throw new Error('this browser cannot play audio');
+                    abcAudioContext = abcAudioContext || new (window.AudioContext || window.webkitAudioContext)();
+                    await abcAudioContext.resume();
+                    const synth = new ABCJS.synth.CreateSynth();
+                    await synth.init({
+                        visualObj: visualObj,
+                        audioContext: abcAudioContext,
+                        millisecondsPerMeasure: visualObj.millisecondsPerMeasure(),
+                        options: { soundFontUrl: ABC_SOUNDFONT_URL, midiTranspose: transpose || 0 }
+                    });
+                    await synth.prime();
+                    return synth;
+                };
+
+                // The first tune as a WAV file (rendered off screen when no score is shown).
+                const downloadAbcWav = async (abc, transpose, visualObj) => {
+                    try {
+                        const visual = visualObj || ABCJS.renderAbc(document.createElement('div'), abc)[0];
+                        const synth = await primeAbcSynth(visual, transpose);
+                        const url = synth.download();
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = abcFileName(abc, '.wav');
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        setTimeout(() => URL.revokeObjectURL(url), 10000);
+                    } catch (e) {
+                        console.error('ABC to WAV failed:', e);
+                        alert('The tune could not be converted to WAV: ' + e.message);
+                    }
+                };
+
+                // The source transposed by a number of semitones (key signatures and chord symbols too).
+                const transposeAbcText = (source, steps) => {
+                    const out = ABCJS.strTranspose(source.abc, ABCJS.parseOnly(source.abc), steps);
+                    return source.offset ? out.substring(source.offset) : out;
+                };
+
+                const transposeAbcSource = (editor, source, steps) => {
+                    try {
+                        editor.executeEdits('abc-transpose', [{ range: source.range, text: transposeAbcText(source, steps), forceMoveMarkers: true }]);
+                    } catch (e) {
+                        console.error('ABC transposition failed:', e);
+                        alert('The tune could not be transposed: ' + e.message);
+                    }
+                };
+
+                // The score panel beside the editor (one at a time).
+                let abcPanel = null;
+                const ensureAbcStyles = () => {
+                    if (document.getElementById('welsonjs-abc-styles'))
+                        return;
+                    const style = document.createElement('style');
+                    style.id = 'welsonjs-abc-styles';
+                    style.textContent =
+                        '.welsonjs-abc-panel{position:fixed;top:0;right:0;width:min(600px,48vw);height:100vh;z-index:10000;background:#fff;color:#000;' +
+                        'display:flex;flex-direction:column;border-left:1px solid #ccc;box-shadow:-4px 0 16px rgba(0,0,0,0.2);font:13px sans-serif;}' +
+                        '.welsonjs-abc-panel .bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 10px;border-bottom:1px solid #e5e5e5;}' +
+                        '.welsonjs-abc-panel .title{flex:1;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}' +
+                        '.welsonjs-abc-panel .status{padding:4px 10px;color:#a40;min-height:1em;}' +
+                        '.welsonjs-abc-panel .paper{flex:1;overflow:auto;padding:10px;}' +
+                        '.welsonjs-abc-panel .paper .abcjs-note,.welsonjs-abc-panel .paper .abcjs-rest{cursor:pointer;}' +
+                        '.welsonjs-abc-panel .abcjs-playing,.welsonjs-abc-panel .abcjs-playing path{fill:#d33;}';
+                    document.head.appendChild(style);
+                };
+
+                const openAbcScore = (editor, source) => {
+                    if (abcPanel)
+                        abcPanel.close();
+                    ensureAbcStyles();
+                    const model = editor.getModel();
+                    // The source range follows edits, for the live preview and for clicks on notes.
+                    let decorations = model.deltaDecorations([], [{
+                        range: source.range,
+                        options: { stickiness: monaco.editor.TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges }
+                    }]);
+                    const state = { abc: source.abc, offset: source.offset, transpose: 0, tablature: '', visual: [] };
+
+                    const el = (tag, text, cls) => {
+                        const e = document.createElement(tag);
+                        if (text) e.textContent = text;
+                        if (cls) e.className = cls;
+                        return e;
+                    };
+                    const panel = el('div', '', 'welsonjs-abc-panel');
+                    const bar1 = el('div', '', 'bar'), bar2 = el('div', '', 'bar');
+                    const title = el('span', '', 'title');
+                    const close = el('button', 'Close');
+                    const down = el('button', '\u2212'), up = el('button', '+');
+                    down.title = 'Transpose the view down a semitone';
+                    up.title = 'Transpose the view up a semitone';
+                    const steps = el('span', 'Transpose: 0');
+                    const apply = el('button', 'Apply to source');
+                    apply.title = 'Rewrite the source in the transposed key';
+                    const tab = el('select');
+                    ABC_TABLATURES.forEach(([value, label]) => {
+                        const o = el('option', label);
+                        o.value = value;
+                        tab.appendChild(o);
+                    });
+                    const play = el('button', 'Play');
+                    const svg = el('button', 'Save SVG'), midi = el('button', 'MIDI'), wav = el('button', 'WAV');
+                    const status = el('div', '', 'status');
+                    const paper = el('div', '', 'paper');
+                    bar1.append(title, close);
+                    bar2.append(down, steps, up, apply, tab, play, svg, midi, wav);
+                    panel.append(bar1, bar2, status, paper);
+                    document.body.appendChild(panel);
+
+                    const setStatus = (text) => { status.textContent = text || ''; };
+                    const sourceRange = () => {
+                        const range = model.isDisposed() ? null : model.getDecorationRange(decorations[0]);
+                        return range && !range.isEmpty() ? range : null;
+                    };
+
+                    // A click on a note selects its text in the source.
+                    const onClick = (abcElem) => {
+                        const range = sourceRange();
+                        if (!range || typeof abcElem.startChar !== 'number' || abcElem.startChar < 0)
+                            return;
+                        const base = model.getOffsetAt(range.getStartPosition());
+                        const start = Math.max(0, abcElem.startChar - state.offset);
+                        const end = Math.max(start, abcElem.endChar - state.offset);
+                        const s = model.getPositionAt(base + start), e = model.getPositionAt(base + end);
+                        const selection = new monaco.Selection(s.lineNumber, s.column, e.lineNumber, e.column);
+                        editor.setSelection(selection);
+                        editor.revealRangeInCenterIfOutsideViewport(selection);
+                        editor.focus();
+                    };
+
+                    const render = () => {
+                        const options = { responsive: 'resize', add_classes: true, visualTranspose: state.transpose, clickListener: onClick };
+                        if (state.tablature)
+                            options.tablature = [{ instrument: state.tablature }];
+                        state.visual = ABCJS.renderAbc(paper, state.abc, options);
+                        title.textContent = abcFileName(state.abc, '');
+                        steps.textContent = 'Transpose: ' + (state.transpose > 0 ? '+' : '') + state.transpose;
+                    };
+
+                    // Playing, with the notes being played highlighted.
+                    let synth = null, timing = null, lit = [];
+                    const unlight = () => { lit.forEach(e => e.classList.remove('abcjs-playing')); lit = []; };
+                    const stop = () => {
+                        if (synth) synth.stop();
+                        if (timing) timing.stop();
+                        synth = null;
+                        timing = null;
+                        unlight();
+                        play.textContent = 'Play';
+                    };
+                    play.onclick = async () => {
+                        if (synth) {
+                            stop();
+                            return;
+                        }
+                        const visual = state.visual[0];
+                        if (!visual)
+                            return;
+                        try {
+                            play.disabled = true;
+                            setStatus('Loading the instrument samples...');
+                            synth = await primeAbcSynth(visual, state.transpose);
+                            timing = new ABCJS.TimingCallbacks(visual, {
+                                eventCallback: (ev) => {
+                                    unlight();
+                                    if (!ev) {
+                                        stop();
+                                        return;
+                                    }
+                                    (ev.elements || []).forEach(group => group.forEach(e => { e.classList.add('abcjs-playing'); lit.push(e); }));
+                                }
+                            });
+                            synth.start();
+                            timing.start();
+                            play.textContent = 'Stop';
+                            setStatus(state.visual.length > 1 ? 'Playing the first tune.' : '');
+                        } catch (e) {
+                            stop();
+                            setStatus('Could not play the tune: ' + e.message);
+                        } finally {
+                            play.disabled = false;
+                        }
+                    };
+
+                    down.onclick = () => { stop(); state.transpose--; render(); };
+                    up.onclick = () => { stop(); state.transpose++; render(); };
+                    tab.onchange = () => { stop(); state.tablature = tab.value; render(); };
+                    apply.onclick = () => {
+                        const range = sourceRange();
+                        if (!range || state.transpose === 0)
+                            return;
+                        const steps = state.transpose;
+                        state.transpose = 0;
+                        transposeAbcSource(editor, { range: range, abc: state.abc, offset: state.offset }, steps);
+                    };
+                    svg.onclick = () => {
+                        const svgs = paper.querySelectorAll('svg');
+                        svgs.forEach((s, i) => {
+                            const copy = s.cloneNode(true);
+                            copy.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+                            const xml = '<?xml version="1.0" encoding="UTF-8"?>\n' + new XMLSerializer().serializeToString(copy);
+                            downloadBlob(new Blob([xml], { type: 'image/svg+xml' }), abcFileName(state.abc, svgs.length > 1 ? `-${i + 1}.svg` : '.svg'));
+                        });
+                    };
+                    midi.onclick = () => downloadAbcMidi(state.abc, state.transpose);
+                    wav.onclick = () => downloadAbcWav(state.abc, state.transpose, state.visual[0]);
+
+                    // Live preview: draw again shortly after the source changes.
+                    let timer = null;
+                    const onEdit = model.onDidChangeContent(() => {
+                        clearTimeout(timer);
+                        timer = setTimeout(() => {
+                            const range = sourceRange();
+                            if (!range) {
+                                setStatus('The source of the score was removed.');
+                                return;
+                            }
+                            const tune = toAbcTune(model.getValueInRange(range));
+                            if (!tune) {
+                                setStatus('Not valid ABC notation: showing the last valid score.');
+                                return;
+                            }
+                            stop();
+                            state.abc = tune.abc;
+                            state.offset = tune.offset;
+                            setStatus('');
+                            render();
+                        }, 400);
+                    });
+                    const onModel = editor.onDidChangeModel(() => abcPanel && abcPanel.close());
+
+                    abcPanel = {
+                        close: () => {
+                            stop();
+                            clearTimeout(timer);
+                            onEdit.dispose();
+                            onModel.dispose();
+                            if (!model.isDisposed())
+                                decorations = model.deltaDecorations(decorations, []);
+                            panel.remove();
+                            abcPanel = null;
+                        }
+                    };
+                    close.onclick = () => abcPanel.close();
+                    panel.addEventListener('keydown', (e) => { if (e.key === 'Escape') abcPanel.close(); });
+                    render();
+                };
+
+                // Warnings of abcjs as Monaco markers, for a file in the "abc" language only. abcjs reports
+                // them as "Music Line:<line>:<column>: <message>:  <context>", the line counted from the
+                // X: line of the tune (1) and the column from 1.
+                const abcWarningMarkers = (text) => {
+                    if (typeof ABCJS === 'undefined' || !text || text.length > ABC_MAX_SELECTION)
+                        return [];
+                    const prefix = /^[ \t]*X:/m.test(text) ? '' : 'X:1\n';
+                    const abc = prefix + text;
+                    const lineOf = (offset) => abc.substring(0, offset).split('\n').length - 1; // 0-based line in abc
+                    const tuneStarts = [];
+                    const x = /^[ \t]*X:/gm;
+                    let m;
+                    while ((m = x.exec(abc)) !== null)
+                        tuneStarts.push(lineOf(m.index));
+                    let tunes;
+                    try {
+                        tunes = ABCJS.parseOnly(abc);
+                    } catch (e) {
+                        return [{ severity: monaco.MarkerSeverity.Error, message: 'abcjs could not read the file: ' + e.message, startLineNumber: 1, startColumn: 1, endLineNumber: 1, endColumn: 2 }];
+                    }
+                    const prefixLines = prefix ? 1 : 0;
+                    const markers = [];
+                    tunes.forEach((tune, i) => {
+                        const start = tuneStarts[i] !== undefined ? tuneStarts[i] : 0;
+                        (tune.warnings || []).forEach(warning => {
+                            const plain = String(warning).replace(/<[^>]*>/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+                            const w = plain.match(/^[^:]*Line:(\d+):(\d+):\s*([^]*?)(?::\s{2}[^]*)?$/);
+                            const line0 = w ? start + Number(w[1]) - 1 : start;
+                            const lineNumber = Math.max(1, line0 - prefixLines + 1);
+                            const column = w ? Math.max(1, Number(w[2])) : 1;
+                            markers.push({
+                                severity: monaco.MarkerSeverity.Warning,
+                                message: w ? w[3].trim() : plain,
+                                source: 'abcjs',
+                                startLineNumber: lineNumber,
+                                startColumn: column,
+                                endLineNumber: lineNumber,
+                                endColumn: column + 1
+                            });
+                        });
+                    });
+                    return markers;
+                };
+
+                // The ABC menu items, shown while there is ABC to work on (context key welsonjs.abcAvailable,
+                // checked shortly after the selection, the text or the language changes), and the warnings
+                // of a file in the "abc" language.
+                const registerAbcActions = (editor) => {
+                    registerAbcLanguage();
+                    const available = editor.createContextKey('welsonjs.abcAvailable', false);
+                    let timer = null, warningTimer = null;
+                    const update = () => {
+                        clearTimeout(timer);
+                        timer = setTimeout(() => available.set(getAbcSource(editor) !== null), 200);
+                    };
+                    const updateWarnings = () => {
+                        clearTimeout(warningTimer);
+                        warningTimer = setTimeout(() => {
+                            const model = editor.getModel();
+                            if (!model)
+                                return;
+                            monaco.editor.setModelMarkers(model, 'abcjs',
+                                model.getLanguageId() === 'abc' ? abcWarningMarkers(model.getValue()) : []);
+                        }, 500);
+                    };
+                    editor.onDidChangeCursorSelection(update);
+                    editor.onDidChangeModelContent(() => { update(); updateWarnings(); });
+                    editor.onDidChangeModelLanguage(() => { update(); updateWarnings(); });
+                    editor.onDidChangeModel(() => { update(); updateWarnings(); });
+
+                    const add = (id, label, order, action) => editor.addAction({
+                        id: 'welsonjs.abc.' + id,
+                        label: label + ' (ABC notation)',
+                        precondition: 'welsonjs.abcAvailable',
+                        contextMenuGroupId: '3_music',
+                        contextMenuOrder: order,
+                        run: () => {
+                            const source = getAbcSource(editor);
+                            if (source) action(source);
+                        }
+                    });
+                    add('showScore', 'Show Score', 1, (source) => openAbcScore(editor, source));
+                    add('downloadMidi', 'Download MIDI', 2, (source) => downloadAbcMidi(source.abc, 0));
+                    add('downloadWav', 'Download WAV', 3, (source) => downloadAbcWav(source.abc, 0));
+                    add('transposeUp', 'Transpose Up a Semitone', 4, (source) => transposeAbcSource(editor, source, 1));
+                    add('transposeDown', 'Transpose Down a Semitone', 5, (source) => transposeAbcSource(editor, source, -1));
+                };
+
                 const registerAiActions = (editor) => {
                     aiEditorRef.current = editor;
                     registerAiServiceActions(aiServiceKey);
                     registerAnalysisActions(editor);
+                    registerAbcActions(editor);
                 };
 
                 // When the launcher's model list (or translation model) arrives, keep the chosen

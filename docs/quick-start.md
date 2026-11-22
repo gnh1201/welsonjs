@@ -100,7 +100,11 @@ exports.main = main;
 
 답은 편집기에 주석으로 들어간다. 서비스를 바꾸면 쌓인 대화가 지워진다.
 
-**Analyze Tactics (MITRE ATT&CK)**는 어떤 서비스를 고르든 똑같이 동작한다. 로컬 모델 FrogNano(설치 구성 요소 `llamacpp\frognano_4b_2609`)가 선택한 코드가 하는 [MITRE ATT&CK](https://attack.mitre.org/) 전술 한두 개를 링크와 한 문장 근거와 함께 알려 주거나, 두드러지는 전술이 없다고 알린다. 내 PC에서 실행되며 5~10초 걸린다(처음에는 모델을 불러오느라 더 걸린다). 결과는 후보로 본다. 시험에서 공격 코드 조각 32개 중 20개는 정답 전술을 첫 번째로, 28개는 답 안에 넣었고, 평범한 코드 14개는 모두 평범하다고 했다. 무언가를 내려받거나 실행하는 코드에 Initial Access를 덧붙이는 경향이 있다.
+선택 영역이나 `.abc` 파일 전체가 [ABC 악보 표기](https://abcnotation.com/)의 곡(`K:` 조표 줄과 음표가 있는 곡)이면 메뉴에 **Show Score**, **Download MIDI**, **Download WAV**, **Transpose Up/Down a Semitone**(모두 "ABC notation" 표시)도 나타난다. Show Score는 편집기 옆 패널에 abcjs로 악보를 그린다. 원문을 고치면 악보가 다시 그려지고, 음표를 누르면 원문에서 그 음표가 선택된다. 재생하면 연주 중인 음표가 강조되고, 화면의 조를 옮길 수 있으며(**Apply to source**는 원문을 그 조로 바꾼다), 바이올린·기타·밴조 타브를 붙이고 SVG·MIDI·WAV로 저장할 수 있다. `.abc` 파일에는 ABC 문법 강조가 적용되고, abcjs의 경고(예: 알 수 없는 문자)가 해당 위치에 밑줄로 표시된다. 재생과 WAV 저장은 paulrosen.github.io에서 악기 음원을 받는다.
+
+**Analyze Tactics (MITRE ATT&CK)**는 어떤 서비스를 고르든 똑같이 동작한다. 로컬 모델 FrogNano(설치 구성 요소 `llamacpp\frognano_4b_2609`)가 선택한 코드가 하는 [MITRE ATT&CK](https://attack.mitre.org/) 전술 한두 개를 링크와 한 문장 근거와 함께 알려 주거나, 두드러지는 전술이 없다고 알린다. 내 PC에서 실행되며 5~10초 걸린다(처음에는 모델을 불러오느라 더 걸린다). Enterprise 전술 외에 ATT&CK for ICS에만 있는 세 전술(Inhibit Response Function, Impair Process Control, Impact (ICS))도 안다. 결과는 후보로 본다. 실제 악성코드와 라벨이 붙은 시험(Stuxnet, Flame, Duqu, Mirai, Gootloader 등) 101개 조각에서 정답 전술을 첫 번째로 답한 것이 51개, 답 안에 넣은 것이 71개였고, WelsonJS 자체 `lib/` 모듈처럼 호스트를 바꾸는 정상 코드도 공격으로 판단한다. [analyze-tactics-validation.md](analyze-tactics-validation.md)를 참고한다. 무언가를 내려받거나 실행하는 코드에 Initial Access를 덧붙이는 경향이 있다.
+
+전술을 찾으면, 코드 안의 증거(MITRE ATT&CK 그룹이나 그 도구의 이름, 문자열과 주석의 언어, 주요 표적)로 위협 행위자의 지역도 추정하거나 "unknown"이라고 알린다. [ATT&CK 그룹](https://attack.mitre.org/groups/)을 귀속 국가별로 요약한 내용을 쓴다. 이것은 추정이지 귀속 판단이 아니다. 시험에서 그런 증거가 있는 조각 10개 중 9개의 지역을 맞혔고, 증거가 없는 공격 코드 조각 44개는 모두 "unknown"이라고 했다. 분석 시간은 두 배쯤 걸린다.
 
 ### Local AI
 
