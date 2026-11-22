@@ -116,7 +116,7 @@ namespace WelsonJS.Launcher
             AssemblyLoader.Register();
 
             // ChakraCore: the signed release of ChakraCoreVersion (native\chakracore\version.txt),
-            // published by native\publish-signed.ps1 as <version>-signed, for the architecture of this
+            // published by native\publish-signed.ps1 as <version>, for the architecture of this
             // process and checked against its hash list. Without ChakraCoreVersion, the earlier
             // single-architecture build (verified with AssemblyIntegrityUrl) is loaded.
             string chakraCoreVersion = GetAppConfig("ChakraCoreVersion");
@@ -124,7 +124,7 @@ namespace WelsonJS.Launcher
             {
                 AssemblyLoader.LoadNativeModules(
                     "ChakraCore",
-                    chakraCoreVersion.Trim() + "-signed",
+                    chakraCoreVersion.Trim(),
                     new[] { "ChakraCore.dll" }
                 );
             }

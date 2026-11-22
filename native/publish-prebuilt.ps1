@@ -7,10 +7,12 @@
 # <OutDir>\<arch> folder of native\<component>\build-<component>.ps1)
 # to the WelsonJS blob storage, where CI restores it with native\restore-prebuilt.ps1:
 #
-#   <Container>/packages/native/<component>/<version>-<arch>/<file>
-#   <Container>/packages/native/<component>/<version>-<arch>/<file>.gz
+#   <Container>/packages/native/<component>/<folder>/<file>
+#   <Container>/packages/native/<component>/<folder>/<file>.gz
 #
-# <component> is llamacpp, crispembed or ChakraCore (for chakracore).
+# <component> is llamacpp, crispembed or ChakraCore (for chakracore). <folder> is
+# <version>-<arch>, or <version>-<arch>-nosigned for ChakraCore: its signed release
+# (native\publish-signed.ps1) is published as <version>.
 #
 # Each file is uploaded as it is and gzip-compressed (<file>.gz, which CI downloads).
 #
@@ -77,7 +79,11 @@ foreach ($file in $present) {
 # The folder of the component in the storage. ChakraCore keeps the casing of
 # packages/native/ChakraCore, the folder Catswords.Phantomizer loads native modules from.
 $storageName = @{ "llamacpp" = "llamacpp"; "crispembed" = "crispembed"; "chakracore" = "ChakraCore" }[$Component]
-$destination = "$($Container.TrimEnd('/'))/packages/native/$storageName/$version-$Arch/"
+# The folder of the build in the storage: <version>-<arch>, or <version>-<arch>-nosigned for
+# ChakraCore, whose signed release (native\publish-signed.ps1) takes the plain <version>,
+# the release name Catswords.Phantomizer is asked for.
+$folder = if ($Component -eq "chakracore") { "$version-$Arch-nosigned" } else { "$version-$Arch" }
+$destination = "$($Container.TrimEnd('/'))/packages/native/$storageName/$folder/"
 Write-Host "[*] $Component $version ($Arch): $($present.Count) files -> $destination"
 
 if (-not $AzCopy) {

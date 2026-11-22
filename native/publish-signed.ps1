@@ -8,10 +8,12 @@
 # Catswords.Phantomizer (AssemblyLoader.LoadNativeModules with a release name)
 # loads them for the architecture of the running process:
 #
-#   <Container>/packages/native/<storage>/<version>-signed/SHA256SUMS.txt
-#   <Container>/packages/native/<storage>/<version>-signed/<arch>/<file>
-#   <Container>/packages/native/<storage>/<version>-signed/<arch>/<file>.gz
+#   <Container>/packages/native/<storage>/<version>/SHA256SUMS.txt
+#   <Container>/packages/native/<storage>/<version>/<arch>/<file>
+#   <Container>/packages/native/<storage>/<version>/<arch>/<file>.gz
 #
+# The release takes the plain version, which is what the launcher asks Phantomizer
+# for (ChakraCoreVersion); the unsigned builds are <version>-<arch>-nosigned.
 # SHA256SUMS.txt lists "<sha256>  <arch>/<file>" for every published file, and
 # Phantomizer refuses a file that is not listed or does not match.
 #
@@ -91,7 +93,7 @@ $componentDir = Join-Path $PSScriptRoot $Component
 $version = (Get-Content -LiteralPath (Join-Path $componentDir "version.txt") -Raw).Trim()
 $commit = (Get-Content -LiteralPath (Join-Path $componentDir "commit.txt") -Raw).Trim().ToLowerInvariant()
 if ($version -notmatch '^[A-Za-z0-9._-]+$') { throw "Invalid version in $Component\version.txt: $version" }
-$release = "$version-signed"
+$release = $version
 
 # The SignPath API token.
 $token = $env:SIGNPATH_API_TOKEN

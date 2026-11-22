@@ -10,6 +10,7 @@
 #
 #   <BaseUrl>/<component>/<version>-<arch>/<file>
 #   for example .../packages/native/llamacpp/b9871.390c307.1-x64/llama-server.exe
+#   (ChakraCore: <version>-<arch>-nosigned, the unsigned build; its signed release is <version>)
 #
 # Each file is downloaded gzip-compressed (<file>.gz, published next to the file)
 # and decompressed; if that fails (no .gz, a broken one, or one that does not give
@@ -97,7 +98,11 @@ $archDir = [IO.Path]::GetFullPath((Join-Path $OutDir $Arch))
 # The folder of the component in the storage. ChakraCore keeps the casing of
 # packages/native/ChakraCore, the folder Catswords.Phantomizer loads native modules from.
 $storageName = @{ "llamacpp" = "llamacpp"; "crispembed" = "crispembed"; "chakracore" = "ChakraCore" }[$Component]
-$url = "$($BaseUrl.TrimEnd('/'))/$storageName/$version-$Arch"
+# The folder of the build in the storage: <version>-<arch>, or <version>-<arch>-nosigned for
+# ChakraCore, whose signed release (native\publish-signed.ps1) takes the plain <version>,
+# the release name Catswords.Phantomizer is asked for.
+$folder = if ($Component -eq "chakracore") { "$version-$Arch-nosigned" } else { "$version-$Arch" }
+$url = "$($BaseUrl.TrimEnd('/'))/$storageName/$folder"
 
 Write-Host "[*] $Component $version ($Arch): $url -> $archDir"
 

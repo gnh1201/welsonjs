@@ -59,12 +59,12 @@ powershell -ExecutionPolicy Bypass -NoProfile -File native\chakracore\build-chak
 CI에서는 ChakraCore를 빌드하지 않습니다. 개발자 PC에서 이 스크립트로 빌드해 WelsonJS blob 스토리지에 게시하고, Debug와 Release 작업이 이를 복원해 다른 산출물과 함께 패키징하고 서명합니다.
 
 1. 아키텍처마다 **빌드**합니다: `-Arch x64`, `-Arch x86`, `-Arch arm64`.
-2. 빌드마다 **게시**합니다: `native\publish-prebuilt.ps1 -Component chakracore -Arch <arch> -BuildDir <OutDir>\<arch>`. 폴더를 `SHA256SUMS.txt`와 `BUILDINFO.txt`로 확인하고, 각 파일을 그대로, 그리고 `<file>.gz`로 AzCopy를 써서 `packages/native/ChakraCore/<version>-<arch>/`에 덮어쓰지 않고 올리며(폴더 이름은 Catswords.Phantomizer가 네이티브 모듈을 받는 `packages/native/ChakraCore`의 대소문자를 따름), `SHA256SUMS.txt`를 `prebuilt\<arch>.sha256`으로 복사합니다.
+2. 빌드마다 **게시**합니다: `native\publish-prebuilt.ps1 -Component chakracore -Arch <arch> -BuildDir <OutDir>\<arch>`. 폴더를 `SHA256SUMS.txt`와 `BUILDINFO.txt`로 확인하고, 각 파일을 그대로, 그리고 `<file>.gz`로 AzCopy를 써서 `packages/native/ChakraCore/<version>-<arch>-nosigned/`(서명 전 빌드)에 덮어쓰지 않고 올리며(폴더 이름은 Catswords.Phantomizer가 네이티브 모듈을 받는 `packages/native/ChakraCore`의 대소문자를 따름), `SHA256SUMS.txt`를 `prebuilt\<arch>.sha256`으로 복사합니다.
 3. 세 `prebuilt\<arch>.sha256` 파일을 변경과 함께 **커밋**합니다.
 
 작업은 `native\restore-prebuilt.ps1 -Component chakracore -Arch <arch>`를 실행해 `artifacts\chakracore\<arch>`에 둡니다. `<file>.gz`를 받고(`.gz`를 쓸 수 없으면 원본 파일), SHA-256이 `prebuilt\<arch>.sha256`과 맞는 파일만 씁니다. 각 작업은 `version.txt`와 세 기록을 키로 `artifacts\chakracore`를 캐시하므로, 기록이 바뀔 때만 파일을 다시 받습니다. `.artifact-configuration.xml`은 아키텍처마다 `ChakraCore.dll`을 서명 목록에 둡니다.
 
-런처는 Catswords.Phantomizer를 통해 이 빌드의 서명된 릴리스 가운데 자기 프로세스 아키텍처에 맞는 것을 불러옵니다. `packages/native/ChakraCore/<version>-signed/<arch>/ChakraCore.dll`을 릴리스의 `SHA256SUMS.txt`(`prebuilt\signed.sha256`에 기록, `native\publish-signed.ps1`로 게시)와 Authenticode 서명으로 확인하며, 버전은 런처 설정의 `ChakraCoreVersion`으로 정합니다. welsonjs-hta는 아직 예전 미리 빌드한 압축 파일(`chakracore-build/<platform>_release.zip`)의 `ChakraCore.dll`을 씁니다.
+런처는 Catswords.Phantomizer를 통해 이 빌드의 서명된 릴리스 가운데 자기 프로세스 아키텍처에 맞는 것을 불러옵니다. `packages/native/ChakraCore/<version>/<arch>/ChakraCore.dll`(서명된 릴리스는 버전 이름 그대로이고, 서명 전 빌드는 `<version>-<arch>-nosigned`)을 릴리스의 `SHA256SUMS.txt`(`prebuilt\signed.sha256`에 기록, `native\publish-signed.ps1`로 게시)와 Authenticode 서명으로 확인하며, 버전은 런처 설정의 `ChakraCoreVersion`으로 정합니다. welsonjs-hta는 아직 예전 미리 빌드한 압축 파일(`chakracore-build/<platform>_release.zip`)의 `ChakraCore.dll`을 씁니다.
 
 ## 업데이트 방법
 
