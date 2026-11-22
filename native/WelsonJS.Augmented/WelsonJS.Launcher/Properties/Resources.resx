@@ -211,7 +211,7 @@
     <value>https://catswords.blob.core.windows.net/welsonjs/packages</value>
   </data>
   <data name="ChakraCoreVersion" xml:space="preserve">
-    <value />
+    <value>1.13.0.97e68c9.1</value>
   </data>
   <data name="AssemblyIntegrityUrl" xml:space="preserve">
     <value>https://catswords.blob.core.windows.net/welsonjs/integrity.config.xml</value>
