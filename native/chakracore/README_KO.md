@@ -64,7 +64,7 @@ CI에서는 ChakraCore를 빌드하지 않습니다. 개발자 PC에서 이 스�
 
 작업은 `native\restore-prebuilt.ps1 -Component chakracore -Arch <arch>`를 실행해 `artifacts\chakracore\<arch>`에 둡니다. `<file>.gz`를 받고(`.gz`를 쓸 수 없으면 원본 파일), SHA-256이 `prebuilt\<arch>.sha256`과 맞는 파일만 씁니다. 각 작업은 `version.txt`와 세 기록을 키로 `artifacts\chakracore`를 캐시하므로, 기록이 바뀔 때만 파일을 다시 받습니다. `.artifact-configuration.xml`은 아키텍처마다 `ChakraCore.dll`을 서명 목록에 둡니다.
 
-런처와 welsonjs-hta는 아직 예전 미리 빌드한 압축 파일(`chakracore-build/<platform>_release.zip`)의 `ChakraCore.dll`을 씁니다. 이 빌드는 그와 별도로 `artifacts\chakracore\<arch>`에 복원되고 서명됩니다.
+런처는 Catswords.Phantomizer를 통해 이 빌드의 서명된 릴리스 가운데 자기 프로세스 아키텍처에 맞는 것을 불러옵니다. `packages/native/ChakraCore/<version>-signed/<arch>/ChakraCore.dll`을 릴리스의 `SHA256SUMS.txt`(`prebuilt\signed.sha256`에 기록, `native\publish-signed.ps1`로 게시)와 Authenticode 서명으로 확인하며, 버전은 런처 설정의 `ChakraCoreVersion`으로 정합니다. welsonjs-hta는 아직 예전 미리 빌드한 압축 파일(`chakracore-build/<platform>_release.zip`)의 `ChakraCore.dll`을 씁니다.
 
 ## 업데이트 방법
 

@@ -64,7 +64,7 @@ ChakraCore is not built in CI. It is built on a developer PC with this script, p
 
 The jobs run `native\restore-prebuilt.ps1 -Component chakracore -Arch <arch>` into `artifacts\chakracore\<arch>`. It downloads `<file>.gz` (or the file itself when the `.gz` cannot be used) and uses a file only if its SHA-256 matches `prebuilt\<arch>.sha256`. Each job caches `artifacts\chakracore`, keyed on `version.txt` and the three records, so the files are downloaded again only when a record changes. `.artifact-configuration.xml` lists `ChakraCore.dll` of each architecture for signing.
 
-The launcher and welsonjs-hta still take their `ChakraCore.dll` from the earlier prebuilt archives (`chakracore-build/<platform>_release.zip`); this build is restored and signed in `artifacts\chakracore\<arch>` alongside them.
+The launcher loads the signed release of this build for the architecture of its process through Catswords.Phantomizer: `packages/native/ChakraCore/<version>-signed/<arch>/ChakraCore.dll`, checked against the release's `SHA256SUMS.txt` (recorded in `prebuilt\signed.sha256`, published by `native\publish-signed.ps1`) and its Authenticode signature, as set by `ChakraCoreVersion` in the launcher's settings. welsonjs-hta still takes its `ChakraCore.dll` from the earlier prebuilt archives (`chakracore-build/<platform>_release.zip`).
 
 ## Updating
 
