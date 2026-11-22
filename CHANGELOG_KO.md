@@ -19,6 +19,9 @@
 ### 추가
 
 - 런처가 서명된 ChakraCore 1.13.0.97e68c9.1을 불러옵니다(`ChakraCoreVersion`). SignPath로 서명한 릴리스(release-signing, AppVeyor 빌드 0.2.7.build2568)를 x64, x86, arm64용 `SHA256SUMS.txt`와 함께 `packages/native/ChakraCore/1.13.0.97e68c9.1/`(런처가 Phantomizer에 요청하는 릴리스 이름)로 게시했습니다. 서명 전 빌드는 `1.13.0.97e68c9.1-<arch>-nosigned/`로 옮겼습니다(`native/chakracore/prebuilt/signed.sha256`에 기록). Catswords.Phantomizer가 런처 프로세스의 아키텍처에 맞는 빌드를 골라 해시와 Authenticode 서명을 확인합니다. welsonjs-hta는 예전 압축 파일을 그대로 씁니다.
+  - `ChakraCoreVersion`은 필수입니다. 릴리스가 서명되기 전에 쓰던 예전 단일 아키텍처 빌드(`ChakraCore/1.13.0.0`)로 대체하지 않습니다.
+  - Catswords.Phantomizer와 런처 안의 `AssemblyLoader.cs` 사본을 다시 같은 파일로 맞췄습니다. 무결성 목록을 내려받지 못하면 실행 폴더의 `integrity.config.xml`을 쓰는 런처 쪽 기능을 Phantomizer에도 넣었습니다.
+  - Phantomizer는 `.dll`의 `.gz`가 없거나, 받지 못하거나, 압축이 풀리지 않으면 `.dll` 자체를 받습니다. 전에는 그 오류를 그대로 던져 원본 파일을 시도하지 않았습니다. 받은 파일은 여전히 해시 목록이나 무결성 목록, 그리고 서명으로 확인합니다.
 - 편집기: 선택 영역의 컨텍스트 메뉴에 **Analyze Tactics (MITRE ATT&CK)** 추가([#574](https://github.com/gnh1201/welsonjs/issues/574)). 로컬 모델 FrogNano(`frognano_4b_2609`, `POST /llamacpp/chat`)에 코드가 MITRE ATT&CK Enterprise 20.1의 어떤 전술(Stealth TA0005, Defense Impairment TA0112 포함)을 하는지 묻고, 전술 한두 개를 링크와 한 문장 근거와 함께, 또는 "No clear MITRE ATT&CK tactic"을 주석으로 넣습니다.
   - **방식:** 프롬프트에 전술을 공식 요약("The adversary is trying to ...")과 함께 나열하고 JSON으로 답하게 합니다. 코드가 번역되지 않도록 런처의 프롬프트 번역은 끕니다(`"translate": false`). 선택 영역은 6,000자까지만 씁니다. CPU에서 답 하나에 5~10초, 모델을 불러오는 동안은 더 걸립니다.
   - **정확도:** 공격 코드 조각 32개(그중 8개는 Gootloader 2019 샘플 [gootloader-payload-2019](https://github.com/gnh1201/gootloader-payload-2019)에서 잘라 냄)에서 정답 전술을 첫 번째로 답한 것이 20개, 답 안에 넣은 것이 28개이고, "none"으로 답한 적은 없습니다. 평범한 코드 14개는 모두 "none"으로 답했습니다. 무언가를 내려받거나 실행하는 코드에 Initial Access를 덧붙이는 경향이 있고, 그러지 말라고 하면 더 잦아졌습니다. 결과는 후보로 표시합니다.

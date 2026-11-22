@@ -117,25 +117,16 @@ namespace WelsonJS.Launcher
 
             // ChakraCore: the signed release of ChakraCoreVersion (native\chakracore\version.txt),
             // published by native\publish-signed.ps1 as <version>, for the architecture of this
-            // process and checked against its hash list. Without ChakraCoreVersion, the earlier
-            // single-architecture build (verified with AssemblyIntegrityUrl) is loaded.
+            // process and checked against its hash list and Authenticode signature.
             string chakraCoreVersion = GetAppConfig("ChakraCoreVersion");
-            if (!string.IsNullOrWhiteSpace(chakraCoreVersion))
-            {
-                AssemblyLoader.LoadNativeModules(
-                    "ChakraCore",
-                    chakraCoreVersion.Trim(),
-                    new[] { "ChakraCore.dll" }
-                );
-            }
-            else
-            {
-                AssemblyLoader.LoadNativeModules(
-                    "ChakraCore",
-                    new Version(1, 13, 0, 0),
-                    new[] { "ChakraCore.dll" }
-                );
-            }
+            if (string.IsNullOrWhiteSpace(chakraCoreVersion))
+                throw new InvalidOperationException("ChakraCoreVersion is not set (WelsonJS.Launcher.exe.config).");
+
+            AssemblyLoader.LoadNativeModules(
+                "ChakraCore",
+                chakraCoreVersion.Trim(),
+                new[] { "ChakraCore.dll" }
+            );
         }
 
         public static void RecordFirstDeployTime(string directory, string instanceId)

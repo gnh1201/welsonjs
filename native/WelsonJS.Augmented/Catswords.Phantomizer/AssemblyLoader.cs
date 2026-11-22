@@ -651,6 +651,9 @@ namespace Catswords.Phantomizer
         }
 
 
+        // Downloads {file}.gz and decompresses it to dest. Returns false when that fails (no .gz,
+        // a network error, a broken archive), so that DownloadFile downloads the file itself; the
+        // callers verify the result (integrity list or hash list, and the signature) either way.
         private static bool TryDownloadCompressedFile(string gzUrl, string dest)
         {
             string tempFile = dest + ".tmp";
@@ -673,13 +676,13 @@ namespace Catswords.Phantomizer
             }
             catch (HttpRequestException ex)
             {
-                Trace.TraceWarning("Network or I/O error downloading compressed file from {0}: {1}", gzUrl, ex.Message);
-                throw;
+                Trace.TraceWarning("Network error downloading compressed file from {0}, downloading the file itself: {1}", gzUrl, ex.Message);
+                return false;
             }
             catch (Exception ex)
             {
-                Trace.TraceError("Unexpected error downloading compressed file from {0}: {1}", gzUrl, ex.Message);
-                throw;
+                Trace.TraceWarning("Failed to download or decompress {0}, downloading the file itself: {1}", gzUrl, ex.Message);
+                return false;
             }
             finally
             {
@@ -720,42 +723,83 @@ namespace Catswords.Phantomizer
                 if (string.IsNullOrWhiteSpace(IntegrityUrl))
                 {
                     _integrityLoaded = true;
-                    return; // integrity disabled
+                    return; // Integrity verification disabled.
                 }
 
-                XDocument doc;
+                XDocument doc = null;
+                Exception loadException = null;
 
+                // 1. Try loading from remote.
                 try
                 {
                     TryVerifyUrl(IntegrityUrl, out bool verified);
                     if (!verified)
-                        throw new InvalidOperationException("IntegrityUrl verification failed.");
+                        throw new InvalidOperationException(
+                            string.Format("The integrity manifest URL could not be verified:\n{0}", IntegrityUrl));
 
                     using (var stream = GetStreamFromUrl(Http, IntegrityUrl))
                     {
                         doc = XDocument.Load(stream);
                     }
+
+                    Trace.TraceInformation("Integrity manifest loaded from: {0}", IntegrityUrl);
                 }
                 catch (Exception ex)
                 {
-                    Trace.TraceError("AssemblyIntegrity: failed to load manifest.\n{0}", ex.ToString());
+                    loadException = ex;
+
+                    Trace.TraceWarning(
+                        "Unable to load the integrity manifest from the remote location. " +
+                        "Attempting to use the local 'integrity.config.xml' file.");
+
+                    Trace.TraceError(ex.ToString());
 
                     Exception inner = ex.InnerException;
                     int depth = 0;
                     while (inner != null && depth < 8)
                     {
-                        Trace.TraceError("AssemblyIntegrity: inner[{0}]\n{1}", depth, inner.ToString());
+                        Trace.TraceError("Inner[{0}]\n{1}", depth, inner);
                         inner = inner.InnerException;
                         depth++;
                     }
+                }
 
-                    throw new InvalidOperationException("Failed to load AssemblyIntegrity manifest.", ex);
+                // 2. Fallback to local file.
+                if (doc == null)
+                {
+                    string localPath = Path.Combine(
+                        AppDomain.CurrentDomain.BaseDirectory,
+                        "integrity.config.xml");
+
+                    try
+                    {
+                        if (!File.Exists(localPath))
+                            throw new FileNotFoundException(
+                                "The local integrity manifest was not found.",
+                                localPath);
+
+                        doc = XDocument.Load(localPath);
+
+                        Trace.TraceInformation(
+                            "Integrity manifest loaded from local file: {0}",
+                            localPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        throw new InvalidOperationException(
+                            "Unable to load the integrity manifest. " +
+                            "The remote manifest could not be downloaded, and the local fallback file " +
+                            "'integrity.config.xml' could not be loaded.",
+                            new AggregateException(loadException, ex));
+                    }
                 }
 
                 XElement hashes = doc.Root?.Element("Hashes");
                 if (hashes == null)
                 {
-                    Trace.TraceWarning("AssemblyIntegrity: <Hashes> not found. Integrity disabled.");
+                    Trace.TraceWarning(
+                        "No integrity hashes were found in the manifest. Integrity verification is disabled.");
+
                     _integrityLoaded = true;
                     return;
                 }
@@ -765,7 +809,7 @@ namespace Catswords.Phantomizer
                     var algorithm = h.Attribute("algorithm")?.Value?.Trim();
 
                     if (!string.Equals(algorithm, "SHA256", StringComparison.OrdinalIgnoreCase))
-                        continue; // only SHA256 supported
+                        continue;
 
                     string val = h.Attribute("value")?.Value?.Trim();
                     if (string.IsNullOrWhiteSpace(val))
@@ -775,7 +819,10 @@ namespace Catswords.Phantomizer
                 }
 
                 _integrityLoaded = true;
-                Trace.TraceInformation("AssemblyIntegrity: loaded {0} allowed hashes.", _integrityHashes.Count);
+
+                Trace.TraceInformation(
+                    "Integrity manifest loaded successfully. {0} trusted SHA-256 hash(es) registered.",
+                    _integrityHashes.Count);
             }
         }
 
