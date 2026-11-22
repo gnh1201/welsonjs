@@ -191,6 +191,8 @@ Once uploaded and pinned, the file cannot be silently modified without changing 
 </AssemblyIntegrity>
 ```
 
+If the manifest cannot be downloaded from the Integrity URL, Phantomizer loads `integrity.config.xml` from the application folder (`AppDomain.CurrentDomain.BaseDirectory`) instead. When neither can be loaded, the error carries both failures.
+
 ---
 
 ### 🔄 curl.exe Fallback on Legacy Windows

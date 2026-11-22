@@ -3,6 +3,9 @@
 // SPDX-FileCopyrightText: Namhyeon Go <gnh1201@catswords.re.kr>, 2025 Catswords OSS and WelsonJS Contributors
 // https://github.com/gnh1201/welsonjs
 // 
+using System.Security.Cryptography;
+using System.Text;
+using System.Xml.Linq;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,9 +15,6 @@ using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
-using System.Text;
-using System.Xml.Linq;
 
 namespace Catswords.Phantomizer
 {
@@ -610,14 +610,14 @@ namespace Catswords.Phantomizer
         {
             try
             {
-                string gzUrl = string.Format("{0}.gz", url);
-                bool isVaildUrl = url.EndsWith(".dll", StringComparison.OrdinalIgnoreCase);
+                string gzUrl = url + ".gz";
+                bool isDll = url.EndsWith(".dll", StringComparison.OrdinalIgnoreCase); // *.dll.gz
                 bool downloaded = false;
 
-                if (isVaildUrl)
+                if (isDll && TryDownloadCompressedFile(gzUrl, dest))
                 {
                     Trace.TraceInformation("Downloaded and decompressed file to: {0}", dest);
-                    TryDownloadCompressedFile(gzUrl, dest, out downloaded);
+                    downloaded = true;
                 }
 
                 if (!downloaded)
@@ -651,7 +651,10 @@ namespace Catswords.Phantomizer
         }
 
 
-        private static void TryDownloadCompressedFile(string gzUrl, string dest, out bool downloaded)
+        // Downloads {file}.gz and decompresses it to dest. Returns false when that fails (no .gz,
+        // a network error, a broken archive), so that DownloadFile downloads the file itself; the
+        // callers verify the result (integrity list or hash list, and the signature) either way.
+        private static bool TryDownloadCompressedFile(string gzUrl, string dest)
         {
             string tempFile = dest + ".tmp";
 
@@ -669,17 +672,17 @@ namespace Catswords.Phantomizer
 
                 File.Move(tempFile, dest);
 
-                downloaded = true;
+                return true;
             }
             catch (HttpRequestException ex)
             {
-                Trace.TraceWarning("Network or I/O error downloading compressed file from {0}: {1}", gzUrl, ex.Message);
-                throw;
+                Trace.TraceWarning("Network error downloading compressed file from {0}, downloading the file itself: {1}", gzUrl, ex.Message);
+                return false;
             }
             catch (Exception ex)
             {
-                Trace.TraceError("Unexpected error downloading compressed file from {0}: {1}", gzUrl, ex.Message);
-                throw;
+                Trace.TraceWarning("Failed to download or decompress {0}, downloading the file itself: {1}", gzUrl, ex.Message);
+                return false;
             }
             finally
             {
