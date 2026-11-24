@@ -165,6 +165,73 @@ FrogNano 4B is a fine-tune of Qwen3.5-4B. The base model (`Qwen_Qwen3.5-4B-Q4_K_
 - Qwen3.5-4B is about 20% faster.
 - Neither model tells legitimate host-changing library code from malware.
 
+## Security-specialized candidates
+
+Two cybersecurity models were proposed in [#574](https://github.com/gnh1201/welsonjs/issues/574) as candidates to test against FrogNano. Both ran with the same prompts and settings as FrogNano: temperature 0, thinking off, no translation, a 200-token output limit and the same segments. FrogNano and Qwen3.5-4B are the controls.
+
+- **Qwensploit V2 4B**
+  - File: `Qwen3.5-4B-Claude-3xMerge-Jackrong-UNCENSORED-heretic.Q4_K_M.gguf` from [xtools-at/Qwensploit-V2-4B-CyberSecurity-Qwen3.5-GGUF](https://huggingface.co/xtools-at/Qwensploit-V2-4B-CyberSecurity-Qwen3.5-GGUF), SHA-256 `5fbeb00b...f0f5`.
+  - The model card says these are the static quants of Qwensploit V2 4B, although the files carry the name of its base model, a Qwen3.5-4B merge.
+  - Its license is "other" and needs review.
+- **Black Onyx 5B**
+  - File: `Black-Onyx-5B-Q4_K.gguf` from [Clownstein/Black-Onyx-5B-GGUF](https://huggingface.co/Clownstein/Black-Onyx-5B-GGUF), SHA-256 `6d5f8b6f...a4c7`. It is based on Gemma 4 E2B IT, under the Gemma terms of use.
+  - The repository is gated and was downloaded with an account that accepted its conditions.
+  - The WelsonJS llama.cpp build loads its Gemma 4 architecture.
+  - Its answers end with a stray `<unused53>` token and a second JSON object. The editor's parser reads from the first `{` to the last `}`, so it fails on these answers. Its run used a parser that reads the first complete JSON object. With FrogNano, which writes a single object, both parsers read the same answers.
+
+Each cell is "right tactic first / among the answers".
+
+| Set | n | FrogNano | Qwen3.5-4B | Qwensploit V2 4B | Black Onyx 5B |
+| --- | --- | --- | --- | --- | --- |
+| Gootloader | 8 | 4 / 7 | 4 / 5 | 1 / 2 | 2 / 5 |
+| Hand-written WSH | 24 | 15 / 21 | 15 / 21 | 11 / 16 | 11 / 17 |
+| BPFDoor | 4 | 1 / 2 | 2 / 2 | 1 / 1 | 1 / 1 |
+| Mirai | 5 | 1 / 4 | 2 / 4 | 0 / 1 | 0 / 1 |
+| Stuxnet | 3 | 2 / 3 | 0 / 2 | 1 / 3 | 1 / 1 |
+| Flame and miniFlame | 8 | 3 / 4 | 1 / 4 | 2 / 3 | 4 / 5 |
+| Duqu | 2 | 1 / 1 | 1 / 1 | 0 / 0 | 1 / 1 |
+| TRITON | 2 | 1 / 2 | 0 / 0 | 0 / 0 | 2 / 2 |
+| Industroyer2 | 2 | 2 / 2 | 1 / 2 | 2 / 2 | 2 / 2 |
+| EKANS | 2 | 0 / 0 | 0 / 0 | 0 / 0 | 0 / 0 |
+| FrostyGoop | 1 | 1 / 1 | 1 / 1 | 0 / 0 | 1 / 1 |
+| Houdini | 5 | 4 / 5 | 4 / 5 | 3 / 4 | 3 / 5 |
+| Dorkbot | 4 | 4 / 4 | 3 / 3 | 0 / 0 | 1 / 1 |
+| Atomic Red Team | 23 | 11 / 14 | 10 / 15 | 9 / 10 | 6 / 14 |
+| LOLBAS | 8 | 1 / 1 | 0 / 0 | 0 / 0 | 1 / 2 |
+| **All attack segments** | **101** | **51 / 71** | **44 / 65** | **30 / 42** | **36 / 58** |
+
+| | FrogNano | Qwen3.5-4B | Qwensploit V2 4B | Black Onyx 5B |
+| --- | --- | --- | --- | --- |
+| Attack code answered "none" | 4 | 4 | 7 | **0** |
+| No usable tactics answer (131 segments) | 0 | 1 | **39** | 1 |
+| Region answer not readable | 0 | 0 | **33** | 0 |
+| Ordinary snippets with a tactic | 1 of 14 | 2 of 14 | 0 of 14 | **11 of 14** |
+| WelsonJS `lib/` modules with a tactic | 6 of 6 | 6 of 6 | 4 of 6 | 6 of 6 |
+| Region right with evidence | 9 of 10 | 9 of 10 | 7 of 10 | 7 of 10 |
+| Region invented without evidence | 0 | 1 | 2 | 1 (the tourist data snippet → South Korea) |
+| Answers including Initial Access | 35 | 51 | 24 | 2 |
+| ICS tactics answered | 2 | 5 | 0 | 1 (FrostyGoop, right) |
+| Seconds per segment (average) | 52 | 42 | 57 | 38 |
+
+### What the candidates show
+
+**Qwensploit V2 4B does not follow `"enable_thinking": false`.**
+- It writes its reasoning first (`reasoning_content`) and uses up the 200-token limit before any answer. In the Houdini USB spreading segment, for example, the finish reason was `length`, with 200 completion tokens and an empty content.
+- That causes most of its 39 empty tactics answers and 33 unreadable region answers, and its low "none" and false-positive counts come from the same empty answers.
+- Under the settings the other models use, it is not usable.
+
+**Black Onyx 5B almost never says "none".**
+- It gave a tactic to 11 of 14 ordinary snippets and to every attack segment. That is why it never missed attack code.
+- It reads industrial and decompiled code well: TRITON 2 of 2 (Execution and Impact on the safety controller code), Flame and miniFlame 4 of 5, FrostyGoop with Impact (ICS).
+- It is weaker on WSH scripts and commands: Gootloader, the hand-written snippets, Dorkbot 1 of 4, Atomic Red Team 6 of 23 first.
+- It rarely answers Initial Access, the opposite of the Qwen models.
+- It is the fastest of the four.
+
+**FrogNano stays the model for Analyze Tactics.**
+- It has the most right first answers (51) and right answers overall (71).
+- It has the fewest false results on ordinary code, and it parses with the editor as it is.
+- Black Onyx is the strongest on the ICS samples but would turn most ordinary code into attack reports. That matters more for the editor, whose users mostly write ordinary and host-changing scripts.
+
 ## ATT&CK for ICS
 
 ATT&CK for ICS 20.1 has 12 tactics. Nine share their names with Enterprise tactics (Execution, Persistence, ...), so the prompt keeps the Enterprise ones. It adds the three that only ICS has:
@@ -179,4 +246,5 @@ The ICS samples are scored against ATT&CK for ICS: Triton S1009, Industroyer2 S1
 - **Hard negatives:** the WelsonJS modules show that host-changing library code is called malicious. A prompt instruction (for example: code that only wraps an API for others to call is not an attack) has to be tested on the whole set. Instructions about what not to answer have backfired before.
 - **WSH prompt on other languages:** C, decompiled code and command lines score lower. A language-neutral prompt, or one per file type, needs its own run.
 - **EKANS:** use its kill routine, not only its lists.
+- **Candidates:** Qwensploit V2 4B could be retried with a larger output limit to separate its task ability from its thinking output. If the editor's parser should accept models that add text after the JSON (Black Onyx), make it read the first complete JSON object.
 - **Other samples:** BlackEnergy 3 / KillDisk, Havex, PIPEDREAM / INCONTROLLER and SocGholish, through code quoted in analyses.
