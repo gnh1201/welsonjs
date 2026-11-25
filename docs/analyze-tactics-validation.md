@@ -98,6 +98,27 @@ Right tactic first / among the answers, by group of attack segments:
 
 The groups are small (13 to 31 segments), so one segment moves a group by 3 to 8 points.
 
+### Missed by every model
+
+In 26 of the 116 attack segments (22.4%), none of the four models had a right tactic among its answers. No ordinary snippet was tagged by all four. They fall into five kinds:
+
+| Kind | n | Segments | What the models answered | Right |
+| --- | --- | --- | --- | --- |
+| **Signed Windows binaries used to run or fetch code** | 8 | LOLBAS mshta, regsvr32, bitsadmin, rundll32, cmstp, esentutl; Atomic T1218.011 (rundll32), T1564.012 (exclusions that hide files) | Execution, Initial Access, Resource Development | Stealth (system binary proxy execution, hiding artifacts); Command and Control for esentutl's remote copy |
+| **Impact without telling words** | 5 | Mirai UDP flood, Atomic T1491.001 (defacement), shadow copy deletion, EKANS process kill list and service stop list | Initial Access, Defense Impairment, Discovery, "none" | Impact; for EKANS also Inhibit Response Function |
+| **Collection in decompiled or scripted code** | 5 | Flame screenshot, key state and audio recording; Atomic T1113 (screenshot); INCONTROLLER password sniffing | Execution, Stealth, "none" | Collection, Credential Access |
+| **Bare building blocks** | 4 | BPFDoor RC4 and its packet loop, BlackEnergy API hashing, Duqu driver version information | "none", Initial Access | Command and Control, Stealth |
+| **Movement and control** | 4 | Hand-written lateral movement and UAC bypass, Atomic T1047 (WMI), INCONTROLLER packet modification | Initial Access, Persistence, Discovery, "none" | Lateral Movement, Privilege Escalation, Execution, Impair Process Control |
+
+What they have in common:
+- **The tool is mistaken for the purpose.** Running code through `mshta` or `rundll32` is read as Execution, where ATT&CK files it under Stealth because a trusted binary hides the code. A WMI command is read as Discovery, where it is Execution. A command line names the binary, not why it is used.
+- **Initial Access stands in for "something arrives".** Lateral movement, remote copies and downloads by LOLBins get Initial Access, the tactic the Qwen-based models over-answer.
+- **Impact needs a word.** Ransom notes get Impact; a flood loop, a defacement or deleting shadow copies does not. Shadow copy deletion was read as Defense Impairment, which is close but not what ATT&CK says (Inhibit System Recovery, Impact).
+- **Code that only prepares an attack gets "none".** A cipher, a hash routine or version strings carry no behavior of their own. A human reads them by their place in the malware, which a single segment does not show.
+- **ICS process manipulation** (see [above](#irongate-incontroller-shamoon-socgholish-and-blackenergy)).
+
+These are the cases a prompt change should be tested on first. Some of them, such as the bare building blocks, may stay out of reach for a classifier that sees one segment at a time.
+
 ## Recorded results
 
 FrogNano 4B (`frognano_4b_2609`), CPU, 2026-11-22. Two prompt versions:
