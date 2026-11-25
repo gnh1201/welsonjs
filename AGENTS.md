@@ -81,6 +81,7 @@ The editor's **Analyze Tactics (MITRE ATT&CK)** is validated against real malwar
 | `app.js` | WSH runtime, module loading, and command dispatch. |
 | `lib/` | JavaScript libraries and integrations. |
 | `data/` | Configuration, data files, and JSON test profiles. |
+| `docs/` | User and developer documentation; `docs/README.md` is the index. Add new documents to it. |
 | `native/WelsonJS.Augmented/` | WelsonJS managed solution and projects. |
 | `native/ManagedEsent/` | Vendored ManagedEsent source, samples, and tests. |
 | `native/chakracore/` | ChakraCore build (pinned commit, resource patch, build script), built on a developer PC for x64, arm64 and x86 and published to the WelsonJS blob storage, from which CI restores it (`native/restore-prebuilt.ps1`); see its `README.md`. |

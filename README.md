@@ -193,6 +193,7 @@ ended say()
 ## Documentation
 More guides are in the [`docs`](docs) folder:
 
+* All documents: [docs index](docs/README.md)
 * Getting started: [Quick Start](docs/quick-start.en.md) ([한국어](docs/quick-start.md))
 * Launcher APIs: [OpenAI-compatible API](docs/openai-compatible-api.md), [llama.cpp API](docs/llamacpp-launcher-api.md), [CrispEmbed API](docs/crispembed-launcher-api.md)
 * API keys: [API keys from Azure Key Vault](docs/azure-key-vault.md)
