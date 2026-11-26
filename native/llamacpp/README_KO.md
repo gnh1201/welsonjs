@@ -20,7 +20,7 @@
 | `patches/*.patch` | 이름 순서대로 `git apply`로 적용하는 패치. LF 줄바꿈으로 저장되어 있고, `.gitattributes`가 체크아웃 시 바이트 그대로 유지합니다. |
 | `build-llamacpp.ps1` | 소스를 가져와 패치를 적용하고, 빌드하고, 출력물을 씁니다. |
 
-현재 고정된 버전: `https://github.com/isHuangXin/llama.cpp.git`의 커밋 `390c307752ab78fd8189f359d6954c9ba1be74af`(브랜치 `release-bitnet-embedding-0.6b-270m`, 2026-07-15). BitNet `0b341e582afbf9e1011f24744b554c96a3477eb5`의 서브모듈 커밋입니다. 이 커밋은 upstream llama.cpp(`ggml-org/llama.cpp`)의 `665892536dfb`(2026-07-04) 다음에서 갈라졌으며(포크 자체 커밋 46개), 그보다 앞선 마지막 upstream 릴리스가 `b9871`이므로 `version.txt`는 `b9871.390c307.1`입니다.
+현재 고정된 버전: `https://github.com/isHuangXin/llama.cpp.git`의 커밋 `390c307752ab78fd8189f359d6954c9ba1be74af`(브랜치 `release-bitnet-embedding-0.6b-270m`, 2026-07-15). BitNet `0b341e582afbf9e1011f24744b554c96a3477eb5`의 서브모듈 커밋입니다. 이 커밋은 upstream llama.cpp(`ggml-org/llama.cpp`)의 `665892536dfb`(2026-07-04) 다음에서 갈라졌으며(포크 자체 커밋 46개), 그보다 앞선 마지막 upstream 릴리스가 `b9871`이므로 `version.txt`는 `b9871.390c307.2`입니다(`0005-spark2_5.patch`부터 `.2`. 게시된 `.1` 빌드는 그대로 남아 있습니다).
 
 포크는 업스트림 llama.cpp보다 오래되었으므로, 그 이후의 업스트림 변경은 들어 있지 않습니다.
 
@@ -137,7 +137,7 @@ Debug와 Release 작업은 아키텍처마다 `native\restore-prebuilt.ps1 -Comp
 
 `.artifact-configuration.xml`은 세 아키텍처의 실행 파일과 DLL을 모두 이름으로 하나씩 적고(와일드카드 없음), 빌드 스크립트는 목록에 없는 바이너리가 있으면 실패하므로 새 바이너리가 서명되지 않은 채 남을 수 없습니다. Authenticode 서명은 파일을 바꾸므로, 서명된 패키지의 `SHA256SUMS.txt`는 서명 전 파일의 해시입니다.
 
-현재 빌드(`b9871.390c307.1`)는 Visual Studio 2026으로 만들었습니다. x64와 x86은 MSVC 19.50(도구 집합 14.50), arm64는 MSVC 14.51 라이브러리와 clang 23입니다. 이를 실행하는 PC에는 이 도구보다 오래되지 않은 Visual C++ 2015-2026 재배포 패키지가 필요합니다.
+현재 빌드(`b9871.390c307.2`)는 Visual Studio 2026으로 만들었습니다. x64와 x86은 MSVC 19.50(도구 집합 14.50), arm64는 MSVC 14.51 라이브러리와 clang 23입니다. 이를 실행하는 PC에는 이 도구보다 오래되지 않은 Visual C++ 2015-2026 재배포 패키지가 필요합니다.
 
 ## 설치
 
@@ -295,6 +295,7 @@ Hy-MT2(번역)는 모델 README의 기본 프롬프트("Translate the following 
 | `0002-bitnet-i2s.patch` | 1. BitNet 저장소 없이 빌드, 2. ggml-base의 I2_S 기준 양자화, 3. llamafile 없는 I2_S 빠른 경로, 4. 비 AVX2 I2_S 대체 코드, 5. squared ReLU, 6. 채팅 템플릿, 7. 프리토크나이저(5~7은 BitNet b1.58 2B-4T용), 8. I2_S 타입 특성, 9. I2_S용 llama-quantize |
 | `0003-windows-build.patch` | 1. 모든 실행 파일과 DLL의 Windows 아이콘과 버전 정보, 2. 지원되지 않는 MSVC 옵션, 3. MSVC 변환 경고, 4. Visual Studio 2019 STL에서의 jinja |
 | `0004-embeddinggemma2.patch` | 1. `gemma-embedding2` 아키텍처, 2. EmbeddingGemma 2 텍스트 인코더(업스트림 #30054 백포트) |
+| `0005-spark2_5.patch` | 1. `spark2_5` 아키텍처, 2. `spark2_5` 프리토크나이저, 3. Spark-X2.5 모델(업스트림 #27868 백포트) |
 
 ## 0001-stq1_0.patch
 
@@ -614,6 +615,28 @@ Copyright (c) 2023-2026 The ggml authors (llama.cpp), Copyright (c) Microsoft Co
 
 `models/*.cpp`는 `src/CMakeLists.txt`의 `file(GLOB)`로 모이므로 새 파일에 CMake 변경이 필요 없습니다. 비전·오디오 인코더(mmproj 파일)와 Python 변환은 패치에 들어 있지 않습니다. GGUF 파일은 업스트림에서 변환합니다.
 
+## 0005-spark2_5.patch
+
+포크는 Spark-X2.5(예: [XHToken/Spark-X2.5-4B-GGUF](https://huggingface.co/XHToken/Spark-X2.5-4B-GGUF), Apache-2.0)보다 오래되었습니다. 이 모델의 GGUF 파일은 아키텍처가 `spark2_5`이며, 업스트림은 `b10828`부터 지원합니다. 이 패치는 업스트림 llama.cpp `3ad1ba7336`([ggml-org/llama.cpp#27868](https://github.com/ggml-org/llama.cpp/pull/27868), MIT)의 C++ 부분을 백포트합니다. 에디터의 Analyze Tactics에서 Spark-X2.5-4B를 FrogNano와 비교하려고 넣었습니다([docs/analyze-tactics-validation.md](../../docs/analyze-tactics-validation.md)). WelsonJS가 이 모델을 설치하지는 않습니다.
+
+### 파트 1: spark2_5 아키텍처
+
+`LLM_ARCH_SPARK2_5`를 `LLM_ARCH_STEP35` 옆에 등록합니다. `llama-arch`의 이름, `llama_model_mapping`의 모델 클래스, NEOX rope 모델(`llama_model_rope_type`)입니다. 업스트림은 모델 저장기에도 넣지만, 포크는 그곳에서 `STEP35`와 이웃 아키텍처를 지원하지 않는 것으로 두므로 패치에서 뺐습니다.
+
+### 파트 2: spark2_5 프리토크나이저
+
+`tokenizer.ggml.pre`가 `spark2_5`일 때의 `LLAMA_VOCAB_PRE_TYPE_SPARK2_5`입니다. 업스트림의 정규식(숫자, 한중일 문자열, 단어와 문장 부호, 그다음 숫자 한 자리씩)을 쓰고 `clean_spaces`를 끕니다. 번호는 포크의 마지막 타입(`FALCON_E`, 57) 다음인 58입니다. 업스트림도 다른 타입 다음에 58로 매기며, 이 번호는 파일에 저장되지 않습니다.
+
+### 파트 3: Spark-X2.5 모델
+
+`src/models/spark2-5.cpp`와 `models.h`의 `llama_model_spark2_5`입니다. QKV 결합 투영, 헤드마다 시그모이드 어텐션 출력 게이트, GGUF 패턴에 따른 슬라이딩 윈도(512) 층과 전체 어텐션 층, 층 종류별 RoPE 차원과 주파수 기준값, RMSNorm, GELU FFN을 씁니다. 파일은 업스트림 그대로이며 한 가지만 더했습니다. 36층을 4B(Spark-X2.5-4B)로 표시합니다(업스트림은 28층 1.7B만 표시). 이 파일이 쓰는 API(`create_tensor_qkv`, `build_qkv`, `wqkv_gate`, `n_rot(il)`, `get_rope_freq_base(cparams, il)`, `build_attn_inp_kv_iswa`)는 포크에 모두 있고, 경고 없이 컴파일됩니다. Python 변환, 채팅 템플릿 파일, 테스트는 패치에 들어 있지 않습니다. GGUF 파일에 채팅 템플릿이 들어 있습니다.
+
+x64 빌드와 `Spark-X2.5-4B-Q4_K_M.gguf`(SHA-256 `adfcfa19...9428`)로, `temperature` 0, 생각 끔으로 확인했습니다.
+- "What is the capital of France? Answer in one short sentence." → `The capital of France is Paris.`, 초당 13.7토큰.
+- 한국어로 번역, 한국어와 중국어에서 영어로 번역이 모두 맞았습니다. 예: 오늘 날씨가 정말 좋아, 그래서 공원에서 산책을 가자.
+- x86 빌드는 `--no-mmap`과 2048토큰 컨텍스트로 같은 질문에 답했습니다(초당 11.5토큰). 메모리 매핑(기본값이며 런처도 이렇게 실행)으로는 `MapViewOfFile failed`로 멈춥니다. 32비트 프로세스는 2.6 GB 파일을 한 번에 매핑하지 못합니다.
+- `POST /tokenize`는 `Hello, world 12345 今天天气 ひらがな`를 `Hello`, `,`, ` world`, 숫자 한 자리씩, `今天`, `天气`, 가나 한 글자씩으로 나눕니다. 정규식대로입니다.
+
 ## 업데이트 방법
 
 1. 새 BitNet 커밋이 쓰는 llama.cpp 커밋을 찾습니다: `git ls-tree <BitNet sha> 3rdparty/llama.cpp`와 BitNet의 `.gitmodules`. `commit.txt`를 그 커밋으로 설정하고, 포크 URL이 바뀌었으면 스크립트의 `RepositoryUrl`도 바꿉니다. `version.txt`를 `<릴리스>.<커밋 앞 일곱 글자>.1`로 바꿉니다. `<릴리스>`는 포크가 갈라지기 전의 마지막 upstream 릴리스입니다. 갈라진 지점은 `gh api repos/ggml-org/llama.cpp/compare/master...<포크 소유자>:llama.cpp:<sha>`의 `merge_base_commit`이고, 릴리스는 `gh api repos/ggml-org/llama.cpp/compare/bNNNN...<갈라진 지점>`이 `behind_by` 0을 돌려주는 가장 큰 `bNNNN` 태그입니다.
@@ -623,5 +646,6 @@ Copyright (c) 2023-2026 The ggml authors (llama.cpp), Copyright (c) Microsoft Co
 5. 스크립트로 x64, arm64, x86을 로컬에서 빌드합니다. 다음을 확인합니다:
    - `llama-quantize --help`가 STQ1_0을 보여 줌,
    - `llama-server`가 설치되는 모델 중 하나와 `I2_S` 모델로 채팅 요청에 답함,
-   - `llama-server --embedding -m embeddinggemma-2-Q8_0.gguf`가 `POST /v1/embeddings`에 입력마다 768개 값으로 답함.
+   - `llama-server --embedding -m embeddinggemma-2-Q8_0.gguf`가 `POST /v1/embeddings`에 입력마다 768개 값으로 답함,
+   - `llama-server -m Spark-X2.5-4B-Q4_K_M.gguf`가 채팅 요청에 답함.
 6. 세 빌드를 게시하고(`native\publish-prebuilt.ps1`, [CI](#ciappveyor) 참고) 새 `prebuilt\<arch>.sha256` 파일과 함께 커밋합니다. 바뀐 파일 때문에 CI 캐시가 무효화되어 CI가 새 빌드를 받습니다.

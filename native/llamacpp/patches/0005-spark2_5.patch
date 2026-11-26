@@ -1,0 +1,295 @@
+From: WelsonJS
+Subject: [PATCH] model : support Spark-X2.5 (spark2_5)
+
+Support the architecture "spark2_5" of the Spark-X2.5 GGUF files (for
+example XHToken/Spark-X2.5-4B-GGUF, Apache-2.0), so the WelsonJS build loads
+them. The fork predates the upstream support (b10828).
+
+Backport of the C++ part of upstream llama.cpp 3ad1ba7336 ("[Model] Support
+for Spark2_5ForCausalLM implementation", ggml-org/llama.cpp#27868, MIT). The
+Python conversion, the chat template file and the tests are not part of it;
+the GGUF files are converted upstream and carry their chat template.
+
+1. Register the architecture: LLM_ARCH_SPARK2_5 ("spark2_5") in llama-arch,
+   llama_model_mapping and the NEOX rope models (llama_model_rope_type), next
+   to LLM_ARCH_STEP35. The model saver is left out: the fork lists STEP35 and
+   its neighbors as unsupported there.
+
+2. Add the pre-tokenizer "spark2_5" (LLAMA_VOCAB_PRE_TYPE_SPARK2_5, with
+   clean_spaces off) with upstream's regular expressions. Its number is 58,
+   after the fork's last type (FALCON_E = 57); upstream numbers it 58 after
+   other types, and the number is internal.
+
+3. Add src/models/spark2-5.cpp and its llama_model_spark2_5 in models.h:
+   fused QKV projection, a sigmoid attention output gate per head, sliding
+   window (512) and full attention layers from the GGUF pattern, RoPE
+   dimensions and frequency bases per layer kind, RMSNorm and a GELU FFN.
+   It is upstream's file with one addition: 36 layers are named 4B
+   (Spark-X2.5-4B), next to upstream's 28 layers (1.7B). The fork already
+   has every API it uses (create_tensor_qkv, build_qkv, wqkv_gate,
+   n_rot(il), get_rope_freq_base(cparams, il), build_attn_inp_kv_iswa).
+
+   models/*.cpp is collected by file(GLOB) in src/CMakeLists.txt, so the new
+   file needs no CMake change.
+
+---
+diff --git a/src/llama-arch.cpp b/src/llama-arch.cpp
+index 1740bbc..3ae0928 100644
+--- a/src/llama-arch.cpp
++++ b/src/llama-arch.cpp
+@@ -137,6 +137,7 @@ static const std::map<llm_arch, const char *> LLM_ARCH_NAMES = {
+     { LLM_ARCH_PADDLEOCR,        "paddleocr"        },
+     { LLM_ARCH_MIMO2,            "mimo2"            },
+     { LLM_ARCH_STEP35,           "step35"           },
++    { LLM_ARCH_SPARK2_5,         "spark2_5"         },
+     { LLM_ARCH_LLAMA_EMBED,      "llama-embed"      },
+     { LLM_ARCH_MAINCODER,        "maincoder"        },
+     { LLM_ARCH_KIMI_LINEAR,      "kimi-linear"      },
+diff --git a/src/llama-arch.h b/src/llama-arch.h
+index 995a2bf..8a9d16d 100644
+--- a/src/llama-arch.h
++++ b/src/llama-arch.h
+@@ -140,6 +140,7 @@ enum llm_arch {
+     LLM_ARCH_PADDLEOCR,
+     LLM_ARCH_MIMO2,
+     LLM_ARCH_STEP35,
++    LLM_ARCH_SPARK2_5,
+     LLM_ARCH_LLAMA_EMBED,
+     LLM_ARCH_MAINCODER,
+     LLM_ARCH_KIMI_LINEAR,
+diff --git a/src/llama-model.cpp b/src/llama-model.cpp
+index 22906b4..6a95f56 100644
+--- a/src/llama-model.cpp
++++ b/src/llama-model.cpp
+@@ -306,6 +306,8 @@ static llama_model * llama_model_mapping(llm_arch arch, const llama_model_params
+             return new llama_model_kimi_linear(params);
+         case LLM_ARCH_STEP35:
+             return new llama_model_step35(params);
++        case LLM_ARCH_SPARK2_5:
++            return new llama_model_spark2_5(params);
+         default:
+             throw std::runtime_error(std::string("unsupported model architecture: '") + llm_arch_name(arch) + "'");
+     }
+@@ -2536,6 +2538,7 @@ llama_rope_type llama_model_rope_type(const llama_model * model) {
+         case LLM_ARCH_QWEN3NEXT:
+         case LLM_ARCH_MIMO2:
+         case LLM_ARCH_STEP35:
++        case LLM_ARCH_SPARK2_5:
+         case LLM_ARCH_TALKIE:
+         case LLM_ARCH_MELLUM:
+         case LLM_ARCH_DFLASH:
+diff --git a/src/llama-vocab.cpp b/src/llama-vocab.cpp
+index ae1ab82..68250d3 100644
+--- a/src/llama-vocab.cpp
++++ b/src/llama-vocab.cpp
+@@ -353,6 +353,14 @@ struct llm_tokenizer_bpe : llm_tokenizer {
+                     "[0-9]",
+                 };
+                 break;
++            case LLAMA_VOCAB_PRE_TYPE_SPARK2_5:
++                regex_exprs = {
++                    "\\p{N}{1,3}",
++                    "[一-龥぀-ゟ゠-ヿ]+",
++                    "[!\"#$%&'()*+,\\-./:;<=>?@\\[\\\\\\]^_`{|}~][A-Za-z]+|[^\r\n\\p{L}\\p{P}\\p{S}]?[\\p{L}\\p{M}]+| ?[\\p{P}\\p{S}]+|[\r\n]|\\s+(?!\\S)|\\s+",
++                    "\\p{N}",
++                };
++                break;
+             case LLAMA_VOCAB_PRE_TYPE_FALCON_E:
+                 regex_exprs = {
+                     "[\\p{P}\\$\\+<=>\\^~\\|`]+",
+@@ -2153,6 +2161,10 @@ void llama_vocab::impl::load(llama_model_loader & ml, const LLM_KV & kv) {
+                     tokenizer_pre == "deepseek-v3") {
+                 pre_type = LLAMA_VOCAB_PRE_TYPE_DEEPSEEK3_LLM;
+                 clean_spaces = false;
++            } else if (
++                    tokenizer_pre == "spark2_5") {
++                pre_type = LLAMA_VOCAB_PRE_TYPE_SPARK2_5;
++                clean_spaces = false;
+             } else if (
+                     tokenizer_pre == "youtu") {
+                 pre_type = LLAMA_VOCAB_PRE_TYPE_YOUTU;
+diff --git a/src/llama-vocab.h b/src/llama-vocab.h
+index e392a60..5bf2c8b 100644
+--- a/src/llama-vocab.h
++++ b/src/llama-vocab.h
+@@ -66,6 +66,7 @@ enum llama_vocab_pre_type {
+     LLAMA_VOCAB_PRE_TYPE_MELLUM2           = 55,
+     LLAMA_VOCAB_PRE_TYPE_FALCON_3          = 56,
+     LLAMA_VOCAB_PRE_TYPE_FALCON_E          = 57,
++    LLAMA_VOCAB_PRE_TYPE_SPARK2_5          = 58,
+ };
+ 
+ struct LLM_KV;
+diff --git a/src/models/models.h b/src/models/models.h
+index d25fddf..f067091 100644
+--- a/src/models/models.h
++++ b/src/models/models.h
+@@ -2130,3 +2130,15 @@ struct llama_model_step35 : public llama_model_base {
+ 
+     std::unique_ptr<llm_graph_context> build_arch_graph(const llm_graph_params & params) const override;
+ };
++
++struct llama_model_spark2_5 : public llama_model_base {
++    llama_model_spark2_5(const struct llama_model_params & params) : llama_model_base(params) {}
++    void load_arch_hparams(llama_model_loader & ml) override;
++    void load_arch_tensors(llama_model_loader & ml) override;
++
++    struct graph : public llm_graph_context {
++        graph(const llama_model & model, const llm_graph_params & params);
++    };
++
++    std::unique_ptr<llm_graph_context> build_arch_graph(const llm_graph_params & params) const override;
++};
+diff --git a/src/models/spark2-5.cpp b/src/models/spark2-5.cpp
+new file mode 100644
+index 0000000..68f39b3
+--- /dev/null
++++ b/src/models/spark2-5.cpp
+@@ -0,0 +1,147 @@
++#include "models.h"
++
++void llama_model_spark2_5::load_arch_hparams(llama_model_loader & ml) {
++    ml.get_key(LLM_KV_ATTENTION_LAYERNORM_RMS_EPS, hparams.f_norm_rms_eps);
++    ml.get_key(LLM_KV_ATTENTION_SLIDING_WINDOW, hparams.n_swa);
++
++    hparams.swa_type = LLAMA_SWA_TYPE_STANDARD;
++    ml.get_arr(LLM_KV_ATTENTION_SLIDING_WINDOW_PATTERN, hparams.is_swa_impl);
++
++    hparams.rope_freq_base_train_swa = hparams.rope_freq_base_train;
++    hparams.rope_freq_scale_train_swa = hparams.rope_freq_scale_train;
++    ml.get_key(LLM_KV_ROPE_FREQ_BASE_SWA, hparams.rope_freq_base_train_swa, false);
++
++    switch (hparams.n_layer()) {
++        case 28: type = LLM_TYPE_1_7B; break;
++        case 36: type = LLM_TYPE_4B; break;
++        default: type = LLM_TYPE_UNKNOWN;
++    }
++}
++
++void llama_model_spark2_5::load_arch_tensors(llama_model_loader &) {
++    LLAMA_LOAD_LOCALS;
++
++    tok_embd = create_tensor(tn(LLM_TENSOR_TOKEN_EMBD, "weight"), {n_embd, n_vocab}, 0);
++
++    output_norm = create_tensor(tn(LLM_TENSOR_OUTPUT_NORM, "weight"), {n_embd}, 0);
++    output = create_tensor(tn(LLM_TENSOR_OUTPUT, "weight"), {n_embd, n_vocab}, TENSOR_NOT_REQUIRED);
++    if (output == nullptr) {
++        output = create_tensor(tn(LLM_TENSOR_TOKEN_EMBD, "weight"), {n_embd, n_vocab}, TENSOR_DUPLICATED);
++    }
++
++    for (int i = 0; i < n_layer; ++i) {
++        auto & layer = layers[i];
++
++        const int64_t n_head_i = hparams.n_head(i);
++        const int64_t n_head_kv_i = hparams.n_head_kv(i);
++        const int64_t n_embd_q = hparams.n_embd_head_k(i) * n_head_i;
++        const int64_t n_embd_k = hparams.n_embd_head_k(i) * n_head_kv_i;
++        const int64_t n_embd_v = hparams.n_embd_head_v(i) * n_head_kv_i;
++
++        layer.attn_norm = create_tensor(tn(LLM_TENSOR_ATTN_NORM, "weight", i), {n_embd}, 0);
++        create_tensor_qkv(layer, i, n_embd, n_embd_q, n_embd_k, n_embd_v, 0);
++        layer.wqkv_gate = create_tensor(tn(LLM_TENSOR_ATTN_GATE, "weight", i), {n_embd, n_head_i}, 0);
++        layer.wo = create_tensor(tn(LLM_TENSOR_ATTN_OUT, "weight", i), {n_embd_q, n_embd}, 0);
++
++        layer.ffn_norm = create_tensor(tn(LLM_TENSOR_FFN_NORM, "weight", i), {n_embd}, 0);
++        layer.ffn_gate = create_tensor(tn(LLM_TENSOR_FFN_GATE, "weight", i), {n_embd, n_ff}, 0);
++        layer.ffn_up = create_tensor(tn(LLM_TENSOR_FFN_UP, "weight", i), {n_embd, n_ff}, 0);
++        layer.ffn_down = create_tensor(tn(LLM_TENSOR_FFN_DOWN, "weight", i), {n_ff, n_embd}, 0);
++    }
++}
++
++std::unique_ptr<llm_graph_context> llama_model_spark2_5::build_arch_graph(const llm_graph_params & params) const {
++    return std::make_unique<graph>(*this, params);
++}
++
++llama_model_spark2_5::graph::graph(const llama_model & model, const llm_graph_params & params) : llm_graph_context(params) {
++    const int64_t n_embd_head = hparams.n_embd_head_v();
++
++    GGML_ASSERT(n_embd_head == hparams.n_embd_head_k());
++    GGML_ASSERT(hparams.swa_type == LLAMA_SWA_TYPE_STANDARD);
++
++    ggml_tensor * inpL = build_inp_embd(model.tok_embd);
++    ggml_tensor * inp_pos = build_inp_pos();
++    auto * inp_attn = build_attn_inp_kv_iswa();
++    ggml_tensor * inp_out_ids = build_inp_out_ids();
++
++    const float kq_scale = 1.0f / sqrtf(float(n_embd_head));
++
++    for (int il = 0; il < n_layer; ++il) {
++        ggml_tensor * inpSA = inpL;
++        ggml_tensor * cur = build_norm(inpL, model.layers[il].attn_norm, nullptr, LLM_NORM_RMS, il);
++        cb(cur, "attn_norm", il);
++
++        const int64_t n_head_i = hparams.n_head(il);
++        const int64_t n_head_kv_i = hparams.n_head_kv(il);
++        const int64_t n_rot_i = hparams.n_rot(il);
++        const float freq_base_i = model.get_rope_freq_base(cparams, il);
++        const float freq_scale_i = model.get_rope_freq_scale(cparams, il);
++
++        ggml_tensor * attn_inp = cur;
++        auto [Qcur, Kcur, Vcur] = build_qkv(model.layers[il], cur, n_embd_head, n_head_i, n_head_kv_i, il);
++
++        Qcur = ggml_rope_ext(ctx0, Qcur, inp_pos, nullptr,
++                n_rot_i, rope_type, n_ctx_orig, freq_base_i, freq_scale_i,
++                ext_factor, attn_factor, beta_fast, beta_slow);
++        Kcur = ggml_rope_ext(ctx0, Kcur, inp_pos, nullptr,
++                n_rot_i, rope_type, n_ctx_orig, freq_base_i, freq_scale_i,
++                ext_factor, attn_factor, beta_fast, beta_slow);
++        cb(Qcur, "Qcur_rope", il);
++        cb(Kcur, "Kcur_rope", il);
++
++        cur = build_attn(inp_attn,
++                nullptr, nullptr, nullptr,
++                Qcur, Kcur, Vcur, nullptr, nullptr, nullptr, kq_scale, il);
++        cb(cur, "attn_out", il);
++
++        ggml_tensor * gate = build_lora_mm(model.layers[il].wqkv_gate, attn_inp);
++        gate = ggml_sigmoid(ctx0, gate);
++        cb(gate, "attn_gate", il);
++
++        const int64_t n_tokens_i = cur->ne[1];
++        cur = ggml_reshape_3d(ctx0, cur, n_embd_head, n_head_i, n_tokens_i);
++        gate = ggml_reshape_3d(ctx0, gate, 1, n_head_i, n_tokens_i);
++        cur = ggml_mul(ctx0, cur, gate);
++        cur = ggml_reshape_2d(ctx0, cur, n_embd_head * n_head_i, n_tokens_i);
++        cb(cur, "attn_gated", il);
++
++        cur = build_lora_mm(model.layers[il].wo, cur, model.layers[il].wo_s);
++        cb(cur, "attn_out_proj", il);
++
++        if (il == n_layer - 1 && inp_out_ids) {
++            cur = ggml_get_rows(ctx0, cur, inp_out_ids);
++            inpSA = ggml_get_rows(ctx0, inpSA, inp_out_ids);
++        }
++
++        ggml_tensor * ffn_inp = ggml_add(ctx0, cur, inpSA);
++        cb(ffn_inp, "ffn_inp", il);
++
++        cur = build_norm(ffn_inp, model.layers[il].ffn_norm, nullptr, LLM_NORM_RMS, il);
++        cb(cur, "ffn_norm", il);
++
++        cur = build_ffn(cur,
++                model.layers[il].ffn_up, nullptr, nullptr,
++                model.layers[il].ffn_gate, nullptr, nullptr,
++                model.layers[il].ffn_down, nullptr, nullptr,
++                nullptr,
++                LLM_FFN_GELU, LLM_FFN_PAR, il);
++        cb(cur, "ffn_out", il);
++
++        cur = ggml_add(ctx0, cur, ffn_inp);
++        cur = build_cvec(cur, il);
++        cb(cur, "l_out", il);
++
++        inpL = cur;
++    }
++
++    ggml_tensor * cur = build_norm(inpL, model.output_norm, nullptr, LLM_NORM_RMS, -1);
++    cb(cur, "result_norm", -1);
++    res->t_embd = cur;
++
++    cur = build_lora_mm(model.output, cur);
++    cb(cur, "result_output", -1);
++    res->t_logits = cur;
++
++    ggml_build_forward_expand(gf, cur);
++}
