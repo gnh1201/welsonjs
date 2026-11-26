@@ -20,7 +20,7 @@ The launcher runs `llama-server` in router mode, with the installed models in `%
 | `patches/*.patch` | Patches applied in name order with `git apply`. They are stored with LF line endings, and `.gitattributes` keeps them byte-exact on checkout. |
 | `build-llamacpp.ps1` | Fetches the source, applies the patches, builds, and writes the output. |
 
-Current pin: commit `390c307752ab78fd8189f359d6954c9ba1be74af` of `https://github.com/isHuangXin/llama.cpp.git` (branch `release-bitnet-embedding-0.6b-270m`, 2026-07-15). It is the submodule commit of BitNet `0b341e582afbf9e1011f24744b554c96a3477eb5`. It diverges from upstream llama.cpp (`ggml-org/llama.cpp`) after `665892536dfb` (2026-07-04, 46 commits of its own); the last upstream release before that commit is `b9871`, so `version.txt` is `b9871.390c307.1`.
+Current pin: commit `390c307752ab78fd8189f359d6954c9ba1be74af` of `https://github.com/isHuangXin/llama.cpp.git` (branch `release-bitnet-embedding-0.6b-270m`, 2026-07-15). It is the submodule commit of BitNet `0b341e582afbf9e1011f24744b554c96a3477eb5`. It diverges from upstream llama.cpp (`ggml-org/llama.cpp`) after `665892536dfb` (2026-07-04, 46 commits of its own); the last upstream release before that commit is `b9871`, so `version.txt` is `b9871.390c307.2` (`.2` since `0005-spark2_5.patch`; the published `.1` builds stay as they are).
 
 The fork is older than upstream llama.cpp, so upstream changes made after it are not included.
 
@@ -137,7 +137,7 @@ The Debug and Release jobs run `native\restore-prebuilt.ps1 -Component llamacpp 
 
 `.artifact-configuration.xml` lists every executable and DLL of the three architectures by name (no wildcards), and the build script fails when a built binary is not listed, so a new binary cannot be left unsigned. Authenticode signing changes the files, so in the signed package `SHA256SUMS.txt` lists the hashes of the unsigned files.
 
-The current builds (`b9871.390c307.1`) were made with Visual Studio 2026: MSVC 19.50 (toolset 14.50) for x64 and x86, and clang 23 with the MSVC 14.51 libraries for arm64. A PC that runs them needs a Visual C++ 2015-2026 redistributable at least as new as those tools.
+The current builds (`b9871.390c307.2`) were made with Visual Studio 2026: MSVC 19.50 (toolset 14.50) for x64 and x86, and clang 23 with the MSVC 14.51 libraries for arm64. A PC that runs them needs a Visual C++ 2015-2026 redistributable at least as new as those tools.
 
 ## Installation
 
@@ -295,6 +295,7 @@ The patches are applied in name order. Each one groups related changes as number
 | `0002-bitnet-i2s.patch` | 1. build without the BitNet repository, 2. I2_S reference quantization in ggml-base, 3. I2_S fast path without llamafile, 4. non-AVX2 I2_S fallbacks, 5. squared ReLU, 6. chat template, 7. pre-tokenizer (5-7 for BitNet b1.58 2B-4T), 8. I2_S type traits, 9. llama-quantize for I2_S |
 | `0003-windows-build.patch` | 1. Windows icon and version information for every executable and DLL, 2. unsupported MSVC options, 3. MSVC conversion warnings, 4. jinja with the Visual Studio 2019 STL |
 | `0004-embeddinggemma2.patch` | 1. the `gemma-embedding2` architecture, 2. the EmbeddingGemma 2 text encoder (backport of upstream #30054) |
+| `0005-spark2_5.patch` | 1. the `spark2_5` architecture, 2. the `spark2_5` pre-tokenizer, 3. the Spark-X2.5 model (backport of upstream #27868) |
 
 ## 0001-stq1_0.patch
 
@@ -614,6 +615,28 @@ The file is upstream's, with two changes for the fork's API:
 
 `models/*.cpp` is collected by `file(GLOB)` in `src/CMakeLists.txt`, so the new file needs no CMake change. The vision and audio encoders (the mmproj files) and the Python conversion are not part of the patch; the GGUF files are converted upstream.
 
+## 0005-spark2_5.patch
+
+The fork predates Spark-X2.5 (for example [XHToken/Spark-X2.5-4B-GGUF](https://huggingface.co/XHToken/Spark-X2.5-4B-GGUF), Apache-2.0), whose GGUF files have the architecture `spark2_5`; upstream supports it from `b10828`. This patch backports the C++ part of upstream llama.cpp `3ad1ba7336` ([ggml-org/llama.cpp#27868](https://github.com/ggml-org/llama.cpp/pull/27868), MIT). It was added to compare Spark-X2.5-4B with FrogNano for the editor's Analyze Tactics ([docs/analyze-tactics-validation.md](../../docs/analyze-tactics-validation.md)). WelsonJS does not install the model.
+
+### Part 1: the spark2_5 architecture
+
+`LLM_ARCH_SPARK2_5` is registered next to `LLM_ARCH_STEP35`: its name in `llama-arch`, its model class in `llama_model_mapping` and the NEOX rope models (`llama_model_rope_type`). Upstream also lists it in the model saver; the fork lists `STEP35` and its neighbors there as unsupported, so the patch leaves it out.
+
+### Part 2: the spark2_5 pre-tokenizer
+
+`LLAMA_VOCAB_PRE_TYPE_SPARK2_5` for `tokenizer.ggml.pre` `spark2_5`, with upstream's regular expressions (digits, CJK runs, words and punctuation, then single digits) and `clean_spaces` off. Its number is 58, after the fork's last type (`FALCON_E`, 57). Upstream also numbers it 58, after other types; the number is not stored in files.
+
+### Part 3: the Spark-X2.5 model
+
+`src/models/spark2-5.cpp` and `llama_model_spark2_5` in `models.h`: fused QKV projection, a sigmoid attention output gate per head, sliding window (512) and full attention layers from the GGUF pattern, RoPE dimensions and frequency bases per layer kind, RMSNorm and a GELU FFN. The file is upstream's, with one addition: 36 layers are named 4B (Spark-X2.5-4B), next to upstream's 28 layers (1.7B). The fork already has every API it uses (`create_tensor_qkv`, `build_qkv`, `wqkv_gate`, `n_rot(il)`, `get_rope_freq_base(cparams, il)`, `build_attn_inp_kv_iswa`), and the file compiles without warnings. The Python conversion, the chat template file and the tests are not part of the patch; the GGUF files carry their chat template.
+
+Checked with the x64 build and `Spark-X2.5-4B-Q4_K_M.gguf` (SHA-256 `adfcfa19...9428`), `temperature` 0, thinking off:
+- "What is the capital of France? Answer in one short sentence." → `The capital of France is Paris.`, 13.7 tokens/s.
+- Translations into Korean and from Korean and Chinese into English were right, for example 오늘 날씨가 정말 좋아, 그래서 공원에서 산책을 가자.
+- The x86 build answered the same question (11.5 tokens/s) with `--no-mmap` and a 2048-token context. With memory mapping (the default, which the launcher uses) it stops with `MapViewOfFile failed`: a 32-bit process cannot map the 2.6 GB file in one view.
+- `POST /tokenize` splits `Hello, world 12345 今天天气 ひらがな` into `Hello`, `,`, ` world`, single digits, `今天`, `天气` and single kana, as the regular expressions say.
+
 ## Updating
 
 1. Find the llama.cpp commit that the new BitNet commit uses: `git ls-tree <BitNet sha> 3rdparty/llama.cpp` and BitNet's `.gitmodules`. Set `commit.txt` to it, and `RepositoryUrl` in the script if the fork URL changed. Set `version.txt` to `<release>.<first seven characters of the commit>.1`, where `<release>` is the last upstream release before the fork diverges: the merge base is `merge_base_commit` of `gh api repos/ggml-org/llama.cpp/compare/master...<fork owner>:llama.cpp:<sha>`, and the release is the highest `bNNNN` tag for which `gh api repos/ggml-org/llama.cpp/compare/bNNNN...<merge base>` reports `behind_by` 0.
@@ -623,5 +646,6 @@ The file is upstream's, with two changes for the fork's API:
 5. Build locally with the script, for x64, arm64 and x86. Check that:
    - `llama-quantize --help` lists STQ1_0,
    - `llama-server` answers a chat request with one of the installed models and with an `I2_S` model,
-   - `llama-server --embedding -m embeddinggemma-2-Q8_0.gguf` answers `POST /v1/embeddings` with 768 values per input.
+   - `llama-server --embedding -m embeddinggemma-2-Q8_0.gguf` answers `POST /v1/embeddings` with 768 values per input,
+   - `llama-server -m Spark-X2.5-4B-Q4_K_M.gguf` answers a chat request.
 6. Publish the three builds (`native\publish-prebuilt.ps1`, see [CI](#ci-appveyor)) and commit with the new `prebuilt\<arch>.sha256` files. The changed files invalidate the CI cache, so CI downloads the new build.

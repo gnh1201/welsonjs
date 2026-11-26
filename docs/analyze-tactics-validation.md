@@ -70,37 +70,37 @@ They are complemented by:
 
 ## Summary in percentages
 
-All four models on all 147 segments (116 attack, 15 ordinary, 6 WelsonJS modules, 10 with region evidence), from the tables below. The count is in brackets. Black Onyx 5B used the first-JSON parser.
+All five models on all 147 segments (116 attack, 15 ordinary, 6 WelsonJS modules, 10 with region evidence), from the tables below. The count is in brackets. Black Onyx 5B used the first-JSON parser. Spark-X2.5 4B ran on the WelsonJS llama.cpp with `0005-spark2_5.patch` (see [Spark-X2.5 4B](#spark-x25-4b)).
 
-| Metric | Better | FrogNano | Qwen3.5-4B | Qwensploit V2 4B | Black Onyx 5B |
-| --- | --- | --- | --- | --- | --- |
-| Right tactic first (116 attack segments) | higher | **49.1%** (57) | 43.1% (50) | 25.9% (30) | 37.1% (43) |
-| Right tactic among the answers (116) | higher | **70.7%** (82) | 62.1% (72) | 36.2% (42) | 58.6% (68) |
-| Attack code answered "none" (116) | lower | 6.9% (8) | 6.9% (8) | 7.8% (9) | **0.0%** (0) |
-| No usable tactics answer (147) | lower | **0.0%** (0) | 0.7% (1) | 36.1% (53) | 0.7% (1) |
-| Ordinary snippets with a tactic (15) | lower | 6.7% (1) | 13.3% (2) | 0.0% (0)¹ | 80.0% (12) |
-| WelsonJS `lib/` modules with a tactic (6) | lower | 100.0% (6) | 100.0% (6) | 66.7% (4)¹ | 100.0% (6) |
-| Region right with evidence (10) | higher | **90.0%** (9) | **90.0%** (9) | 70.0% (7) | 70.0% (7) |
+| Metric | Better | FrogNano | Qwen3.5-4B | Qwensploit V2 4B | Black Onyx 5B | Spark-X2.5 4B |
+| --- | --- | --- | --- | --- | --- | --- |
+| Right tactic first (116 attack segments) | higher | **49.1%** (57) | 43.1% (50) | 25.9% (30) | 37.1% (43) | 23.3% (27) |
+| Right tactic among the answers (116) | higher | **70.7%** (82) | 62.1% (72) | 36.2% (42) | 58.6% (68) | 46.6% (54) |
+| Attack code answered "none" (116) | lower | 6.9% (8) | 6.9% (8) | 7.8% (9) | **0.0%** (0) | 1.7% (2) |
+| No usable tactics answer (147) | lower | **0.0%** (0) | 0.7% (1) | 36.1% (53) | 0.7% (1) | **0.0%** (0) |
+| Ordinary snippets with a tactic (15) | lower | 6.7% (1) | 13.3% (2) | 0.0% (0)¹ | 80.0% (12) | 66.7% (10) |
+| WelsonJS `lib/` modules with a tactic (6) | lower | 100.0% (6) | 100.0% (6) | 66.7% (4)¹ | 100.0% (6) | 100.0% (6) |
+| Region right with evidence (10) | higher | **90.0%** (9) | **90.0%** (9) | 70.0% (7) | 70.0% (7) | **100.0%** (10) |
 
 ¹ Mostly because Qwensploit gave no answer at all, not because it judged the code ordinary.
 
 Right tactic first / among the answers, by group of attack segments:
 
-| Group | n | FrogNano | Qwen3.5-4B | Qwensploit V2 4B | Black Onyx 5B |
-| --- | --- | --- | --- | --- | --- |
-| Real WSH/VBS malware (Gootloader, Houdini, SocGholish) | 16 | 62.5% / 93.8% | 62.5% / 75.0% | 25.0% / 37.5% | 43.8% / 75.0% |
-| Hand-written WSH snippets | 24 | 62.5% / 87.5% | 62.5% / 87.5% | 45.8% / 66.7% | 45.8% / 70.8% |
-| Stuxnet, Flame and miniFlame, Duqu | 13 | 46.2% / 61.5% | 15.4% / 53.8% | 23.1% / 46.2% | 46.2% / 53.8% |
-| ICS (TRITON, Industroyer2, EKANS, FrostyGoop, Irongate, INCONTROLLER) | 13 | 38.5% / 61.5% | 23.1% / 30.8% | 15.4% / 15.4% | 46.2% / 61.5% |
-| Other compiled malware (BPFDoor, Mirai, Dorkbot, Shamoon, BlackEnergy) | 19 | 47.4% / 78.9% | 52.6% / 68.4% | 5.3% / 10.5% | 31.6% / 42.1% |
-| Commands (Atomic Red Team, LOLBAS) | 31 | 38.7% / 48.4% | 32.3% / 48.4% | 29.0% / 32.3% | 22.6% / 51.6% |
-| **All attack segments** | **116** | **49.1% / 70.7%** | **43.1% / 62.1%** | **25.9% / 36.2%** | **37.1% / 58.6%** |
+| Group | n | FrogNano | Qwen3.5-4B | Qwensploit V2 4B | Black Onyx 5B | Spark-X2.5 4B |
+| --- | --- | --- | --- | --- | --- | --- |
+| Real WSH/VBS malware (Gootloader, Houdini, SocGholish) | 16 | 62.5% / 93.8% | 62.5% / 75.0% | 25.0% / 37.5% | 43.8% / 75.0% | 25.0% / 43.8% |
+| Hand-written WSH snippets | 24 | 62.5% / 87.5% | 62.5% / 87.5% | 45.8% / 66.7% | 45.8% / 70.8% | 33.3% / 70.8% |
+| Stuxnet, Flame and miniFlame, Duqu | 13 | 46.2% / 61.5% | 15.4% / 53.8% | 23.1% / 46.2% | 46.2% / 53.8% | 7.7% / 38.5% |
+| ICS (TRITON, Industroyer2, EKANS, FrostyGoop, Irongate, INCONTROLLER) | 13 | 38.5% / 61.5% | 23.1% / 30.8% | 15.4% / 15.4% | 46.2% / 61.5% | 30.8% / 38.5% |
+| Other compiled malware (BPFDoor, Mirai, Dorkbot, Shamoon, BlackEnergy) | 19 | 47.4% / 78.9% | 52.6% / 68.4% | 5.3% / 10.5% | 31.6% / 42.1% | 10.5% / 36.8% |
+| Commands (Atomic Red Team, LOLBAS) | 31 | 38.7% / 48.4% | 32.3% / 48.4% | 29.0% / 32.3% | 22.6% / 51.6% | 25.8% / 41.9% |
+| **All attack segments** | **116** | **49.1% / 70.7%** | **43.1% / 62.1%** | **25.9% / 36.2%** | **37.1% / 58.6%** | **23.3% / 46.6%** |
 
 The groups are small (13 to 31 segments), so one segment moves a group by 3 to 8 points.
 
 ### Missed by every model
 
-In 26 of the 116 attack segments (22.4%), none of the four models had a right tactic among its answers. No ordinary snippet was tagged by all four. They fall into five kinds:
+In 26 of the 116 attack segments (22.4%), none of the four models (FrogNano, Qwen3.5-4B, Qwensploit, Black Onyx) had a right tactic among its answers. No ordinary snippet was tagged by all four. Spark-X2.5 4B, tested later, got 3 of them (shadow copy deletion, the Atomic defacement, the Flame audio recording), so 23 are missed by all five. They fall into five kinds:
 
 | Kind | n | Segments | What the models answered | Right |
 | --- | --- | --- | --- | --- |
@@ -334,6 +334,30 @@ Each cell is "right tactic first / among the answers"; for the ordinary PLC prog
 
 **Qwensploit** again gave no answer to 14 of 16 segments, for the reason above.
 
+## Spark-X2.5 4B
+
+[XHToken/Spark-X2.5-4B-GGUF](https://huggingface.co/XHToken/Spark-X2.5-4B-GGUF) (`Spark-X2.5-4B-Q4_K_M.gguf`, SHA-256 `adfcfa19...9428`, Apache-2.0) is a general-purpose 4.1B model with hybrid attention, not a security model. Its GGUF architecture `spark2_5` needs llama.cpp `b10828` or later, newer than the fork WelsonJS builds, so it was backported as `native/llamacpp/patches/0005-spark2_5.patch`. The x64 build with the patch ran it as a separate `llama-server` (context 8192, the launcher's default) on all 147 segments, with the same prompts and request settings as the other models; the installed launcher was not changed.
+
+| | FrogNano | Spark-X2.5 4B |
+| --- | --- | --- |
+| Right tactic first / among the answers (116 attack segments) | **57 / 82** | 27 / 54 |
+| First 101 attack segments | **51 / 71** | 23 / 47 |
+| Attack code answered "none" | 8 | 2 |
+| Ordinary snippets with a tactic (15) | **1** | 10 |
+| WelsonJS `lib/` modules with a tactic (6) | 6 | 6 |
+| Region right with evidence (10) | 9 | **10** |
+| Region named without evidence in attack code | 0 | 2 (Microsoft Defender off and esentutl → Iran) |
+| First answer Initial Access / Reconnaissance (147) | 29 / 8 | 60 / 48 |
+| Seconds per segment (median) | 34 | 23 |
+
+- **It defaults to Initial Access and Reconnaissance.** 108 of its 147 first answers are one of the two, for code that downloads, reads or lists anything. Real WSH malware drops to 25% right first (FrogNano 62.5%), decompiled Stuxnet, Flame and Duqu to 7.7%.
+- **It reads ordinary code as reconnaissance.** 10 of the 15 ordinary snippets got Reconnaissance, from a log writer to a date formatter. The ordinary PLC program got Impair Process Control.
+- **Impair Process Control for switching off security.** It answered it for disabling Defender, the firewall and the security module of `lib/`, where Defense Impairment is right.
+- **It is best on regions.** All 10 snippets with evidence came out right, including the Kimsuky HWP lure FrogNano placed in South Korea. It also named South Korea for the WelsonJS modules and two ordinary snippets with Korean text, and Russia for the Russian ransom note.
+- **Of the 26 segments every other model missed, it got 3:** shadow copy deletion (Impact), the Atomic defacement (Impact) and the Flame audio recording (Collection).
+
+Spark-X2.5 4B is not a candidate for Analyze Tactics. The patch stays useful for running the model in WelsonJS.
+
 ## ATT&CK for ICS
 
 ATT&CK for ICS 20.1 has 12 tactics. Nine share their names with Enterprise tactics (Execution, Persistence, ...), so the prompt keeps the Enterprise ones. It adds the three that only ICS has:
@@ -350,6 +374,7 @@ The ICS samples are scored against ATT&CK for ICS: Triton S1009, Industroyer2 S1
 - **EKANS:** use its kill routine, not only its lists.
 - **Candidates:** Qwensploit V2 4B could be retried with a larger output limit to separate its task ability from its thinking output. If the editor's parser should accept models that add text after the JSON (Black Onyx), make it read the first complete JSON object.
 - **ICS process manipulation:** Modbus writes, PLC logic changes and record-and-replay were not recognized (see above). The prompt could describe what Impair Process Control looks like in code.
+- **Spark-X2.5 4B** runs only on a llama.cpp build with `0005-spark2_5.patch`. The published WelsonJS builds do not have it until they are rebuilt and published again (see `native/llamacpp/README.md`).
 - **OrcaCyber Nano 1.0** ([orcarouter/OrcaCyber-Nano-1.0](https://huggingface.co/orcarouter/OrcaCyber-Nano-1.0), gated) is a 27B model based on Qwen3.8-27B. Its smallest model file is 13 GB. The 2 GB `DFlash2-Q8_0` file is a speculative-decoding drafter (GGUF architecture `dflash`, non-causal, reading the main model's layers) and does not run alone. It was not tested: it needs more memory than the 16 GB test machine has.
 - **Other samples, no public code found:** only analyses, YARA rules, indicators or binaries were found for these families, from the [awesome-ics-malware](https://github.com/donadelden/awesome-ics-malware) list and a GitHub search. They could be used through code quoted in analyses:
   - fast16, Night Dragon, Havex, BlackEnergy 3 / KillDisk, Industroyer (2016);
